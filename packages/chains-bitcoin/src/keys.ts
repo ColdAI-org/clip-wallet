@@ -5,14 +5,16 @@
  * and BIP-86 (P2TR) m/86'/<coin>'/0'/0/<index>, coin 1' on test networks (the v1 default) and 0' on
  * mainnet. Mainnet accounts therefore use different keys from testnet accounts.
  *
- * "Ours": an input/output is the user's when its script is P2WPKH(account key) or P2TR key-path with
- * internal key = account key (x-only). A vault account derived at the BIP-86 path is handled the same
- * way (its key's P2TR script matches).
+ * "Ours": an input/output is the user's when its script is P2WPKH(account.publicKey, the BIP-84 key), a
+ * P2WPKH change key the vault handed out, or the BIP-86 key-path P2TR output of `account.taprootPublicKey`
+ * (the BIP-86 key the vault signs schnorr payloads with). Without `taprootPublicKey` no taproot script is
+ * the account's: taproot receive, coins and messages are unavailable (plain "taproot-unavailable" error),
+ * because a P2TR script built from the BIP-84 key would not match what the vault signs.
  */
-import type { Account, ChildAddress, Network } from "@clip-wallet/core";
+import { type Account, type ChildAddress, ClipError, type Network } from "@clip-wallet/core";
 import { hex } from "@scure/base";
 import { Address, OutScript, p2pkh, p2tr, p2wpkh } from "@scure/btc-signer";
-import { equalBytes } from "@scure/btc-signer/utils.js";
+import { equalBytes, taprootTweakPubkey } from "@scure/btc-signer/utils.js";
 import { btcNet } from "./networks.js";
 
 export const BIP84_PURPOSE = 84;
@@ -43,6 +45,31 @@ export function taprootAddress(pub: Uint8Array, network: Network): string {
   return p2tr(xOnly(pub), undefined, btcNet(network)).address!;
 }
 
+/** The account's BIP-86 internal key (x-only), or undefined when the background didn't supply one. */
+export function taprootKeyOf(account: Account): Uint8Array | undefined {
+  if (!account.taprootPublicKey) return undefined;
+  const k = xOnly(hex.decode(account.taprootPublicKey));
+  if (k.length !== 32) throw new Error("taprootPublicKey must be an x-only or compressed secp256k1 key");
+  return k;
+}
+
+export const TAPROOT_UNAVAILABLE = "Taproot (bc1p…) addresses aren't available for this account yet. Use your bc1q/tb1q address instead.";
+
+/** The account's own taproot (BIP-86) receive address, or a plain-words error when it has none. */
+export function ownTaprootAddress(account: Account, network: Network): string {
+  const k = taprootKeyOf(account);
+  if (!k) throw new ClipError(TAPROOT_UNAVAILABLE, "taproot-unavailable");
+  return taprootAddress(k, network);
+}
+
+/**
+ * BIP-341 output key Q = P + H_TapTweak(P_x ‖ merkleRoot)·G (x-only). Public-key maths only, used to match
+ * scripts and verify signatures; the vault computes the same tweak itself from `taprootTweak` = merkleRoot.
+ */
+export function taprootOutputKey(internalKey: Uint8Array, merkleRoot: Uint8Array = new Uint8Array()): Uint8Array {
+  return taprootTweakPubkey(xOnly(internalKey), merkleRoot)[0];
+}
+
 /** A P2WPKH change key of the account (m/84'/c'/0'/1/n), signed by the vault via `derivationSubPath`. */
 export interface ChangeKey {
   pubkey: Uint8Array;
@@ -52,11 +79,15 @@ export interface ChangeKey {
 }
 
 export interface OwnScripts {
+  /** BIP-84 key (account.publicKey). */
   pubkey: Uint8Array;
   wpkh: Uint8Array;
-  tr: Uint8Array;
-  /** BIP-86 output key (tweaked, x-only). */
-  trOutputKey: Uint8Array;
+  /** BIP-86 internal key (x-only, account.taprootPublicKey). Absent → no taproot script is ours. */
+  trInternalKey?: Uint8Array;
+  /** BIP-86 key-path P2TR script of trInternalKey. */
+  tr?: Uint8Array;
+  /** BIP-86 output key (tweaked with an empty merkle root, x-only). */
+  trOutputKey?: Uint8Array;
   /** Change keys the vault handed out to this account (ChainContext.changeAddresses). */
   change: ChangeKey[];
 }
@@ -74,15 +105,22 @@ export function changeKey(c: ChildAddress, network?: Network): ChangeKey {
 
 export function ownScripts(account: Account, change: ChildAddress[] = [], network?: Network): OwnScripts {
   const pubkey = pubkeyOf(account);
-  const tr = p2tr(xOnly(pubkey));
-  return { pubkey, wpkh: p2wpkh(pubkey).script, tr: tr.script, trOutputKey: tr.tweakedPubkey, change: change.map((c) => changeKey(c, network)) };
+  const own: OwnScripts = { pubkey, wpkh: p2wpkh(pubkey).script, change: change.map((c) => changeKey(c, network)) };
+  const trKey = taprootKeyOf(account);
+  if (trKey) {
+    const tr = p2tr(trKey);
+    own.trInternalKey = trKey;
+    own.tr = tr.script;
+    own.trOutputKey = tr.tweakedPubkey;
+  }
+  return own;
 }
 
 export type OwnKind = "wpkh" | "tr" | null;
 
 export function ownKind(script: Uint8Array, own: OwnScripts): OwnKind {
   if (equalBytes(script, own.wpkh)) return "wpkh";
-  if (equalBytes(script, own.tr)) return "tr";
+  if (own.tr && equalBytes(script, own.tr)) return "tr";
   if (own.change.some((c) => equalBytes(script, c.wpkh))) return "wpkh";
   return null;
 }

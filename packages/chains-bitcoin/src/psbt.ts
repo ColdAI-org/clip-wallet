@@ -2,14 +2,16 @@
  * PSBT analysis and per-input sighash digests.
  *  - segwit v0 (P2WPKH): BIP-143 digest (sha256d) → ecdsa-secp256k1 payload.
  *  - taproot key path (P2TR, BIP-86): BIP-341 SigMsg tagged hash → schnorr-secp256k1 payload with the
- *    TapTweak scalar in options.taprootTweak (the vault signs with d' = d·(even-Y) + t).
+ *    output's MERKLE ROOT in options.taprootTweak (empty for BIP-86 key-path-only outputs). The vault
+ *    computes t = H_TapTweak(P_x ‖ merkleRoot) from its own BIP-86 key and signs with d' = d·(even-Y) + t;
+ *    we never pass the tweak scalar itself (it would be hashed twice).
  * Legacy P2PKH and nested P2SH-P2WPKH inputs are not signed in v1.
  */
 import { ClipError, type Account, type ChildAddress, type Network } from "@clip-wallet/core";
 import { base64, hex } from "@scure/base";
 import { SigHash, Transaction } from "@scure/btc-signer";
-import { tagSchnorr } from "@scure/btc-signer/utils.js";
-import { type ChangeKey, type OwnKind, type OwnScripts, addressOfScript, changeKeyOf, isOpReturn, ownKind, ownScripts, scriptType, wpkhScriptCode, xOnly } from "./keys.js";
+import { equalBytes } from "@scure/btc-signer/utils.js";
+import { type ChangeKey, type OwnKind, type OwnScripts, addressOfScript, changeKeyOf, isOpReturn, ownKind, ownScripts, scriptType, taprootOutputKey, wpkhScriptCode } from "./keys.js";
 
 export const TX_OPTS = {
   allowUnknownOutputs: true,
@@ -154,16 +156,14 @@ export interface InputDigest {
   kind: "wpkh" | "tr";
   hashType: number;
   digest: Uint8Array;
-  /** Key that signs this input (the account key, or a change key). */
+  /** Key that signs this input: the BIP-84 key or a change key (wpkh), the BIP-86 internal key (tr). */
   pubkey: Uint8Array;
   /** Change inputs: the vault's derivationSubPath ("1/<n>"). */
   subPath?: string;
-  /** taproot only: TapTweak scalar bytes for the vault. */
-  tweak?: Uint8Array;
-}
-
-export function tapTweakBytes(internalKey: Uint8Array, merkleRoot?: Uint8Array): Uint8Array {
-  return tagSchnorr("TapTweak", xOnly(internalKey), merkleRoot ?? new Uint8Array());
+  /** taproot only: BIP-341 merkle root for the vault's `taprootTweak` (empty = key path only, BIP-86). */
+  merkleRoot?: Uint8Array;
+  /** taproot only: the output key the signature must verify against (from the prevout script). */
+  outputKey?: Uint8Array;
 }
 
 export function inputDigests(tx: Transaction, a: PsbtAnalysis): InputDigest[] {
@@ -184,14 +184,22 @@ export function inputDigests(tx: Transaction, a: PsbtAnalysis): InputDigest[] {
       out.push(d);
     } else if (x.kind === "tr") {
       const inp = tx.getInput(x.index);
-      if (inp.tapLeafScript?.length && !inp.tapInternalKey) throw new ClipError("Clip Wallet can't sign this kind of Bitcoin script yet.", "unsupported-script");
+      const internal = a.own.trInternalKey!;
+      const merkleRoot = inp.tapMerkleRoot ?? new Uint8Array(0);
+      const outputKey = x.script!.slice(2, 34);
+      // Key path only: the internal key must be ours and P + H_TapTweak(P ‖ merkleRoot)·G must be the
+      // prevout's output key, or the vault's signature could never verify.
+      const keyPathOk =
+        (!inp.tapInternalKey || equalBytes(inp.tapInternalKey, internal)) &&
+        equalBytes(taprootOutputKey(internal, merkleRoot), outputKey);
+      if (!keyPathOk) throw new ClipError("Clip Wallet can't sign this kind of Bitcoin script yet.", "unsupported-script");
       const digest = tx.preimageWitnessV1(
         x.index,
         a.inputs.map((i) => i.script!),
         hashType,
         a.inputs.map((i) => i.amount!),
       );
-      out.push({ index: x.index, kind: "tr", hashType, digest, pubkey: a.own.pubkey, tweak: tapTweakBytes(a.own.pubkey, inp.tapMerkleRoot) });
+      out.push({ index: x.index, kind: "tr", hashType, digest, pubkey: internal, merkleRoot, outputKey });
     }
   }
   return out;

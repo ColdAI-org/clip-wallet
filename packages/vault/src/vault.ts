@@ -549,7 +549,7 @@ export class ClipVault implements Vault {
       wipe(stake.privateKey);
       ctx.cardanoStakePublicKey = stake.publicKey;
     }
-    return {
+    const account: Account = {
       id: `${family}:${index}`,
       family,
       index,
@@ -558,6 +558,17 @@ export class ClipVault implements Vault {
       publicKey: toHex(key.publicKey),
       address: this.addressOf(family, key.publicKey, ctx),
     };
+    if (family === "bitcoin") {
+      // The BIP-86 key at the same index: the key sign() uses for every schnorr-secp256k1 payload of
+      // this account id. Chain modules build taproot scripts from it (Account.taprootPublicKey).
+      if (bitcoinAddressType === "p2tr") account.taprootPublicKey = account.publicKey;
+      else {
+        const tr = deriveFamilyKey(src, family, this.pathFor(family, index, "p2tr"), this.pathOptions("p2tr"));
+        wipe(tr.privateKey);
+        account.taprootPublicKey = toHex(tr.publicKey);
+      }
+    }
+    return account;
   }
 
   private changeKey(type: BitcoinAddressType): string {
