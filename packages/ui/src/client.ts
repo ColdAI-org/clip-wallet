@@ -54,6 +54,8 @@ export interface NetworkView {
 
 export interface PortfolioView {
   balances: TokenBalance[];
+  /** Assets the wallet can hold on its networks, even at zero balance (Receive list). */
+  assets?: AssetRef[];
   networks: NetworkView[];
   currency: string;
   updatedAt: number;
@@ -110,6 +112,8 @@ export interface ApprovalPlan {
   steps: PlanStep[];
   /** "Settles in one step. If anything fails, nothing leaves your balance." */
   settlement: string;
+  /** Plain-words reason this can't be approved as planned (e.g. not enough money anywhere). Blocks Approve. */
+  problem?: string;
 }
 
 export interface ConnectView {

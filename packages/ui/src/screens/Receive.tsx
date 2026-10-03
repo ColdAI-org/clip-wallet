@@ -5,8 +5,6 @@ import { AssetIcon, CopyButton, ErrorNote, Qr, Screen, Spinner } from "../compon
 import { IconChevron } from "../components/icons";
 import { mergeBalances } from "../lib/portfolio";
 
-const COMMON_RECEIVE = ["usdc", "eth", "hbar", "sol", "btc"];
-
 /** Receive: pick the asset first, then show the right address. Networks appear only when ambiguous. */
 export function Receive(props: { assetKey?: string }) {
   const { client } = useUi();
@@ -15,10 +13,10 @@ export function Receive(props: { assetKey?: string }) {
   const choices = useMemo(() => {
     const held = mergeBalances(data?.balances ?? []).assets.filter((a) => !a.bridged).map((a) => ({ key: a.key, symbol: a.symbol, name: a.name }));
     const keys = new Set(held.map((h) => h.key));
-    // Assets the wallet can receive even with a zero balance (native coins and USDC).
-    const extra = (data?.balances ?? [])
-      .filter((b) => COMMON_RECEIVE.includes(b.asset.key) && !keys.has(b.asset.key) && !b.asset.bridged)
-      .map((b) => ({ key: b.asset.key, symbol: b.asset.symbol, name: b.asset.name }));
+    // Assets the wallet can receive even with a zero balance (native coins and curated tokens).
+    const extra = (data?.assets ?? [])
+      .filter((a) => !keys.has(a.key) && !a.bridged && !a.spam)
+      .map((a) => ({ key: a.key, symbol: a.symbol, name: a.name }));
     return [...held, ...extra.filter((e, i) => extra.findIndex((x) => x.key === e.key) === i)];
   }, [data]);
 

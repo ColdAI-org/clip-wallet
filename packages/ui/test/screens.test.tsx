@@ -296,3 +296,22 @@ describe("WalletApp onboarding", () => {
     expect(await screen.findByRole("heading", { name: "Your recovery phrase" })).toBeInTheDocument();
   });
 });
+
+describe("Approval plan problems", () => {
+  it("blocks Approve with a plain reason when the plan can't be paid", () => {
+    const base = payApproval();
+    renderUi(<TransactionApproval approval={{ ...base, plan: { ...base.plan!, problem: "You don't have enough USDC for this." } }} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("You don't have enough USDC for this.");
+    expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+  });
+});
+
+describe("Message signing", () => {
+  it("shows no money rows when nothing moves", () => {
+    renderUi(<TransactionApproval approval={payApproval({ fiatValue: undefined, plan: undefined }, { title: "Sign in to magiceden.io", balanceChanges: [], fee: undefined })} />);
+    expect(screen.getByRole("heading", { name: "Sign in to magiceden.io" })).toBeInTheDocument();
+    expect(screen.queryByText("From")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fee")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ready")).not.toBeInTheDocument();
+  });
+});

@@ -55,7 +55,10 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
   const [err, setErr] = useState<string | null>(null);
   const detailsId = useId();
 
-  const blocked = d.blind && !(advanced && blindOk);
+  const problem = a.plan?.problem;
+  // Messages and sign-ins move no money: no From/Fee/Ready rows for them.
+  const movesMoney = d.balanceChanges.some((c) => c.delta.startsWith("-"));
+  const blocked = (d.blind && !(advanced && blindOk)) || !!problem;
   const feeText =
     a.plan?.feeFiat !== undefined
       ? formatFiat(a.plan.feeFiat, currency)
@@ -95,9 +98,9 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
       </div>
 
       <div className="clip-rows">
-        <Row label="From" value={a.plan?.source ?? "Your balance"} />
-        <Row label="Fee" value={feeText} hint={a.plan?.sponsored ? "network fee covered" : undefined} />
-        <Row label="Ready" value={readyIn(a.plan?.readyInSeconds ?? 10)} />
+        {movesMoney && <Row label="From" value={a.plan?.source ?? "Your balance"} />}
+        {d.fee && <Row label="Fee" value={feeText} hint={a.plan?.sponsored ? "network fee covered" : undefined} />}
+        {(movesMoney || d.fee) && <Row label="Ready" value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
         {d.lines.map((l) => (
           <Row key={l.label} label={l.label} value={l.value} />
         ))}
@@ -159,6 +162,12 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
               Clip Wallet can't read this request, so it's blocked. Signing something you can't read can empty your wallet.
               {!advanced && " Only Advanced mode can override this."}
             </span>
+          </div>
+        )}
+        {problem && (
+          <div className="clip-notice clip-notice--caution" role="alert">
+            <IconAlert />
+            <span>{problem}</span>
           </div>
         )}
         <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />

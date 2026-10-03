@@ -1164,6 +1164,7 @@ svg.is-open {
   text-align: right;
 }
 .clip-phrase__reveal {
+  white-space: nowrap;
   position: absolute;
   inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
