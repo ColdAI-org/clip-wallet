@@ -202,3 +202,4 @@ describe("accounts", () => {
     await expect(s.svc.handle({ type: "markPhraseBackedUp" })).rejects.toMatchObject({ code: "vault/locked" });
   });
 });
+

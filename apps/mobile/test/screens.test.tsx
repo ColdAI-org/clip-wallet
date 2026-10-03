@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-
 import { App } from "../src/App";
 import { Onboarding } from "../src/screens/Onboarding";
 import { Send } from "../src/screens/Send";
+import { Explore } from "../src/screens/Explore";
 import { renderWith, testWallet, WORDS } from "./helpers";
 import { EVM_ADDRESS, fakePort } from "../../../packages/engine/test/fixtures";
 
@@ -98,5 +99,15 @@ describe("Send", () => {
     expect(screen.getByText("Sepolia")).toBeTruthy();
     expect(screen.getByText("You have 0.5 ETH there")).toBeTruthy();
     expect(screen.getByText("We'll move your ETH there for you")).toBeTruthy();
+  });
+});
+
+describe("Explore", () => {
+  it("lists featured apps (they open in the in-app browser) and what's staked", async () => {
+    const wallet = testWallet();
+    await wallet.engine.handle({ type: "createWallet", password: PW });
+    renderWith(wallet, <Explore />, { name: "explore" });
+    await waitFor(() => expect(screen.getByText("SaucerSwap")).toBeTruthy());
+    expect(screen.getByText("Staking ADA is coming soon.")).toBeTruthy();
   });
 });

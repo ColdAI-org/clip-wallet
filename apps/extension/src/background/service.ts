@@ -31,7 +31,8 @@ import { PlatformService, type PlatformRequest } from "./platform";
 import type { Signature, SignablePayload } from "@clip-wallet/core";
 import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/hardware/core";
 import type { HardwareAccountView } from "@clip-wallet/ui";
-import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@clip-wallet/features";
+import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
+import type { FeaturesService } from "@clip-wallet/features";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,

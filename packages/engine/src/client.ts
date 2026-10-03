@@ -4,7 +4,8 @@
  * Requests still go through the zod schema: the UI is trusted code, but the check costs nothing and keeps
  * both hosts identical.
  */
-import type { WalletClient } from "@clip-wallet/ui";
+import type { FeaturesClient, WalletClient } from "@clip-wallet/ui";
+import { ClipError } from "@clip-wallet/core";
 import type { WalletEngine } from "./engine.js";
 
 export function createEngineClient(engine: WalletEngine, opts: { subscribe(cb: () => void): () => void }): WalletClient {
@@ -50,5 +51,35 @@ export function createEngineClient(engine: WalletEngine, opts: { subscribe(cb: (
     setActiveAccount: (p) => call({ type: "setActiveAccount", ...p }),
     lookupName: (p) => call({ type: "lookupName", ...p }),
     onChange: (cb) => opts.subscribe(cb),
+  };
+}
+
+/**
+ * In-process FeaturesClient (staking, swaps, buy, Secure Trade, explore) over the engine. `openExternal` is
+ * the host's way to open an https page (mobile: Linking.openURL).
+ */
+export function createEngineFeaturesClient(engine: WalletEngine, opts: { openExternal(url: string): Promise<void> }): FeaturesClient {
+  const call = <T>(msg: unknown) => engine.handleUntrusted(msg) as Promise<T>;
+  return {
+    stakingOverview: () => call({ type: "featStakingOverview" }),
+    stakingOptions: (p) => call({ type: "featStakingOptions", ...p }),
+    stake: (p) => call({ type: "featStake", ...p }),
+    stakeAction: (p) => call({ type: "featStakeAction", ...p }),
+    swapStatus: () => call({ type: "featSwapStatus" }),
+    swapQuote: (p) => call({ type: "featSwapQuote", ...p }),
+    swapExecute: (p) => call({ type: "featSwapExecute", ...p }),
+    buyAssets: () => call({ type: "featBuyAssets" }),
+    buyOptions: (p) => call({ type: "featBuyOptions", ...p }),
+    tradeList: () => call({ type: "featTradeList" }),
+    tradeCreate: (p) => call({ type: "featTradeCreate", ...p }),
+    tradeReview: (p) => call({ type: "featTradeReview", ...p }),
+    tradeAccept: (p) => call({ type: "featTradeAccept", ...p }),
+    featured: () => call({ type: "featFeatured" }),
+    lpPositions: () => call({ type: "featLpPositions" }),
+    openExternal: async (url) => {
+      const u = new URL(url);
+      if (u.protocol !== "https:") throw new ClipError("That link can't be opened.", "features/bad-url");
+      await opts.openExternal(u.toString());
+    },
   };
 }

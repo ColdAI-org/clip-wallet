@@ -6,19 +6,39 @@ import type { Family, Network } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";
 import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
-import { createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
+import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
+import { P2_CONNECT_METHODS } from "@clip-wallet/1mask/background/p2";
+import type { createStarknetModule } from "@clip-wallet/chains-starknet";
+import type { createTonModule } from "@clip-wallet/chains-ton";
 import type { WalletConnectWalletOptions } from "@clip-wallet/1mask/walletconnect";
 import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./types.js";
 
-const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect"]);
+/** Connect methods of every family's connector (same set as the extension's). */
+const CONNECT_METHODS = new Set<string>([
+  "eth_requestAccounts",
+  "wallet_requestPermissions",
+  "standard:connect",
+  "bitcoin:connect",
+  "aptos:connect",
+  ...P2_CONNECT_METHODS,
+  "cardano_enable",
+  "substrate_enable",
+  "wallet_requestAccounts", // Starknet (get-starknet)
+  "tonconnect:connect",
+]);
 const READ_ONLY = new Set<string>(EVM_METHODS.readOnly);
+/** Read-only chain calls a module answers without an approval (CIP-30 getUtxos, getBalance, …). */
+const CHAIN_READ = new Set<string>(CARDANO_METHODS_ALLOWED.readOnly);
 
 /* ------------------------------------------------------------------ 1Mask */
 
 export class OneMaskConnector implements DappConnector {
   private router?: OneMaskRouter;
-  constructor(private readonly networks: Network[]) {}
+  constructor(
+    private readonly networks: Network[],
+    private readonly mods: { starknet?: ReturnType<typeof createStarknetModule>; ton?: ReturnType<typeof createTonModule> } = {},
+  ) {}
 
   start(host: DappHost) {
     this.router = createOneMaskRouter({
@@ -28,12 +48,22 @@ export class OneMaskConnector implements DappConnector {
       isUnlocked: () => host.isUnlocked(),
       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
       cancel: (requestId) => host.cancel(requestId),
+      starknetDeploymentData: async (origin, net) => {
+        const [account] = await host.accountsFor(origin, "starknet");
+        return account && this.mods.starknet ? this.mods.starknet.deploymentDataFor({ network: net, account, fetch: globalThis.fetch.bind(globalThis) }) : null;
+      },
+      tonAddrItem: async (origin, net) => {
+        const [account] = await host.accountsFor(origin, "ton");
+        if (!account || !this.mods.ton) throw new ClipError("Connect a TON account first.", "ton/no-account");
+        return this.mods.ton.tonAddrItem(Uint8Array.from(account.publicKey.match(/../g)!.map((h) => parseInt(h, 16))), net);
+      },
       handle: async (req) => {
         if (CONNECT_METHODS.has(req.method)) {
           const ok = await host.approveConnect({ origin: req.origin, family: req.family, networkId: req.networkId, via: "injected" });
           if (!ok) throw new ClipError("You declined to connect.", "user-rejected");
           return true;
         }
+        if (CHAIN_READ.has(req.method)) return host.chainRead(req);
         if (READ_ONLY.has(req.method)) return host.rpc(req.networkId, req.method, req.params);
         return host.request(req);
       },
@@ -165,7 +195,22 @@ export class WalletConnectAdapter implements WalletConnectBridge {
 
 /* ------------------------------------------------------------------ route */
 
-const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
+const PLAIN_ETA: Record<Family, number> = {
+  evm: 12,
+  hedera: 4,
+  solana: 2,
+  bitcoin: 600,
+  sui: 1,
+  aptos: 1,
+  cardano: 40,
+  substrate: 12,
+  starknet: 10,
+  ton: 6,
+  near: 2,
+  stellar: 6,
+  tezos: 10,
+  algorand: 4,
+};
 
 /** CLPRouter funding through @clip-wallet/route. */
 export class RoutePlannerAdapter implements RoutePlanner {

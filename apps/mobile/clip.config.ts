@@ -7,7 +7,8 @@ export default defineConfig({
   rdns: "org.coldai.clipwallet",
   icon: "./assets/icon.svg",
   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },
-  networks: ["evm:*", "hedera", "solana", "bitcoin"],
+  // All 14 families, testnets only (same as the extension).
+  networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand"],
   passkeys: { enabled: true },
   walletConnect: {},
   mainnet: false,

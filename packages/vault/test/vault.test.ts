@@ -430,3 +430,10 @@ describe("passkeyBackup (Phase 2)", () => {
     expect(passkeyBackup.decrypt(blob, prfOut)).toBe(ABANDON);
   });
 });
+
+describe("BACKUP_PRF_INPUT", () => {
+  // Pinned: @clip-wallet/engine restates this value (packages/engine/test/platform.test.ts checks the same hex).
+  it("is sha256 of the published label", () => {
+    expect(Buffer.from(BACKUP_PRF_INPUT).toString("hex")).toBe("160feec3b9d9d1ace9480314d3219d71223fd9ca5f9f6e93e7996fb123ab43cf");
+  });
+});

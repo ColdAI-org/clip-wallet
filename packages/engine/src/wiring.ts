@@ -8,8 +8,22 @@ import { createEvmModule } from "@clip-wallet/chains-evm";
 import { createHederaModule } from "@clip-wallet/chains-hedera";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-import { KnownDappRegistry, NoNameResolver, OneMaskConnector, ReferencePriceFeed, RoutePlannerAdapter, WalletConnectAdapter, type WalletConnectAdapterOptions } from "./adapters.js";
+import { createSuiModule } from "@clip-wallet/chains-sui";
+import { createAptosModule } from "@clip-wallet/chains-aptos";
+import { createCardanoModule } from "@clip-wallet/chains-cardano";
+import { createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { createStarknetModule } from "@clip-wallet/chains-starknet";
+import { createTonModule } from "@clip-wallet/chains-ton";
+import { createNearModule } from "@clip-wallet/chains-near";
+import { createStellarModule } from "@clip-wallet/chains-stellar";
+import { createTezosModule } from "@clip-wallet/chains-tezos";
+import { createAlgorandModule } from "@clip-wallet/chains-algorand";
+import { BackupClient } from "@clip-wallet/backup-client";
+import { MultiNameResolver } from "@clip-wallet/names";
+import { KnownDappRegistry, OneMaskConnector, ReferencePriceFeed, RoutePlannerAdapter, WalletConnectAdapter, type WalletConnectAdapterOptions } from "./adapters.js";
 import { walletAssets, walletNetworks } from "./catalog.js";
+import { createPriceFeed } from "./features.js";
+import type { KV } from "./kv.js";
 import type { Dependencies, WalletVault } from "./types.js";
 
 export { walletNetworks, walletAssets } from "./catalog.js";
@@ -23,16 +37,40 @@ export interface EngineWiringOptions {
   walletConnect: Pick<WalletConnectAdapterOptions, "projectId" | "url" | "iconUrl" | "coreOptions" | "walletKitFactory" | "load">;
   /** Extra verified dapp domains (host → name), e.g. a local test page in dev builds. */
   knownDapps?: Record<string, string>;
+  /** Where the CoinGecko price snapshot is cached. Without it prices are the reference table (tests). */
+  kv?: KV;
+  /** CoinGecko demo key (build env; never committed). */
+  coingeckoDemoKey?: string;
 }
 
 export function createEngineDependencies(o: EngineWiringOptions): Dependencies & { walletConnect: WalletConnectAdapter } {
   const networks = walletNetworks(o.config);
   const families = new Set<Family>(networks.map((n) => n.family));
   const hedera = createHederaModule();
-  const all: Partial<Record<Family, ChainModule>> = { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() };
+  // Defaults match the vault's: Starknet OpenZeppelin account, TON wallet v5r1, Algorand ARC-52.
+  const starknet = createStarknetModule();
+  const ton = createTonModule();
+  const all: Record<Family, () => ChainModule> = {
+    evm: createEvmModule,
+    hedera: () => hedera,
+    solana: createSolanaModule,
+    bitcoin: createBitcoinModule,
+    sui: createSuiModule,
+    aptos: createAptosModule,
+    cardano: createCardanoModule,
+    substrate: createSubstrateModule,
+    starknet: () => starknet,
+    ton: () => ton,
+    near: createNearModule,
+    stellar: createStellarModule,
+    tezos: createTezosModule,
+    algorand: createAlgorandModule,
+  };
+  // One instance per enabled family for the engine's lifetime (modules keep prepare→finalize state).
   const chains: Partial<Record<Family, ChainModule>> = {};
-  for (const f of families) if (all[f]) chains[f] = all[f];
-  const prices = new ReferencePriceFeed();
+  for (const f of families) chains[f] = all[f]();
+  const prices = o.kv ? createPriceFeed(o.kv, o.coingeckoDemoKey) : new ReferencePriceFeed();
+  const backupUrl = o.config.services.backupUrl;
   return {
     mocks: false,
     vault: o.vault,
@@ -41,10 +79,12 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     networks,
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(o.config, prices, o.currency),
-    dapps: new OneMaskConnector(networks),
+    dapps: new OneMaskConnector(networks, { starknet: families.has("starknet") ? starknet : undefined, ton: families.has("ton") ? ton : undefined }),
     walletConnect: new WalletConnectAdapter({ ...o.walletConnect, name: o.config.name, networks }),
     prices,
-    names: new NoNameResolver(),
+    // ENS (.eth), SNS (.sol) and Hedera names, limited to the networks this wallet has.
+    names: new MultiNameResolver({ networks }),
+    backup: backupUrl ? (session) => new BackupClient({ baseUrl: backupUrl, session }) : null,
     registry: new KnownDappRegistry(o.knownDapps),
     hederaAccountId: async (ctx) => (await hedera.getAccountState(ctx)).accountId ?? undefined,
     seedActivity: [],

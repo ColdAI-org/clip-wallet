@@ -77,6 +77,31 @@ export class FakeVault implements WalletVault {
   async listPasskeys() {
     return this.passkeys.map(({ credentialId, createdAt }) => ({ credentialId, createdAt }));
   }
+  /* vault-v2 account API: one account per family until addAccount */
+  counts = new Map<Family, number>();
+  async listAccounts(families: readonly Family[] = ["evm"]): Promise<Account[]> {
+    const out: Account[] = [];
+    for (const f of families) for (let i = 0; i < (this.counts.get(f) ?? 1); i++) out.push(await this.deriveAccount(f, i));
+    return out;
+  }
+  async addAccount(family: Family): Promise<Account> {
+    const n = this.counts.get(family) ?? 1;
+    this.counts.set(family, n + 1);
+    return this.deriveAccount(family, n);
+  }
+  async setAccountLabel() {}
+  async freshChange(): Promise<never> {
+    throw new ClipError("No change addresses in tests.", "test/no-change");
+  }
+  async listChange() {
+    return [];
+  }
+  async createPasskeyBackup(): Promise<Uint8Array> {
+    throw new ClipError("Not in tests.", "test/unsupported");
+  }
+  async restorePasskeyBackup(): Promise<void> {
+    throw new ClipError("Not in tests.", "test/unsupported");
+  }
   async removePasskey(id: Uint8Array) {
     this.passkeys = this.passkeys.filter((p) => p.credentialId.join() !== id.join());
   }

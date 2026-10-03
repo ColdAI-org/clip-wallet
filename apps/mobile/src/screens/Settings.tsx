@@ -192,7 +192,7 @@ function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) =
 }
 
 export function Settings() {
-  const { client, state, refresh, wallet } = useWallet();
+  const { client, state, refresh, wallet, navigate } = useWallet();
   const [err, setErr] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   if (!state) return null;
@@ -220,6 +220,11 @@ export function Settings() {
             { value: "dark", label: "Dark" },
           ]}
         />
+      </Section>
+      <Section title="More">
+        <Button variant="secondary" onPress={() => navigate({ name: "explore" })} testID="explore">
+          Explore apps and staking
+        </Button>
       </Section>
       <Section title="Security">
         <Segmented label="Lock automatically after" value={prefs.autoLockMinutes} onChange={(v) => setPrefs({ autoLockMinutes: v })} options={AUTO_LOCK.map((m) => ({ value: m, label: m === 60 ? "1 h" : `${m} min` }))} />

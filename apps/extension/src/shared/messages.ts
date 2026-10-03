@@ -6,7 +6,7 @@
  */
 import { z } from "zod";
 import { FAMILIES, type Nft } from "@clip-wallet/core";
-import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features";
+import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
 import type {
   AccountView,
   ActiveAccounts,

@@ -4,7 +4,7 @@
  */
 import { render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
-import { WalletEngine, MemoryKV, createEngineClient } from "@clip-wallet/engine";
+import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient } from "@clip-wallet/engine";
 import type { MobileWallet } from "../src/background/host";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
@@ -27,10 +27,22 @@ export function testWallet(): MobileWallet & { vault: FakeVault } {
   const engine = new WalletEngine(makeDeps(vault), new MemoryKV(), env);
   engine.start();
   const client = createEngineClient(engine, { subscribe: (cb) => events.on((e) => e.type !== "approval" && cb()) });
+  // Feature services with sample answers (the real ones call partner APIs).
+  engine.attachFeatures({
+    refine: (_r, d) => d,
+    handle: (async (m: { type: string }) => {
+      if (m.type === "featFeatured") return [{ name: "SaucerSwap", url: "https://www.saucerswap.finance/", domain: "saucerswap.finance", category: "swap", description: "Swap tokens and earn from liquidity.", family: "hedera" }];
+      if (m.type === "featStakingOverview")
+        return [{ assetKey: "ada", symbol: "ADA", name: "Cardano", wholeBalance: true, howItWorks: "", positions: [], unavailable: { code: "staking/coming-soon", message: "Staking ADA is coming soon." } }];
+      throw new Error(`not in tests: ${m.type}`);
+    }) as never,
+  });
+  const features = createEngineFeaturesClient(engine, { openExternal: async () => undefined });
   return {
     vault,
     engine,
     client,
+    features,
     events,
     argon2: { kind: "native", fn: async () => new Uint8Array(32), selfTest: Promise.resolve(true) },
     walletConnectEnabled: false,

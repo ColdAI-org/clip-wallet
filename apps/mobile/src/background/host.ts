@@ -7,9 +7,18 @@
 import { AppState, type AppStateStatus } from "react-native";
 import { randomUUID } from "expo-crypto";
 import { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
-import { WalletEngine, createEngineClient, publicNetworks, type KV, type PrfProvider } from "@clip-wallet/engine";
+import {
+  WalletEngine,
+  createEngineClient,
+  createEngineFeaturesClient,
+  publicNetworks,
+  type KV,
+  type PrfProvider,
+} from "@clip-wallet/engine";
 import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import type { WalletClient } from "@clip-wallet/ui";
+import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
+import type { FeaturesClient, WalletClient } from "@clip-wallet/ui";
+import * as Linking from "expo-linking";
 import { ClipError } from "@clip-wallet/core";
 import { APP } from "../env";
 import { pickArgon2id, selfTest, type Argon2Choice } from "./argon2";
@@ -42,6 +51,8 @@ function unhex(h: string): Uint8Array {
 export interface MobileWallet {
   engine: WalletEngine;
   client: WalletClient;
+  /** Staking, swaps, buy, Secure Trade and featured apps (same services as the extension). */
+  features: FeaturesClient;
   events: Events;
   argon2: Argon2Choice & { selfTest: Promise<boolean> };
   walletConnectEnabled: boolean;
@@ -76,6 +87,8 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     hashPayload: hashSignablePayload,
     currency: async () => (await engine.prefs()).displayCurrency,
     walletConnect: { projectId: APP.wcProjectId, url: APP.siteUrl, iconUrl: APP.iconUrl },
+    // CoinGecko prices cached in app storage (no partner key on mobile builds yet).
+    kv,
   });
 
   /* auto-lock: a JS timer while open, plus a wall-clock check when the app comes back from the background */
@@ -99,6 +112,22 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     randomUUID: () => randomUUID(),
   });
   engine.start();
+  engine.attachFeatures(
+    createFeatures(
+      createFeatureHost({
+        networks: deps.networks,
+        assets: deps.assets,
+        kv,
+        ctx: (id) => engine.featureCtx(id),
+        balances: () => engine.featureBalances(),
+        enqueue: (request, appName) => engine.enqueueWalletRequest(request, appName),
+        decode: (request) => engine.decodeForFeatures(request),
+        usd: (key) => deps.prices.usd(key),
+      }),
+      // Partner keys (swap/on-ramp) are build secrets; none are set for mobile yet, so those show as "not switched on".
+      { testnet: !APP.config.mainnet },
+    ),
+  );
   void deps.walletConnect.warmUp();
 
   const client = createEngineClient(engine, {
@@ -127,9 +156,12 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     events.emit({ type: "change" });
   };
 
+  const features = createEngineFeaturesClient(engine, { openExternal: async (url) => void (await Linking.openURL(url)) });
+
   return {
     engine,
     client,
+    features,
     events,
     argon2: { ...argon2, selfTest: argonCheck },
     walletConnectEnabled: deps.walletConnect.enabled,
