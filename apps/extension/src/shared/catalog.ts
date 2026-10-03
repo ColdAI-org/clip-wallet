@@ -10,16 +10,16 @@ type CuratedToken = (typeof CURATED_TOKENS)[number];
 import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
 import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
 import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
-import { CARDANO_NETWORKS } from "@clip-wallet/chains-cardano";
-import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@clip-wallet/chains-substrate";
-import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@clip-wallet/chains-starknet";
-import { TON_MAINNET, TON_TESTNET } from "@clip-wallet/chains-ton";
-import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui";
-import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos";
-import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near";
-import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar";
-import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos";
-import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand";
+import { CARDANO_NETWORKS } from "@clip-wallet/chains-cardano/networks";
+import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@clip-wallet/chains-substrate/networks";
+import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@clip-wallet/chains-starknet/networks";
+import { TON_MAINNET, TON_TESTNET } from "@clip-wallet/chains-ton/networks";
+import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui/networks";
+import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos/networks";
+import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near/networks";
+import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar/networks";
+import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos/networks";
+import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand/networks";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
 function curatedAsset(t: CuratedToken): AssetRef {

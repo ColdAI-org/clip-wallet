@@ -23,11 +23,13 @@ import { hashSignablePayload } from "@clip-wallet/vault";
 import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
-import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@clip-wallet/chains-cardano";
+import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
+import { CARDANO_METHODS_ALLOWED } from "@clip-wallet/1mask/background";
+import type { LazyChainModule } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 import { PlatformService, type PlatformRequest } from "./platform";
 import type { Signature, SignablePayload } from "@clip-wallet/core";
-import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/hardware";
+import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/hardware/core";
 import type { HardwareAccountView } from "@clip-wallet/ui";
 import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@clip-wallet/features";
 
@@ -563,6 +565,7 @@ export class WalletService implements DappHost {
       implied = hit.networkIds ?? [];
       addressOn = hit.addressOn ?? {};
     }
+    await this.deps.loadChains();
     const carrying = this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id));
     const recognised = FAMILIES.filter((f) => !!this.deps.chains[f]?.isAddress(address));
     if (recognised.length === 0) return { kind: "invalid", message: "That doesn't look like an address. Check it and try again." };
@@ -598,6 +601,7 @@ export class WalletService implements DappHost {
     if (!asset) throw new ClipError("That asset can't be sent there.", "send/asset");
     const network = this.network(m.networkId);
     const mod = this.module(network.family);
+    await this.deps.loadChains();
     // Re-check the recipient in the background: never trust the page's network choice blindly. Names are
     // re-resolved here, using the name's own address for this network when it has one (ENS per-chain records).
     let to = m.to;
@@ -972,10 +976,12 @@ export class WalletService implements DappHost {
   }
 
   async chainRead(req: DappRequest): Promise<unknown> {
-    const m = this.deps.chains.cardano as CardanoModule | undefined;
-    if (req.family !== "cardano" || !m || typeof m.read !== "function" || !(CARDANO_READ_METHODS as readonly string[]).includes(req.method)) {
+    const entry = this.deps.chains.cardano as (CardanoModule | LazyChainModule<CardanoModule>) | undefined;
+    if (req.family !== "cardano" || !entry || !(CARDANO_METHODS_ALLOWED.readOnly as readonly string[]).includes(req.method)) {
       throw new ClipError("This request isn't available.", "chain-read/unsupported");
     }
+    const m = "load" in entry ? await entry.load() : entry;
+    if (typeof m.read !== "function") throw new ClipError("This request isn't available.", "chain-read/unsupported");
     return m.read(req.method as CardanoReadMethod, req.params, await this.ctx(req.networkId, req.origin));
   }
 

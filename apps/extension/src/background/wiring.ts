@@ -19,6 +19,7 @@
  * lifetime: modules keep prepare→finalize state keyed by request id.
  */
 import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, TokenBalance, Warning } from "@clip-wallet/core";
+import { ClipError } from "@clip-wallet/core";
 import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
 import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
@@ -26,16 +27,9 @@ import { createEvmModule } from "@clip-wallet/chains-evm";
 import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-import { createSuiModule } from "@clip-wallet/chains-sui";
-import { createAptosModule } from "@clip-wallet/chains-aptos";
-import { createNearModule } from "@clip-wallet/chains-near";
-import { createStellarModule } from "@clip-wallet/chains-stellar";
-import { createTezosModule } from "@clip-wallet/chains-tezos";
-import { createAlgorandModule } from "@clip-wallet/chains-algorand";
-import { createCardanoModule } from "@clip-wallet/chains-cardano";
-import { createSubstrateModule } from "@clip-wallet/chains-substrate";
-import { createStarknetModule } from "@clip-wallet/chains-starknet";
-import { createTonModule } from "@clip-wallet/chains-ton";
+import type { CardanoModule } from "@clip-wallet/chains-cardano";
+import type { createStarknetModule } from "@clip-wallet/chains-starknet";
+import type { createTonModule } from "@clip-wallet/chains-ton";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
@@ -53,7 +47,14 @@ import {
 } from "./real";
 import { createPriceFeed } from "./features";
 import { BackupClient } from "@clip-wallet/backup-client";
-import { HardwareKeyring, KeystoneBridge, KeystoneSigner, LedgerSigner, type HardwareStorage } from "@clip-wallet/hardware";
+import {
+  HardwareKeyring,
+  KeystoneBridge,
+  type HardwareSigner,
+  type HardwareStorage,
+  type KeystoneSigner,
+  type LedgerSigner,
+} from "@clip-wallet/hardware/core";
 import { MultiNameResolver } from "@clip-wallet/names";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 
@@ -169,8 +170,10 @@ export interface Dependencies {
   /** True in fixture mode (mock chains/1Mask/route; dev simulator enabled). */
   mocks: boolean;
   vault: WalletVault;
-  /** Only the families this build ships; Phase 2 families register as their modules land. */
+  /** Only the families this build ships. Phase 2 families are LazyChainModules (see lazyChain). */
   chains: Partial<Record<Family, ChainModule>>;
+  /** Loads every lazily loaded chain module (before using their synchronous members). */
+  loadChains(): Promise<void>;
   networks: Network[];
   /** Assets each network can carry, even at zero balance (send/receive candidates). */
   assets: AssetRef[];
@@ -182,14 +185,86 @@ export interface Dependencies {
   registry: DappRegistry;
   /** Hardware accounts (Ledger, Keystone): public data, approval binding, device routing. */
   hardware: HardwareKeyring;
-  ledger: LedgerSigner;
-  keystone: { signer: KeystoneSigner; bridge: KeystoneBridge };
+  ledger: LazyLedger;
+  keystone: { signer: LazyKeystone; bridge: KeystoneBridge };
   /** services/backup client factory; null when no backup service is configured (clip.config services.backupUrl). */
   backup: ((session: { token: string; expiresAt: number } | null) => BackupClient) | null;
   /** Hedera "0.0.x" for the account's EVM alias, if it exists yet. */
   hederaAccountId(ctx: ChainContext): Promise<string | undefined>;
   /** Seed activity (fixture mode only). */
   seedActivity: ActivityEntry[];
+}
+
+export type StarknetModule = ReturnType<typeof createStarknetModule>;
+export type TonModule = ReturnType<typeof createTonModule>;
+
+/** A chain module whose code is evaluated on first use. `load()` resolves the real module. */
+export type LazyChainModule<M extends ChainModule = ChainModule> = ChainModule & { load(): Promise<M> };
+
+/**
+ * Phase 2 families load on first use. WXT bundles `import()` targets into the service worker but evaluates
+ * them only when called (MV3 workers can't fetch chunks), so a worker woken for an alarm, a lock or an EVM
+ * dapp call doesn't evaluate ten chain SDKs. Async members wait for the module; the synchronous ones
+ * (isAddress, networksForAddress, addressFromPublicKey, derivationPath) need it loaded first:
+ * WalletService awaits `loadChains()` before using them.
+ */
+export function lazyChain<M extends ChainModule>(family: Family, curve: ChainModule["curve"], loader: () => Promise<M>): LazyChainModule<M> {
+  let mod: M | undefined;
+  let p: Promise<M> | undefined;
+  const load = () => (p ??= loader().then((m) => (mod = m)));
+  const now = (): M => {
+    if (!mod) throw new ClipError("This kind of account is still loading. Try again in a moment.", "family-loading");
+    return mod;
+  };
+  return {
+    family,
+    curve,
+    load,
+    derivationPath: (i) => now().derivationPath(i),
+    addressFromPublicKey: (k, n) => now().addressFromPublicKey(k, n),
+    isAddress: (v) => now().isAddress(v),
+    networksForAddress: (v, c) => now().networksForAddress(v, c),
+    getBalances: async (ctx) => (await load()).getBalances(ctx),
+    getNfts: async (ctx) => (await load()).getNfts(ctx),
+    decode: async (r, ctx) => (await load()).decode(r, ctx),
+    prepare: async (r, ctx, id) => (await load()).prepare(r, ctx, id),
+    finalize: async (r, s, ctx) => (await load()).finalize(r, s, ctx),
+    buildTransfer: async (x, ctx) => (await load()).buildTransfer(x, ctx),
+  };
+}
+
+/** The device signers as the background uses them; their libraries load on first use (see lazyHardware). */
+export type LazyLedger = HardwareSigner & Pick<LedgerSigner, "close">;
+export type LazyKeystone = HardwareSigner & Pick<KeystoneSigner, "importSync" | "forget">;
+
+/**
+ * Ledger and Keystone code (ledger-bitcoin's miniscript, the Keystone SDK, UR, …) is about 1.5 MB that most
+ * wallets never run. Bundled into the service worker but evaluated only on first use: WXT emits `import()`
+ * as a lazy initialiser in the same file (MV3 service workers can't fetch chunks with import()).
+ */
+type HwBitcoinNetwork = NonNullable<ConstructorParameters<typeof LedgerSigner>[0]>["bitcoinNetwork"];
+function lazyHardware(bitcoinNetwork: HwBitcoinNetwork, bridge: KeystoneBridge, storage: HardwareStorage) {
+  let mod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
+  const load = () => (mod ??= import("@clip-wallet/hardware"));
+  let ledgerP: Promise<LedgerSigner> | undefined;
+  let keystoneP: Promise<KeystoneSigner> | undefined;
+  const led = () => (ledgerP ??= load().then((m) => new m.LedgerSigner({ bitcoinNetwork })));
+  const key = () => (keystoneP ??= load().then((m) => new m.KeystoneSigner({ channel: bridge, storage, bitcoinNetwork })));
+  const ledger: LazyLedger = {
+    kind: "ledger",
+    listAccounts: async (...a) => (await led()).listAccounts(...a),
+    sign: async (...a) => (await led()).sign(...a),
+    // Nothing to close if the Ledger code never loaded.
+    close: async () => (ledgerP ? (await ledgerP).close() : undefined),
+  };
+  const keystone: LazyKeystone = {
+    kind: "keystone",
+    listAccounts: async (...a) => (await key()).listAccounts(...a),
+    sign: async (...a) => (await key()).sign(...a),
+    importSync: async (...a) => (await key()).importSync(...a),
+    forget: async (...a) => (await key()).forget(...a),
+  };
+  return { ledger, keystone };
 }
 
 export interface WiringOptions {
@@ -221,8 +296,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   // Same network as the vault (testnet unless the vault is configured otherwise).
   const bitcoinNetwork = opts.vaultOptions?.bitcoinNetwork ?? "testnet";
   const keystoneBridge = new KeystoneBridge(() => opts.onHardwareChange?.());
-  const keystone = new KeystoneSigner({ channel: keystoneBridge, storage: hwStorage, bitcoinNetwork });
-  const ledger = new LedgerSigner({ bitcoinNetwork });
+  const { ledger, keystone } = lazyHardware(bitcoinNetwork, keystoneBridge, hwStorage);
   const hardware = new HardwareKeyring({ signers: { ledger, keystone }, storage: hwStorage });
   const hw = { hardware, ledger, keystone: { signer: keystone, bridge: keystoneBridge } };
 
@@ -231,6 +305,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       mocks: true,
       vault,
       chains: createMockChains(),
+      loadChains: async () => undefined,
       networks: MOCK_NETWORKS,
       assets: knownAssets(MOCK_NETWORKS),
       route: new MockRoutePlanner(),
@@ -249,8 +324,22 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const networks = walletNetworks(opts.config);
   const hedera: HederaModule = createHederaModule();
   // OpenZeppelin v0.17.0 = the vault's default Starknet address; TON v5r1 = the vault's default wallet.
-  const starknet = createStarknetModule();
-  const ton = createTonModule();
+  // Algorand must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
+  const starknet = lazyChain("starknet", "stark", () => import("@clip-wallet/chains-starknet").then((m) => m.createStarknetModule()));
+  const ton = lazyChain("ton", "ed25519", () => import("@clip-wallet/chains-ton").then((m) => m.createTonModule()));
+  const cardano = lazyChain("cardano", "bip32-ed25519", () => import("@clip-wallet/chains-cardano").then((m) => m.createCardanoModule() as CardanoModule));
+  const lazy = {
+    sui: lazyChain("sui", "ed25519", () => import("@clip-wallet/chains-sui").then((m) => m.createSuiModule())),
+    aptos: lazyChain("aptos", "ed25519", () => import("@clip-wallet/chains-aptos").then((m) => m.createAptosModule())),
+    near: lazyChain("near", "ed25519", () => import("@clip-wallet/chains-near").then((m) => m.createNearModule())),
+    stellar: lazyChain("stellar", "ed25519", () => import("@clip-wallet/chains-stellar").then((m) => m.createStellarModule())),
+    tezos: lazyChain("tezos", "ed25519", () => import("@clip-wallet/chains-tezos").then((m) => m.createTezosModule())),
+    algorand: lazyChain("algorand", "bip32-ed25519", () => import("@clip-wallet/chains-algorand").then((m) => m.createAlgorandModule())),
+    cardano,
+    substrate: lazyChain("substrate", "sr25519", () => import("@clip-wallet/chains-substrate").then((m) => m.createSubstrateModule())),
+    starknet,
+    ton,
+  };
   const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);
   return {
     mocks: false,
@@ -260,22 +349,15 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       hedera,
       solana: createSolanaModule(),
       bitcoin: createBitcoinModule(),
-      sui: createSuiModule(),
-      aptos: createAptosModule(),
-      near: createNearModule(),
-      stellar: createStellarModule(),
-      tezos: createTezosModule(),
-      // Must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
-      algorand: createAlgorandModule(),
-      cardano: createCardanoModule(),
-      substrate: createSubstrateModule(),
-      starknet,
-      ton,
+      ...lazy,
+    },
+    loadChains: async () => {
+      await Promise.all(Object.values(lazy).map((m) => m.load()));
     },
     networks,
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
-    dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet, ton }),
+    dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
     // ENS (.eth), SNS (.sol) and Hedera names (.hbar …), limited to the networks this wallet has.

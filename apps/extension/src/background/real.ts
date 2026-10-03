@@ -66,8 +66,9 @@ export class OneMaskConnector implements DappConnector {
     private readonly networks: Network[],
     private readonly mods: {
       beacon?: { kv: KV; name: string; iconUrl: string };
-      starknet?: ReturnType<typeof createStarknetModule>;
-      ton?: ReturnType<typeof createTonModule>;
+      /** Loaders: the Starknet and TON modules are evaluated on first use. */
+      starknet?: () => Promise<ReturnType<typeof createStarknetModule>>;
+      ton?: () => Promise<ReturnType<typeof createTonModule>>;
     } = {},
   ) {}
 
@@ -82,12 +83,12 @@ export class OneMaskConnector implements DappConnector {
       ...(this.mods.beacon ? { tezosBeacon: lazyBeacon(this.mods.beacon.kv, this.mods.beacon.name, this.mods.beacon.iconUrl, () => this.router) } : {}),
       starknetDeploymentData: async (origin, net) => {
         const [account] = await host.accountsFor(origin, "starknet");
-        return account && this.mods.starknet ? this.mods.starknet.deploymentDataFor({ network: net, account, fetch: globalThis.fetch.bind(globalThis) }) : null;
+        return account && this.mods.starknet ? (await this.mods.starknet()).deploymentDataFor({ network: net, account, fetch: globalThis.fetch.bind(globalThis) }) : null;
       },
       tonAddrItem: async (origin, net) => {
         const [account] = await host.accountsFor(origin, "ton");
         if (!account || !this.mods.ton) throw new ClipError("Connect a TON account first.", "ton/no-account");
-        return this.mods.ton.tonAddrItem(Uint8Array.from(account.publicKey.match(/../g)!.map((h) => parseInt(h, 16))), net);
+        return (await this.mods.ton()).tonAddrItem(Uint8Array.from(account.publicKey.match(/../g)!.map((h) => parseInt(h, 16))), net);
       },
       handle: async (req) => {
         if (CONNECT_METHODS.has(req.method)) {
