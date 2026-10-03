@@ -91,7 +91,10 @@ export interface TokenBalance {
 
 export interface Nft {
   networkId: NetworkId;
-  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal";
+  standard:
+    | "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal"
+    // Phase 2 (near-stellar-tezos-algorand): NEAR NEP-171, Tezos FA2, Algorand ARC-3 / ARC-19 / ARC-69 ASAs.
+    | "nep171" | "fa2" | "arc3" | "arc19" | "arc69";
   collection: { address: string; name: string };
   tokenId: string;
   name?: string;
@@ -193,7 +196,14 @@ export interface Warning {
     | "network-matters"
     | "simulation-failed"
     | "inscribed-utxo"
-    | "high-fee";
+    | "high-fee"
+    // Phase 2 (near-stellar-tezos-algorand)
+    /** Hands control of the account to another key (Algorand rekey, NEAR full-access AddKey, Stellar setOptions signer/master weight). */
+    | "account-takeover"
+    /** Closes the account and sends everything left to someone (Algorand close-to, NEAR DeleteAccount, Stellar accountMerge). */
+    | "account-closure"
+    /** The recipient (an exchange, usually) needs a memo, or the funds may be lost (Stellar SEP-29). */
+    | "memo-required";
   message: string;
 }
 
