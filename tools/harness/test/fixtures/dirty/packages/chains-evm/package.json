@@ -1,0 +1,6 @@
+{
+  "name": "@clip-wallet/chains-evm",
+  "dependencies": {
+    "@clip-wallet/vault": "workspace:*"
+  }
+}

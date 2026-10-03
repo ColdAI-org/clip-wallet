@@ -1,0 +1,25 @@
+{
+  "name": "clip-wallet-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "harness": "node tools/harness/check.mjs"
+  },
+  "dependencies": {
+    "@clip-wallet/config": "^0.1.0",
+    "@clip-wallet/core": "^0.1.0",
+    "@clip-wallet/vault": "^0.1.0",
+    "@clip-wallet/1mask": "^0.1.0",
+    "@clip-wallet/chains-evm": "^0.1.0",
+    "@clip-wallet/chains-hedera": "^0.1.0",
+    "@clip-wallet/chains-solana": "^0.1.0",
+    "@clip-wallet/chains-bitcoin": "^0.1.0",
+    "@clip-wallet/route": "^0.1.0",
+    "@clip-wallet/ui": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
