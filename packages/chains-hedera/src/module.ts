@@ -11,8 +11,6 @@ import {
   type TokenBalance,
   type Warning,
 } from "@clip-wallet/core";
-import { proto } from "@hiero-ledger/proto";
-import { AccountId, Client, type Transaction, type TransactionResponseJSON } from "@hiero-ledger/sdk";
 import { aliasAddress, isAccountId, isEvmAddress, stripChecksum } from "./address.js";
 import {
   SIGN_TRANSACTION_BYTES,
@@ -28,17 +26,22 @@ import {
 import { type Described, describeTransaction } from "./describe.js";
 import { DEFAULT_IPFS_GATEWAY, fetchHip412, metadataUri } from "./metadata.js";
 import type { Mirror } from "./mirror.js";
-import { type HederaLedger, hbarAsset, ledgerOf, tokenAssetKey } from "./networks.js";
+import { LEDGER_ID_BYTES, accountIdString, entityChecksum } from "./ids.js";
+import { GRPC_WEB_NODES, type HederaLedger, hbarAsset, ledgerOf, tokenAssetKey } from "./networks.js";
+import { queryKind } from "./proto/hapi.js";
+import { type HederaTransactionResponse, PrecheckError, submitTransaction } from "./submit.js";
 import {
+  type ParsedTransaction,
   attachSignatures,
   bodiesToSign,
   digest,
   ecdsaPublicKey,
   freezeIfNeeded,
+  parseTransaction,
   prefixMessage,
   signatureMapBase64,
-  transactionFromBase64,
   transactionFromBodyBytes,
+  verifyEcdsa,
 } from "./tx.js";
 import { b64decode, b64encode, formatUnits } from "./util.js";
 
@@ -52,8 +55,12 @@ export const HEDERA_METHODS = {
   signTransaction: "hedera_signTransaction",
 } as const;
 
-/** Sends a fully signed transaction to a consensus node. Override in tests or to route through a relay. */
-export type Submitter = (tx: Transaction, ledger: HederaLedger) => Promise<TransactionResponseJSON>;
+/**
+ * Sends a fully signed transaction (TransactionList bytes) to a consensus node. Default: gRPC-Web straight to
+ * the network's node proxies (submit.ts), through `ctx.fetch`. Override in tests or to route through a relay.
+ */
+export type Submitter = (signedTransactionList: Uint8Array, ledger: HederaLedger, ctx: ChainContext) => Promise<HederaTransactionResponse>;
+export type { HederaTransactionResponse } from "./submit.js";
 
 export interface HederaModuleOptions {
   submit?: Submitter;
@@ -101,18 +108,13 @@ const PLAIN_STATUS: Record<string, string> = {
   INVALID_ACCOUNT_ID: "That account doesn't exist on Hedera.",
 };
 
-async function defaultSubmit(tx: Transaction, ledger: HederaLedger): Promise<TransactionResponseJSON> {
-  const client = Client.forName(ledger);
-  try {
-    const res = await tx.execute(client);
-    return res.toJSON();
-  } finally {
-    client.close();
-  }
-}
+const defaultSubmit: Submitter = (signed, ledger, ctx) => submitTransaction(signed, ledger, { fetch: ctx.fetch });
 
 function plainSubmitError(e: unknown): ClipError {
   if (e instanceof ClipError) return e;
+  if (e instanceof PrecheckError && e.status === "NOT_SUPPORTED") {
+    return new ClipError("Clip Wallet can't send this kind of Hedera transaction yet. Nothing was sent.", "hedera/submit-unsupported", e);
+  }
   const status = String((e as { status?: unknown })?.status ?? "");
   return new ClipError(PLAIN_STATUS[status] ?? "Hedera didn't accept this. Nothing was sent. Try again in a moment.", `hedera/submit${status ? `-${status}` : ""}`, e);
 }
@@ -164,17 +166,18 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
     if (cached) return cached;
     const list = params(request).transactionList;
     if (typeof list !== "string") throw new ClipError("This request is missing its transaction.", "hedera/bad-params");
-    let tx: Transaction;
+    const raw = b64decode(list);
+    let tx: ParsedTransaction;
     try {
-      tx = transactionFromBase64(list);
+      tx = parseTransaction(raw);
     } catch (cause) {
       throw new ClipError("This transaction can't be read.", "hedera/bad-transaction", cause);
     }
-    if (tx.isFrozen()) return b64decode(list);
+    if (tx.frozen) return raw;
     if (request.method !== HEDERA_METHODS.signAndExecuteTransaction || !me) {
       throw new ClipError("This transaction isn't ready to sign. Ask the app to try again.", "hedera/not-frozen");
     }
-    const bytes = freezeIfNeeded(tx, me, ledgerOf(request.networkId)).toBytes();
+    const bytes = freezeIfNeeded(raw, { payer: me, ledger: ledgerOf(request.networkId) });
     frozenByRequest.set(request.id, bytes);
     return bytes;
   }
@@ -207,7 +210,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
         const q = params(request).query;
         let kind = "data";
         try {
-          kind = proto.Query.decode(b64decode(q ?? "")).query ?? kind;
+          kind = queryKind(b64decode(q ?? "")) ?? kind;
         } catch {
           /* fall through */
         }
@@ -225,13 +228,13 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
         dc.me = await checkSigner(request, ctx, mirror);
         const body = params(request).transactionBody;
         if (typeof body !== "string") throw new ClipError("This request is missing its transaction.", "hedera/bad-params");
-        let tx: Transaction;
+        let tx: ParsedTransaction;
         try {
           tx = transactionFromBodyBytes(b64decode(body));
         } catch (cause) {
           throw new ClipError("This transaction can't be read.", "hedera/bad-transaction", cause);
         }
-        const d = await describeTransaction(tx, dc);
+        const d = await describeTransaction(tx.body, dc);
         const warnings: Warning[] = [
           ...d.warnings,
           {
@@ -247,8 +250,8 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
       case HEDERA_METHODS.executeTransaction:
       case SIGN_TRANSACTION_BYTES: {
         dc.me = await checkSigner(request, ctx, mirror);
-        const tx = transactionFromBase64(b64encode(await txBytes(request, ctx, dc.me)));
-        const d = await describeTransaction(tx, dc);
+        const tx = parseTransaction(await txBytes(request, ctx, dc.me));
+        const d = await describeTransaction(tx.body, dc);
         const lines = [...d.lines];
         if (request.method === HEDERA_METHODS.executeTransaction) {
           lines.push({ label: "Signed by", value: `${hostOf(request.origin)} (Clip Wallet only sends it)` });
@@ -267,16 +270,18 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
   function finish(
     base: { requestId: string; networkId: string; simulated: false },
     d: Described,
-    tx: Transaction,
+    tx: ParsedTransaction,
     me: string | null,
     request: DappRequest,
     warnings: Warning[],
   ): DecodedRequest {
     const lines = [...d.lines];
-    const payer = tx.transactionId?.accountId?.toString() ?? null;
+    const payerId = tx.body.transactionId?.accountId;
+    const payer = payerId ? accountIdString(payerId) : null;
     if (payer && me && payer !== me) lines.push({ label: "Fee paid by", value: payer });
-    if (tx.transactionMemo) lines.push({ label: "Memo", value: tx.transactionMemo });
-    const maxFee = tx.maxTransactionFee ? BigInt(tx.maxTransactionFee.toTinybars().toString()) : null;
+    if (tx.body.memo) lines.push({ label: "Memo", value: tx.body.memo });
+    // Like the SDK: a fee of 0 means "not set", so nothing is shown.
+    const maxFee = tx.body.fee != null && tx.body.fee > 0n ? tx.body.fee : null;
     const out: DecodedRequest = { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, blind: d.blind, warnings };
     if (maxFee != null && (payer == null || payer === me)) {
       out.fee = { asset: hbarAsset(request.networkId), amount: maxFee.toString() };
@@ -305,7 +310,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
       case HEDERA_METHODS.signAndExecuteTransaction:
       case SIGN_TRANSACTION_BYTES: {
         const me = await checkSigner(request, ctx, mirror);
-        const bodies = await bodiesToSign(await txBytes(request, ctx, me), pk);
+        const bodies = bodiesToSign(await txBytes(request, ctx, me), pk);
         return bodies.map((b) => payload(digest(b)));
       }
       case HEDERA_METHODS.signAndExecuteQuery:
@@ -324,20 +329,14 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
     }
     const sigs = signatures.map((s) => s.bytes);
     const one = (message: Uint8Array): Uint8Array => {
-      const sig = sigs.find((s) => pk.verify(message, s));
+      const sig = sigs.find((s) => verifyEcdsa(pk, message, s));
       if (!sig) throw new ClipError("The signature didn't match. Nothing was sent.", "hedera/bad-signature");
       return sig;
     };
 
     switch (request.method) {
-      case HEDERA_METHODS.getNodeAddresses: {
-        const client = Client.forName(ledger, { scheduleNetworkUpdate: false });
-        try {
-          return { nodes: [...new Set(Object.values(client.network).map(String))] };
-        } finally {
-          client.close();
-        }
-      }
+      case HEDERA_METHODS.getNodeAddresses:
+        return { nodes: Object.keys(GRPC_WEB_NODES[ledger]) };
       case HEDERA_METHODS.signMessage: {
         const sig = one(prefixMessage(String(params(request).message ?? "")));
         return { signatureMap: signatureMapBase64(pk, sig) };
@@ -347,9 +346,15 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
         return { signatureMap: signatureMapBase64(pk, sig) };
       }
       case HEDERA_METHODS.executeTransaction: {
-        const tx = transactionFromBase64(String(params(request).transactionList ?? ""));
+        let tx: Uint8Array;
         try {
-          return await submit(tx, ledger);
+          tx = b64decode(String(params(request).transactionList ?? ""));
+          parseTransaction(tx);
+        } catch (cause) {
+          throw new ClipError("This transaction can't be read.", "hedera/bad-transaction", cause);
+        }
+        try {
+          return await submit(tx, ledger, ctx);
         } catch (e) {
           throw plainSubmitError(e);
         }
@@ -358,16 +363,16 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
       case SIGN_TRANSACTION_BYTES: {
         const me = await checkSigner(request, ctx, mirror);
         const bytes = await txBytes(request, ctx, me);
-        let tx: Transaction;
+        let tx: Uint8Array;
         try {
-          tx = await attachSignatures(bytes, pk, sigs);
+          tx = attachSignatures(bytes, pk, sigs);
         } catch (cause) {
           throw new ClipError("The signature didn't match. Nothing was sent.", "hedera/bad-signature", cause);
         }
         frozenByRequest.delete(request.id);
-        if (request.method === SIGN_TRANSACTION_BYTES) return { transactionList: b64encode(tx.toBytes()) };
+        if (request.method === SIGN_TRANSACTION_BYTES) return { transactionList: b64encode(tx) };
         try {
-          return await submit(tx, ledger);
+          return await submit(tx, ledger, ctx);
         } catch (e) {
           throw plainSubmitError(e);
         }
@@ -484,14 +489,12 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
       if (!isAccountId(v) && !isEvmAddress(v)) return [];
       const checksum = /-([a-z]{5})$/.exec(v)?.[1];
       if (!checksum) return hedera; // 0.0.x exists separately on every network
+      const plain = stripChecksum(v);
       return hedera.filter((n) => {
-        const client = Client.forName(ledgerOf(n.id), { scheduleNetworkUpdate: false });
         try {
-          return AccountId.fromString(stripChecksum(v)).toStringWithChecksum(client) === v;
+          return entityChecksum(LEDGER_ID_BYTES[ledgerOf(n.id)], plain) === checksum;
         } catch {
           return false;
-        } finally {
-          client.close();
         }
       });
     },

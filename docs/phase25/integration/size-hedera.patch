@@ -1,0 +1,97 @@
+diff --git a/packages/features/package.json b/packages/features/package.json
+index 925db09..d747ea0 100644
+--- a/packages/features/package.json
++++ b/packages/features/package.json
+@@ -19,7 +19,6 @@
+     "@clip-wallet/chains-solana": "workspace:*",
+     "@clip-wallet/core": "workspace:*",
+     "@clip-wallet/route": "workspace:*",
+-    "@hiero-ledger/sdk": "^2.89.1",
+     "@solana-program/stake": "^0.10.0",
+     "@solana-program/system": "^0.15.0",
+     "@solana/kit": "^8.4.0",
+@@ -27,6 +26,7 @@
+     "zod": "^4.6.5"
+   },
+   "devDependencies": {
++    "@hiero-ledger/sdk": "^2.89.1",
+     "typescript": "^5.6.0",
+     "vitest": "^2.1.0"
+   }
+diff --git a/packages/features/src/swap/saucerswap.ts b/packages/features/src/swap/saucerswap.ts
+index 71e004e..119a2b1 100644
+--- a/packages/features/src/swap/saucerswap.ts
++++ b/packages/features/src/swap/saucerswap.ts
+@@ -1,6 +1,16 @@
+ import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+-import { buildAssociate, freezeNew, ledgerOf, mirrorFor, mirrorUrl, requestFor, resolvePayer, type HederaLedger } from "@clip-wallet/chains-hedera";
+-import { AccountAllowanceApproveTransaction, AccountId, ContractExecuteTransaction, ContractId, Hbar } from "@hiero-ledger/sdk";
++import {
++  buildAssociate,
++  contractCallDraft,
++  freezeNew,
++  ledgerOf,
++  mirrorFor,
++  mirrorUrl,
++  requestFor,
++  resolvePayer,
++  tokenAllowanceDraft,
++  type HederaLedger,
++} from "@clip-wallet/chains-hedera";
+ import { decodeFunctionResult, encodeFunctionData, encodePacked, parseAbi, type Hex } from "viem";
+ import { mirrorCall } from "../http.js";
+ import type { Step } from "../steps.js";
+@@ -177,7 +187,7 @@ export class SaucerSwap implements SwapProvider {
+           lines: [{ label: "Limit", value: "Only this amount, for this swap" }],
+           request: async () => {
+             if (BigInt(quote.sellAmount) > BigInt(Number.MAX_SAFE_INTEGER)) throw new ClipError("That amount is too large to swap in one go.", "swap/amount-too-large");
+-            const tx = new AccountAllowanceApproveTransaction().approveTokenAllowance(token, payer, AccountId.fromString(c.router), Number(quote.sellAmount));
++            const tx = tokenAllowanceDraft({ tokenId: token, owner: payer, spender: c.router, amount: BigInt(quote.sellAmount) });
+             return requestFor(freezeNew(tx, payer, ctx), payer, ctx);
+           },
+         });
+@@ -210,11 +220,7 @@ export class SaucerSwap implements SwapProvider {
+         }
+         const est = Number(d.gasEstimate) || 0;
+         const gas = Math.min(3_000_000, Math.max(300_000, Math.ceil(est * 1.5) + 100_000));
+-        const tx = new ContractExecuteTransaction()
+-          .setContractId(ContractId.fromString(c.router))
+-          .setGas(gas)
+-          .setFunctionParameters(hexToBytes(data));
+-        if (hbarIn) tx.setPayableAmount(Hbar.fromTinybars(quote.sellAmount));
++        const tx = contractCallDraft({ contractId: c.router, gas, functionParameters: hexToBytes(data), ...(hbarIn ? { payableTinybars: quote.sellAmount } : {}) });
+         return requestFor(freezeNew(tx, payer, ctx), payer, ctx);
+       },
+     });
+diff --git a/packages/features/src/trade/service.ts b/packages/features/src/trade/service.ts
+index df0a73b..a2ed082 100644
+--- a/packages/features/src/trade/service.ts
++++ b/packages/features/src/trade/service.ts
+@@ -1,6 +1,15 @@
+ import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest } from "@clip-wallet/core";
+-import { type SwapLeg, buildAssociate, buildAtomicSwap, buildScheduleSign, hbarAsset, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
+-import { Transaction } from "@hiero-ledger/sdk";
++import {
++  type SwapLeg,
++  buildAssociate,
++  buildAtomicSwap,
++  buildScheduleSign,
++  hbarAsset,
++  mirrorFor,
++  parseTransaction,
++  resolvePayer,
++  transactionIdString,
++} from "@clip-wallet/chains-hedera";
+ import type { FeatureHost } from "../host.js";
+ import { type Step, queueSteps } from "../steps.js";
+ import { b64ToBytes, formatUnits, parseUnits } from "../util.js";
+@@ -175,7 +184,8 @@ export class SecureTradeService {
+           const list = (result as { transactionList?: string } | undefined)?.transactionList;
+           if (!list) throw new ClipError("The trade wasn't signed. Nothing happened.", "trade/not-signed");
+           payload.tx = list;
+-          const inner = Transaction.fromBytes(b64ToBytes(list)).transactionId?.toString();
++          const id = parseTransaction(b64ToBytes(list)).body.transactionId;
++          const inner = id ? transactionIdString(id) : null;
+           if (inner) record.transactionId = mirrorTxId(inner);
+           payload.expiresAt = this.now() + DIRECT_VALID_MS;
+         } else {

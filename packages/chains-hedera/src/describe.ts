@@ -1,25 +1,28 @@
 import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
-import {
-  AccountAllowanceApproveTransaction,
-  AccountAllowanceDeleteTransaction,
-  AccountDeleteTransaction,
-  type AccountId,
-  AccountUpdateTransaction,
-  ContractExecuteTransaction,
-  ScheduleCreateTransaction,
-  ScheduleSignTransaction,
-  TokenAssociateTransaction,
-  TokenDissociateTransaction,
-  TopicMessageSubmitTransaction,
-  type Transaction,
-  TransferTransaction,
-} from "@hiero-ledger/sdk";
 import { longZeroToAccountId } from "./address.js";
+import { accountEvm, accountIdString, entityIdString, timestampDate } from "./ids.js";
 import type { Mirror, MirrorToken } from "./mirror.js";
 import { hbarAsset, ledgerOf, tokenAssetKey } from "./networks.js";
 import { type SaucerSwapIntent, decodeSaucerSwap } from "./saucerswap.js";
 import { abiAddress, abiUint, lookupSelector } from "./selectors.js";
-import { bodyKind, scheduledInner, transactionFromSchedulableBody } from "./tx.js";
+import {
+  type AccountIdP,
+  BODY,
+  BODY_NAME,
+  type BodyP,
+  decodeApproveAllowance,
+  decodeAssociate,
+  decodeBody,
+  decodeContractCall,
+  decodeCryptoDelete,
+  decodeCryptoTransfer,
+  decodeCryptoUpdate,
+  decodeDeleteAllowance,
+  decodeScheduleCreate,
+  decodeScheduleSign,
+  decodeSubmitMessage,
+} from "./proto/hapi.js";
+import { bodyFromSchedulable } from "./tx.js";
 import { abs, formatUnits, hex, joinWords } from "./util.js";
 
 export interface Line {
@@ -71,16 +74,16 @@ function amountText(asset: AssetRef & { known?: boolean }, base: bigint): string
   return `${formatUnits(abs(base), asset.decimals)} ${asset.symbol}`;
 }
 
-export function accountLabel(a: AccountId | null | undefined): string {
+export function accountLabel(a: AccountIdP | null | undefined): string {
   if (!a) return "an unknown account";
-  if (a.evmAddress) return `0x${hex(a.evmAddress.toBytes())}`;
-  return a.toString();
+  return accountIdString(a);
 }
 
-function isMe(dc: DescribeContext, a: AccountId | null | undefined): boolean {
+function isMe(dc: DescribeContext, a: AccountIdP | null | undefined): boolean {
   if (!a) return false;
-  if (a.evmAddress) return `0x${hex(a.evmAddress.toBytes())}`.toLowerCase() === dc.myAlias;
-  return dc.me != null && a.toString() === dc.me;
+  const evm = accountEvm(a);
+  if (evm) return evm === dc.myAlias;
+  return dc.me != null && accountIdString(a) === dc.me;
 }
 
 function evmLabel(evm: string | null): string {
@@ -127,58 +130,60 @@ function addMine(l: Ledger, asset: AssetRef & { known?: boolean }, delta: bigint
   l.mine.set(k, m);
 }
 
-async function describeTransfer(tx: TransferTransaction, dc: DescribeContext): Promise<Described> {
+async function describeTransfer(data: Uint8Array, dc: DescribeContext): Promise<Described> {
+  const tx = decodeCryptoTransfer(data);
   const l: Ledger = { mine: new Map(), others: new Map(), nftsOut: [], nftsIn: [], allowanceOwners: new Set(), hooks: false };
   const warnings: Warning[] = [];
   const lines: Line[] = [];
   const hbar = hbarAsset(dc.networkId);
   const nftChanges = new Map<string, { asset: AssetRef; delta: bigint }>();
 
-  for (const t of tx.hbarTransfersList) {
-    const amt = BigInt(t.amount.toTinybars().toString());
-    if (t.isApproved && amt < 0n) l.allowanceOwners.add(accountLabel(t.accountId));
-    if ((t as unknown as { hookCall?: unknown }).hookCall) l.hooks = true;
+  for (const t of tx.hbar) {
+    const amt = t.amount;
+    if (t.isApproval && amt < 0n) l.allowanceOwners.add(accountLabel(t.accountId));
+    if (t.hook) l.hooks = true;
     if (isMe(dc, t.accountId)) addMine(l, hbar, amt);
     else addOther(l, accountLabel(t.accountId), hbar, amt);
   }
 
-  const tokenTransfers = (tx as unknown as { _tokenTransfers: { tokenId: { toString(): string }; accountId: AccountId; amount: { toString(): string }; isApproved: boolean; expectedDecimals: number | null; hookCall?: unknown }[] })._tokenTransfers ?? [];
-  const credited: { account: AccountId; tokenId: string; asset: TokenAsset }[] = [];
-  for (const t of tokenTransfers) {
-    const tokenId = t.tokenId.toString();
-    const asset = await tokenAsset(dc, tokenId, t.expectedDecimals);
-    const amt = BigInt(t.amount.toString());
-    if (t.isApproved && amt < 0n) l.allowanceOwners.add(accountLabel(t.accountId));
-    if (t.hookCall) l.hooks = true;
-    if (isMe(dc, t.accountId)) addMine(l, asset, amt);
-    else {
-      addOther(l, accountLabel(t.accountId), asset, amt);
-      if (amt > 0n) credited.push({ account: t.accountId, tokenId, asset });
+  const credited: { account: AccountIdP | undefined; tokenId: string; asset: TokenAsset }[] = [];
+  for (const list of tx.tokens) {
+    const tokenId = list.token ? entityIdString(list.token) : "?";
+    for (const t of list.transfers) {
+      const asset = await tokenAsset(dc, tokenId, list.expectedDecimals ?? null);
+      const amt = t.amount;
+      if (t.isApproval && amt < 0n) l.allowanceOwners.add(accountLabel(t.accountId));
+      if (t.hook) l.hooks = true;
+      if (isMe(dc, t.accountId)) addMine(l, asset, amt);
+      else {
+        addOther(l, accountLabel(t.accountId), asset, amt);
+        if (amt > 0n) credited.push({ account: t.accountId, tokenId, asset });
+      }
     }
   }
 
-  const nftTransfers = (tx as unknown as { _nftTransfers: { tokenId: { toString(): string }; senderAccountId: AccountId; receiverAccountId: AccountId; serialNumber: { toString(): string }; isApproved: boolean; senderHookCall?: unknown; receiverHookCall?: unknown }[] })._nftTransfers ?? [];
+  const nftTransfers = tx.tokens.flatMap((list) => list.nfts.map((n) => ({ ...n, tokenId: list.token ? entityIdString(list.token) : "?" })));
   for (const n of nftTransfers) {
-    const tokenId = n.tokenId.toString();
+    const tokenId = n.tokenId;
     const asset = await tokenAsset(dc, tokenId, 0);
-    const label = `${asset.info?.name || asset.symbol} #${n.serialNumber.toString()}`;
+    const label = `${asset.info?.name || asset.symbol} #${n.serial.toString()}`;
     const nftAsset: AssetRef = { ...stripExtra(asset), decimals: 0 };
-    if (n.isApproved) l.allowanceOwners.add(accountLabel(n.senderAccountId));
-    if (n.senderHookCall || n.receiverHookCall) l.hooks = true;
-    const fromMe = isMe(dc, n.senderAccountId);
-    const toMe = isMe(dc, n.receiverAccountId);
+    if (n.isApproval) l.allowanceOwners.add(accountLabel(n.sender));
+    if (n.hook) l.hooks = true;
+    const fromMe = isMe(dc, n.sender);
+    const toMe = isMe(dc, n.receiver);
     if (fromMe && !toMe) {
       l.nftsOut.push(label);
       bump(nftChanges, nftAsset, -1n);
-      addOther(l, accountLabel(n.receiverAccountId), { ...nftAsset, symbol: label, known: true }, 1n);
+      addOther(l, accountLabel(n.receiver), { ...nftAsset, symbol: label, known: true }, 1n);
     } else if (toMe && !fromMe) {
       l.nftsIn.push(label);
       bump(nftChanges, nftAsset, 1n);
-      addOther(l, accountLabel(n.senderAccountId), { ...nftAsset, symbol: label, known: true }, -1n);
+      addOther(l, accountLabel(n.sender), { ...nftAsset, symbol: label, known: true }, -1n);
     } else if (!fromMe && !toMe) {
-      lines.push({ label: "NFT", value: `${label}: ${accountLabel(n.senderAccountId)} → ${accountLabel(n.receiverAccountId)}` });
+      lines.push({ label: "NFT", value: `${label}: ${accountLabel(n.sender)} → ${accountLabel(n.receiver)}` });
     }
-    if (!toMe) credited.push({ account: n.receiverAccountId, tokenId, asset });
+    if (!toMe) credited.push({ account: n.receiver, tokenId, asset });
   }
 
   const out: string[] = [];
@@ -272,12 +277,13 @@ export async function associationState(dc: { mirror: Mirror }, account: string, 
 
 /* ------------------------------------------------------------------ associations */
 
-async function describeAssociate(tx: TokenAssociateTransaction | TokenDissociateTransaction, dc: DescribeContext, add: boolean): Promise<Described> {
-  const ids = (tx.tokenIds ?? []).map(String);
+async function describeAssociate(data: Uint8Array, dc: DescribeContext, add: boolean): Promise<Described> {
+  const tx = decodeAssociate(data);
+  const ids = tx.tokens.map(entityIdString);
   const assets = await Promise.all(ids.map((id) => tokenAsset(dc, id)));
   const names = assets.map((a) => (a.info ? `the ${a.symbol} token` : `token ${a.address}`));
-  const yours = tx.accountId == null || isMe(dc, tx.accountId);
-  const where = yours ? "your account" : `account ${accountLabel(tx.accountId)}`;
+  const yours = tx.account == null || isMe(dc, tx.account);
+  const where = yours ? "your account" : `account ${accountLabel(tx.account)}`;
   const title = add ? `Add ${joinWords(names)} to ${where}` : `Remove ${joinWords(names)} from ${where}`;
   const lines: Line[] = assets.map((a) => ({ label: "Token", value: a.info ? `${a.name} (${a.symbol}, ${a.address})` : `${a.address}` }));
   if (add) lines.push({ label: "Why", value: "Hedera accounts must add a token before they can hold it." });
@@ -286,13 +292,14 @@ async function describeAssociate(tx: TokenAssociateTransaction | TokenDissociate
 
 /* ------------------------------------------------------------------ allowances */
 
-async function describeAllowance(tx: AccountAllowanceApproveTransaction, dc: DescribeContext): Promise<Described> {
+async function describeAllowance(data: Uint8Array, dc: DescribeContext): Promise<Described> {
+  const tx = decodeApproveAllowance(data);
   const parts: { title: string; warning?: Warning }[] = [];
   const lines: Line[] = [];
 
-  for (const a of tx.hbarApprovals) {
-    const amt = a.amount ? BigInt(a.amount.toTinybars().toString()) : 0n;
-    const spender = accountLabel(a.spenderAccountId);
+  for (const a of tx.hbar) {
+    const amt = a.amount;
+    const spender = accountLabel(a.spender);
     if (amt === 0n) {
       parts.push({ title: `Remove ${spender}'s permission to spend your HBAR` });
     } else if (amt >= HBAR_TOTAL_SUPPLY_TINYBARS) {
@@ -308,10 +315,10 @@ async function describeAllowance(tx: AccountAllowanceApproveTransaction, dc: Des
     }
   }
 
-  for (const a of tx.tokenApprovals) {
-    const asset = await tokenAsset(dc, a.tokenId.toString());
-    const amt = a.amount ? BigInt(a.amount.toString()) : 0n;
-    const spender = accountLabel(a.spenderAccountId);
+  for (const a of tx.token) {
+    const asset = await tokenAsset(dc, a.tokenId ? entityIdString(a.tokenId) : "?");
+    const amt = a.amount;
+    const spender = accountLabel(a.spender);
     const supply = asset.info?.total_supply ? BigInt(asset.info.total_supply) : null;
     const huge = amt >= INT64_MAX / 2n || (supply != null && supply > 0n && amt >= supply);
     if (amt === 0n) {
@@ -329,17 +336,17 @@ async function describeAllowance(tx: AccountAllowanceApproveTransaction, dc: Des
     }
   }
 
-  for (const a of tx.tokenNftApprovals) {
-    const asset = await tokenAsset(dc, a.tokenId.toString(), 0);
+  for (const a of tx.nft) {
+    const asset = await tokenAsset(dc, a.tokenId ? entityIdString(a.tokenId) : "?", 0);
     const coll = asset.info?.name || asset.symbol;
-    const spender = accountLabel(a.spenderAccountId);
-    if (a.allSerials) {
+    const spender = accountLabel(a.spender);
+    if (a.approvedForAll) {
       parts.push({
         title: `Allow ${spender} to move all your ${coll} NFTs`,
         warning: { level: "danger", code: "approval-for-all", message: `${spender} could move every ${coll} NFT you own, now and in the future, without asking again.` },
       });
     } else {
-      const serials = (a.serialNumbers ?? []).map((s) => `#${s.toString()}`);
+      const serials = a.serials.map((s) => `#${s.toString()}`);
       parts.push({
         title: `Allow ${spender} to move ${coll} ${joinWords(serials)}`,
         warning: { level: "caution", code: "approval-for-all", message: `${spender} can move ${coll} ${joinWords(serials)} without asking again.` },
@@ -360,15 +367,16 @@ async function describeAllowance(tx: AccountAllowanceApproveTransaction, dc: Des
 
 /* ------------------------------------------------------------------ contracts */
 
-async function describeContract(tx: ContractExecuteTransaction, dc: DescribeContext): Promise<Described> {
-  const contract = tx.contractId?.toString() ?? "an unknown contract";
-  const data = tx.functionParameters ?? new Uint8Array();
-  const payable = tx.payableAmount ? BigInt(tx.payableAmount.toTinybars().toString()) : 0n;
+async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<Described> {
+  const tx = decodeContractCall(body);
+  const contract = tx.contractId ? entityIdString(tx.contractId) : "an unknown contract";
+  const data = tx.params;
+  const payable = tx.amount;
   const hbar = hbarAsset(dc.networkId);
   const balanceChanges: BalanceChange[] = payable > 0n ? [{ asset: hbar, delta: (-payable).toString() }] : [];
   const lines: Line[] = [{ label: "Contract", value: contract }];
   if (payable > 0n) lines.push({ label: "Also sends", value: `${formatUnits(payable, 8)} HBAR` });
-  if (tx.gas) lines.push({ label: "Gas limit", value: tx.gas.toString() });
+  if (tx.gas > 0n) lines.push({ label: "Gas limit", value: tx.gas.toString() });
 
   if (data.length === 0) {
     if (payable > 0n) return { title: `Send ${formatUnits(payable, 8)} HBAR to contract ${contract}`, lines, balanceChanges, warnings: [], blind: false };
@@ -485,22 +493,25 @@ async function describeSaucerSwap(sw: SaucerSwapIntent, router: string, payable:
 
 /* ------------------------------------------------------------------ account settings & staking */
 
-function describeAccountUpdate(tx: AccountUpdateTransaction, dc: DescribeContext): Described {
-  const target = tx.accountId;
+function describeAccountUpdate(data: Uint8Array, dc: DescribeContext): Described {
+  const tx = decodeCryptoUpdate(data);
+  const target = tx.account;
   const lines: Line[] = [];
   if (target && !isMe(dc, target)) lines.push({ label: "Account", value: `${accountLabel(target)} (not this wallet's account)` });
 
-  if (tx.key != null) {
+  if (tx.hasKey) {
     return blindResult("Hand your account to a different key", "This would give control of the account to another key. You could lose everything in it.", lines);
   }
-  const hooks = (tx as unknown as { hooksToCreate?: unknown[] }).hooksToCreate ?? [];
-  if (hooks.length) {
+  if (tx.hooksCreated) {
     return blindResult("Add custom code to your account", "This attaches code (a hook) that could move funds out of your account later.", lines);
+  }
+  if (tx.delegation) {
+    return blindResult("Let a contract act for your account", "This delegates your account to contract code that could move funds out of it later.", lines);
   }
 
   let title: string | null = null;
-  const nodeId = tx.stakedNodeId;
-  const stakedAccount = tx.stakedAccountId?.toString();
+  const nodeId = tx.stakedNode;
+  const stakedAccount = tx.stakedAccount ? accountIdString(tx.stakedAccount) : undefined;
   if (nodeId != null) {
     title = nodeId.toString() === "-1" ? "Stop staking HBAR" : `Stake HBAR with node ${nodeId.toString()}`;
   } else if (stakedAccount != null) {
@@ -509,52 +520,53 @@ function describeAccountUpdate(tx: AccountUpdateTransaction, dc: DescribeContext
   if (title?.startsWith("Stake")) {
     lines.push({ label: "Your HBAR", value: "Stays in your account and can be spent any time" });
   }
-  if (tx.declineStakingRewards != null) {
-    lines.push({ label: "Staking rewards", value: tx.declineStakingRewards ? "Off" : "On" });
-    title ??= tx.declineStakingRewards ? "Turn staking rewards off" : "Turn staking rewards on";
+  if (tx.declineReward != null) {
+    lines.push({ label: "Staking rewards", value: tx.declineReward ? "Off" : "On" });
+    title ??= tx.declineReward ? "Turn staking rewards off" : "Turn staking rewards on";
   }
-  const slots = tx.maxAutomaticTokenAssociations;
+  const slots = tx.maxAutoAssociations;
   if (slots != null) {
     const v = slots.toString() === "-1" ? "Unlimited" : slots.toString();
     lines.push({ label: "Free token slots", value: v });
     title ??= `Change free token slots to ${v.toLowerCase()}`;
   }
-  if (tx.accountMemo != null) {
-    lines.push({ label: "Account note", value: tx.accountMemo || "(cleared)" });
+  if (tx.memo != null) {
+    lines.push({ label: "Account note", value: tx.memo || "(cleared)" });
     title ??= "Change your account note";
   }
-  if (tx.receiverSignatureRequired != null) {
-    lines.push({ label: "Approve incoming transfers", value: tx.receiverSignatureRequired ? "Required" : "Not required" });
+  if (tx.receiverSigRequired != null) {
+    lines.push({ label: "Approve incoming transfers", value: tx.receiverSigRequired ? "Required" : "Not required" });
   }
-  if (tx.autoRenewPeriod != null) lines.push({ label: "Renewal period", value: `${tx.autoRenewPeriod.seconds.toString()} seconds` });
-  if (tx.expirationTime != null) lines.push({ label: "Expires", value: tx.expirationTime.toDate().toISOString() });
+  if (tx.autoRenewSeconds != null) lines.push({ label: "Renewal period", value: `${tx.autoRenewSeconds.toString()} seconds` });
+  if (tx.expiration != null) lines.push({ label: "Expires", value: timestampDate(tx.expiration).toISOString() });
   return { title: title ?? "Update your account settings", lines, balanceChanges: [], warnings: [], blind: false };
 }
 
 /* ------------------------------------------------------------------ schedules */
 
-async function describeScheduleCreate(tx: ScheduleCreateTransaction, dc: DescribeContext, depth: number): Promise<Described> {
-  const inner = scheduledInner(tx);
-  if (!inner) return blindResult("Schedule a transaction", "The scheduled transaction can't be read.");
+async function describeScheduleCreate(data: Uint8Array, dc: DescribeContext, depth: number): Promise<Described> {
+  const tx = decodeScheduleCreate(data);
+  const inner = tx.scheduled ? decodeBody(tx.scheduled, true) : null;
+  if (!inner?.kind) return blindResult("Schedule a transaction", "The scheduled transaction can't be read.");
   const d = await describeTransaction(inner, dc, depth + 1);
-  // The SDK's `expirationTime` getter throws on frozen transactions, so read the field directly.
-  const expires = (tx as unknown as { _expirationTime?: { toDate(): Date } | null })._expirationTime ?? null;
+  const expires = tx.expiration ? timestampDate(tx.expiration) : null;
   const lines: Line[] = [
-    { label: "When", value: expires ? `Once everyone needed approves, before ${expires.toDate().toISOString()}` : "Once everyone needed approves" },
+    { label: "When", value: expires ? `Once everyone needed approves, before ${expires.toISOString()}` : "Once everyone needed approves" },
     ...d.lines,
   ];
-  if (tx.payerAccountId && !isMe(dc, tx.payerAccountId)) lines.push({ label: "Fee paid by", value: accountLabel(tx.payerAccountId) });
+  if (tx.payer && !isMe(dc, tx.payer)) lines.push({ label: "Fee paid by", value: accountLabel(tx.payer) });
   return { ...d, title: `Schedule: ${lowerFirst(d.title)}`, lines };
 }
 
-async function describeScheduleSign(tx: ScheduleSignTransaction, dc: DescribeContext, depth: number): Promise<Described> {
-  const id = tx.scheduleId?.toString();
+async function describeScheduleSign(data: Uint8Array, dc: DescribeContext, depth: number): Promise<Described> {
+  const scheduleId = decodeScheduleSign(data);
+  const id = scheduleId ? entityIdString(scheduleId) : undefined;
   if (!id) return blindResult("Approve a scheduled transaction", "No schedule id.");
   const s = await dc.mirror.schedule(id).catch(() => null);
   if (!s) return blindResult("Approve a scheduled transaction", `Schedule ${id} couldn't be found, so Clip Wallet can't show what it does.`, [{ label: "Schedule", value: id }]);
-  let inner: Transaction;
+  let inner: BodyP;
   try {
-    inner = transactionFromSchedulableBody(s.transaction_body);
+    inner = bodyFromSchedulable(s.transaction_body);
   } catch {
     return blindResult("Approve a scheduled transaction", `Schedule ${id} can't be read.`, [{ label: "Schedule", value: id }]);
   }
@@ -572,37 +584,53 @@ function lowerFirst(s: string): string {
 
 /* ------------------------------------------------------------------ entry */
 
-export async function describeTransaction(tx: Transaction, dc: DescribeContext, depth = 0): Promise<Described> {
+/** Describes one transaction body (the first body of a transaction, or a schedule's inner body). */
+export async function describeTransaction(body: BodyP, dc: DescribeContext, depth = 0): Promise<Described> {
   if (depth > 2) return blindResult("Approve a nested transaction", "Too many nested schedules to read.");
-  if (tx instanceof TransferTransaction) return describeTransfer(tx, dc);
-  if (tx instanceof TokenAssociateTransaction) return describeAssociate(tx, dc, true);
-  if (tx instanceof TokenDissociateTransaction) return describeAssociate(tx, dc, false);
-  if (tx instanceof AccountAllowanceApproveTransaction) return describeAllowance(tx, dc);
-  if (tx instanceof AccountAllowanceDeleteTransaction) {
-    const ids = tx.tokenNftAllowanceDeletions.map((a) => a.tokenId.toString());
-    return { title: "Remove permissions to move your NFTs", lines: ids.map((id) => ({ label: "Collection", value: id })), balanceChanges: [], warnings: [], blind: false };
+  const data = body.data;
+  switch (body.kind) {
+    case BODY.cryptoTransfer:
+      return describeTransfer(data, dc);
+    case BODY.tokenAssociate:
+      return describeAssociate(data, dc, true);
+    case BODY.tokenDissociate:
+      return describeAssociate(data, dc, false);
+    case BODY.cryptoApproveAllowance:
+      return describeAllowance(data, dc);
+    case BODY.cryptoDeleteAllowance: {
+      const ids = decodeDeleteAllowance(data).map((a) => (a.tokenId ? entityIdString(a.tokenId) : "?"));
+      return { title: "Remove permissions to move your NFTs", lines: ids.map((id) => ({ label: "Collection", value: id })), balanceChanges: [], warnings: [], blind: false };
+    }
+    case BODY.contractCall:
+      return describeContract(data, dc);
+    case BODY.cryptoUpdateAccount:
+      return describeAccountUpdate(data, dc);
+    case BODY.scheduleCreate:
+      return describeScheduleCreate(data, dc, depth);
+    case BODY.scheduleSign:
+      return describeScheduleSign(data, dc, depth);
+    case BODY.consensusSubmitMessage: {
+      const m = decodeSubmitMessage(data);
+      const msg = new TextDecoder().decode(m.message);
+      const preview = msg.length > 280 ? `${msg.slice(0, 280)}…` : msg;
+      return {
+        title: `Post a message to topic ${m.topicId ? entityIdString(m.topicId) : "?"}`,
+        lines: [{ label: "Message", value: preview || "(empty)" }],
+        balanceChanges: [],
+        warnings: [],
+        blind: false,
+      };
+    }
+    case BODY.cryptoDelete: {
+      const d = decodeCryptoDelete(data);
+      return blindResult(
+        `Close account ${accountLabel(d.deleteAccount)} and send what's left to ${accountLabel(d.transferAccount)}`,
+        "This permanently closes the account.",
+      );
+    }
+    default: {
+      const kind = BODY_NAME.get(body.kind) ?? "unknown";
+      return blindResult("Approve an unrecognized request", "Clip Wallet can't read this kind of Hedera transaction yet.", [{ label: "Type", value: kind }]);
+    }
   }
-  if (tx instanceof ContractExecuteTransaction) return describeContract(tx, dc);
-  if (tx instanceof AccountUpdateTransaction) return describeAccountUpdate(tx, dc);
-  if (tx instanceof ScheduleCreateTransaction) return describeScheduleCreate(tx, dc, depth);
-  if (tx instanceof ScheduleSignTransaction) return describeScheduleSign(tx, dc, depth);
-  if (tx instanceof TopicMessageSubmitTransaction) {
-    const msg = tx.message ? new TextDecoder().decode(tx.message) : "";
-    const preview = msg.length > 280 ? `${msg.slice(0, 280)}…` : msg;
-    return {
-      title: `Post a message to topic ${tx.topicId?.toString() ?? "?"}`,
-      lines: [{ label: "Message", value: preview || "(empty)" }],
-      balanceChanges: [],
-      warnings: [],
-      blind: false,
-    };
-  }
-  if (tx instanceof AccountDeleteTransaction) {
-    return blindResult(
-      `Close account ${accountLabel(tx.accountId)} and send what's left to ${accountLabel(tx.transferAccountId)}`,
-      "This permanently closes the account.",
-    );
-  }
-  const kind = bodyKind(tx);
-  return blindResult("Approve an unrecognized request", "Clip Wallet can't read this kind of Hedera transaction yet.", [{ label: "Type", value: kind }]);
 }
