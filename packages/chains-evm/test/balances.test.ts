@@ -24,7 +24,7 @@ describe("getBalances via Blockscout", () => {
     const b = await getBalances(ctxFor(SEPOLIA, m));
     expect(b).toHaveLength(4);
     expect(b[0]).toMatchObject({ asset: { key: "eth-testnet", symbol: "ETH" }, amount: "1000000000000000000" });
-    expect(b[1]).toMatchObject({ asset: { key: "usdc-testnet", decimals: 6 }, amount: "25000000" });
+    expect(b[1]).toMatchObject({ asset: { key: "usdc", decimals: 6 }, amount: "25000000" });
     expect(b[1]!.asset.spam).toBeUndefined();
     expect(b[2]!.asset.spam).toBe(true);
     expect(b[3]!.asset).toMatchObject({ key: `${SEPOLIA}/${PLAIN}`, symbol: "FOO", address: getAddress(PLAIN) });
@@ -79,7 +79,7 @@ describe("getBalances fallback: curated list + Multicall3", () => {
       },
     });
     const b = await getBalances(ctxFor(SEPOLIA, m, { indexerUrl: undefined }));
-    expect(b[1]).toMatchObject({ asset: { key: "usdc-testnet" }, amount: "9" });
+    expect(b[1]).toMatchObject({ asset: { key: "usdc" }, amount: "9" });
   });
 });
 

@@ -3,7 +3,7 @@
  *
  * Asset keys: only the same issuer's native token shares a key. Circle-issued USDC is "usdc" on every
  * network where Circle issues it natively (addresses from developers.circle.com/stablecoins/usdc-contract-addresses,
- * 2026-10-03); testnet USDC is "usdc-testnet". Bridged copies (USDC.e) get "usdc.e" and bridged=true.
+ * 2026-10-03); testnet USDC shares the "usdc" key (a build runs testnets or mainnet, never both). Bridged copies (USDC.e) get "usdc.e" and bridged=true.
  * Unknown tokens get a key unique to their contract, so they are never merged with anything.
  */
 import type { AssetRef, NetworkId } from "@clip-wallet/core";
@@ -20,7 +20,7 @@ export interface CuratedToken {
 }
 
 const usdc = (chainId: number, address: `0x${string}`, testnet = false): CuratedToken => ({
-  chainId, address, key: testnet ? "usdc-testnet" : "usdc", symbol: "USDC", name: "USD Coin", decimals: 6,
+  chainId, address, key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6,
 });
 const usdce = (chainId: number, address: `0x${string}`): CuratedToken => ({
   chainId, address, key: "usdc.e", symbol: "USDC.e", name: "Bridged USDC", decimals: 6, bridged: true,

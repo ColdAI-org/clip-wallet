@@ -72,7 +72,7 @@ describe("decode eth_sendTransaction", () => {
     const data = encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [BOB, 25_000_000n] });
     const d = await decode(tx({ to: SEPOLIA_USDC, data }));
     expect(d.title).toBe("Send 25 USDC to 0x1234…5678");
-    expect(d.balanceChanges).toEqual([{ asset: expect.objectContaining({ key: "usdc-testnet", address: SEPOLIA_USDC }), delta: "-25000000" }]);
+    expect(d.balanceChanges).toEqual([{ asset: expect.objectContaining({ key: "usdc", address: SEPOLIA_USDC }), delta: "-25000000" }]);
     expect(d.title).not.toMatch(NO_RAW_METHOD);
   });
 
@@ -165,7 +165,7 @@ describe("decode eth_sendTransaction", () => {
     expect(d.simulated).toBe(true);
     expect(codes(d)).not.toContain("simulation-failed");
     expect(d.balanceChanges).toEqual([
-      { asset: expect.objectContaining({ key: "usdc-testnet" }), delta: "-100000000" },
+      { asset: expect.objectContaining({ key: "usdc" }), delta: "-100000000" },
       { asset: expect.objectContaining({ key: "eth-testnet" }), delta: "30000000000000000" },
     ]);
     expect(d.lines).toContainEqual({ label: "You receive", value: expect.stringMatching(/^NFT #9 from/) });

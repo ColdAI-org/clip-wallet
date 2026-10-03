@@ -202,7 +202,7 @@ describe("buildTransfer", () => {
   it("ERC-20 send encodes transfer(to, amount) to the token", async () => {
     const mod = createEvmModule();
     const ctx = ctxFor(SEPOLIA, mockFetch({}));
-    const asset = { key: "usdc-testnet", symbol: "USDC", name: "USD Coin", decimals: 6, networkId: SEPOLIA, address: SEPOLIA_USDC };
+    const asset = { key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6, networkId: SEPOLIA, address: SEPOLIA_USDC };
     const req = await mod.buildTransfer({ asset, to: BOB, amount: "25000000" }, ctx);
     const tx = (req.params as { to: string; data: string; value: string }[])[0]!;
     expect(tx.to).toBe(SEPOLIA_USDC);

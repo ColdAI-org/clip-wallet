@@ -73,18 +73,16 @@ describe("content bridge security", () => {
   it("rejects a page-supplied origin field (strict schema) instead of trusting it", async () => {
     const s = setup();
     s.win.postMessage(s.req({ origin: "https://bank.example" }), "*");
-    await tick(10);
+    await vi.waitFor(() => expect(s.toPage[0]).toMatchObject({ type: "response", id: "r1", error: { code: -32602 } }));
     expect(s.received).toEqual([]);
-    expect(s.toPage[0]).toMatchObject({ type: "response", id: "r1", error: { code: -32602 } });
   });
 
   it("rejects schema-invalid requests (bad family, missing method)", async () => {
     const s = setup();
     s.win.postMessage(s.req({ family: "cosmos" }), "*");
     s.win.postMessage(s.req({ id: "r2", method: "" }), "*");
-    await tick(10);
+    await vi.waitFor(() => expect(s.toPage.map((m) => m.error?.code)).toEqual([-32602, -32602]));
     expect(s.received).toEqual([]);
-    expect(s.toPage.map((m) => m.error?.code)).toEqual([-32602, -32602]);
   });
 
   it("refuses non-http(s) origins", async () => {
