@@ -240,6 +240,11 @@ code {
 .clip-actions--hero {
   margin-top: calc(var(--clip-space-2) * -1);
 }
+.clip-actions--more {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-auto-flow: column;
+  margin-top: calc(var(--clip-space-2) * -1);
+}
 .clip-stack {
   display: flex;
   flex-direction: column;
@@ -1242,4 +1247,37 @@ svg.is-open {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ------------------------------------------------------------------ menu list (Settings → More, Backup) */
+
+.clip-menu {
+  display: flex;
+  flex-direction: column;
+  margin: calc(var(--clip-space-2) * -1) 0;
+}
+.clip-menu__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: var(--clip-space-3) 0;
+  background: none;
+  border: 0;
+  color: var(--clip-text);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.clip-menu__item::after {
+  content: "›";
+  color: var(--clip-text-3, var(--clip-text-2));
+  font-size: 18px;
+}
+.clip-menu__item + .clip-menu__item {
+  border-top: 1px solid var(--clip-border);
+}
+.clip-menu__item:hover {
+  color: var(--clip-accent);
 }

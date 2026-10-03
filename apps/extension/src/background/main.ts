@@ -11,6 +11,7 @@ import { CHANGE_EVENT, Request, type Envelope } from "../shared/messages";
 import { AreaKV } from "../shared/storage";
 import { createDependencies } from "./wiring";
 import { WalletService, type Env } from "./service";
+import { createFeatureHost, createFeatures } from "./features";
 
 const AUTOLOCK_ALARM = "clip-autolock";
 
@@ -28,6 +29,7 @@ export function startBackground() {
     config,
     iconUrl: browser.runtime.getURL("/icon/128.png"),
     currency: async () => (await service!.prefs()).displayCurrency,
+    features: __CLIP_FEATURES__,
   });
 
   let approvalWindowId: number | undefined;
@@ -64,6 +66,21 @@ export function startBackground() {
   service = new WalletService(deps, kv, env);
   service.start();
   const svc = service;
+  svc.attachFeatures(
+    createFeatures(
+      createFeatureHost({
+        networks: deps.networks,
+        assets: deps.assets,
+        kv,
+        ctx: (id) => svc.featureCtx(id),
+        balances: () => svc.featureBalances(),
+        enqueue: (request, appName) => svc.enqueueWalletRequest(request, appName),
+        decode: (request) => svc.decodeForFeatures(request),
+        usd: (key) => deps.prices.usd(key),
+      }),
+      __CLIP_FEATURES__,
+    ),
+  );
 
   // 1Mask: content scripts connect a port per tab; the router cross-checks the browser-reported origin.
   browser.runtime.onConnect.addListener((port) => {

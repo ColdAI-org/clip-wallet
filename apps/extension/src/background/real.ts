@@ -11,6 +11,7 @@ import type { createTonModule } from "@clip-wallet/chains-ton";
 import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/background/p2";
 import type { KV } from "../shared/storage";
 import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
+import { isFeaturedOrigin } from "@clip-wallet/features";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
 
 const CONNECT_METHODS = new Set<string>([
@@ -333,6 +334,8 @@ export class KnownDappRegistry implements DappRegistry {
       /* keep */
     }
     const name = KNOWN_DAPPS[host];
+    const featured = isFeaturedOrigin(origin);
+    if (!name && featured) return { name: featured.name, verified: true };
     return name ? { name, verified: true } : { name: host, verified: false };
   }
 }

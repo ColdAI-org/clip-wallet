@@ -9,7 +9,7 @@
  *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        mocks/mock-dapps.ts
  *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
  *   route (funding)    @clip-wallet/route RouteClient (real.ts)              mocks/mock-route.ts
- *   prices             reference prices (real.ts) — no price service yet     mocks/fixtures.ts
+ *   prices             CoinGecko feed (features.ts)                          mocks/fixtures.ts
  *   names              none yet (real.ts)                                    mocks/fixtures.ts
  *   dapp registry      curated list (real.ts)                                same
  *
@@ -48,10 +48,10 @@ import {
   KnownDappRegistry,
   NoNameResolver,
   OneMaskConnector,
-  ReferencePriceFeed,
   RoutePlannerAdapter,
   WalletConnectAdapter,
 } from "./real";
+import { createPriceFeed } from "./features";
 
 /** The vault surface the background uses: core's Vault plus ClipVault's extras. */
 export interface WalletVault {
@@ -181,6 +181,8 @@ export interface WiringOptions {
   currency: () => Promise<string>;
   /** Bundled icon URL for WalletConnect metadata. */
   iconUrl: string;
+  /** Partner keys for features (from build env; never committed). */
+  features?: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** Tests pass cheap Argon2 params; production uses the vault's defaults. */
   vaultOptions?: Partial<ConstructorParameters<typeof ClipVault>[0]>;
 }
@@ -218,7 +220,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   // OpenZeppelin v0.17.0 = the vault's default Starknet address; TON v5r1 = the vault's default wallet.
   const starknet = createStarknetModule();
   const ton = createTonModule();
-  const prices = new ReferencePriceFeed();
+  const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);
   return {
     mocks: false,
     vault,

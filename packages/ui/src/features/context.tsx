@@ -12,3 +12,8 @@ export function useFeatures(): FeaturesClient {
   if (!v) throw new Error("useFeatures outside <FeaturesProvider>");
   return v;
 }
+
+/** The features client when the app was given one (the extension and mobile pass it), else null. */
+export function useFeaturesOptional(): FeaturesClient | null {
+  return useContext(FeaturesContext);
+}

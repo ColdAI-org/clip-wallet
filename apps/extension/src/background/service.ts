@@ -25,6 +25,7 @@ import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
 import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@clip-wallet/chains-cardano";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
+import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@clip-wallet/features";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -114,6 +115,7 @@ export class WalletService implements DappHost {
   private approvals = new Map<string, Pending>();
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
+  private features?: FeaturesService;
 
   constructor(
     readonly deps: Dependencies,
@@ -126,6 +128,26 @@ export class WalletService implements DappHost {
   start() {
     this.deps.dapps.start(this);
     this.deps.walletConnect.start(this);
+  }
+
+  /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
+
+  attachFeatures(f: FeaturesService) {
+    this.features = f;
+  }
+  featureCtx(networkId: string): Promise<ChainContext> {
+    return this.ctx(networkId);
+  }
+  async featureBalances(): Promise<TokenBalance[]> {
+    return (await this.portfolio()).balances;
+  }
+  /** Wallet-built request (staking, swap, trade) → the normal approval queue. */
+  enqueueWalletRequest(request: DappRequest, appName: string) {
+    return this.enqueueTransaction(request, { name: appName, origin: "wallet", domain: appName, verified: true });
+  }
+  async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
+    const network = this.network(request.networkId);
+    return this.module(network.family).decode(request, await this.ctx(network.id));
   }
 
   /* ------------------------------------------------------------------ bus entry */
@@ -192,6 +214,10 @@ export class WalletService implements DappHost {
     }
 
     this.requireUnlocked(status);
+    if (isFeatureRequest(m)) {
+      if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
+      return this.features.handle(m as FeatureRequest);
+    }
     switch (m.type) {
       case "getPortfolio":
         return this.portfolio(!!m.refresh);
@@ -494,6 +520,7 @@ export class WalletService implements DappHost {
         networkId: network.id,
       };
     }
+    decoded = this.features?.refine(request, decoded) ?? decoded;
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {

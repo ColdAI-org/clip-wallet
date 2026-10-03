@@ -34,6 +34,20 @@ export const IconClock = (p: P) => (
     <path d="M12 7v5l3 2" />
   </svg>
 );
+export const IconCompass = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.5 8.5-2 5-5 2 2-5z" />
+  </svg>
+);
+export const IconSwap = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M7 4 3 8l4 4" />
+    <path d="M3 8h13" />
+    <path d="m17 20 4-4-4-4" />
+    <path d="M21 16H8" />
+  </svg>
+);
 export const IconGear = (p: P) => (
   <svg {...base(p)}>
     <circle cx="12" cy="12" r="3" />

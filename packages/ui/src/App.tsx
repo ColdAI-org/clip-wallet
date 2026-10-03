@@ -12,6 +12,7 @@ import { Receive } from "./screens/Receive";
 import { ScanWalletConnect, Settings } from "./screens/Settings";
 import { ApprovalQueue } from "./screens/Approvals";
 import { PasskeyPage } from "./screens/Passkey";
+import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClient } from "./features";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
   const [p, q] = path.split("?");
@@ -21,6 +22,7 @@ export function parsePath(path: string): { pathname: string; query: URLSearchPar
 function Routes() {
   const { state, refresh } = useUi();
   const { path, navigate } = useRouter();
+  const features = useFeaturesOptional();
   const { pathname, query } = parsePath(path);
   // Once onboarding starts it stays on screen until it finishes: the vault turns "unlocked" as soon as
   // the wallet is created, but the phrase, backup check and passkey offer still follow.
@@ -53,6 +55,10 @@ function Routes() {
   }
 
   const seg = pathname.split("/").filter(Boolean);
+  if (features) {
+    const feature = featureRoute(seg, query, typeof location !== "undefined" ? location.hash : "");
+    if (feature) return feature;
+  }
   switch (seg[0]) {
     case undefined:
       return <Home />;
@@ -91,6 +97,8 @@ export interface WalletAppProps {
   passkeys?: PasskeyFactory;
   initialRoute?: string;
   memoryRouter?: boolean;
+  /** Staking, swaps, buy, Secure Trade and Explore. Without it those screens and menu entries are hidden. */
+  features?: FeaturesClient;
 }
 
 function Frame(props: { children: ReactNode }) {
@@ -104,7 +112,13 @@ export function WalletApp(props: WalletAppProps) {
     <ClipProvider client={props.client} config={props.config} options={props.options} variant={props.variant} passkeys={props.passkeys}>
       <Router initial={props.initialRoute} memory={props.memoryRouter}>
         <Frame>
-          <Routes />
+          {props.features ? (
+            <FeaturesProvider client={props.features}>
+              <Routes />
+            </FeaturesProvider>
+          ) : (
+            <Routes />
+          )}
         </Frame>
       </Router>
     </ClipProvider>

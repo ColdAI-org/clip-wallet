@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import type { Nft } from "@clip-wallet/core";
+import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features";
 import type {
   ActivityEntry,
   ApprovalView,
@@ -78,13 +79,14 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("pairWalletConnect"), uri: z.string().startsWith("wc:").max(1000) }),
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
+  ...FEATURE_REQUESTS,
 ]);
 
 export type Request = z.infer<typeof Request>;
 export type RequestType = Request["type"];
 
 /** What each request returns. Kept beside the schema so client and service can't drift. */
-export interface ResponseMap {
+export interface ResponseMap extends FeatureResponseMap {
   getState: WalletState;
   setPrefs: Prefs;
   createWallet: void;

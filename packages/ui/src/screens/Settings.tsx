@@ -5,6 +5,7 @@ import { useAsync, useRouter, useUi } from "../context";
 import { Button, Card, ErrorNote, Field, Row, Screen, Toggle } from "../components";
 import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
+import { useFeaturesOptional } from "../features/context";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 
@@ -140,6 +141,7 @@ export function Settings() {
   const [err, setErr] = useState<string | null>(null);
   const [devMsg, setDevMsg] = useState<string | null>(null);
   const { navigate } = useRouter();
+  const features = useFeaturesOptional();
   if (!state) return null;
   const prefs = state.prefs;
   const setPrefs = async (p: Partial<Prefs>) => {
@@ -154,6 +156,17 @@ export function Settings() {
   return (
     <Screen nav title="Settings">
       <ErrorNote message={err} />
+      {features && (
+        <Section title="More">
+          <nav className="clip-menu" aria-label="More">
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/stake")}>Stake</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/swap")}>Swap</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/buy")}>Buy</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/trade")}>Secure Trade</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/explore")}>Explore apps</button>
+          </nav>
+        </Section>
+      )}
       <Section title="Display">
         <label className="clip-select-row">
           <span>Currency</span>

@@ -18,6 +18,21 @@ const PUBLIC_NETWORKS = walletNetworks(clipConfig).map((n) => ({ ...n, rpcUrls: 
  */
 const TON_CONNECT = { key: "clipwallet", appName: "clipwallet", appVersion: pkg.version, features: createTonModule().features };
 
+/** Feature partner keys from the build environment. Absent = that provider shows as "not switched on". */
+const FEATURES = {
+  testnet: !clipConfig.mainnet,
+  swap: { zeroExApiKey: process.env.CLIP_0X_API_KEY || undefined, jupiterApiKey: process.env.CLIP_JUPITER_API_KEY || undefined },
+  onramp: {
+    moonpay:
+      process.env.CLIP_MOONPAY_API_KEY && process.env.CLIP_MOONPAY_SIGNER_URL
+        ? { apiKey: process.env.CLIP_MOONPAY_API_KEY, signerUrl: process.env.CLIP_MOONPAY_SIGNER_URL }
+        : undefined,
+    banxa: process.env.CLIP_BANXA_PARTNER ? { partner: process.env.CLIP_BANXA_PARTNER } : undefined,
+    c14: process.env.CLIP_C14_CLIENT_ID ? { clientId: process.env.CLIP_C14_CLIENT_ID, assetIds: JSON.parse(process.env.CLIP_C14_ASSET_IDS || "{}") } : undefined,
+  },
+  coingeckoDemoKey: process.env.CLIP_COINGECKO_DEMO_KEY || undefined,
+};
+
 export default defineConfig({
   srcDir: "src",
   outDir: MOCKS ? ".output-fixtures" : ".output",
@@ -36,7 +51,7 @@ export default defineConfig({
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       permissions: ["storage", "alarms"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
-      host_permissions: [...rpHost, "https://*.koios.rest/*"],
+      host_permissions: [...rpHost, "https://*.koios.rest/*", "https://api.coingecko.com/*", "https://api.jup.ag/*", "https://api.0x.org/*"],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
       // Argon2id (hash-wasm) needs WebAssembly; nothing else is relaxed. No remote code, no frames.
@@ -53,6 +68,7 @@ export default defineConfig({
       __CLIP_PUBLIC_NETWORKS__: JSON.stringify(PUBLIC_NETWORKS),
       __CLIP_IDENTITY__: JSON.stringify({ name: clipConfig.name, icon: ICON, rdns: clipConfig.rdns }),
       __CLIP_TON_CONNECT__: JSON.stringify(TON_CONNECT),
+      __CLIP_FEATURES__: JSON.stringify(FEATURES),
     },
     build: { target: "es2022" },
   }),

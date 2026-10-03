@@ -8,6 +8,7 @@ import { browser } from "wxt/browser";
 import config from "../../clip.config";
 import { CURRENCIES, MEDIA_PROXY_URL } from "../app-settings";
 import { createBusClient } from "../shared/bus";
+import { createFeaturesBusClient } from "../shared/features-bus";
 import { createPasskeyFactory } from "../passkey/bridge";
 
 const options: Partial<UiOptions> = {
@@ -24,7 +25,7 @@ export function mountWallet(variant: Exclude<Variant, "window">) {
   const client = createBusClient(undefined, __CLIP_MOCKS__);
   // The action popup can't host a WebAuthn ceremony (the OS sheet closes it); the tab can.
   const passkeys = createPasskeyFactory(variant === "tab");
-  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} />);
+  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} />);
 }
 
 export function mountApprovalWindow() {
