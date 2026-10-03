@@ -17,8 +17,11 @@ import {
 } from "@clip-wallet/engine";
 import { createEngineDependencies } from "@clip-wallet/engine/wiring";
 import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
-import type { FeaturesClient, WalletClient } from "@clip-wallet/ui";
-import * as Linking from "expo-linking";
+import { EngineHardware, createEngineHardwareClient, type EngineKeystone, type EngineLedger } from "@clip-wallet/engine/hardware";
+import { HardwareKeyring, KeystoneBridge, type HardwareStorage, type KeystoneSigner, type LedgerSigner } from "@clip-wallet/hardware/core";
+import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, WalletClient } from "@clip-wallet/ui";
+import * as WebBrowser from "expo-web-browser";
+import * as LocalAuthentication from "expo-local-authentication";
 import { ClipError } from "@clip-wallet/core";
 import { APP } from "../env";
 import { pickArgon2id, selfTest, type Argon2Choice } from "./argon2";
@@ -26,6 +29,7 @@ import { appKV, secureVaultStorage } from "./storage";
 import { biometricInfo, deviceKeyPrf, forgetDeviceKey, type BiometricInfo } from "./device-key";
 import { nativePasskeyPrf, passkeysConfigured } from "./passkey";
 import { Events } from "./events";
+import { ledgerBle, type LedgerBle } from "./ledger-ble";
 
 /** Vault backstop; the engine arms the user's (shorter) auto-lock. */
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
@@ -53,6 +57,19 @@ export interface MobileWallet {
   client: WalletClient;
   /** Staking, swaps, buy, Secure Trade and featured apps (same services as the extension). */
   features: FeaturesClient;
+  /** Ledger (Bluetooth) and Keystone (camera) accounts. */
+  hardware: FullHardwareClient;
+  /** Picking and reopening a Ledger over Bluetooth. */
+  ledger: Pick<LedgerBle, "prepare" | "scan" | "select" | "selected" | "forget">;
+  /** Real passkeys for the passkey backup ceremony (runCeremony); null when this build has no passkey domain. */
+  passkeyPrf: PasskeyPrfFactory | null;
+  /** Opens an https page (on-ramp widgets) in the in-app browser sheet (SFSafariViewController / Custom Tabs). */
+  openSheet(url: string): Promise<void>;
+  /**
+   * Face ID / Touch ID / fingerprint (or the device passcode) before showing something sensitive. Resolves
+   * false when the device has no biometrics set up (the password check still applies); throws when cancelled.
+   */
+  confirmPresence(reason: string): Promise<boolean>;
   events: Events;
   argon2: Argon2Choice & { selfTest: Promise<boolean> };
   walletConnectEnabled: boolean;
@@ -110,6 +127,8 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     armAutoLock: arm,
     fetch: globalThis.fetch.bind(globalThis),
     randomUUID: () => randomUUID(),
+    // Passkey backup/restore ceremonies run here with react-native-passkey (needs a webcredentials domain).
+    passkey: () => ({ rpId: APP.passkeyRpId ?? null, rpName: APP.config.name, mode: "native", bridgeUrl: "" }),
   });
   engine.start();
   engine.attachFeatures(
@@ -125,9 +144,42 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
         usd: (key) => deps.prices.usd(key),
       }),
       // Partner keys (swap/on-ramp) are build secrets; none are set for mobile yet, so those show as "not switched on".
-      { testnet: !APP.config.mainnet },
+      // Secure Trade links open this app: a universal link once a domain is associated, else clipwallet://trade#offer=….
+      { testnet: !APP.config.mainnet, tradeLinkBase: APP.tradeLinkBase },
     ),
   );
+
+  /* hardware: device code loads on first use (like the extension's lazyHardware) */
+  const hwStorage: HardwareStorage = { get: (k) => kv.get<string>(k), set: (k, v) => kv.set(k, v) };
+  const ble = ledgerBle(kv);
+  const bitcoinNetwork = APP.config.mainnet ? "mainnet" : "testnet";
+  const keystoneBridge = new KeystoneBridge(() => events.emit({ type: "change" }));
+  let hwMod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
+  const loadHw = () => (hwMod ??= import("@clip-wallet/hardware"));
+  let ledgerP: Promise<LedgerSigner> | undefined;
+  let keystoneP: Promise<KeystoneSigner> | undefined;
+  const led = () => (ledgerP ??= loadHw().then((m) => new m.LedgerSigner({ bitcoinNetwork, transport: ble.transport, deviceName: "Ledger" })));
+  const key = () => (keystoneP ??= loadHw().then((m) => new m.KeystoneSigner({ channel: keystoneBridge, storage: hwStorage, bitcoinNetwork })));
+  const ledger: EngineLedger = {
+    kind: "ledger",
+    listAccounts: async (...a) => (await led()).listAccounts(...a),
+    sign: async (...a) => (await led()).sign(...a),
+    close: async () => (ledgerP ? (await ledgerP).close() : undefined),
+  };
+  const keystone: EngineKeystone = {
+    kind: "keystone",
+    listAccounts: async (...a) => (await key()).listAccounts(...a),
+    sign: async (...a) => (await key()).sign(...a),
+    importSync: async (ur) => (await key()).importSync(ur),
+    forget: async (fp) => (await key()).forget(fp),
+  };
+  const engineHardware = new EngineHardware({
+    keyring: new HardwareKeyring({ signers: { ledger, keystone }, storage: hwStorage }),
+    ledger,
+    keystone: { signer: keystone, bridge: keystoneBridge },
+    kv,
+  });
+  engine.attachHardware(engineHardware);
   void deps.walletConnect.warmUp();
 
   const client = createEngineClient(engine, {
@@ -156,12 +208,28 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     events.emit({ type: "change" });
   };
 
-  const features = createEngineFeaturesClient(engine, { openExternal: async (url) => void (await Linking.openURL(url)) });
+  const openSheet = async (url: string) => {
+    const u = new URL(url);
+    if (u.protocol !== "https:") throw new ClipError("That link can't be opened.", "features/bad-url");
+    await WebBrowser.openBrowserAsync(u.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET, dismissButtonStyle: "done", readerMode: false });
+  };
+  const features = createEngineFeaturesClient(engine, { openExternal: openSheet });
 
   return {
     engine,
     client,
     features,
+    hardware: createEngineHardwareClient(engineHardware),
+    ledger: ble,
+    passkeyPrf: passkeysConfigured(APP.passkeyRpId) ? { create: (c) => nativePasskeyPrf(c.rpId ?? APP.passkeyRpId!, c.rpName) } : null,
+    openSheet,
+    async confirmPresence(reason) {
+      const info = await biometricInfo().catch(() => null);
+      if (!info?.available) return false;
+      const r = await LocalAuthentication.authenticateAsync({ promptMessage: reason, cancelLabel: "Cancel" });
+      if (!r.success) throw new ClipError("Cancelled. Nothing was shown.", "presence/cancelled");
+      return true;
+    },
     events,
     argon2: { ...argon2, selfTest: argonCheck },
     walletConnectEnabled: deps.walletConnect.enabled,

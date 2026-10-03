@@ -11,7 +11,11 @@
     "./platform": "./src/platform.ts",
     "./catalog": "./src/catalog.ts",
     "./features": "./src/features.ts",
+<<<<<<< HEAD
     "./social-signin": "./src/social-signin.ts"
+=======
+    "./hardware": "./src/hardware.ts"
+>>>>>>> p25/mobile-screens
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
@@ -37,6 +41,7 @@
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",
     "@clip-wallet/ui": "workspace:*",

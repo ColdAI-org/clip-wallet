@@ -2,14 +2,18 @@
  * Deep links. Accepted:
  *   clipwallet://wc?uri=<encoded wc: URI>          WalletConnect pairing (what dapps open on mobile)
  *   clipwallet://browse?url=<encoded https URL>     open a dapp in the in-app browser
- *   https://<associated domain>/wc?uri=…            universal link (placeholder until a domain is associated)
+ *   clipwallet://trade#offer=… or ?offer=…          a Secure Trade offer (opens the review; Accept still asks)
+ *   https://<associated domain>/wc?uri=…, /trade#offer=…   universal links (placeholder until a domain is associated)
  *   wc:…                                            a bare WalletConnect URI (some apps hand it over as-is)
  * Anything else is ignored. Pairing still requires the user to approve the connection.
  */
 import { isWalletConnectUri } from "@clip-wallet/ui";
 import { webOrigin } from "../browser/bridge";
 
-export type DeepLink = { kind: "wc"; uri: string } | { kind: "browse"; url: string } | null;
+export type DeepLink = { kind: "wc"; uri: string } | { kind: "browse"; url: string } | { kind: "trade"; link: string } | null;
+
+/** Same payload shape and limit @clip-wallet/features' decodeOffer accepts (it does the real checks). */
+const OFFER = /(?:^|[#&?])offer=([A-Za-z0-9_-]{1,16000})(?:$|&)/;
 
 export function parseDeepLink(raw: string | null | undefined, opts: { scheme: string; universalHost?: string }): DeepLink {
   if (!raw) return null;
@@ -30,9 +34,23 @@ export function parseDeepLink(raw: string | null | undefined, opts: { scheme: st
     const uri = u.searchParams.get("uri");
     return uri && isWalletConnectUri(uri) ? { kind: "wc", uri } : null;
   }
+  if (action === "trade") {
+    // The offer travels in the fragment (never sent to a server) or the query; hand over just that part.
+    const m = OFFER.exec(u.hash) ?? OFFER.exec(u.search);
+    return m ? { kind: "trade", link: `#offer=${m[1]}` } : null;
+  }
   if (action === "browse") {
     const url = u.searchParams.get("url");
     return url && webOrigin(url) ? { kind: "browse", url } : null;
   }
   return null;
+}
+
+/**
+ * A scanned Secure Trade QR: any link (ours, the extension's https link, another wallet's) carrying an
+ * `offer=` payload. Returns just the `#offer=…` part; @clip-wallet/features decodes and checks it.
+ */
+export function tradeOfferFrom(text: string): string | null {
+  const m = OFFER.exec(text.trim());
+  return m ? `#offer=${m[1]}` : null;
 }

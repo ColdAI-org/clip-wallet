@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { isWalletConnectUri, relativeTime, userMessageOf, type Prefs } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
-import { Button, Card, ErrorNote, Field, Notice, Row, Screen, T, Toggle } from "../ui/kit";
+import { Button, Card, ErrorNote, Field, MenuItem, Notice, Row, Screen, T, Toggle } from "../ui/kit";
 import { APP } from "../env";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
@@ -34,7 +34,7 @@ function Segmented<T extends string | number>(props: { options: { value: T; labe
 }
 
 function Sessions() {
-  const { client, state } = useWallet();
+  const { client, state, navigate } = useWallet();
   const { data, reload, error } = useAsync(() => client.listSessions(), [client]);
   return (
     <Section title="Connected apps">
@@ -46,6 +46,11 @@ function Sessions() {
             <T style={{ fontWeight: "600" }}>{s.dapp.name}</T>
             <T v="hint">{`${s.dapp.domain} · ${s.via === "walletconnect" ? "WalletConnect" : "In-app browser"} · ${relativeTime(s.connectedAt)}${state?.prefs.advanced && s.networkIds.length ? ` · ${s.networkIds.join(", ")}` : ""}`}</T>
           </View>
+          {s.via !== "walletconnect" && (
+            <Button variant="ghost" style={{ flex: 0, paddingHorizontal: 8 }} accessibilityLabel={`Accounts for ${s.dapp.name}`} onPress={() => navigate({ name: "accounts", origin: s.dapp.origin })}>
+              Accounts
+            </Button>
+          )}
           <Button variant="secondary" style={{ flex: 0 }} accessibilityLabel={`Disconnect ${s.dapp.name}`} onPress={async () => (await client.disconnect(s.id), reload())}>
             Disconnect
           </Button>
@@ -221,11 +226,24 @@ export function Settings() {
           ]}
         />
       </Section>
-      <Section title="More">
-        <Button variant="secondary" onPress={() => navigate({ name: "explore" })} testID="explore">
-          Explore apps and staking
-        </Button>
-      </Section>
+      <View style={{ gap: 8 }}>
+        <T v="h2">More</T>
+        <Card style={{ gap: 0, paddingVertical: 4 }}>
+          <MenuItem title="Stake" testID="menu-stake" onPress={() => navigate({ name: "stake" })} />
+          <MenuItem title="Swap" testID="menu-swap" onPress={() => navigate({ name: "swap" })} />
+          <MenuItem title="Buy" testID="menu-buy" onPress={() => navigate({ name: "buy" })} />
+          <MenuItem title="Secure Trade" testID="menu-trade" onPress={() => navigate({ name: "trade" })} />
+          <MenuItem title="Explore apps" testID="explore" onPress={() => navigate({ name: "explore" })} />
+        </Card>
+      </View>
+      <View style={{ gap: 8 }}>
+        <T v="h2">Backup and accounts</T>
+        <Card style={{ gap: 0, paddingVertical: 4 }}>
+          <MenuItem title="Backup" hint="Recovery phrase and passkey backup" testID="menu-backup" onPress={() => navigate({ name: "backup" })} />
+          <MenuItem title="Accounts" hint="Add, rename and choose accounts" testID="menu-accounts" onPress={() => navigate({ name: "accounts" })} />
+          <MenuItem title="Hardware wallets" hint="Ledger and Keystone" testID="menu-hardware" onPress={() => navigate({ name: "hardware" })} />
+        </Card>
+      </View>
       <Section title="Security">
         <Segmented label="Lock automatically after" value={prefs.autoLockMinutes} onChange={(v) => setPrefs({ autoLockMinutes: v })} options={AUTO_LOCK.map((m) => ({ value: m, label: m === 60 ? "1 h" : `${m} min` }))} />
         {enrolling ? <EnrolBiometrics onDone={() => (setEnrolling(false), void refresh())} /> : <Security onEnrol={() => setEnrolling(true)} />}

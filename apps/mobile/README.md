@@ -31,6 +31,11 @@ modules (Argon2, passkeys). Use a dev build (`expo-dev-client`).
 | `src/background/passkey.ts` | real passkeys (WebAuthn PRF) via react-native-passkey |
 | `src/browser/` | in-app browser: injected 1Mask bundle + native bridge (origin from the WebView, never the page) |
 | `src/screens/` | onboarding (phrase reveal + check), unlock, home (one total), asset detail, collectibles, activity, send (network-matters), receive (QR), approval sheet, connect approval, settings (Advanced mode, sessions, WalletConnect), QR scanner, browser |
+| `src/screens/` (features) | Explore tab, Stake, Swap, Buy, Secure Trade (list, new, share, review/accept) |
+| `src/screens/` (platform) | Backup hub, recovery phrase (hidden until held), passkey backup, Accounts (add, rename, per site) |
+| `src/screens/Hardware.tsx` | Hardware wallets in Settings, Connect (Ledger over Bluetooth, Keystone by camera), the device step over the approval sheet |
+| `src/background/ledger-ble.ts` | Ledger Bluetooth transport, device pick and permissions |
+| `src/ui/ur.tsx` | Keystone animated UR QR and the UR camera scanner |
 | `src/ui/` | tokens from `@clip-wallet/ui` `tokensFor` as RN values, plus RN versions of the ui components |
 
 ## Unlock methods: what works where
@@ -55,6 +60,57 @@ the first import (`src/polyfills.ts`). It polyfills `crypto.getRandomValues`, `T
 scanner uses expo-camera. Deep links: `clipwallet://wc?uri=…`, `clipwallet://browse?url=…`, a bare `wc:…`, and
 `https://<CLIP_ASSOCIATED_DOMAIN>/wc?uri=…` once a domain is associated (placeholder). No push.
 
+## Stake, Swap, Buy, Secure Trade
+
+The same screens and copy as the extension, on `@clip-wallet/engine`'s feature services (`wallet.features`).
+Every action ends in the normal approval sheet.
+
+- **Getting there.** As in the extension: Explore is a bottom tab. It lists Stake, Swap, Buy and Secure Trade,
+  then staking, liquidity and featured apps. Home has a Swap / Buy / Stake row. The asset screen has Swap and
+  Buy with that asset filled in, and Stake where a live provider exists (`STAKEABLE_NOW`: HBAR, SOL). Settings
+  has the same "More" menu.
+- **Stake** shows every provider the engine's StakingService exposes. HBAR and SOL are live. ADA, DOT, NEAR and
+  XTZ say "coming soon" in plain words.
+- **Buy** opens the provider's widget in the in-app browser sheet (`expo-web-browser`: SFSafariViewController
+  on iOS, Custom Tabs on Android). Card entry, Apple Pay / Google Pay and ID checks run on the provider's page,
+  not in a WebView the wallet controls. Without partner keys it says "not switched on in this build".
+- **Secure Trade** (Hedera). The share link goes out through the native share sheet and as a QR code. Links are
+  `clipwallet://trade#offer=…`, or `https://<CLIP_ASSOCIATED_DOMAIN>/trade#offer=…` once a domain is
+  associated. The deep link (`#offer=` or `?offer=`) and the QR scanner both open the review. The review is
+  decoded from the actual transaction.
+
+## Backup and accounts
+
+- **Recovery phrase.** You type your password again (the vault checks it). Face ID / Touch ID / fingerprint
+  runs first when set up. While hidden, the words are not rendered at all. They show while the button is
+  held, or after a tap. They hide when the app leaves the foreground and after 60 s. Copying is off unless
+  "Allow copying" is on. A three-word check finishes the backup.
+- **Passkey backup** appears only with `services.backupUrl` in clip.config. It needs a passkey domain
+  (`EXPO_PUBLIC_PASSKEY_RP_ID` + `CLIP_ASSOCIATED_DOMAIN`). Without one, it says so instead of starting.
+- **Accounts.** Add and rename accounts, and pick the one in use. Settings → Connected apps → Accounts picks
+  the account one app sees.
+
+## Hardware wallets
+
+- **Keystone** is fully air-gapped through the camera. To add it, scan its account QR (`crypto-multi-accounts`
+  / `crypto-hdkey` / `crypto-account`). To sign, the approval sheet shows an animated UR QR (BC-UR fountain
+  parts, 5 fps). After Keystone signs, the camera reads its answer.
+- **Ledger** over Bluetooth (Nano X, Stax, Flex) through `@ledgerhq/react-native-hw-transport-ble` 6.41.0.
+  It pins `react-native-ble-plx` 3.4.0, which is a direct dependency here so it autolinks. Look for the Ledger,
+  pick it, then pick accounts. Approvals reopen the same Ledger.
+- **Permissions** (app.config.ts):
+  - iOS: `NSBluetoothAlwaysUsageDescription` and `NSCameraUsageDescription`.
+  - Android: the ble-plx config plugin adds `BLUETOOTH_SCAN` with `neverForLocation`, plus location
+    permissions capped at SDK 30. `BLUETOOTH_CONNECT` is listed. On Android 12+, scan and connect are
+    requested at run time; on Android 11 and lower, fine location is requested instead.
+- **New Architecture caveat.** ble-plx 3.4.0 has no codegen spec, so it runs through React Native's interop
+  layer. [dotintent/react-native-ble-plx#1277](https://github.com/dotintent/react-native-ble-plx/issues/1277)
+  (open) reports a crash on connect with the New Architecture on RN 0.76. RN 0.82+ has no legacy architecture
+  to fall back to. Treat Ledger Bluetooth as unverified until it has run on a device.
+- **Metro.** The Keystone SDK pulls in `hdkey` and `cipher-base`, which need Node's `crypto` and `stream`.
+  `metro.config.js` maps `crypto` to `src/shims/node-crypto.js` (`@noble/hashes`) and `stream` to
+  readable-stream's browser build.
+
 ## In-app browser
 
 `react-native-webview` injects `inpage.generated.ts` (built by `scripts/build-inpage.mjs` from 1Mask's inpage
@@ -77,3 +133,12 @@ matches. Plain http is allowed only for local development hosts.
 - Hermes has no `WebAssembly` ([facebook/hermes#429](https://github.com/facebook/hermes/issues/429)). hash-wasm
   4.12.0 `dist/index.esm.js` throws `WebAssembly is not supported in this environment!`.
 - `@hiero-ledger/sdk` 2.89.1 `package.json` exports: `"react-native": "./lib/native.js"`.
+- `@ledgerhq/react-native-hw-transport-ble` 6.41.0 (npm, modified 2026-08-10): depends on `react-native-ble-plx`
+  3.4.0, `@ledgerhq/hw-transport` 6.35.5 and rxjs. README: global `Buffer` required (installed by
+  `@walletconnect/react-native-compat`); `listen` / `open(id)` / `observeState`.
+- `react-native-ble-plx` 3.4.0 (npm): Expo config plugin options `isBackgroundEnabled`, `modes`,
+  `bluetoothAlwaysPermission`, `neverForLocation` (`plugin/build/withBLEAndroidManifest.js`). No
+  `codegenConfig`, so it is a legacy module on the New Architecture. Latest is 3.5.1, but the Ledger transport
+  pins 3.4.0. New Architecture crash report: dotintent/react-native-ble-plx#1277.
+- Expo 57 `bundledNativeModules.json`: `expo-web-browser` ~57.0.3. `WebBrowser.openBrowserAsync(url,
+  { presentationStyle: PAGE_SHEET })` (`build/WebBrowser.types.d.ts`).

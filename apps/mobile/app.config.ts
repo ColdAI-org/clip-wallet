@@ -9,6 +9,9 @@ import type { ExpoConfig } from "expo/config";
  */
 const domain = process.env.CLIP_ASSOCIATED_DOMAIN;
 
+const CAMERA = "Scan a connection code from an app, a trade link, or your Keystone's QR codes.";
+const BLUETOOTH = "Connect to your Ledger over Bluetooth to add its accounts and approve with it.";
+
 const config: ExpoConfig = {
   name: "Clip Wallet",
   slug: "clip-wallet",
@@ -23,7 +26,9 @@ const config: ExpoConfig = {
     ...(domain ? { associatedDomains: [`applinks:${domain}`, `webcredentials:${domain}`] } : {}),
     infoPlist: {
       NSFaceIDUsageDescription: "Unlock Clip Wallet with Face ID instead of typing your password.",
-      NSCameraUsageDescription: "Scan a connection QR code from an app.",
+      NSCameraUsageDescription: CAMERA,
+      // Ledger over Bluetooth (react-native-ble-plx). Its config plugin writes the same key; set here so the text is ours.
+      NSBluetoothAlwaysUsageDescription: BLUETOOTH,
       // The in-app browser loads https dapps; plain http only for a dapp served from this Mac / LAN while developing.
       NSAppTransportSecurity: { NSAllowsArbitraryLoads: false, NSAllowsLocalNetworking: true },
       ITSAppUsesNonExemptEncryption: false,
@@ -32,15 +37,31 @@ const config: ExpoConfig = {
   android: {
     package: "org.coldai.clipwallet",
     allowBackup: false,
-    permissions: ["android.permission.CAMERA", "android.permission.USE_BIOMETRIC"],
+    // Bluetooth for Ledger: BLUETOOTH_SCAN (added with neverForLocation by the ble-plx plugin below; listing it here
+    // would stop the plugin adding that flag) and
+    // BLUETOOTH_CONNECT on Android 12+, asked at run time; Android 11 and lower need fine location for BLE scans.
+    permissions: ["android.permission.CAMERA", "android.permission.USE_BIOMETRIC", "android.permission.BLUETOOTH_CONNECT"],
     intentFilters: domain
-      ? [{ action: "VIEW", autoVerify: true, data: [{ scheme: "https", host: domain, pathPrefix: "/wc" }], category: ["BROWSABLE", "DEFAULT"] }]
+      ? [
+          {
+            action: "VIEW",
+            autoVerify: true,
+            data: [
+              { scheme: "https", host: domain, pathPrefix: "/wc" },
+              { scheme: "https", host: domain, pathPrefix: "/trade" },
+            ],
+            category: ["BROWSABLE", "DEFAULT"],
+          },
+        ]
       : [],
   },
   plugins: [
     ["expo-secure-store", { configureAndroidBackup: true, faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
     ["expo-local-authentication", { faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
-    ["expo-camera", { cameraPermission: "Scan a connection QR code from an app.", microphonePermission: false, recordAudioAndroid: false }],
+    ["expo-camera", { cameraPermission: CAMERA, microphonePermission: false, recordAudioAndroid: false }],
+    // Ledger over Bluetooth. Foreground only (no background modes); neverForLocation: we never derive location.
+    ["react-native-ble-plx", { isBackgroundEnabled: false, modes: [], bluetoothAlwaysPermission: BLUETOOTH, neverForLocation: true }],
+    "expo-web-browser",
   ],
   experiments: { typedRoutes: false },
   extra: { mainnet: false },

@@ -20,8 +20,10 @@
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/engine": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@clip-wallet/vault": "workspace:*",
+    "@ledgerhq/react-native-hw-transport-ble": "6.41.0",
     "@noble/hashes": "^2.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
@@ -37,28 +39,31 @@
     "expo-local-authentication": "~57.0.3",
     "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
+    "expo-web-browser": "~57.0.3",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-argon2": "4.0.0",
+    "react-native-ble-plx": "3.4.0",
     "react-native-get-random-values": "~1.11.0",
     "react-native-passkey": "3.6.2",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
-    "react-native-webview": "13.16.1"
+    "react-native-webview": "13.16.1",
+    "readable-stream": "^3.6.2"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "0.86.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "@types/qrcode": "^1.5.6",
     "@types/react": "~19.2.0",
     "esbuild": "^0.25.0",
+    "happy-dom": "^20.14.5",
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
-    "typescript": "^5.9.3",
-    "@react-native/jest-preset": "0.86.3",
     "react-test-renderer": "19.2.3",
-    "vitest": "^2.1.9",
-    "happy-dom": "^20.14.5"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
   }
 }

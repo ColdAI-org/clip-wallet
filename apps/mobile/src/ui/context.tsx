@@ -15,9 +15,25 @@ export type Route =
   | { name: "send"; assetKey?: string }
   | { name: "receive"; assetKey?: string }
   | { name: "scan" }
-  | { name: "explore" };
+  | { name: "explore" }
+  /* features (same screens as the extension's /stake, /swap, /buy, /trade) */
+  | { name: "stake"; assetKey?: string }
+  | { name: "swap"; sell?: string; buy?: string }
+  | { name: "buy"; assetKey?: string }
+  | { name: "trade" }
+  | { name: "trade-new" }
+  | { name: "trade-open"; link?: string }
+  | { name: "trade-detail"; id: string }
+  /* platform: backup, accounts */
+  | { name: "backup" }
+  | { name: "backup-phrase" }
+  | { name: "backup-passkey" }
+  | { name: "accounts"; origin?: string }
+  /* hardware wallets */
+  | { name: "hardware" }
+  | { name: "hardware-connect" };
 
-export const TABS = ["home", "collectibles", "activity", "browser", "settings"] as const;
+export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 
 interface Ctx {
   wallet: MobileWallet;
