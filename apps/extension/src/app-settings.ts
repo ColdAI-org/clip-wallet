@@ -18,7 +18,17 @@ export function passkeyRpId(): string | null {
   return o.replace(/^(chrome|moz)-extension:\/\//, "");
 }
 
-/** Untrusted NFT media proxy. Unset until the proxy service exists: placeholders, nothing remote fetched. */
-export const MEDIA_PROXY_URL: string | undefined = undefined;
+/**
+ * Untrusted NFT media proxy (services/media-proxy), from clip.config `services.mediaProxyUrl`. Unset until the
+ * proxy is deployed: placeholders, nothing remote fetched.
+ */
+export const MEDIA_PROXY_URL: string | undefined = config.services.mediaProxyUrl;
+
+/**
+ * Backup service (services/backup), from clip.config `services.backupUrl`. Unset = passkey backup hidden
+ * ("isn't available in this version"). Not deployed yet. Passkey backups only restore where the same rpId
+ * works: set passkeys.rpOrigin before turning this on.
+ */
+export const BACKUP_SERVICE_URL: string | undefined = config.services.backupUrl;
 
 export const CURRENCIES = ["USD", "EUR", "GBP"];

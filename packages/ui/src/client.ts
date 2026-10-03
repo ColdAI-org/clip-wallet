@@ -5,6 +5,7 @@
  * Nothing here carries key material, with one deliberate exception: `revealPhrase`, used only by the
  * onboarding phrase screen (and a future backup screen).
  */
+import type { PlatformClient } from "./platform/client";
 import type {
   AssetRef,
   DecodedRequest,
@@ -137,6 +138,8 @@ export interface ApprovalView {
   connect?: ConnectView;
   /** Raw request params, Advanced mode only. */
   raw?: string;
+  /** Set while a hardware wallet is signing this request (see packages/ui/src/hardware). */
+  hardware?: import("./hardware/types").HardwareApprovalState;
 }
 
 export type RecipientResolution =
@@ -177,7 +180,7 @@ export interface SessionView {
   networkIds: NetworkId[];
 }
 
-export interface WalletClient {
+export interface WalletClient extends PlatformClient {
   getState(): Promise<WalletState>;
   setPrefs(patch: Partial<Prefs>): Promise<Prefs>;
 

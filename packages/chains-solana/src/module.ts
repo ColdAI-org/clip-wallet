@@ -306,9 +306,12 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
 
   async function prepare(request: DappRequest, ctx: ChainContext, approvalId: string): Promise<SignablePayload[]> {
     const me = ctx.account.address;
-    const list = signables(normalize(request, me), me);
+    const n = normalize(request, me);
+    const list = signables(n, me);
     if (!list.length) throw new ClipError("This transaction doesn't need your signature.", "solana/not-a-signer");
-    return list.map((s) => ({ accountId: ctx.account.id, scheme: "ed25519", bytes: s.bytes, approvalId }));
+    // Hardware wallets need to know whether the bytes are a transaction message or an off-chain message.
+    const format = n.kind === "tx" ? "solana-tx" : "solana-message";
+    return list.map((s) => ({ accountId: ctx.account.id, scheme: "ed25519", bytes: s.bytes, approvalId, raw: { format, bytes: s.bytes } }));
   }
 
   async function finalize(request: DappRequest, signatures: Signature[], ctx: ChainContext): Promise<unknown> {

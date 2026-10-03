@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { userMessageOf, type PortfolioView } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { AssetIcon, Button, Chip, Empty, ErrorNote, Row, Screen, Spinner, Toggle } from "../components";
-import { IconArrowDown, IconArrowUp, IconExpand, IconLock, IconPin, IconSearch } from "../components/icons";
+import { IconArrowDown, IconArrowUp, IconExpand, IconLock, IconPin, IconSearch, IconSwap } from "../components/icons";
+import { STAKEABLE_NOW } from "../features/routes";
+import { useFeaturesOptional } from "../features/context";
 import { formatFiat, formatUnits, shortAddress } from "../lib/format";
 import { mergeBalances, type MergedAsset } from "../lib/portfolio";
 
@@ -31,6 +33,7 @@ export function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: 
 export function Home() {
   const { client, state, variant, config, refresh } = useUi();
   const { navigate } = useRouter();
+  const features = useFeaturesOptional();
   const prefs = state?.prefs;
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -102,6 +105,19 @@ export function Home() {
           <IconArrowDown /> Receive
         </Button>
       </div>
+      {features && (
+        <div className="clip-actions clip-actions--more" aria-label="More actions">
+          <Button variant="ghost" onClick={() => navigate("/swap")}>
+            <IconSwap /> Swap
+          </Button>
+          <Button variant="ghost" onClick={() => navigate("/buy")}>
+            Buy
+          </Button>
+          <Button variant="ghost" onClick={() => navigate("/stake")}>
+            Stake
+          </Button>
+        </div>
+      )}
 
       {searchOpen && (
         <div className="clip-search">
@@ -152,6 +168,7 @@ export function networkName(portfolio: PortfolioView | undefined, id: string): s
 export function AssetDetail(props: { id: string }) {
   const { client, state, refresh } = useUi();
   const { navigate } = useRouter();
+  const features = useFeaturesOptional();
   const { data } = useAsync(() => client.getPortfolio(), [client]);
   const prefs = state?.prefs;
   const currency = data?.currency ?? prefs?.displayCurrency ?? "USD";
@@ -196,6 +213,21 @@ export function AssetDetail(props: { id: string }) {
           <IconArrowDown /> Receive
         </Button>
       </div>
+      {features && (
+        <div className="clip-actions clip-actions--more">
+          <Button variant="ghost" onClick={() => navigate(`/swap?sell=${encodeURIComponent(asset.key)}`)}>
+            <IconSwap /> Swap
+          </Button>
+          <Button variant="ghost" onClick={() => navigate(`/buy?asset=${encodeURIComponent(asset.key)}`)}>
+            Buy
+          </Button>
+          {STAKEABLE_NOW.includes(asset.key) && (
+            <Button variant="ghost" onClick={() => navigate(`/stake?asset=${encodeURIComponent(asset.key)}`)}>
+              Stake
+            </Button>
+          )}
+        </div>
+      )}
       {asset.parts.length > 1 || prefs?.advanced ? (
         <section aria-labelledby="split-h">
           <h2 id="split-h" className="clip-h2">

@@ -5,6 +5,8 @@ import { useAsync, useRouter, useUi } from "../context";
 import { Button, Card, ErrorNote, Field, Row, Screen, Toggle } from "../components";
 import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
+import { useFeaturesOptional } from "../features/context";
+import { useHardwareOptional } from "../hardware/context";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 
@@ -26,6 +28,7 @@ function Section(props: { title: string; children: React.ReactNode; id?: string 
 
 function Sessions() {
   const { client, state } = useUi();
+  const { navigate } = useRouter();
   const { data, reload, error } = useAsync(() => client.listSessions(), [client]);
   return (
     <Section title="Connected apps">
@@ -41,6 +44,11 @@ function Sessions() {
                 {state?.prefs.advanced && s.networkIds.length > 0 && <> · {s.networkIds.join(", ")}</>}
               </div>
             </div>
+            {s.via === "injected" && (
+              <Button variant="ghost" aria-label={`Accounts for ${s.dapp.name}`} onClick={() => navigate(`/accounts?origin=${encodeURIComponent(s.dapp.origin)}`)}>
+                Accounts
+              </Button>
+            )}
             <Button
               variant="secondary"
               aria-label={`Disconnect ${s.dapp.name}`}
@@ -140,6 +148,8 @@ export function Settings() {
   const [err, setErr] = useState<string | null>(null);
   const [devMsg, setDevMsg] = useState<string | null>(null);
   const { navigate } = useRouter();
+  const features = useFeaturesOptional();
+  const hardware = useHardwareOptional();
   if (!state) return null;
   const prefs = state.prefs;
   const setPrefs = async (p: Partial<Prefs>) => {
@@ -154,6 +164,17 @@ export function Settings() {
   return (
     <Screen nav title="Settings">
       <ErrorNote message={err} />
+      {features && (
+        <Section title="More">
+          <nav className="clip-menu" aria-label="More">
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/stake")}>Stake</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/swap")}>Swap</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/buy")}>Buy</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/trade")}>Secure Trade</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/explore")}>Explore apps</button>
+          </nav>
+        </Section>
+      )}
       <Section title="Display">
         <label className="clip-select-row">
           <span>Currency</span>
@@ -210,6 +231,15 @@ export function Settings() {
           )}
         </div>
         {enrolling && <PasskeyEnroll onDone={() => setEnrolling(false)} />}
+        <nav className="clip-menu" aria-label="Backup and accounts">
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/backup")}>Backup</button>
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/accounts")}>Accounts</button>
+          {hardware && (
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/hardware")} title="Ledger or Keystone: keys stay on the device">
+              Hardware wallets
+            </button>
+          )}
+        </nav>
         <Button
           variant="secondary"
           block

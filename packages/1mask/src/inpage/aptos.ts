@@ -41,12 +41,9 @@ import { METHOD_WS_STATE, type ExposedAccount } from "../shared/protocol.js";
 import type { InpageTransport } from "./transport.js";
 
 /** Local (no prompt) method the Aptos wallet uses to read the site's selected network: answers `{ networkId }`. */
-export const METHOD_APTOS_NETWORK = "1mask_getNetwork";
-
-/** DappRequest method names the background allowlists for family "aptos" (see docs/phase2/integration/move.md). */
-export const APTOS_CONNECT_METHODS = [AptosConnectNamespace] as const;
-export const APTOS_LOCAL_METHODS = [METHOD_WS_STATE, METHOD_APTOS_NETWORK, AptosDisconnectNamespace] as const;
-export const APTOS_SIGNING_METHODS = [AptosSignTransactionNamespace, AptosSignAndSubmitTransactionNamespace, AptosSignMessageNamespace] as const;
+/** DappRequest method names the background allowlists for family "aptos" live in shared/move-methods.ts. */
+export { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS, METHOD_APTOS_NETWORK } from "../shared/move-methods.js";
+import { METHOD_APTOS_NETWORK } from "../shared/move-methods.js";
 
 export const APTOS_FEATURES = [
   AptosConnectNamespace,

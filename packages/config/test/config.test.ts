@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   ConfigError,
   MAINNET_ACKNOWLEDGEMENT,
+  NETWORK_FAMILIES,
   WALLETCONNECT_ENV,
   contrastRatio,
   defaults,
@@ -37,6 +38,7 @@ describe("defaults", () => {
       hardware: ["ledger", "keystone"],
       walletConnect: {},
       passkeys: { enabled: true },
+      services: {},
       mainnet: false,
     });
     expect(isMainnetEnabled(c)).toBe(false);
@@ -78,9 +80,26 @@ describe("validation errors in plain words", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21);
   });
 
+  it("services are optional https base URLs", () => {
+    expect(defineConfig(base).services).toEqual({});
+    expect(defineConfig({ ...base, services: { backupUrl: "https://backup.example.com", mediaProxyUrl: "https://example.com/media" } }).services).toEqual({
+      backupUrl: "https://backup.example.com",
+      mediaProxyUrl: "https://example.com/media",
+    });
+    expect(problems({ ...base, services: { backupUrl: "http://backup.example.com" } })[0]).toMatch(/^services.backupUrl: use the https base URL/);
+    expect(problems({ ...base, services: { mediaProxyUrl: "https://media.example.com/?x=1" } })[0]).toMatch(/^services.mediaProxyUrl:/);
+  });
+
+  it("accepts all 14 chain families", () => {
+    expect(NETWORK_FAMILIES).toHaveLength(14);
+    const all = ["evm:*", ...NETWORK_FAMILIES.filter((f) => f !== "evm")];
+    expect(validateConfig({ ...base, networks: all }).ok).toBe(true);
+    expect(enabledFamilies(defineConfig({ ...base, networks: all }))).toEqual([...NETWORK_FAMILIES]);
+  });
+
   it("explains network patterns", () => {
     expect(problems({ ...base, networks: ["ethereum"] })).toEqual([
-      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana" or "bitcoin"',
+      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos" or "algorand"',
     ]);
     expect(problems({ ...base, networks: [] })).toEqual(["networks: turn on at least one network"]);
     expect(problems({ ...base, networks: ["hedera", "hedera"] })).toEqual(["networks: each network is listed once"]);

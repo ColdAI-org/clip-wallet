@@ -1,5 +1,6 @@
 import type { Family, Network } from "@clip-wallet/core";
 import { HEDERA_METHODS } from "../background/methods.js";
+import { P2_WC_NAMESPACE_FAMILY, P2_WC_SUPPORTED_EVENTS, P2_WC_SUPPORTED_METHODS, type P2WcNamespaceKey } from "./p2-namespaces.js";
 
 /**
  * CAIP-25 session proposal → approved session namespaces. Pure; no network, no WalletKit.
@@ -13,13 +14,14 @@ import { HEDERA_METHODS } from "../background/methods.js";
  *  - Optional methods/events: intersection with what we support.
  */
 
-export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera";
+export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera" | P2WcNamespaceKey;
 
 export const WC_NAMESPACE_FAMILY: Record<WcNamespaceKey, Family> = {
   eip155: "evm",
   solana: "solana",
   bip122: "bitcoin",
   hedera: "hedera",
+  ...P2_WC_NAMESPACE_FAMILY,
 };
 
 /** Methods Clip serves per WalletConnect namespace. */
@@ -47,6 +49,7 @@ export const WC_SUPPORTED_METHODS: Record<WcNamespaceKey, readonly string[]> = {
   bip122: ["getAccountAddresses", "signMessage", "signPsbt", "sendTransfer"],
   // hashgraph/hedera-wallet-connect HederaJsonRpcMethod
   hedera: HEDERA_METHODS,
+  ...P2_WC_SUPPORTED_METHODS,
 };
 
 export const WC_SUPPORTED_EVENTS: Record<WcNamespaceKey, readonly string[]> = {
@@ -55,6 +58,7 @@ export const WC_SUPPORTED_EVENTS: Record<WcNamespaceKey, readonly string[]> = {
   bip122: ["bip122_addressesChanged"],
   // hashgraph/hedera-wallet-connect HederaSessionEvent
   hedera: ["accountsChanged", "chainChanged"],
+  ...P2_WC_SUPPORTED_EVENTS,
 };
 
 export interface ProposalNamespace {

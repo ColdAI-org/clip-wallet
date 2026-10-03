@@ -88,7 +88,8 @@ describe("Jupiter (Swap API V2 /order + /execute)", () => {
     const req = step!.request as { method: string; params: { inputs: { transaction: string; chain: string }[] } };
     expect(req.method).toBe("solana:signTransaction");
     expect(req.params.inputs[0]).toMatchObject({ transaction: tx, chain: "solana:mainnet" });
-    expect(step!.verify!(req as never)).toBe(true);
+    // chains-solana decodes Jupiter's route_v2 itself (platform §5b), so the step needs no program allowlist.
+    expect(step!.verify).toBeUndefined();
     const out = await step!.finish!([{ signedTransaction: "c2lnbmVk" }]);
     expect(out).toEqual({ signature: "5ig" });
     const exec = calls.find((c) => c.url.endsWith("/execute"))!;
@@ -96,12 +97,13 @@ describe("Jupiter (Swap API V2 /order + /execute)", () => {
     expect((exec.init!.headers as Record<string, string>)["x-api-key"]).toBe("portal-key");
   });
 
-  it("an unknown program in the transaction keeps it blind", async () => {
+  it("a transaction chains-solana can't read stays blind (no wallet-side override)", async () => {
     const tx = txCalling([JUPITER_V6_PROGRAM, "Stake11111111111111111111111111111111111111"]);
     const { fetch } = mockFetch([[/order/, ORDER(tx)]]);
     const j = new JupiterSwap();
     const [step] = await j.build(await j.quote({ sell: sol(SOL_MAIN.id), buy: usdcSol(SOL_MAIN.id), amount: "1", slippageBps: 50 }, ctx(fetch)), ctx(fetch));
-    expect(step!.verify!(step!.request as never)).toBe(false);
+    const blind = { requestId: "", title: "Unreadable request", lines: [], balanceChanges: [], simulated: true, blind: true, warnings: [], networkId: SOL_MAIN.id };
+    expect(refineDecoded(step!.request as never, blind).blind).toBe(true);
   });
 });
 

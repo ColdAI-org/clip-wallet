@@ -6,6 +6,8 @@
  *  - referrerPolicy="no-referrer"; links in metadata are shown as text, never auto-opened.
  */
 
+import { mediaProxyUrl } from "@clip-wallet/media-client";
+
 export type MediaKind = "image" | "video";
 
 export interface ProxiedMedia {
@@ -13,8 +15,6 @@ export interface ProxiedMedia {
   src: string;
 }
 
-const VIDEO_EXT = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
-const BLOCKED_EXT = /\.(html?|xhtml|js|mjs|pdf|swf)(\?|#|$)/i;
 
 /** Normalises ipfs:// and ar:// to gateway URLs; returns null for anything that is not http(s). */
 export function normaliseMediaUrl(raw: string | undefined): string | null {
@@ -34,15 +34,12 @@ export function normaliseMediaUrl(raw: string | undefined): string | null {
 }
 
 /**
- * Stub media proxy. Until the proxy service exists this returns null unless `proxyBase` is set,
- * so no untrusted URL is ever fetched directly by the extension.
+ * Untrusted media goes only through the media proxy (services/media-proxy), using the shared URL contract
+ * from @clip-wallet/media-client: `${proxyBase}/v1/media?src=<canonical>&kind=image|video`. Without a proxy
+ * base this returns null, so nothing remote is fetched and placeholders are drawn.
  */
 export function proxyMedia(raw: string | undefined, proxyBase: string | undefined): ProxiedMedia | null {
-  const url = normaliseMediaUrl(raw);
-  if (!url || !proxyBase) return null;
-  if (BLOCKED_EXT.test(url)) return null;
-  const kind: MediaKind = VIDEO_EXT.test(url) ? "video" : "image";
-  return { kind, src: `${proxyBase}?url=${encodeURIComponent(url)}&kind=${kind}` };
+  return mediaProxyUrl(proxyBase, raw);
 }
 
 /** Deterministic hue for placeholder art. */

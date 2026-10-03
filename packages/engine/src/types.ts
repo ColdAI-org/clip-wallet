@@ -7,6 +7,7 @@ import type {
   Account,
   AssetRef,
   ChainContext,
+  ChildAddress,
   ChainModule,
   DappRequest,
   DecodedRequest,
@@ -47,6 +48,15 @@ export interface WalletVault {
   unlockWithPasskey(prf: PrfProvider, credentialId?: Uint8Array): Promise<void>;
   listPasskeys(): Promise<PasskeyInfoLike[]>;
   removePasskey(credentialId: Uint8Array): Promise<void>;
+  /* vault-v2: several accounts per family, Bitcoin change addresses */
+  listAccounts(families?: readonly Family[]): Promise<Account[]>;
+  addAccount(family: Family, label?: string): Promise<Account>;
+  setAccountLabel(family: Family, index: number, label: string): Promise<void>;
+  freshChange(family: "bitcoin", accountIndex: number): Promise<ChildAddress>;
+  listChange(family: "bitcoin", accountIndex: number): Promise<ChildAddress[]>;
+  /* platform: passkey backup, encrypted and restored inside the vault */
+  createPasskeyBackup(password: string, prfOutput: Uint8Array): Promise<Uint8Array>;
+  restorePasskeyBackup(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
 }
 
 /** CLPRouter: how a request gets paid for ("From: Your balance", funding moves, sponsored gas, ETA). */
@@ -79,6 +89,8 @@ export interface DappHost {
   cachedAccount(family: Family): Account | undefined;
   permissions: PermissionStoreLike;
   rpc(networkId: string, method: string, params: unknown): Promise<unknown>;
+  /** Read-only chain calls answered by a chain module (CIP-30 getUtxos/getBalance/…/submitTx). */
+  chainRead(req: DappRequest): Promise<unknown>;
   isUnlocked(): Promise<boolean>;
   cancel(requestId: string): void;
 }
@@ -107,7 +119,10 @@ export interface PriceFeed {
 }
 
 export interface NameResolver {
-  resolve(name: string): Promise<{ address: string; displayName: string } | null>;
+  /** `networkIds`: networks the name points at specifically; `addressOn`: ENS per-network addresses. */
+  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string> } | null>;
+  /** Primary name for an address, for display. */
+  reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
 }
 
 export interface DappRegistry {
@@ -131,6 +146,8 @@ export interface Dependencies {
   registry: DappRegistry;
   hederaAccountId(ctx: ChainContext): Promise<string | undefined>;
   seedActivity?: ActivityEntry[];
+  /** services/backup client factory (clip.config services.backupUrl); null = passkey backup hidden. */
+  backup?: import("./platform.js").PlatformDeps["backup"];
 }
 
 /** Side effects the engine needs from its host. */

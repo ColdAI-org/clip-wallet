@@ -20,7 +20,11 @@ import {
   type PortResponse,
 } from "../shared/protocol.js";
 import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
+import { METHOD_APTOS_NETWORK } from "../shared/move-methods.js";
+import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
+import { dispatchCardanoSubstrate, type CardanoSubstrateRouterHelpers } from "./cardano-substrate.js";
 import type { PermissionStore } from "./permissions.js";
+import { createStarknetTonDispatch, type StarknetTonOptions } from "./starknet-ton.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
 export interface RouterPort {
@@ -40,7 +44,7 @@ export interface AccountLike {
   addressType?: string;
 }
 
-export interface OneMaskRouterOptions {
+export interface OneMaskRouterOptions extends StarknetTonOptions {
   /** The wallet's network registry. Chains outside it do not exist for dapps. */
   networks: Network[];
   /**
@@ -66,6 +70,8 @@ export interface OneMaskRouterOptions {
   /** Told when the router gives up on a request (timeout) so the approval window can close. */
   cancel?(requestId: string, reason: "timeout"): void;
   timeouts?: { approvalMs?: number; readMs?: number };
+  /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
+  tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
   rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
   newId?(): string;
   now?(): number;
@@ -239,7 +245,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   };
 
   const sameAddress = (family: Family, a: string, b: string) =>
-    family === "evm" ? a.toLowerCase() === b.toLowerCase() : a === b;
+    family === "evm" || family === "sui" || family === "aptos" ? a.toLowerCase() === b.toLowerCase() : a === b;
 
   const requireOwnAddresses = async (origin: string, family: Family, addresses: unknown[]) => {
     const list = await accounts(origin, family);
@@ -391,7 +397,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
   const dispatchStandard = async (
     origin: string,
-    family: "solana" | "bitcoin",
+    family: "solana" | "bitcoin" | "sui" | "aptos",
     method: string,
     params: unknown,
     chain: string | undefined,
@@ -401,10 +407,14 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
         return (await permitted(origin, family)) ? accounts(origin, family) : [];
       case "standard:disconnect":
       case "bitcoin:disconnect":
+      case "aptos:disconnect":
         await revoke(origin, family);
         return null;
+      case METHOD_APTOS_NETWORK:
+        return { networkId: requireNetwork(family, origin, chain).id };
       case "standard:connect":
-      case "bitcoin:connect": {
+      case "bitcoin:connect":
+      case "aptos:connect": {
         if (await permitted(origin, family)) return accounts(origin, family);
         return connect(origin, family, requireNetwork(family, origin, chain), method, params ?? {});
       }
@@ -422,7 +432,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
     await requirePermission(origin, family);
     const inputs = method === "bitcoin:sendTransfer" ? [] : inputsOf(params);
-    if (family === "solana") {
+    if (family === "solana" || family === "sui" || family === "aptos") {
       await requireOwnAddresses(origin, family, inputs.map((i) => i.account));
       if (method === "solana:signAndSendTransaction" && inputs.some((i) => typeof i.chain !== "string")) {
         throw rpcError.invalidParams("solana:signAndSendTransaction needs a chain.");
@@ -438,6 +448,55 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     const net = method === "bitcoin:sendTransfer" ? requireNetwork(family, origin, chain) : chainFromInputs(family, origin, inputs, chain);
     return approve(makeReq(origin, family, net, method, params));
   };
+
+  /* ------------------------------------------------------------ NEAR, Stellar, Tezos, Algorand */
+
+  const p2 = createP2Dispatcher(
+    {
+      permitted,
+      requirePermission,
+      accounts,
+      connect,
+      approve,
+      makeReq,
+      requireNetwork,
+      revoke: (origin, family) => revoke(origin, family),
+    },
+    opts.tezosBeacon ? { beacon: opts.tezosBeacon } : {},
+  );
+
+  /* ------------------------------------------------------------ Cardano (CIP-30) & Substrate (injectedWeb3) */
+
+  const cardanoSubstrateHelpers: CardanoSubstrateRouterHelpers = {
+    permitted,
+    accounts,
+    connect,
+    approve,
+    read: (req) => withTimeout(opts.handle(req), readMs, req.id),
+    makeReq,
+    requireNetwork,
+    requirePermission,
+    revoke: (origin, family) => revoke(origin, family),
+  };
+
+  /* ------------------------------------------------------------ Starknet (get-starknet) & TON (TON Connect) */
+
+  // `revoke` is declared below; it is only called at dispatch time.
+  const starknetTon = createStarknetTonDispatch(
+    {
+      permitted,
+      accounts,
+      connect,
+      approve,
+      makeReq,
+      selectedNetwork,
+      setSelected,
+      candidates,
+      emit,
+      revoke: (origin, family, o) => revoke(origin, family, o),
+    },
+    opts,
+  );
 
   /* ------------------------------------------------------------ public */
 
@@ -455,7 +514,13 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     }
     if (!injectedAllowlist(family).has(method)) throw rpcError.unsupportedMethod(method);
     if (family === "evm") return dispatchEvm(origin, method, params);
-    if (family === "solana" || family === "bitcoin") return dispatchStandard(origin, family, method, params, chain);
+    if (family === "solana" || family === "bitcoin" || family === "sui" || family === "aptos") {
+      return dispatchStandard(origin, family, method, params, chain);
+    }
+    if (P2_FAMILIES.has(family)) return p2.dispatch(origin, family, method, params, chain);
+    if (family === "cardano" || family === "substrate") return dispatchCardanoSubstrate(cardanoSubstrateHelpers, origin, family, method, params, chain);
+    if (family === "starknet") return starknetTon.starknet(origin, method, params);
+    if (family === "ton") return starknetTon.ton(origin, method, params);
     throw rpcError.unsupportedMethod(method);
   };
 

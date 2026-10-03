@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig, enabledFamilies } from "@clip-wallet/config";
 import { walletAssets, walletNetworks } from "../src/shared/catalog";
 import { RoutePlannerAdapter, ReferencePriceFeed } from "../src/background/real";
 import config from "../clip.config";
@@ -9,7 +9,7 @@ describe("catalog (real chain packages)", () => {
     const nets = walletNetworks(config);
     expect(nets.length).toBeGreaterThan(4);
     expect(nets.every((n) => n.testnet)).toBe(true);
-    expect(new Set(nets.map((n) => n.family))).toEqual(new Set(["evm", "hedera", "solana", "bitcoin"]));
+    expect(new Set(nets.map((n) => n.family))).toEqual(new Set(enabledFamilies(config)));
     const onlyBase = walletNetworks(defineConfig({ name: "X", rdns: "com.x.wallet", networks: ["evm:84532", "hedera"] }));
     expect(onlyBase.map((n) => n.id)).toEqual(["eip155:84532", "hedera:testnet"]);
   });
@@ -18,6 +18,10 @@ describe("catalog (real chain packages)", () => {
     const assets = walletAssets(walletNetworks(config));
     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "eip155:84532")).toBe(true);
     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "hedera:testnet")).toBe(true);
+    for (const id of ["near:testnet", "stellar:testnet", "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe"]) {
+      expect(assets.find((a) => a.symbol === "USDC" && a.networkId === id)?.key).toBe("usdc");
+    }
+    expect(assets.some((a) => a.networkId === "tezos:NetXsqzbfFenSTS" && a.key === "xtz")).toBe(true);
   });
 });
 

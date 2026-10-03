@@ -393,11 +393,47 @@ describe("passkeyBackup (Phase 2)", () => {
     expect(() => passkeyBackup.decrypt(tampered, prfOut)).toThrow();
   });
 
+  it("vault.restorePasskeyBackup imports a backup into an empty vault without returning the phrase", async () => {
+    const a = newVault().vault;
+    await a.importPhrase(ABANDON, PW);
+    const prfOut = randomBytes(32);
+    const blob = await a.createPasskeyBackup(PW, prfOut);
+
+    const b = newVault().vault;
+    expect(await b.restorePasskeyBackup(blob, prfOut, "another password 1")).toBeUndefined();
+    expect(await b.status()).toBe("unlocked");
+    expect((await b.deriveAccount("evm", 0)).address).toBe((await a.deriveAccount("evm", 0)).address);
+    await b.lock();
+    await b.unlock("another password 1");
+    expect(await b.revealPhrase("another password 1")).toBe(ABANDON);
+  });
+
+  it("vault.restorePasskeyBackup refuses the wrong passkey, a weak password and a non-empty vault", async () => {
+    const a = newVault().vault;
+    await a.importPhrase(ABANDON, PW);
+    const prfOut = randomBytes(32);
+    const blob = await a.createPasskeyBackup(PW, prfOut);
+
+    const b = newVault().vault;
+    await expect(b.restorePasskeyBackup(blob, randomBytes(32), PW)).rejects.toMatchObject({ code: "vault/backup-mismatch" });
+    await expect(b.restorePasskeyBackup(blob.subarray(0, 20), prfOut, PW)).rejects.toMatchObject({ code: "vault/backup-mismatch" });
+    await expect(b.restorePasskeyBackup(blob, prfOut, "short")).rejects.toMatchObject({ code: "vault/weak-password" });
+    expect(await b.status()).toBe("empty");
+    await expect(a.restorePasskeyBackup(blob, prfOut, PW)).rejects.toMatchObject({ code: "vault/exists" });
+  });
+
   it("vault.createPasskeyBackup never exposes the phrase to the caller", async () => {
     const { vault } = newVault();
     await vault.importPhrase(ABANDON, PW);
     const prfOut = randomBytes(32);
     const blob = await vault.createPasskeyBackup(PW, prfOut);
     expect(passkeyBackup.decrypt(blob, prfOut)).toBe(ABANDON);
+  });
+});
+
+describe("BACKUP_PRF_INPUT", () => {
+  // Pinned: @clip-wallet/engine restates this value (packages/engine/test/platform.test.ts checks the same hex).
+  it("is sha256 of the published label", () => {
+    expect(Buffer.from(BACKUP_PRF_INPUT).toString("hex")).toBe("160feec3b9d9d1ace9480314d3219d71223fd9ca5f9f6e93e7996fb123ab43cf");
   });
 });

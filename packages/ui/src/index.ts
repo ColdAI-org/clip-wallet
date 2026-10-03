@@ -20,3 +20,25 @@ export { Settings, ScanWalletConnect, isWalletConnectUri } from "./screens/Setti
 export { ApprovalQueue } from "./screens/Approvals";
 export { PasskeyEnroll, PasskeyPage } from "./screens/Passkey";
 export * from "./features";
+export * from "./platform/client";
+export { runCeremony } from "./platform/ceremony";
+export { RecoveryPhraseBackup, quizPositions } from "./screens/RecoveryPhrase";
+export { PasskeyBackup, PasskeyRestore, PasskeyBackupExplainer, BackupSignIn, BackupLinkLanding } from "./screens/PasskeyBackup";
+export { Accounts } from "./screens/Accounts";
+export { BackupHub } from "./screens/Backup";
+export {
+  ConnectHardware,
+  HardwareSettings,
+  LedgerConfirm,
+  KeystoneExchangeScreen,
+  HardwareApprovalGate,
+  AnimatedQr,
+  UrScanner,
+  HardwareProvider,
+  useHardwareOptional,
+  DEVICE_FAMILIES,
+  FAMILY_WORDS,
+  type ScannerStart,
+  type FullHardwareClient,
+} from "./hardware";
+export type { HardwareKindView, HardwareFamilyView, PathStyleView, HardwareAccountView, KeystoneRequestView, HardwareClient, HardwareApprovalState, HardwareApprovalClient } from "./hardware/types";

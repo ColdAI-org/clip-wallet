@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -12,6 +12,7 @@ import { TradeCreate, TradeDetail, TradeReview } from "../src/features/Trade";
 import { Explore } from "../src/features/Explore";
 import { BALANCES, NETWORKS, fakeClient } from "./fake-client";
 import { renderUi } from "./render";
+import { WalletApp } from "../src/App";
 
 const QUEUED = { approvalId: "appr-9", steps: ["Swap"] };
 
@@ -214,5 +215,33 @@ describe("feature screens", () => {
     expect(featureRoute(["stake"], new URLSearchParams())).not.toBeNull();
     expect(featureRoute(["trade", "open"], new URLSearchParams("link=x"))).not.toBeNull();
     expect(featureRoute(["settings"], new URLSearchParams())).toBeNull();
+  });
+});
+
+describe("feature entry points in the wallet", () => {
+  it("adds an Explore tab, Swap/Buy/Stake on Home and a More menu in Settings when a features client is given", async () => {
+    const user = userEvent.setup();
+    const f = features();
+    renderUi(<WalletApp client={fakeClient()} features={f} memoryRouter />);
+    const nav = await screen.findByRole("navigation", { name: "Main" });
+    expect(nav).toHaveTextContent("Explore");
+    expect(await screen.findByRole("button", { name: /Swap/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Buy" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Stake" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Explore" }));
+    await waitFor(() => expect(f.featured).toHaveBeenCalled());
+    await user.click(screen.getByRole("button", { name: "Settings" }));
+    const more = await screen.findByRole("navigation", { name: "More" });
+    expect(more).toHaveTextContent("Secure Trade");
+    await user.click(within(more).getByRole("button", { name: "Stake" }));
+    await waitFor(() => expect(f.stakingOverview).toHaveBeenCalled());
+  });
+
+  it("hides every feature entry point without a features client", async () => {
+    renderUi(<WalletApp client={fakeClient()} memoryRouter />);
+    const nav = await screen.findByRole("navigation", { name: "Main" });
+    expect(nav).not.toHaveTextContent("Explore");
+    await screen.findByRole("list", { name: "Your assets" });
+    expect(screen.queryByRole("button", { name: "Buy" })).not.toBeInTheDocument();
   });
 });

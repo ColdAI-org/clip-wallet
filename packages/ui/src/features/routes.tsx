@@ -5,6 +5,9 @@ import { StakeAsset, StakeHome } from "./Stake";
 import { Swap } from "./Swap";
 import { TradeCreate, TradeDetail, TradeHome, TradeReview } from "./Trade";
 
+/** Asset keys with a live staking provider (packages/features StakingService). Others show "coming soon". */
+export const STAKEABLE_NOW: readonly string[] = ["hbar", "sol"];
+
 /** Top-level paths the feature screens own. */
 export const FEATURE_PATHS = ["stake", "swap", "buy", "trade", "explore"] as const;
 

@@ -48,7 +48,7 @@ export const SUI_FEATURES = [
 ] as const;
 
 /** DappRequest method names the background allowlists for family "sui" (see docs/phase2/integration/move.md). */
-export const SUI_SIGNING_METHODS = [SuiSignTransaction, SuiSignAndExecuteTransaction, SuiSignPersonalMessage] as const;
+export { SUI_SIGNING_METHODS } from "../shared/move-methods.js";
 
 /**
  * Sui Wallet Standard chains for registry networks. Sui's CAIP-2 ids (`sui:mainnet`, `sui:testnet`, `sui:devnet`)

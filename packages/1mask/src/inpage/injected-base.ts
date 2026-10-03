@@ -19,14 +19,23 @@ export interface InjectedOptions {
   globalKey?: string;
 }
 
+/**
+ * Global roots 1Mask created itself (window.clipwallet). The NEAR/Stellar/Algorand providers and the TON
+ * Connect bridge share one root, whichever installs first; another wallet's global is never extended by TON.
+ */
+export const OWN_GLOBAL_ROOTS = new WeakSet<object>();
+
 /** Puts `provider` at window[globalKey][family] (non-writable, so a page script can't swap it silently). */
 export function exposeOnGlobal(win: Window, globalKey: string, family: Family, provider: object, identity: WalletIdentity): () => void {
   const w = win as unknown as Record<string, unknown>;
   let root = w[globalKey] as Record<string, unknown> | undefined;
   if (!root || typeof root !== "object") {
     root = Object.create(null) as Record<string, unknown>;
-    Object.defineProperty(root, "info", { value: Object.freeze({ name: identity.name, icon: identity.icon, rdns: identity.rdns }), enumerable: true });
+    OWN_GLOBAL_ROOTS.add(root);
     Object.defineProperty(win, globalKey, { value: root, configurable: true, enumerable: false, writable: false });
+  }
+  if (OWN_GLOBAL_ROOTS.has(root) && !Object.prototype.hasOwnProperty.call(root, "info")) {
+    Object.defineProperty(root, "info", { value: Object.freeze({ name: identity.name, icon: identity.icon, rdns: identity.rdns }), enumerable: true });
   }
   Object.defineProperty(root, family, { value: provider, configurable: true, enumerable: true, writable: false });
   return () => {

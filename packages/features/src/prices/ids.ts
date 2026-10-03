@@ -34,6 +34,8 @@ export const COINGECKO_IDS: Record<string, string> = {
   apt: "aptos",
   strk: "starknet",
   ton: "the-open-network",
+  // chains-ton keys the native coin "gram" (Toncoin was renamed Gram on 2026-06-15; same coin, same CoinGecko id).
+  gram: "the-open-network",
   xlm: "stellar",
   algo: "algorand",
 };
@@ -42,6 +44,11 @@ export const COINGECKO_IDS: Record<string, string> = {
 export const TESTNET_ALIASES: Record<string, string> = {
   "usdc-testnet": "usdc",
   "btc-testnet": "btc",
+  // chains-evm (and chains-starknet on Sepolia) key testnet ETH "eth-testnet".
+  "eth-testnet": "eth",
+  // Westend (WND) and Paseo (PAS) are the Polkadot test networks' coins.
+  wnd: "dot",
+  pas: "dot",
 };
 
 /** Bridged stablecoins priced as the dollar they track (display only). */

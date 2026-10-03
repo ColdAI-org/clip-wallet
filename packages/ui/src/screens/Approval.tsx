@@ -1,3 +1,5 @@
+import { HardwareApprovalGate } from "../hardware/HardwareApprovalGate";
+import { useHardwareOptional } from "../hardware/context";
 import { useId, useState } from "react";
 import type { BalanceChange } from "@clip-wallet/core";
 import type { ApprovalView } from "../client";
@@ -251,9 +253,21 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
 }
 
 export function ApprovalScreen(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
-  return props.approval.kind === "connect" ? (
-    <ConnectApproval approval={props.approval} onDone={props.onDone} />
-  ) : (
-    <TransactionApproval approval={props.approval} onDone={props.onDone} />
+  const hardware = useHardwareOptional();
+  const { client } = useUi();
+  if (props.approval.kind === "connect") return <ConnectApproval approval={props.approval} onDone={props.onDone} />;
+  const tx = <TransactionApproval approval={props.approval} onDone={props.onDone} />;
+  if (!hardware) return tx;
+  // While a Ledger or Keystone signs this request, the device step replaces the approval screen.
+  return (
+    <HardwareApprovalGate
+      approvalId={props.approval.id}
+      title={props.approval.decoded?.title ?? ""}
+      state={props.approval.hardware}
+      client={hardware}
+      onRetry={() => void client.approve(props.approval.id).then(() => props.onDone?.(true), () => undefined)}
+    >
+      {tx}
+    </HardwareApprovalGate>
   );
 }

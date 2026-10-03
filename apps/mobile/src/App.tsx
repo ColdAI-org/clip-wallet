@@ -15,6 +15,7 @@ import { Receive } from "./screens/Receive";
 import { Settings } from "./screens/Settings";
 import { Scan } from "./screens/Scan";
 import { Browser } from "./screens/Browser";
+import { Explore } from "./screens/Explore";
 import { ApprovalScreen } from "./screens/Approval";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
@@ -40,6 +41,8 @@ function Routes(props: { route: Route }) {
       return <Receive assetKey={r.assetKey} />;
     case "scan":
       return <Scan />;
+    case "explore":
+      return <Explore />;
   }
 }
 

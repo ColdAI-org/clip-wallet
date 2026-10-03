@@ -14,7 +14,8 @@ export type Route =
   | { name: "asset"; id: string }
   | { name: "send"; assetKey?: string }
   | { name: "receive"; assetKey?: string }
-  | { name: "scan" };
+  | { name: "scan" }
+  | { name: "explore" };
 
 export const TABS = ["home", "collectibles", "activity", "browser", "settings"] as const;
 

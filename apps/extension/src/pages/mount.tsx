@@ -1,4 +1,5 @@
 /** Shared bootstrap for the popup, full-tab and approval-window pages. */
+import "../shared/node-globals";
 import "@fontsource-variable/inter";
 import "@clip-wallet/ui/styles.css";
 import { StrictMode, type ReactNode } from "react";
@@ -8,6 +9,8 @@ import { browser } from "wxt/browser";
 import config from "../../clip.config";
 import { CURRENCIES, MEDIA_PROXY_URL } from "../app-settings";
 import { createBusClient } from "../shared/bus";
+import { createFeaturesBusClient } from "../shared/features-bus";
+import { hardwareClient } from "../shared/hardware-client";
 import { createPasskeyFactory } from "../passkey/bridge";
 
 const options: Partial<UiOptions> = {
@@ -24,7 +27,7 @@ export function mountWallet(variant: Exclude<Variant, "window">) {
   const client = createBusClient(undefined, __CLIP_MOCKS__);
   // The action popup can't host a WebAuthn ceremony (the OS sheet closes it); the tab can.
   const passkeys = createPasskeyFactory(variant === "tab");
-  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} />);
+  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} hardware={hardwareClient} />);
 }
 
 export function mountApprovalWindow() {
@@ -37,6 +40,7 @@ export function mountApprovalWindow() {
       options={options}
       passkeys={createPasskeyFactory(true)}
       focusId={focusId}
+      hardware={hardwareClient}
       onEmpty={() => window.close()}
     />,
   );

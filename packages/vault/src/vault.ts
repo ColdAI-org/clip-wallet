@@ -511,6 +511,23 @@ export class ClipVault implements Vault {
     return passkeyBackup.encrypt(phrase, prfOutput);
   }
 
+  /**
+   * Phase 2: restores a passkey backup (createPasskeyBackup's blob) into an EMPTY vault, protected by a new
+   * password. The phrase is decrypted and imported here, so it never leaves the vault. A PRF output from the
+   * wrong passkey (or a damaged blob) throws `vault/backup-mismatch` and leaves the vault empty.
+   */
+  async restorePasskeyBackup(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void> {
+    if (await this.load()) throw VaultErrors.exists();
+    this.assertPassword(password);
+    let phrase: string;
+    try {
+      phrase = passkeyBackup.decrypt(blob, prfOutput);
+    } catch (e) {
+      throw VaultErrors.backupMismatch(e instanceof Error ? e.message : undefined);
+    }
+    await this.initialise(phrase, password);
+  }
+
   /* ------------------------------------------------------------ internals */
 
   private addressContext(bitcoinAddressType: BitcoinAddressType): AddressContext {

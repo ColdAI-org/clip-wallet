@@ -20,6 +20,8 @@ export const VaultErrors = {
   unknownAccount: () => new ClipError("That account isn't in this wallet.", "vault/unknown-account"),
   passkeyUnavailable: () =>
     new ClipError("Passkey unlock isn't set up on this device. Use your password.", "vault/passkey-unavailable"),
+  backupMismatch: (cause?: unknown) =>
+    new ClipError("That passkey can't unlock this backup. Try the passkey you used when you made it.", "vault/backup-mismatch", cause),
   passkeyFailed: (cause?: unknown) =>
     new ClipError("Passkey unlock didn't work. Use your password instead.", "vault/passkey-failed", cause),
 } as const;

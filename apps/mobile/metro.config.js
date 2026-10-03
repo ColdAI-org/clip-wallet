@@ -7,8 +7,14 @@ const path = require("node:path");
 const config = getDefaultConfig(__dirname);
 const upstream = config.resolver.resolveRequest;
 
+/** Native modules a dependency requires on a code path the wallet never runs (see each shim). */
+const SHIMS = {
+  "react-native-fast-pbkdf2": path.join(__dirname, "src/shims/no-pbkdf2.js"),
+};
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   const resolve = upstream ?? context.resolveRequest;
+  if (SHIMS[moduleName]) return { type: "sourceFile", filePath: SHIMS[moduleName] };
   if (moduleName.startsWith(".") && moduleName.endsWith(".js")) {
     const from = path.dirname(context.originModulePath);
     if (from.includes(`${path.sep}packages${path.sep}`) && !from.includes(`${path.sep}node_modules${path.sep}`)) {

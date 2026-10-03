@@ -68,7 +68,22 @@ export const MOCK_NETWORKS: Network[] = [
     rpcUrls: ["https://mempool.space/testnet/api"],
     explorerUrl: "https://mempool.space/testnet",
   },
+  // Phase 2 families (ids match the real catalogue so features and featured apps line up).
+  p2("sui:testnet", "sui", "Sui Testnet", "sui", "SUI", "Sui", 9),
+  p2("aptos:2", "aptos", "Aptos Testnet", "apt", "APT", "Aptos", 8),
+  p2("cip34:0-1", "cardano", "Cardano Preprod", "ada", "ADA", "Cardano", 6),
+  p2("polkadot:374057be67b355151f271ff70c3db983", "substrate", "Paseo", "pas", "PAS", "Paseo", 10),
+  p2("starknet:SN_SEPOLIA", "starknet", "Starknet Sepolia", "strk", "STRK", "Starknet Token", 18),
+  p2("ton:-3", "ton", "TON Testnet", "gram", "GRAM", "Gram", 9),
+  p2("near:testnet", "near", "NEAR Testnet", "near", "NEAR", "NEAR", 24),
+  p2("stellar:testnet", "stellar", "Stellar Testnet", "xlm", "XLM", "Lumens", 7),
+  p2("tezos:NetXsqzbfFenSTS", "tezos", "Tezos Shadownet", "xtz", "XTZ", "Tez", 6),
+  p2("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe", "algorand", "Algorand TestNet", "algo", "ALGO", "Algo", 6),
 ];
+
+function p2(id: string, family: Network["family"], name: string, key: string, symbol: string, assetName: string, decimals: number): Network {
+  return { id, family, name, nativeAsset: native(key, symbol, assetName, decimals, id), testnet: true, rpcUrls: [], explorerUrl: "" };
+}
 
 export const NET = {
   base: "eip155:84532",
@@ -77,6 +92,16 @@ export const NET = {
   hedera: "hedera:testnet",
   solana: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
   bitcoin: "bip122:000000000933ea01ad0ee984209779ba",
+  sui: "sui:testnet",
+  aptos: "aptos:2",
+  cardano: "cip34:0-1",
+  substrate: "polkadot:374057be67b355151f271ff70c3db983",
+  starknet: "starknet:SN_SEPOLIA",
+  ton: "ton:-3",
+  near: "near:testnet",
+  stellar: "stellar:testnet",
+  tezos: "tezos:NetXsqzbfFenSTS",
+  algorand: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe",
 } as const;
 
 /** USDC deployments (testnet addresses are illustrative). Same issuer → same key "usdc". */

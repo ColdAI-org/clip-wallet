@@ -27,7 +27,7 @@ export function Explore() {
     groups.set(k, [...(groups.get(k) ?? []), d]);
   }
   return (
-    <Screen back title="Explore">
+    <Screen nav title="Explore">
       <h2 className="clip-h2">Your liquidity</h2>
       {lp.error ? <ErrorNote message={userMessageOf(lp.error)} /> : null}
       {!lp.data && !lp.error && <Spinner />}

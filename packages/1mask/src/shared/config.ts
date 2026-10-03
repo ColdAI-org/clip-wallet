@@ -36,7 +36,38 @@ export interface InpageConfig {
   /** Also set window.ethereum (only if nothing else owns it). Default false: EIP-6963 only. */
   claimWindowEthereum?: boolean;
   /** Which providers to install. Default: all. */
-  providers?: { evm?: boolean; solana?: boolean; bitcoin?: boolean };
+  providers?: {
+    evm?: boolean;
+    solana?: boolean;
+    bitcoin?: boolean;
+    sui?: boolean;
+    aptos?: boolean;
+    near?: boolean;
+    stellar?: boolean;
+    tezos?: boolean;
+    algorand?: boolean;
+    cardano?: boolean;
+    substrate?: boolean;
+    starknet?: boolean;
+    ton?: boolean;
+  };
+  /** Also set legacy window.starknet (only if nothing owns it). Default false: window.starknet_<id> only. */
+  claimWindowStarknet?: boolean;
+  /**
+   * TON Connect JS bridge: window[key].tonconnect. `appName` and `key` must equal the wallets-list entry's
+   * app_name / bridge key (docs/listings/ton-connect.md). `features` = chains-ton `createTonModule().features`.
+   */
+  tonConnect?: {
+    key: string;
+    appName: string;
+    appVersion: string;
+    features: import("../inpage/ton.js").TonFeature[];
+    walletInfo?: import("../inpage/ton.js").TonWalletInfo;
+  };
+  /** Global the NEAR/Stellar/Algorand providers hang off (window[globalKey].<family>). Default "clipwallet". */
+  globalKey?: string;
+  /** Beacon extension id (Beacon's wallet list matches the browser extension id). Default: identity.rdns. */
+  beaconExtensionId?: string;
   /** Per-site compatibility mode. Typed stub, NOT implemented in v1. */
   compatibility?: CompatibilityModeConfig;
   /** Per-request timeout in the page, ms. Default 10 minutes (approvals can take a while). */

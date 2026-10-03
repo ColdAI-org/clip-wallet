@@ -26,6 +26,8 @@ export function ApprovalQueue(props: { focusId?: string; onEmpty?: () => void; s
   useEffect(() => {
     void load();
   }, [load]);
+  // Re-fetch on background changes: hardware signing steps (Ledger confirm, Keystone QR) arrive this way.
+  useEffect(() => client.onChange?.(() => void load()), [client, load]);
 
   const current = items?.find((i) => i.id === focus) ?? items?.[0];
   const body = err ? (

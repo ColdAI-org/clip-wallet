@@ -388,3 +388,15 @@ describe("taproot keys (BIP-86 key from Account.taprootPublicKey)", () => {
     });
   });
 });
+
+describe("raw payloads for hardware wallets", () => {
+  it("every input payload carries the whole PSBT and its input index", async () => {
+    const { mod, c, req } = await sendRequest();
+    const payloads = await mod.prepare(req, c, "a");
+    expect(payloads.map((p) => p.raw?.format)).toEqual(["psbt", "psbt"]);
+    expect(payloads.map((p) => p.raw?.inputIndex)).toEqual([0, 1]);
+    const tx = Transaction.fromPSBT(payloads[0]!.raw!.bytes, TX_OPTS);
+    expect(tx.inputsLength).toBe(2);
+    expect(payloads[1]!.raw!.bytes).toBe(payloads[0]!.raw!.bytes);
+  });
+});

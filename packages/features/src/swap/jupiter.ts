@@ -1,7 +1,6 @@
 import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
 import { clusterOf } from "@clip-wallet/chains-solana";
 import { fetchJson } from "../http.js";
-import { ATA_PROGRAM, COMPUTE_BUDGET_PROGRAM, JUPITER_V6_PROGRAM, MEMO_PROGRAM, SYSTEM_PROGRAM, TOKEN_2022_PROGRAM, TOKEN_PROGRAM, onlyPrograms } from "../solana-verify.js";
 import type { Step } from "../steps.js";
 import { randomId } from "../util.js";
 import type { Unavailable } from "../views.js";
@@ -46,7 +45,6 @@ interface ExecuteResponse {
 }
 
 /** Programs a Jupiter-built transaction may call for the wallet to describe it (after a successful dry run). */
-export const JUPITER_ALLOWED_PROGRAMS = [JUPITER_V6_PROGRAM, SYSTEM_PROGRAM, COMPUTE_BUDGET_PROGRAM, TOKEN_PROGRAM, TOKEN_2022_PROGRAM, ATA_PROGRAM, MEMO_PROGRAM];
 
 function plainOrderError(o: OrderResponse): ClipError {
   const m = (o.errorMessage ?? "").toLowerCase();
@@ -118,7 +116,6 @@ export class JupiterSwap implements SwapProvider {
       {
         title: `Swap ${quote.sell.symbol} for ${quote.buy.symbol}`,
         request,
-        verify: (r) => onlyPrograms(r, JUPITER_ALLOWED_PROGRAMS),
         finish: async (result) => {
           const signed = Array.isArray(result) ? (result[0] as { signedTransaction?: string } | undefined)?.signedTransaction : undefined;
           if (!signed) throw new ClipError("The swap wasn't signed. Nothing was sent.", "swap/not-signed");

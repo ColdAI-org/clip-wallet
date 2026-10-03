@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -23,7 +23,16 @@ import { hashSignablePayload } from "@clip-wallet/vault";
 import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
+import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
+import { CARDANO_METHODS_ALLOWED } from "@clip-wallet/1mask/background";
+import type { LazyChainModule } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
+import { PlatformService, type PlatformRequest } from "./platform";
+import type { Signature, SignablePayload } from "@clip-wallet/core";
+import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/hardware/core";
+import type { HardwareAccountView } from "@clip-wallet/ui";
+import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
+import type { FeaturesService } from "@clip-wallet/features";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -74,7 +83,11 @@ const K = {
   permissions: "clip/permissions",
   activity: "clip/activity",
   recipients: "clip/recipients",
+  activeHw: "clip/hardware/active",
 } as const;
+
+/** Ledger app the user must open, per family. */
+const LEDGER_APP: Record<string, string> = { evm: "Ethereum", solana: "Solana", bitcoin: "Bitcoin", hedera: "Hedera" };
 
 const CACHE_TTL_MS = 30_000;
 const NETWORK_TIMEOUT_MS = 10_000;
@@ -83,7 +96,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 }
 const APPROVAL_TTL_MS = 2 * 60_000;
-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin"];
+const FAMILIES: readonly Family[] = CORE_FAMILIES;
 
 function parseUnits(value: string, decimals: number): bigint {
   const [w = "0", f = ""] = value.split(".");
@@ -113,6 +126,11 @@ export class WalletService implements DappHost {
   private approvals = new Map<string, Pending>();
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
+  private features?: Pick<FeaturesService, "handle" | "refine">;
+  /** Accounts the user was just shown on "Connect a hardware wallet"; hwAddAccounts adds from here. */
+  private hwSeen = new Map<string, HardwareAccount>();
+  /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
+  readonly platform: PlatformService;
 
   constructor(
     readonly deps: Dependencies,
@@ -120,11 +138,52 @@ export class WalletService implements DappHost {
     private readonly env: Env,
   ) {
     this.ceremonies = new PasskeyCeremonies(() => env.passkey());
+    const names = deps.names;
+    this.platform = new PlatformService({
+      vault: deps.vault,
+      kv,
+      ceremonies: this.ceremonies,
+      ceremonyMeta: () => env.passkey(),
+      backup: deps.backup,
+      families: () => [...new Set(deps.networks.map((n) => n.family))],
+      hederaAccountId: (account) => {
+        const network = deps.networks.find((n) => n.family === "hedera");
+        return network ? deps.hederaAccountId({ network, account, fetch: globalThis.fetch.bind(globalThis) }) : Promise.resolve(undefined);
+      },
+      ...(names.reverse ? { names: { reverse: (a, f, n) => names.reverse!(a, f, n) } } : {}),
+      changed: () => {
+        this.accounts.clear();
+        this.cache.clear();
+        this.deps.dapps.accountsChanged?.();
+        env.broadcast();
+      },
+      onRestored: () => this.afterUnlock(),
+    });
   }
 
   start() {
     this.deps.dapps.start(this);
     this.deps.walletConnect.start(this);
+  }
+
+  /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
+
+  attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
+    this.features = f;
+  }
+  featureCtx(networkId: string): Promise<ChainContext> {
+    return this.ctx(networkId);
+  }
+  async featureBalances(): Promise<TokenBalance[]> {
+    return (await this.portfolio()).balances;
+  }
+  /** Wallet-built request (staking, swap, trade) → the normal approval queue. */
+  enqueueWalletRequest(request: DappRequest, appName: string) {
+    return this.enqueueTransaction(request, { name: appName, origin: "wallet", domain: appName, verified: true });
+  }
+  async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
+    const network = this.network(request.networkId);
+    return this.module(network.family).decode(request, await this.ctx(network.id, request.origin));
   }
 
   /* ------------------------------------------------------------------ bus entry */
@@ -142,6 +201,8 @@ export class WalletService implements DappHost {
   }
 
   private async dispatch(m: Request, status: "empty" | "locked" | "unlocked"): Promise<unknown> {
+    // Platform messages check their own lock state (restore runs while the vault is empty).
+    if (this.platform.handles(m.type)) return this.platform.handle(m as PlatformRequest);
     switch (m.type) {
       case "getState":
         return this.state(status);
@@ -191,6 +252,10 @@ export class WalletService implements DappHost {
     }
 
     this.requireUnlocked(status);
+    if (isFeatureRequest(m)) {
+      if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
+      return this.features.handle(m as FeatureRequest);
+    }
     switch (m.type) {
       case "getPortfolio":
         return this.portfolio(!!m.refresh);
@@ -211,9 +276,11 @@ export class WalletService implements DappHost {
       case "getReceiveTargets":
         return this.receiveTargets(m.assetKey);
       case "listApprovals":
-        return [...this.approvals.values()].map((p) => p.view).sort((a, b) => a.createdAt - b.createdAt);
-      case "getApproval":
-        return this.approvals.get(m.id)?.view ?? null;
+        return [...this.approvals.values()].map((p) => this.withKeystone(p.view)).sort((a, b) => a.createdAt - b.createdAt);
+      case "getApproval": {
+        const v = this.approvals.get(m.id)?.view;
+        return v ? this.withKeystone(v) : null;
+      }
       case "approve":
         return this.approve(m.id, !!m.allowBlind);
       case "reject":
@@ -224,6 +291,65 @@ export class WalletService implements DappHost {
         return this.disconnect(m.id);
       case "pairWalletConnect":
         return this.deps.walletConnect.pair(m.uri);
+      case "hwLedgerAccounts":
+      case "hwKeystoneAccounts": {
+        const signer = m.type === "hwLedgerAccounts" ? this.deps.ledger : this.deps.keystone.signer;
+        const list = await signer.listAccounts(m.family, m.start, m.count, { pathStyle: m.pathStyle });
+        for (const a of list) this.hwSeen.set(a.id, a);
+        return list.map((a) => this.hwView(a));
+      }
+      case "hwKeystoneImport": {
+        const sync = await this.deps.keystone.signer.importSync(urFromJson(m.ur));
+        const prefix = { evm: "m/44'/60'", solana: "m/44'/501'", bitcoin: "m/84'" } as const;
+        const families = (["evm", "solana", "bitcoin"] as const).filter((f) => sync.keys.some((k) => k.path.startsWith(prefix[f])));
+        return { fingerprint: sync.fingerprint, families };
+      }
+      case "hwAddAccounts": {
+        const picked = m.ids.map((x) => this.hwSeen.get(x)).filter((a): a is HardwareAccount => !!a);
+        if (picked.length !== m.ids.length) throw HardwareErrors.unknownAccount();
+        await this.deps.hardware.addAccounts(picked);
+        // The first account added for a family becomes the one the wallet uses for it.
+        const active = await this.activeHw();
+        for (const a of picked) if (!active[a.family]) active[a.family] = a.id;
+        await this.kv.set(K.activeHw, active);
+        await this.afterUnlock();
+        return;
+      }
+      case "hwListAccounts": {
+        const active = await this.activeHw();
+        return (await this.deps.hardware.accounts()).map((a) => ({ ...this.hwView(a), active: active[a.family] === a.id }));
+      }
+      case "hwRenameAccount":
+        await this.deps.hardware.updateAccount(m.id, { label: m.label || undefined });
+        this.env.broadcast();
+        return;
+      case "hwForgetDevice": {
+        await this.deps.hardware.removeDevice(m.kind, m.fingerprint);
+        if (m.kind === "keystone") await this.deps.keystone.signer.forget(m.fingerprint);
+        const active = await this.activeHw();
+        for (const [f, hwId] of Object.entries(active)) if (hwId && !(await this.deps.hardware.account(hwId))) delete active[f as Family];
+        await this.kv.set(K.activeHw, active);
+        await this.afterUnlock();
+        return;
+      }
+      case "hwSetActive": {
+        const active = await this.activeHw();
+        if (m.accountId) {
+          const a = await this.deps.hardware.account(m.accountId);
+          if (!a || a.family !== m.family) throw HardwareErrors.unknownAccount();
+          active[m.family] = m.accountId;
+        } else delete active[m.family];
+        await this.kv.set(K.activeHw, active);
+        await this.afterUnlock();
+        return;
+      }
+      case "hwKeystoneAnswer":
+        this.deps.keystone.bridge.answer(m.id, m.ur);
+        return;
+      case "hwCancel":
+        this.deps.keystone.bridge.cancel(m.id);
+        await this.deps.ledger.close(); // aborts a pending Ledger exchange: sign() rejects, approve() throws
+        return;
       case "devSimulateRequest":
         if (!this.deps.mocks) throw new ClipError("Not available in this build.", "dev/disabled");
         return this.simulate(m.kind);
@@ -260,16 +386,16 @@ export class WalletService implements DappHost {
     await this.deps.vault.lock();
     this.accounts.clear();
     this.deps.dapps.accountsChanged?.();
+    this.deps.hardware.lock();
+    this.deps.keystone.bridge.cancelAll();
     this.env.broadcast();
   }
 
   /** Derives account 0 for every enabled family (public data only) and caches it. */
   private async afterUnlock() {
     const families = [...new Set(this.deps.networks.map((n) => n.family))];
-    for (const f of families) {
-      const acct = await this.deps.vault.deriveAccount(f, 0);
-      this.accounts.set(f, acct);
-    }
+    this.accounts.clear();
+    for (const f of families) this.accounts.set(f, await this.walletAccount(f));
     const hedera = this.deps.networks.find((n) => n.family === "hedera");
     const hAcct = this.accounts.get("hedera");
     if (hedera && hAcct) {
@@ -283,10 +409,36 @@ export class WalletService implements DappHost {
     this.env.broadcast();
   }
 
+  /** The account a site sees (its own choice in Settings → Accounts, else the wallet default). */
+  private async siteAccount(family: Family, origin: string): Promise<Account> {
+    try {
+      // A site's own choice wins; otherwise it sees the wallet's account (hardware or phrase).
+      return (await this.platform.siteChoice(family, origin)) ? await this.platform.activeAccount(family, origin) : await this.account(family);
+    } catch (e) {
+      // An origin that isn't a URL (some WalletConnect peers) can't have its own choice: use the default.
+      if (e instanceof ClipError && e.code === "accounts/bad-origin") return this.account(family);
+      throw e;
+    }
+  }
+
+  private async activeHw(): Promise<Partial<Record<Family, string>>> {
+    return (await this.kv.get<Partial<Record<Family, string>>>(K.activeHw)) ?? {};
+  }
+
+  /**
+   * The wallet's account for a family: a hardware account picked for it (Settings → Hardware wallets) replaces
+   * the phrase account; otherwise the Settings → Accounts default (account 0 until chosen).
+   */
+  private async walletAccount(family: Family): Promise<Account> {
+    const hwId = (await this.activeHw())[family];
+    const hw = hwId ? await this.deps.hardware.account(hwId) : undefined;
+    return hw ?? this.platform.activeAccount(family);
+  }
+
   private async account(family: Family): Promise<Account> {
     let a = this.accounts.get(family);
     if (!a) {
-      a = await this.deps.vault.deriveAccount(family, 0);
+      a = await this.walletAccount(family);
       this.accounts.set(family, a);
     }
     return a;
@@ -304,13 +456,22 @@ export class WalletService implements DappHost {
     return n;
   }
 
-  private async ctx(networkId: string): Promise<ChainContext> {
+  /** `origin` (a dapp request): sign with the account that site sees; otherwise the wallet's active account. */
+  private async ctx(networkId: string, origin?: string): Promise<ChainContext> {
     const network = this.network(networkId);
     const override = (await this.prefs()).rpcOverrides[networkId];
-    return {
+    const account = origin && origin !== "wallet" ? await this.siteAccount(network.family, origin) : await this.account(network.family);
+    const base: ChainContext = {
       network: override ? { ...network, rpcUrls: [override, ...network.rpcUrls] } : network,
-      account: await this.account(network.family),
+      account,
       fetch: globalThis.fetch.bind(globalThis),
+    };
+    if (network.family !== "bitcoin" || this.deps.hardware.owns(account.id)) return base;
+    // Bitcoin change addresses (vault-v2): the same list goes to buildTransfer/decode/prepare/finalize.
+    return {
+      ...base,
+      changeAddresses: await this.deps.vault.listChange("bitcoin", account.index),
+      freshChangeAddress: () => this.deps.vault.freshChange("bitcoin", account.index),
     };
   }
 
@@ -388,23 +549,38 @@ export class WalletService implements DappHost {
   async resolveRecipient(input: string, assetKey: string): Promise<RecipientResolution> {
     let address = input.trim();
     let displayName: string | undefined;
-    const looksLikeName = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.(eth|hbar|sol|btc)$/i.test(address);
+    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream).
+    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream)$/i.test(address);
+    let implied: string[] = [];
+    let addressOn: Record<string, string> = {};
     if (looksLikeName) {
-      const hit = await this.deps.names.resolve(address);
+      let hit: Awaited<ReturnType<Dependencies["names"]["resolve"]>>;
+      try {
+        hit = await this.deps.names.resolve(address);
+      } catch {
+        return { kind: "invalid", message: `We couldn't look up ${address} right now. Try again, or paste their address.` };
+      }
       if (!hit) return { kind: "invalid", message: `We couldn't find ${address}. Check the spelling, or paste their address.` };
       address = hit.address;
       displayName = hit.displayName;
+      implied = hit.networkIds ?? [];
+      addressOn = hit.addressOn ?? {};
     }
+    await this.deps.loadChains();
     const carrying = this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id));
-    const recognised = FAMILIES.filter((f) => this.module(f).isAddress(address));
+    const recognised = FAMILIES.filter((f) => !!this.deps.chains[f]?.isAddress(address));
     if (recognised.length === 0) return { kind: "invalid", message: "That doesn't look like an address. Check it and try again." };
-    const candidates = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
+    const all = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
+    // A name that points at specific networks narrows the choice (no prompt when only one is left).
+    const narrowed = implied.length ? all.filter((n) => implied.includes(n.id)) : all;
+    const candidates = narrowed.length ? narrowed : all;
+    const on = (id: string) => addressOn[id] ?? address;
     const symbol = this.deps.assets.find((a) => a.key === assetKey)?.symbol ?? "this";
     if (candidates.length === 0) return { kind: "invalid", message: `That address can't receive ${symbol}. Ask them for a different address.` };
-    if (candidates.length === 1) return { kind: "resolved", address, displayName, networkId: candidates[0]!.id };
+    if (candidates.length === 1) return { kind: "resolved", address: on(candidates[0]!.id), displayName, networkId: candidates[0]!.id };
 
     const remembered = ((await this.kv.get<Record<string, string>>(K.recipients)) ?? {})[`${address.toLowerCase()}|${assetKey}`];
-    if (remembered && candidates.some((c) => c.id === remembered)) return { kind: "resolved", address, displayName, networkId: remembered };
+    if (remembered && candidates.some((c) => c.id === remembered)) return { kind: "resolved", address: on(remembered), displayName, networkId: remembered };
 
     const { balances } = await this.portfolio();
     return {
@@ -426,10 +602,15 @@ export class WalletService implements DappHost {
     if (!asset) throw new ClipError("That asset can't be sent there.", "send/asset");
     const network = this.network(m.networkId);
     const mod = this.module(network.family);
-    // Re-check the recipient in the background: never trust the page's network choice blindly.
-    const ok = mod.isAddress(m.to) || (await this.deps.names.resolve(m.to)) !== null;
-    if (!ok) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
-    const to = mod.isAddress(m.to) ? m.to : (await this.deps.names.resolve(m.to))!.address;
+    await this.deps.loadChains();
+    // Re-check the recipient in the background: never trust the page's network choice blindly. Names are
+    // re-resolved here, using the name's own address for this network when it has one (ENS per-chain records).
+    let to = m.to;
+    if (!mod.isAddress(m.to)) {
+      const hit = await this.deps.names.resolve(m.to).catch(() => null);
+      to = hit ? (hit.addressOn?.[m.networkId] ?? hit.address) : "";
+    }
+    if (!to || !mod.isAddress(to)) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
     const amount = parseUnits(m.amount, asset.decimals);
     if (amount <= 0n) throw new ClipError("Enter an amount above zero.", "send/amount");
     const ctx = await this.ctx(network.id);
@@ -469,7 +650,7 @@ export class WalletService implements DappHost {
     extra: { recipient?: string; warnings?: Warning[] } = {},
   ): Promise<{ id: string; promise: Promise<unknown> }> {
     const network = this.network(request.networkId);
-    const ctx = await this.ctx(network.id);
+    const ctx = await this.ctx(network.id, request.origin);
     let decoded: DecodedRequest;
     try {
       decoded = await this.module(network.family).decode(request, ctx);
@@ -485,6 +666,7 @@ export class WalletService implements DappHost {
         networkId: network.id,
       };
     }
+    decoded = this.features?.refine(request, decoded) ?? decoded;
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -525,7 +707,7 @@ export class WalletService implements DappHost {
   }
 
   private async enqueueConnect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string; warnings?: Warning[] }) {
-    const account = await this.account(p.family);
+    const account = await this.siteAccount(p.family, p.origin);
     const id = crypto.randomUUID();
     const network = this.network(p.networkId);
     const view: ApprovalView = {
@@ -588,16 +770,19 @@ export class WalletService implements DappHost {
     }
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
-    const ctx = await this.ctx(network.id);
+    const ctx = await this.ctx(network.id, req.origin);
     let result: unknown;
+    const hw = this.deps.hardware.owns(ctx.account.id);
     try {
       const payloads = await mod.prepare(req, ctx, id);
-      this.deps.vault.registerApproval(id, payloads.map((x) => hashSignablePayload(x)), APPROVAL_TTL_MS);
+      if (hw) this.deps.hardware.registerApproval(id, payloads, APPROVAL_TTL_MS);
+      else this.deps.vault.registerApproval(id, payloads.map((x) => hashSignablePayload(x)), APPROVAL_TTL_MS);
       const sigs = [];
-      for (const payload of payloads) sigs.push(await this.deps.vault.sign(payload));
+      for (const payload of payloads) sigs.push(hw ? await this.signOnDevice(p, payload) : await this.deps.vault.sign(payload));
       result = await mod.finalize(req, sigs, ctx);
     } catch (e) {
-      this.deps.vault.revokeApproval(id);
+      if (hw) this.deps.hardware.revokeApproval(id);
+      else this.deps.vault.revokeApproval(id);
       throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
     }
     this.approvals.delete(id);
@@ -605,6 +790,38 @@ export class WalletService implements DappHost {
     await this.addActivity(this.activityFor(p.view, result));
     p.resolve(result);
     this.env.broadcast();
+  }
+
+  /** Hardware sign: tell the approval window which device step to show, then wait for the device. */
+  private async signOnDevice(p: Pending, payload: SignablePayload): Promise<Signature> {
+    const acct = await this.deps.hardware.account(payload.accountId);
+    if (!acct) throw HardwareErrors.unknownAccount();
+    if (acct.hardware.kind === "ledger") p.view.hardware = { kind: "ledger", stage: "confirm", app: LEDGER_APP[acct.family] ?? "right" };
+    this.env.broadcast();
+    try {
+      return await this.deps.hardware.sign(payload, { request: p.request!, decoded: p.view.decoded! });
+    } finally {
+      p.view.hardware = undefined;
+      this.env.broadcast();
+    }
+  }
+
+  /** A Keystone exchange in progress for this approval is shown as its QR step. */
+  private withKeystone(v: ApprovalView): ApprovalView {
+    const x = this.deps.keystone.bridge.current(v.id);
+    return x ? { ...v, hardware: { kind: "keystone", stage: "exchange", request: { type: x.type, cborHex: x.cborHex, expect: x.expect } } } : v;
+  }
+
+  private hwView(a: HardwareAccount): HardwareAccountView {
+    return {
+      id: a.id,
+      family: a.family as HardwareAccountView["family"],
+      index: a.index,
+      address: a.hederaAccountId ?? a.address,
+      derivationPath: a.derivationPath,
+      label: a.label,
+      hardware: { kind: a.hardware.kind, fingerprint: a.hardware.fingerprint, pathStyle: a.hardware.pathStyle, deviceName: a.hardware.deviceName },
+    };
   }
 
   private activityFor(view: ApprovalView, result: unknown): ActivityEntry {
@@ -713,7 +930,7 @@ export class WalletService implements DappHost {
   async accountsFor(origin: string, family: Family): Promise<Account[]> {
     if (!(await this.permissions.has(origin, family))) return [];
     if (!(await this.isUnlocked())) return [];
-    return [await this.account(family)];
+    return [await this.siteAccount(family, origin)];
   }
 
   async approveConnect(p: Parameters<DappHost["approveConnect"]>[0]): Promise<boolean> {
@@ -757,6 +974,16 @@ export class WalletService implements DappHost {
     const body = (await res.json().catch(() => ({}))) as { result?: unknown; error?: { code?: number; message?: string } };
     if (body.error) throw Object.assign(new Error(body.error.message ?? "RPC error"), { code: body.error.code ?? -32603 });
     return body.result;
+  }
+
+  async chainRead(req: DappRequest): Promise<unknown> {
+    const entry = this.deps.chains.cardano as (CardanoModule | LazyChainModule<CardanoModule>) | undefined;
+    if (req.family !== "cardano" || !entry || !(CARDANO_METHODS_ALLOWED.readOnly as readonly string[]).includes(req.method)) {
+      throw new ClipError("This request isn't available.", "chain-read/unsupported");
+    }
+    const m = "load" in entry ? await entry.load() : entry;
+    if (typeof m.read !== "function") throw new ClipError("This request isn't available.", "chain-read/unsupported");
+    return m.read(req.method as CardanoReadMethod, req.params, await this.ctx(req.networkId, req.origin));
   }
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */

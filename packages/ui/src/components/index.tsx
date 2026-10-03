@@ -4,7 +4,8 @@ import type { Nft } from "@clip-wallet/core";
 import type { Warning } from "@clip-wallet/core";
 import { hueFor, proxyMedia } from "../lib/media";
 import { useRouter, useUi } from "../context";
-import { IconAlert, IconBack, IconClock, IconGear, IconGrid, IconHome } from "./icons";
+import { IconAlert, IconBack, IconClock, IconCompass, IconGear, IconGrid, IconHome } from "./icons";
+import { useFeaturesOptional } from "../features/context";
 
 /* ------------------------------------------------------------------ buttons */
 
@@ -62,9 +63,12 @@ export function Screen(props: {
 
 export function TabBar() {
   const { path, navigate } = useRouter();
+  const features = useFeaturesOptional();
   const items = [
     { to: "/", label: "Home", icon: <IconHome /> },
     { to: "/collectibles", label: "Collectibles", icon: <IconGrid /> },
+    // Explore (featured apps) appears when the app was given a features client.
+    ...(features ? [{ to: "/explore", label: "Explore", icon: <IconCompass /> }] : []),
     { to: "/activity", label: "Activity", icon: <IconClock /> },
     { to: "/settings", label: "Settings", icon: <IconGear /> },
   ];

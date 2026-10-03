@@ -31,3 +31,34 @@ describe("createEngineDependencies (real packages)", () => {
     expect(publicNetworks(deps.networks).every((n) => n.rpcUrls.length <= 1)).toBe(true);
   });
 });
+
+describe("createEngineDependencies with all 14 families", () => {
+  const all = defineConfig({
+    name: "Clip Wallet",
+    rdns: "org.coldai.clipwallet",
+    networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand"],
+    mainnet: false,
+  });
+  const deps = createEngineDependencies({
+    config: all,
+    vault: new FakeVault(),
+    hashPayload: (p) => p.bytes,
+    currency: async () => "USD",
+    walletConnect: { projectId: undefined, url: "https://clipwallet.example", iconUrl: "https://clipwallet.example/icon.png" },
+  });
+
+  it("registers a module per family, testnets only, and shares one USDC key across families", () => {
+    expect(Object.keys(deps.chains).sort()).toEqual(
+      ["algorand", "aptos", "bitcoin", "cardano", "evm", "hedera", "near", "solana", "starknet", "stellar", "substrate", "sui", "tezos", "ton"],
+    );
+    for (const [f, m] of Object.entries(deps.chains)) expect(m!.family).toBe(f);
+    expect(deps.networks.every((n) => n.testnet)).toBe(true);
+    const usdc = new Set(deps.assets.filter((a) => a.symbol === "USDC" && !a.bridged).map((a) => a.networkId.split(":")[0]));
+    for (const ns of ["eip155", "hedera", "solana", "sui", "aptos", "near", "stellar", "algorand", "starknet"]) expect(usdc.has(ns), ns).toBe(true);
+    expect(new Set(deps.assets.filter((a) => a.symbol === "USDC" && !a.bridged).map((a) => a.key))).toEqual(new Set(["usdc"]));
+  });
+
+  it("has no backup service unless clip.config sets one", () => {
+    expect(deps.backup).toBeNull();
+  });
+});

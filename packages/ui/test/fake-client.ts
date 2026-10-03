@@ -127,6 +127,24 @@ export function fakeClient(over: Partial<WalletClient> = {}, st: WalletState = s
     disconnect: vi.fn(async () => undefined),
     pairWalletConnect: vi.fn(async () => undefined),
     openFullTab: vi.fn(async () => undefined),
+    // platform (PlatformClient): no backup service, one account per family
+    backupStatus: vi.fn(async () => ({ signedIn: false, backups: [], available: false })),
+    backupStartSignIn: vi.fn(async () => undefined),
+    backupCompleteSignIn: vi.fn(async () => undefined),
+    backupSignOut: vi.fn(async () => undefined),
+    backupDelete: vi.fn(async () => undefined),
+    passkeyBackupBegin: vi.fn(async () => {
+      throw new Error("not in test");
+    }),
+    passkeyRestoreBegin: vi.fn(async () => {
+      throw new Error("not in test");
+    }),
+    markPhraseBackedUp: vi.fn(async () => undefined),
+    listAccounts: vi.fn(async () => []),
+    addAccount: vi.fn(async (p) => ({ id: `${p.family}:1`, family: p.family, index: 1, label: "Account 2", address: "addr" })),
+    renameAccount: vi.fn(async () => undefined),
+    getActiveAccounts: vi.fn(async () => ({ defaults: {} })),
+    setActiveAccount: vi.fn(async () => undefined),
     ...over,
   };
   return c;

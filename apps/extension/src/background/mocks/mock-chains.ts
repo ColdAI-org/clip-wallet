@@ -17,7 +17,7 @@ import type {
   TokenBalance,
   Warning,
 } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, FAMILIES } from "@clip-wallet/core";
 import { MOCK_BALANCES, MOCK_NFTS } from "./fixtures";
 import { knownAssets, MOCK_NETWORKS } from "./networks";
 
@@ -38,7 +38,22 @@ function assetAt(networkId: string, address?: string): AssetRef | undefined {
 
 function feeFor(network: Network): DecodedRequest["fee"] {
   // Base-units fee + sponsored flag; fiat is filled by the service's price feed.
-  const amounts: Partial<Record<Family, string>> = { evm: "12000000000000", hedera: "5000000", solana: "5000", bitcoin: "800" };
+  const amounts: Partial<Record<Family, string>> = {
+    evm: "12000000000000",
+    hedera: "5000000",
+    solana: "5000",
+    bitcoin: "800",
+    sui: "2000000",
+    aptos: "1000",
+    cardano: "170000",
+    substrate: "150000000",
+    starknet: "30000000000000000",
+    ton: "5000000",
+    near: "450000000000000000000",
+    stellar: "100",
+    tezos: "1200",
+    algorand: "1000",
+  };
   return { asset: network.nativeAsset, amount: amounts[network.family] ?? "0", sponsored: network.family === "evm" };
 }
 
@@ -47,6 +62,17 @@ const ADDRESS_RE: Partial<Record<Family, RegExp>> = {
   hedera: /^0\.0\.\d{1,12}$/,
   solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
   bitcoin: /^(tb1[02-9ac-hj-np-z]{8,87}|[mn2][1-9A-HJ-NP-Za-km-z]{25,34})$/,
+  // Phase 2 (fixture-grade checks only; the real modules validate checksums).
+  sui: /^0x[0-9a-fA-F]{64}$/,
+  aptos: /^0x[0-9a-fA-F]{64}$/,
+  starknet: /^0x0[0-9a-fA-F]{63}$/,
+  cardano: /^addr_test1[02-9ac-hj-np-z]{50,110}$/,
+  substrate: /^[1-9A-HJ-NP-Za-km-z]{47,48}$/,
+  ton: /^[EUk0]Q[A-Za-z0-9_-]{46}$/,
+  near: /^([0-9a-f]{64}|[a-z0-9_-]+\.testnet)$/,
+  stellar: /^G[A-Z2-7]{55}$/,
+  tezos: /^tz[1-4][1-9A-HJ-NP-Za-km-z]{33}$/,
+  algorand: /^[A-Z2-7]{58}$/,
 };
 
 const SCHEME: Partial<Record<Family, SignablePayload["scheme"]>> = {
@@ -54,6 +80,16 @@ const SCHEME: Partial<Record<Family, SignablePayload["scheme"]>> = {
   hedera: "ecdsa-secp256k1",
   solana: "ed25519",
   bitcoin: "ecdsa-secp256k1",
+  sui: "ed25519",
+  aptos: "ed25519",
+  cardano: "ed25519",
+  substrate: "sr25519",
+  starknet: "stark-ecdsa",
+  ton: "ed25519",
+  near: "ed25519",
+  stellar: "ed25519",
+  tezos: "ed25519",
+  algorand: "ed25519",
 };
 
 const PATHS: Partial<Record<Family, (i: number) => string>> = {
@@ -61,6 +97,33 @@ const PATHS: Partial<Record<Family, (i: number) => string>> = {
   hedera: (i) => `m/44'/3030'/0'/0/${i}`,
   solana: (i) => `m/44'/501'/${i}'/0'`,
   bitcoin: (i) => `m/84'/1'/${i}'/0/0`,
+  sui: (i) => `m/44'/784'/${i}'/0'/0'`,
+  aptos: (i) => `m/44'/637'/${i}'/0'/0'`,
+  cardano: (i) => `m/1852'/1815'/${i}'`,
+  substrate: (i) => `//${i}`,
+  starknet: (i) => `m/44'/9004'/0'/0/${i}`,
+  ton: (i) => `m/44'/607'/${i}'`,
+  near: (i) => `m/44'/397'/${i}'`,
+  stellar: (i) => `m/44'/148'/${i}'`,
+  tezos: (i) => `m/44'/1729'/${i}'/0'`,
+  algorand: (i) => `m/44'/283'/${i}'/0/0`,
+};
+
+const CURVE: Record<Family, ChainModule["curve"]> = {
+  evm: "secp256k1",
+  hedera: "secp256k1",
+  solana: "ed25519",
+  bitcoin: "secp256k1",
+  sui: "ed25519",
+  aptos: "ed25519",
+  cardano: "bip32-ed25519",
+  substrate: "sr25519",
+  starknet: "stark",
+  ton: "ed25519",
+  near: "ed25519",
+  stellar: "ed25519",
+  tezos: "ed25519",
+  algorand: "bip32-ed25519",
 };
 
 /** Mock-only Hedera account ids for EVM aliases (real module asks the mirror node). */
@@ -72,9 +135,9 @@ const MOCK_HEDERA_ACCOUNT = "0.0.4815162";
  * package, and this app package (rightly) imports the vault in its background.
  */
 export class MockChainModule {
-  readonly curve;
+  readonly curve: ChainModule["curve"];
   constructor(readonly family: Family) {
-    this.curve = family === "solana" ? ("ed25519" as const) : ("secp256k1" as const);
+    this.curve = CURVE[family];
   }
 
   derivationPath(index: number) {
@@ -187,6 +250,8 @@ export class MockChainModule {
 
   async prepare(request: DappRequest, ctx: ChainContext, approvalId: string): Promise<SignablePayload[]> {
     const digest = await sha256(utf8(JSON.stringify({ m: request.method, p: request.params, n: request.networkId })));
+    // Stark ECDSA signs a field element: keep the digest below 2^251.
+    if (this.family === "starknet") digest[0]! &= 0x03;
     return [{ accountId: ctx.account.id, scheme: SCHEME[this.family]!, bytes: digest, approvalId }];
   }
 
@@ -221,12 +286,8 @@ export class MockChainModule {
 }
 
 export function createMockChains(): Partial<Record<Family, ChainModule>> {
-  return {
-    evm: new MockChainModule("evm"),
-    hedera: new MockChainModule("hedera"),
-    solana: new MockChainModule("solana"),
-    bitcoin: new MockChainModule("bitcoin"),
-  };
+  // One mock per family, all 14 (fixture balances above for a few of the Phase 2 ones).
+  return Object.fromEntries(FAMILIES.map((f) => [f, new MockChainModule(f)])) as Partial<Record<Family, ChainModule>>;
 }
 
 export { MOCK_HEDERA_ACCOUNT };

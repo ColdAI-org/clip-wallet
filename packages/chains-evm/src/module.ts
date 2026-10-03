@@ -24,6 +24,7 @@ import {
   encodeFunctionData,
   erc20Abi,
   getAddress,
+  getTypesForEIP712Domain,
   hashMessage,
   hashTypedData,
   isAddress,
@@ -122,23 +123,31 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
             fees.type === "eip1559"
               ? { ...common, type: "eip1559", maxFeePerGas: fees.maxFeePerGas!, maxPriorityFeePerGas: fees.maxPriorityFeePerGas! }
               : { ...common, type: "legacy", gasPrice: fees.gasPrice! };
-          const digest = keccak256(serializeTransaction(tx));
+          const serialized = serializeTransaction(tx);
+          const digest = keccak256(serialized);
           pending.set(request.id, { kind: "tx", tx, digest });
-          return payload(ctx, digest, approvalId);
+          // Hardware wallets sign the unsigned transaction itself, never a bare digest.
+          return [{ ...payload(ctx, digest, approvalId)[0]!, raw: { format: "evm-tx", bytes: hexToU8(serialized), chainId } }];
         }
         case "personal_sign":
         case "wallet_authenticate": {
           const { message } = parsePersonalSign(request, ctx);
-          const digest = hashMessage(typeof message === "string" && message.startsWith("0x") ? { raw: message as Hex } : message);
+          const isHex = typeof message === "string" && message.startsWith("0x");
+          const digest = hashMessage(isHex ? { raw: message as Hex } : message);
           pending.set(request.id, { kind: "sign", digest });
-          return payload(ctx, digest, approvalId);
+          const msgBytes = isHex ? hexToU8(message as Hex) : new TextEncoder().encode(String(message));
+          return [{ ...payload(ctx, digest, approvalId)[0]!, raw: { format: "evm-personal", bytes: msgBytes } }];
         }
         case "eth_signTypedData_v4":
         case "eth_signTypedData": {
           const td = parseTypedData(request, ctx);
-          const digest = hashTypedData(typedDataForHash(td));
+          const forHash = typedDataForHash(td);
+          const digest = hashTypedData(forHash);
           pending.set(request.id, { kind: "sign", digest });
-          return payload(ctx, digest, approvalId);
+          // The FULL typed data, with EIP712Domain in `types` (Ledger requires it).
+          const full = { ...td, types: { EIP712Domain: td.types.EIP712Domain ?? getTypesForEIP712Domain({ domain: td.domain as never }), ...forHash.types } };
+          const json = JSON.stringify(full, (_k, v) => (typeof v === "bigint" ? v.toString() : v));
+          return [{ ...payload(ctx, digest, approvalId)[0]!, raw: { format: "eip712", bytes: new TextEncoder().encode(json) } }];
         }
         case "eth_sign":
           throw new ClipError("Clip Wallet doesn't sign unreadable requests like this one, because they can authorize anything.", "eth-sign-refused");
