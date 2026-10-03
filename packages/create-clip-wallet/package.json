@@ -1,0 +1,37 @@
+{
+  "name": "create-clip-wallet",
+  "version": "0.0.1-experimental.0",
+  "description": "EXPERIMENTAL: scaffold a branded Clip Wallet browser extension (testnets by default)",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-clip-wallet": "bin/create-clip-wallet.mjs"
+  },
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "harness",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run",
+    "prepack": "node scripts/copy-harness.mjs"
+  },
+  "dependencies": {
+    "@clip-wallet/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

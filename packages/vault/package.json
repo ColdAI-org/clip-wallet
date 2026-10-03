@@ -1,0 +1,29 @@
+{
+  "name": "@clip-wallet/vault",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "ed25519-hd-key": "^2.0.0",
+    "micro-key-producer": "^0.10.2"
+  },
+  "dependencies": {
+    "@clip-wallet/core": "workspace:*",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "@scure/base": "^2.4.0",
+    "@scure/bip32": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
+    "hash-wasm": "^4.12.0"
+  }
+}
