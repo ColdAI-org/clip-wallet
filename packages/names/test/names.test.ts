@@ -176,6 +176,16 @@ describe("plugin names (Clip Plugins)", () => {
     expect(r.serviceFor("x.unknown")).toBeNull();
   });
 
+  it("`extra` backends come after the built-in defaults", async () => {
+    const { PluginBackend } = await import("../src/index.js");
+    const lookup = vi.fn(async (name: string) => ({ name, address: "0x000000000000000000000000000000000000dEaD", family: "evm", pluginId: "p", pluginName: "Labels", from: "from Labels" }));
+    const r = new MultiNameResolver({ ens: false, sns: false, hns: false, clip: false, extra: [new PluginBackend(lookup, () => [".label"])] });
+    expect(r.serviceFor("burn.label")).toBe("plugin");
+    expect((await r.resolve("burn.label"))?.via?.pluginName).toBe("Labels");
+    const withDefaults = new MultiNameResolver({ extra: [new PluginBackend(lookup, () => [".eth"])] });
+    expect(withDefaults.serviceFor("alice.eth")).toBe("ens");
+  });
+
   it("drops answers for families the wallet doesn't know", async () => {
     const { PluginBackend } = await import("../src/index.js");
     const plugin = new PluginBackend(async (name) => ({ name, address: "abc", family: "notachain", pluginId: "p", pluginName: "P", from: "from P" }), () => [".label"]);

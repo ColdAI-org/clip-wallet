@@ -130,6 +130,19 @@ export function toNetwork(spec: EvmNetworkSpec): Network {
 export const EVM_NETWORKS: Network[] = EVM_NETWORK_SPECS.map(toNetwork);
 export const EVM_TESTNETS: Network[] = EVM_NETWORKS.filter((n) => n.testnet);
 
-const SPEC_BY_ID = new Map(EVM_NETWORK_SPECS.map((s) => [caip2(s.chainId), s]));
+/**
+ * Hedera's EVM (JSON-RPC relay; chain ids 296 testnet / 295 mainnet, https://docs.hedera.com/evm/quickstart/setup-metamask.md).
+ * NOT in EVM_NETWORK_SPECS: Hedera is its own module, and the wallet's Hedera account is the EVM key's alias, so
+ * listing it as an EVM network would show the same HBAR twice. Hosts register these as request-only networks so
+ * wallet-built requests on Hedera's EVM (the settle-on-Hedera client's claim / withdraw) decode and sign.
+ * The relay reports balances and `value` in weibars, hence 18 decimals (docs.hedera.com/evm/development/gas-fees.md).
+ */
+export const HEDERA_EVM_SPECS: EvmNetworkSpec[] = [
+  { slug: "hedera-testnet-evm", name: "Hedera Testnet (EVM)", chainId: 296, native: { symbol: "HBAR", name: "HBAR", decimals: 18, key: "hbar" }, rpcUrls: ["https://testnet.hashio.io/api"], explorerUrl: "https://hashscan.io/testnet", testnet: true, evmLayerOf: "hedera" },
+  { slug: "hedera-mainnet-evm", name: "Hedera (EVM)", chainId: 295, native: { symbol: "HBAR", name: "HBAR", decimals: 18, key: "hbar" }, rpcUrls: ["https://mainnet.hashio.io/api"], explorerUrl: "https://hashscan.io/mainnet", testnet: false, evmLayerOf: "hedera" },
+];
+export const HEDERA_EVM_NETWORKS: Network[] = HEDERA_EVM_SPECS.map(toNetwork);
+
+const SPEC_BY_ID = new Map([...EVM_NETWORK_SPECS, ...HEDERA_EVM_SPECS].map((s) => [caip2(s.chainId), s]));
 export const specFor = (networkId: string): EvmNetworkSpec | undefined => SPEC_BY_ID.get(networkId);
 export const networkById = (networkId: string): Network | undefined => EVM_NETWORKS.find((n) => n.id === networkId);

@@ -1,6 +1,6 @@
 export { createEvmModule, derivationPath, addressFromPublicKey } from "./module.js";
 export type { EvmModuleOptions } from "./module.js";
-export { EVM_NETWORKS, EVM_TESTNETS, EVM_NETWORK_SPECS, networkById, specFor, caip2, toNetwork } from "./networks.js";
+export { EVM_NETWORKS, EVM_TESTNETS, EVM_NETWORK_SPECS, HEDERA_EVM_NETWORKS, HEDERA_EVM_SPECS, networkById, specFor, caip2, toNetwork } from "./networks.js";
 export type { EvmNetworkSpec } from "./networks.js";
 export { CURATED_TOKENS, KNOWN_APPS, looksLikeSpam } from "./tokens.js";
 export { KNOWN_FUNCTIONS, lookupSelector } from "./selectors.js";

@@ -145,9 +145,15 @@ export const clipConfigSchema = z
       .object({
         mode: z.enum(ROUTE_MODES, `use one of: ${ROUTE_MODES.join(", ")}`).default("balanced"),
         filters: routeFilters.default({}),
+        /**
+         * Phase 3 "settle on Hedera": when a deployment is known (@clip-wallet/route SETTLE_DEPLOYMENTS), a payment that
+         * needs money from another network also asks bonded Connectors for a quote and lists the best one in the
+         * approval's Details. Off by default.
+         */
+        settleOnHedera: z.boolean("use true or false").default(false),
       })
       .strict()
-      .default({ mode: "balanced", filters: {} }),
+      .default({ mode: "balanced", filters: {}, settleOnHedera: false }),
     compatibilityMode: z.boolean("use true or false").default(false),
     hardware: z
       .array(z.enum(HARDWARE, `use "ledger" or "keystone"`))

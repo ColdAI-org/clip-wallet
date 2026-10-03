@@ -39,6 +39,11 @@ export interface NameResolverOptions {
   clip?: Omit<ClipHandlesOptions, "networks" | "fetch" | "now"> | false;
   /** Results are cached this long (ms). Default 60 s; misses are not cached. */
   cacheMs?: number;
+  /**
+   * More backends, asked after the built-in ones (built-ins always win a suffix they handle). The extension passes
+   * the Clip Plugins backend here (PluginBackend).
+   */
+  extra?: Backend[];
   now?: () => number;
 }
 
@@ -84,7 +89,7 @@ export class MultiNameResolver implements NameResolver {
         }),
       );
     }
-    this.backends = list;
+    this.backends = [...list, ...(opts.extra ?? [])];
   }
 
   serviceFor(name: string): NameService | null {

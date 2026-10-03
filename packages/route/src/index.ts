@@ -14,6 +14,7 @@ export { findShortfall, needsFromDecoded } from "./shortfall.js";
 export { RouteStatusClient, describeRoute, trackRoute } from "./track.js";
 export type { HopStatus, OutcomeStatus, RouteProgress, RouteStage, RouteStatusResponse, TrackOptions } from "./track.js";
 export { settleOnHedera, SETTLE_DEPLOYMENTS } from "./phase3.js";
+export { settleClientFor, settleFundingOption, type SettleFundingOption } from "./settle-plan.js";
 export type {
   ConnectorBond,
   ConnectorDirectoryEntry,

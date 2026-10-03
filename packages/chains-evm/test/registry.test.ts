@@ -32,6 +32,17 @@ describe("network registry", () => {
     expect(ids).not.toContain(123354377739506); // STRATO, SolidVM
   });
 
+  it("keeps Hedera's EVM apart: request-only networks 296/295, HBAR in weibars, specFor knows them", async () => {
+    const { HEDERA_EVM_NETWORKS, specFor } = await import("../src/networks.js");
+    expect(HEDERA_EVM_NETWORKS.map((n) => [n.id, n.testnet, n.nativeAsset.decimals, n.nativeAsset.key])).toEqual([
+      ["eip155:296", true, 18, "hbar"],
+      ["eip155:295", false, 18, "hbar"],
+    ]);
+    expect(HEDERA_EVM_NETWORKS.every((n) => n.family === "evm" && n.rpcUrls[0]!.startsWith("https://") && n.rpcUrls[0]!.endsWith(".hashio.io/api"))).toBe(true);
+    expect(specFor("eip155:296")?.evmLayerOf).toBe("hedera");
+    expect(EVM_NETWORKS.some((n) => n.chainId === 296 || n.chainId === 295)).toBe(false);
+  });
+
   it("uses public https RPCs without API keys", () => {
     for (const n of EVM_NETWORKS) {
       expect(n.rpcUrls.length).toBeGreaterThan(0);
