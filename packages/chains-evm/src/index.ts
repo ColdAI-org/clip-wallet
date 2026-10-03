@@ -10,3 +10,4 @@ export { quoteFees } from "./chain.js";
 import { createEvmModule } from "./module.js";
 /** Default instance. Holds prepared-but-unsigned transactions in memory. */
 export const evmModule = createEvmModule();
+export { GAS_PRICE_ORACLE, OP_STACK_CHAIN_IDS, isOpStack, l1DataFee } from "./l1fee.js";

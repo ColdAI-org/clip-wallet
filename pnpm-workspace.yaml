@@ -2,9 +2,11 @@ packages:
   - packages/*
   - apps/*
   - templates/*
+  - services/*
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
+  workerd: true
   protobufjs: false
   unrs-resolver: false
   # Optional native add-ons pulled in by @near-js/crypto and ws (kit-modules dev deps); pure-JS fallbacks are used.

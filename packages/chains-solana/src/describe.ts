@@ -14,6 +14,8 @@ import { RpcError, type SolanaRpc } from "./rpc.js";
 import { type MintInfo, type TokenAccountInfo, TOKEN_PROGRAMS, assetFor, mintInfos, tokenAccounts } from "./tokens.js";
 import type { ParsedTransaction } from "./tx.js";
 import { abs, b64encode, formatUnits, joinWords, short } from "./util.js";
+import { type SwapIntent, WSOL_MINT, decodeJupiterHelper, decodeSwap } from "./swaps.js";
+import { STAKE_PROGRAM, type StakeAction, decodeStake, decodeStakeAccountFunding } from "./stake.js";
 
 export interface Line {
   label: string;
@@ -45,6 +47,8 @@ const U64_MAX = 18446744073709551615n;
 /** Rent for a 165-byte token account, the usual cost of opening one. */
 export const TOKEN_ACCOUNT_RENT_LAMPORTS = 2039280n;
 const LAMPORTS_PER_SIGNATURE = 5000n;
+/** Rent-exempt minimum for a 200-byte stake account: (128 + 200) bytes × 3480 lamports/byte-year × 2 years. */
+export const STAKE_ACCOUNT_RENT_LAMPORTS = 2_282_880n;
 
 const u64 = (d: ReadonlyUint8ArrayLike, at: number) => {
   let v = 0n;
@@ -110,6 +114,13 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   for (const ix of ixs) {
     const prog = String(ix.programAddress);
     if (TOKEN_PROGRAMS.includes(prog) || prog === ASSOCIATED_TOKEN_PROGRAM_ADDRESS) for (const a of ix.accounts ?? []) tokenAddrs.add(String(a.address));
+    else for (const a of decodeSwap(ix)?.lookups ?? []) tokenAddrs.add(a);
+    const helper = decodeJupiterHelper(ix);
+    if (helper?.kind === "create-ata") [helper.ata, helper.mint].forEach((a) => tokenAddrs.add(a));
+    if (prog === SYSTEM_PROGRAM_ADDRESS) {
+      const to = ix.accounts?.[1]?.address; // SOL sent to a token account = wrapping, if it's mine
+      if (to) tokenAddrs.add(String(to));
+    }
   }
   let accounts = new Map<string, TokenAccountInfo>();
   let mints = new Map<string, MintInfo>();
@@ -123,6 +134,10 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   const ataOwner = new Map<string, { owner: string; mint: string }>();
 
   const moves: Movement[] = [];
+  const swaps: SwapIntent[] = [];
+  const stakes: StakeAction[] = [];
+  /** Stake accounts funded in this transaction → lamports put in. */
+  const stakeFunded = new Map<string, bigint>();
   const undescribed: string[] = [];
   let cuLimit: number | null = null;
   let cuPrice = 0n;
@@ -159,11 +174,19 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
         const from = acct(ix, 0);
         const to = acct(ix, 1);
         const lamports = u64(data, 4);
-        if (from === dc.me && to !== dc.me) moves.push({ asset: sol(dc.networkId), amount: -lamports, counterparty: to });
+        if (from === dc.me && ownerOfTokenAccount(to) === dc.me && mintOfTokenAccount(to) === WSOL_MINT) {
+          lines.push({ label: "Wraps", value: `${amountText(sol(dc.networkId), lamports)} into wrapped SOL for the swap` });
+        } else if (from === dc.me && to !== dc.me) moves.push({ asset: sol(dc.networkId), amount: -lamports, counterparty: to });
         else if (to === dc.me && from !== dc.me) moves.push({ asset: sol(dc.networkId), amount: lamports, counterparty: from });
         else if (from !== dc.me) lines.push({ label: "Transfer", value: `${amountText(sol(dc.networkId), lamports)}: ${short(from)} → ${short(to)}` });
       } else if (kind === SystemInstruction.AdvanceNonceAccount) {
         // covered by the durable-nonce warning
+      } else if (kind === SystemInstruction.CreateAccountWithSeed && ix.data && decodeStakeAccountFunding(ix.data)) {
+        const f = decodeStakeAccountFunding(ix.data)!;
+        const payer = acct(ix, 0);
+        stakeFunded.set(acct(ix, 1), f.lamports);
+        if (payer === dc.me) moves.push({ asset: sol(dc.networkId), amount: -f.lamports, counterparty: "stake" });
+        else lines.push({ label: "Stake account", value: `${short(payer)} puts ${amountText(sol(dc.networkId), f.lamports)} in a stake account` });
       } else if (kind === SystemInstruction.CreateAccount) {
         const payer = acct(ix, 0);
         const lamports = u64(data, 4);
@@ -285,6 +308,40 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
       continue;
     }
 
+    if (prog === STAKE_PROGRAM) {
+      const st = decodeStake(ix);
+      if (!st) {
+        undescribed.push(`${prog} (a staking change Clip Wallet can't read)`);
+      } else if ((st.kind === "delegate" || st.kind === "deactivate" || st.kind === "withdraw") && st.authority !== dc.me) {
+        undescribed.push(`${prog} (acts on a stake account you don't control)`);
+      } else {
+        stakes.push(st);
+      }
+      continue;
+    }
+
+    const helper = decodeJupiterHelper(ix);
+    if (helper?.kind === "create-ata") {
+      ataOwner.set(helper.ata, { owner: helper.owner, mint: helper.mint });
+      if (!accounts.has(helper.ata)) {
+        const sym = helper.mint === WSOL_MINT ? "wrapped SOL" : (tokenAsset(helper.mint)?.symbol ?? "token");
+        lines.push({ label: "Also", value: helper.owner === dc.me ? `Opens a ${sym} account for you (≈0.002 SOL, returned when it closes)` : `Also opens a ${sym} account for ${short(helper.owner)} (≈0.002 SOL)` });
+        if (helper.payer === dc.me) opened += TOKEN_ACCOUNT_RENT_LAMPORTS;
+      }
+      continue;
+    }
+    if (helper?.kind === "close-wsol") {
+      if (helper.user === dc.me) lines.push({ label: "Unwraps", value: "Your wrapped SOL back to SOL" });
+      else undescribed.push(`${prog} (closes someone else's account)`);
+      continue;
+    }
+
+    const swap = decodeSwap(ix);
+    if (swap) {
+      swaps.push(swap);
+      continue;
+    }
+
     if (MEMO_PROGRAMS.includes(prog)) {
       lines.push({ label: "Memo", value: new TextDecoder().decode(ix.data ?? new Uint8Array()).slice(0, 280) });
       continue;
@@ -296,6 +353,63 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   const limit = BigInt(cuLimit ?? Math.min(1_400_000, 200_000 * Math.max(1, nonCbIxs)));
   const priority = (cuPrice * limit + 999_999n) / 1_000_000n;
   let fee = baseFee + priority;
+
+  // Swaps: what was asked for, in plain words. Balance changes come from simulation when it runs.
+  const swapAsset = (mint: string | null, account: string | null): AssetRef | null => {
+    const m = mint ?? (account ? mintOfTokenAccount(account) : null);
+    if (!m) return null;
+    if (m === WSOL_MINT) return sol(dc.networkId);
+    return tokenAsset(m);
+  };
+  const swapTexts: { pay: string; get: string; venue: string }[] = [];
+  for (const sw of swaps) {
+    const inAsset = swapAsset(sw.sourceMint, sw.sourceAccount);
+    const outAsset = swapAsset(sw.destinationMint, sw.destinationAccount);
+    const amt = (a: AssetRef | null, v: bigint | null) => (a && v != null ? amountText(a, v) : a ? `${a.symbol} (amount set on-chain)` : "a token");
+    const pay = sw.exactIn ? amt(inAsset, sw.amountIn) : `up to ${amt(inAsset, sw.amountIn)}`;
+    const get = sw.exactIn ? `at least ${amt(outAsset, sw.amountOut)}` : amt(outAsset, sw.amountOut);
+    swapTexts.push({ pay, get, venue: sw.venue });
+    lines.push({ label: "Swap on", value: sw.venue }, { label: "You pay", value: pay }, { label: "You get", value: get });
+    if (sw.slippageBps != null) lines.push({ label: "Price can move", value: `up to ${(sw.slippageBps / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}%` });
+    if (sw.authority !== dc.me) undescribed.push(`${sw.venue} swap paid from someone else's account`);
+    else if (inAsset && sw.amountIn != null) {
+      // Static fallback: the input leaves my balance (the output is only known after simulation).
+      moves.push({ asset: inAsset, amount: -sw.amountIn, counterparty: "swap" });
+    }
+    const outOwner = sw.destinationAccount ? ownerOfTokenAccount(sw.destinationAccount) : null;
+    if (sw.destinationAccount && outOwner && outOwner !== dc.me) {
+      lines.push({ label: "Sends what you get to", value: outOwner });
+      warnings.push({ level: "danger", code: "new-recipient", message: `The tokens from this swap go to ${short(outOwner)}, not to you.` });
+    } else if (sw.destinationAccount && !outOwner && outAsset) {
+      warnings.push({ level: "caution", code: "new-recipient", message: "We couldn't confirm the swapped tokens land in your account. Check the balance changes." });
+    }
+  }
+
+  // Staking: plain lines, warnings, and my SOL coming back on withdraw.
+  for (const st of stakes) {
+    if (st.kind === "initialize") {
+      if (st.staker !== dc.me || st.withdrawer !== dc.me) {
+        const other = st.withdrawer !== dc.me ? st.withdrawer : st.staker;
+        lines.push({ label: "Stake controlled by", value: other });
+        warnings.push({ level: "danger", code: "new-recipient", message: `${short(other)} would control this stake${st.withdrawer !== dc.me ? " and could take it" : ""}, not you.` });
+      }
+      if (st.lockedUntil) {
+        lines.push({ label: "Locked", value: `Can't be withdrawn before ${st.lockedUntil.unix ? new Date(Number(st.lockedUntil.unix) * 1000).toISOString().slice(0, 10) : `epoch ${st.lockedUntil.epoch}`}` });
+        warnings.push({ level: "caution", code: "durable-nonce", message: "This stake is locked: you can't withdraw it before the date shown, even if you stop staking." });
+      }
+    } else if (st.kind === "delegate") {
+      lines.push({ label: "Validator", value: st.vote }, { label: "Stake account", value: st.stake });
+    } else if (st.kind === "deactivate") {
+      lines.push({ label: "Stake account", value: st.stake }, { label: "Then", value: "Ready to withdraw in about 2 days" });
+    } else if (st.kind === "withdraw") {
+      lines.push({ label: "From stake account", value: st.stake });
+      if (st.recipient === dc.me) moves.push({ asset: sol(dc.networkId), amount: st.lamports, counterparty: "stake" });
+      else {
+        lines.push({ label: "Sends it to", value: st.recipient });
+        warnings.push({ level: "danger", code: "new-recipient", message: `This sends your staked SOL to ${short(st.recipient)}, not to you.` });
+      }
+    }
+  }
 
   // Static balance changes for me.
   const byAsset = new Map<string, { asset: AssetRef; delta: bigint }>();
@@ -322,8 +436,9 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   }
 
   // Title
-  const outs = moves.filter((m) => m.amount < 0n && m.counterparty !== "burn");
-  const ins = moves.filter((m) => m.amount > 0n);
+  const internal = new Set(["burn", "swap", "stake"]);
+  const outs = moves.filter((m) => m.amount < 0n && !internal.has(m.counterparty));
+  const ins = moves.filter((m) => m.amount > 0n && !internal.has(m.counterparty));
   const names = (list: Movement[]) => joinWords(mergeText(list));
   const parties = (list: Movement[]) => [...new Set(list.map((m) => m.counterparty))];
   for (const m of outs) lines.unshift({ label: "To", value: `${m.counterparty} gets ${amountText(m.asset, m.amount)}` });
@@ -336,6 +451,32 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
     title = "Approve an app transaction";
     for (const u of [...new Set(undescribed)]) lines.push({ label: "Program", value: u });
     warnings.push({ level: "danger", code: "blind-signing", message: "Part of this transaction uses programs Clip Wallet can't read. Check the balance changes." });
+  } else if (swaps.length) {
+    const venues = [...new Set(swapTexts.map((t) => t.venue))].join(" and ");
+    const spent = sim?.ok ? balanceChanges.filter((c) => BigInt(c.delta) < 0n) : [];
+    const got = sim?.ok ? balanceChanges.filter((c) => BigInt(c.delta) > 0n) : [];
+    if (spent.length && got.length) {
+      const t = (cs: BalanceChange[]) => joinWords(cs.map((c) => amountText(c.asset, BigInt(c.delta))));
+      title = `Swap ${t(spent)} for ${t(got)} on ${venues}`;
+    } else if (swapTexts.length === 1) {
+      title = `Swap ${swapTexts[0]!.pay} for ${swapTexts[0]!.get} on ${venues}`;
+    } else {
+      title = `Swap tokens on ${venues}`;
+    }
+  } else if (stakes.some((x) => x.kind !== "initialize") && !outs.length && !ins.length) {
+    const solAmt = (v: bigint) => amountText(sol(dc.networkId), v);
+    const parts: string[] = [];
+    for (const st of stakes) {
+      if (st.kind === "delegate") {
+        const funded = stakeFunded.get(st.stake);
+        // The funding includes the stake account's rent deposit (returned on withdraw); show the staked part.
+        const staked = funded != null && funded > STAKE_ACCOUNT_RENT_LAMPORTS ? funded - STAKE_ACCOUNT_RENT_LAMPORTS : funded;
+        if (funded != null && staked !== funded) lines.push({ label: "Opening cost", value: `≈${solAmt(STAKE_ACCOUNT_RENT_LAMPORTS)}, returned when you withdraw` });
+        parts.push(staked != null ? `Stake ${solAmt(staked)} with validator ${short(st.vote)}` : `Stake with validator ${short(st.vote)}`);
+      } else if (st.kind === "deactivate") parts.push("Stop staking");
+      else if (st.kind === "withdraw") parts.push(`Withdraw ${solAmt(st.lamports)} from staking${st.recipient === dc.me ? "" : ` to ${short(st.recipient)}`}`);
+    }
+    title = [...new Set(parts)].join(", then ");
   } else if (outs.length && !ins.length) {
     const ps = parties(outs);
     title = `Send ${names(outs)} to ${ps.length === 1 ? short(ps[0]!) : `${ps.length} addresses`}`;
