@@ -135,7 +135,7 @@ function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) =
 }
 
 export function Settings() {
-  const { client, state, refresh, config } = useUi();
+  const { client, state, refresh, config, options } = useUi();
   const [enrolling, setEnrolling] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [devMsg, setDevMsg] = useState<string | null>(null);
@@ -158,7 +158,7 @@ export function Settings() {
         <label className="clip-select-row">
           <span>Currency</span>
           <select className="clip-select" value={prefs.displayCurrency} onChange={(e) => setPrefs({ displayCurrency: e.target.value })}>
-            {config.currencies.map((c) => (
+            {options.currencies.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>

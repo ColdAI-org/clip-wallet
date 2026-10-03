@@ -232,8 +232,8 @@ export function AssetIcon(props: { symbol: string; logoUrl?: string; size?: numb
 
 /** Untrusted NFT media: proxied <img>/<video> only, never inline SVG/HTML/iframe. */
 export function NftMedia(props: { nft: Nft; size?: "tile" | "full" }) {
-  const { config } = useUi();
-  const media = proxyMedia(props.nft.mediaUrl, config.mediaProxyUrl);
+  const { options } = useUi();
+  const media = proxyMedia(props.nft.mediaUrl, options.mediaProxyUrl);
   const [failed, setFailed] = useState(false);
   const label = props.nft.name ?? `${props.nft.collection.name} #${props.nft.tokenId}`;
   if (!media || failed) {

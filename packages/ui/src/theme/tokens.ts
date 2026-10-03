@@ -17,18 +17,26 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/** "Inter" → a stack that prefers the bundled variable font, then the system UI font. */
+export function fontStack(font: string): string {
+  const name = font.replace(/["\\]/g, "");
+  return `"${name} Variable", "${name}", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`;
+}
+
 export function tokensFor(config: ClipConfig, mode: ColorMode): Tokens {
-  const r = config.radius ?? { sm: 10, md: 14, lg: 20 };
+  const { accent, accentText, font, radius } = config.theme;
+  // One font and one radius in the config; the scale is derived from them.
   const shared: Tokens = {
-    "--clip-accent": config.accent,
-    "--clip-accent-text": config.accentText,
-    "--clip-accent-soft": rgba(config.accent, mode === "light" ? 0.1 : 0.18),
-    "--clip-focus": rgba(config.accent, 0.55),
-    "--clip-font": config.fonts.body,
-    "--clip-mono": config.fonts.mono,
-    "--clip-radius-sm": `${r.sm}px`,
-    "--clip-radius-md": `${r.md}px`,
-    "--clip-radius-lg": `${r.lg}px`,
+    "--clip-accent": accent,
+    "--clip-accent-text": accentText,
+    "--clip-accent-soft": rgba(accent, mode === "light" ? 0.1 : 0.18),
+    "--clip-focus": rgba(accent, 0.55),
+    "--clip-font": fontStack(font),
+    "--clip-mono": 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+    "--clip-radius": `${radius}px`,
+    "--clip-radius-sm": `${Math.round(radius * 0.7)}px`,
+    "--clip-radius-md": `${radius}px`,
+    "--clip-radius-lg": `${Math.round(radius * 1.4)}px`,
     "--clip-space-1": "4px",
     "--clip-space-2": "8px",
     "--clip-space-3": "12px",

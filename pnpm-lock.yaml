@@ -317,6 +317,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@clip-wallet/config':
+        specifier: workspace:*
+        version: link:../config
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../core

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { WalletClient } from "./client";
-import type { ClipConfig } from "./theme/config";
+import type { ClipConfig, UiOptions } from "./theme/config";
 import { ClipProvider, Router, useRouter, useUi, type PasskeyFactory, type Variant } from "./context";
 import { Spinner } from "./components";
 import { Onboarding, Unlock } from "./screens/Onboarding";
@@ -79,6 +79,7 @@ function Routes() {
 export interface WalletAppProps {
   client: WalletClient;
   config?: ClipConfig;
+  options?: Partial<UiOptions>;
   variant?: Variant;
   passkeys?: PasskeyFactory;
   initialRoute?: string;
@@ -93,7 +94,7 @@ function Frame(props: { children: ReactNode }) {
 /** The popup and full-tab wallet. */
 export function WalletApp(props: WalletAppProps) {
   return (
-    <ClipProvider client={props.client} config={props.config} variant={props.variant} passkeys={props.passkeys}>
+    <ClipProvider client={props.client} config={props.config} options={props.options} variant={props.variant} passkeys={props.passkeys}>
       <Router initial={props.initialRoute} memory={props.memoryRouter}>
         <Frame>
           <Routes />
@@ -119,7 +120,7 @@ function ApprovalWindowRoutes(props: { focusId?: string; onEmpty: () => void }) 
 /** The popup window the background opens when an app asks for something. */
 export function ApprovalWindowApp(props: Omit<WalletAppProps, "variant" | "initialRoute"> & { focusId?: string; onEmpty: () => void }) {
   return (
-    <ClipProvider client={props.client} config={props.config} variant="window" passkeys={props.passkeys}>
+    <ClipProvider client={props.client} config={props.config} options={props.options} variant="window" passkeys={props.passkeys}>
       <Router memory initial="/">
         <Frame>
           <ApprovalWindowRoutes focusId={props.focusId} onEmpty={props.onEmpty} />

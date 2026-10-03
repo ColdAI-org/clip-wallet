@@ -1,5 +1,5 @@
 export * from "./client";
-export * from "./theme/config";
+export { defaultClipConfig, defaultUiOptions, type ClipConfig, type UiOptions } from "./theme/config";
 export * from "./theme/tokens";
 export { ClipProvider, Router, useUi, useRouter, type PasskeyFactory, type Variant } from "./context";
 export * from "./components";

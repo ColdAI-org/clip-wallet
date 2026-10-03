@@ -214,6 +214,9 @@ export interface WalletClient {
   disconnect(id: string): Promise<void>;
   pairWalletConnect(uri: string): Promise<void>;
 
+  /** Background-pushed "something changed" (new request, lock, prefs). Returns an unsubscribe function. */
+  onChange?(cb: () => void): () => void;
+
   /* shell */
   openFullTab(route?: string): Promise<void>;
   /** Dev-flag builds only: inject a fixture dapp request. */

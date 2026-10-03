@@ -25,10 +25,10 @@ export function pickConfirmIndexes(count: number, rand: () => number = Math.rand
 }
 
 function Welcome(props: { onCreate: () => void; onImport: () => void }) {
-  const { config } = useUi();
+  const { config, options } = useUi();
   return (
     <div className="clip-onboard clip-onboard--welcome">
-      <img className="clip-brand-icon" src={config.icon} alt="" width={64} height={64} />
+      <img className="clip-brand-icon" src={options.iconUrl} alt="" width={64} height={64} />
       <h1 className="clip-display">{config.name}</h1>
       <p className="clip-lede">One place for your money, collectibles and apps. Test networks only for now.</p>
       <div className="clip-stack">
@@ -307,7 +307,7 @@ export function Onboarding(props: { onFinished: () => void; confirmIndexes?: num
 }
 
 export function Unlock(props: { onUnlocked: () => void }) {
-  const { client, config, state, passkeys } = useUi();
+  const { client, options, state, passkeys } = useUi();
   const [pw, setPw] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -346,7 +346,7 @@ export function Unlock(props: { onUnlocked: () => void }) {
         }
       }}
     >
-      <img className="clip-brand-icon" src={config.icon} alt="" width={56} height={56} />
+      <img className="clip-brand-icon" src={options.iconUrl} alt="" width={56} height={56} />
       <h1 className="clip-h1">Welcome back</h1>
       <Field label="Password" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
       <ErrorNote message={err} />

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { WalletClient, WalletState } from "./client";
 import type { ClipConfig } from "./theme/config";
-import { defaultClipConfig } from "./theme/config";
+import { defaultClipConfig, defaultUiOptions, type UiOptions } from "./theme/config";
 import { tokensFor, type ColorMode } from "./theme/tokens";
 import type { PasskeyPrfFactory } from "./lib/passkey";
 
@@ -15,6 +15,7 @@ export interface PasskeyFactory extends PasskeyPrfFactory {
 interface UiContextValue {
   client: WalletClient;
   config: ClipConfig;
+  options: UiOptions;
   variant: Variant;
   state: WalletState | null;
   refresh: () => Promise<WalletState>;
@@ -37,6 +38,7 @@ function systemMode(): ColorMode {
 export function ClipProvider(props: {
   client: WalletClient;
   config?: ClipConfig;
+  options?: Partial<UiOptions>;
   variant?: Variant;
   passkeys?: PasskeyFactory;
   /** Seed state for tests and to avoid a flash on first paint. */
@@ -44,6 +46,7 @@ export function ClipProvider(props: {
   children: ReactNode;
 }) {
   const config = props.config ?? defaultClipConfig;
+  const options = useMemo<UiOptions>(() => ({ ...defaultUiOptions, ...props.options }), [props.options]);
   const [state, setState] = useState<WalletState | null>(props.initialState ?? null);
   const [sysMode, setSysMode] = useState<ColorMode>(systemMode);
 
@@ -56,6 +59,8 @@ export function ClipProvider(props: {
   useEffect(() => {
     if (!props.initialState) void refresh();
   }, [refresh, props.initialState]);
+
+  useEffect(() => props.client.onChange?.(() => void refresh()), [props.client, refresh]);
 
   useEffect(() => {
     if (!window.matchMedia) return;
@@ -77,8 +82,8 @@ export function ClipProvider(props: {
   }, [config, mode, props.variant]);
 
   const value = useMemo<UiContextValue>(
-    () => ({ client: props.client, config, variant: props.variant ?? "popup", state, refresh, passkeys: props.passkeys }),
-    [props.client, config, props.variant, state, refresh, props.passkeys],
+    () => ({ client: props.client, config, options, variant: props.variant ?? "popup", state, refresh, passkeys: props.config?.passkeys.enabled === false ? undefined : props.passkeys }),
+    [props.client, config, options, props.variant, state, refresh, props.passkeys],
   );
   return <UiContext.Provider value={value}>{props.children}</UiContext.Provider>;
 }

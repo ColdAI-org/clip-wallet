@@ -34,6 +34,7 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
+    "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "qrcode": "^1.5.4"
   }

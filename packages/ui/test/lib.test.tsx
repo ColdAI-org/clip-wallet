@@ -7,7 +7,6 @@ import { normaliseMediaUrl, proxyMedia } from "../src/lib/media";
 import { WebAuthnPasskeyPrf, PasskeyError, runPasskeyCeremony, b64urlEncode } from "../src/lib/passkey";
 import { NftMedia } from "../src/components";
 import { ClipProvider, Router } from "../src/context";
-import { defineClipConfig } from "../src/theme/config";
 import { groupCollectibles } from "../src/screens/Collectibles";
 import { isWalletConnectUri } from "../src/screens/Settings";
 import { render } from "@testing-library/react";
@@ -75,7 +74,7 @@ describe("untrusted NFT media", () => {
 
   it("renders SVG as a proxied <img> with no-referrer, never inline", () => {
     render(
-      <ClipProvider client={fakeClient()} initialState={state()} config={defineClipConfig({ mediaProxyUrl: "https://proxy.example/m" })}>
+      <ClipProvider client={fakeClient()} initialState={state()} options={{ mediaProxyUrl: "https://proxy.example/m" }}>
         <Router memory>
           <NftMedia nft={nft("https://evil.example/x.svg")} />
         </Router>
@@ -186,5 +185,24 @@ describe("WebAuthnPasskeyPrf", () => {
     expect([...evaluate.mock.calls[0]![0]]).toEqual([1, 2, 3]);
     expect(evaluate.mock.calls[0]![1]).toEqual(input);
     expect(finish).toHaveBeenCalledWith({ id: "c1", credentialId: "AQID", prfOutput: b64urlEncode(new Uint8Array(32).fill(5)) });
+  });
+});
+
+describe("theme tokens from @clip-wallet/config", async () => {
+  const { defineConfig } = await import("@clip-wallet/config");
+  const { tokensFor } = await import("../src/theme/tokens");
+  const { defaultClipConfig } = await import("../src/theme/config");
+  it("defaults to ColdAI orange with white button text and Inter", () => {
+    const t = tokensFor(defaultClipConfig, "light");
+    expect(t["--clip-accent"]).toBe("#FF3C00");
+    expect(t["--clip-accent-text"]).toBe("#FFFFFF");
+    expect(t["--clip-font"]).toMatch(/^"Inter Variable", "Inter"/);
+  });
+  it("rebrands from config alone and derives the radius scale", () => {
+    const t = tokensFor(defineConfig({ name: "Acme", rdns: "com.acme.wallet", theme: { accent: "#4F46E5", font: "Geist", radius: 10 } }), "dark");
+    expect(t["--clip-accent"]).toBe("#4F46E5");
+    expect(t["--clip-font"]).toMatch(/"Geist"/);
+    expect([t["--clip-radius-sm"], t["--clip-radius-md"], t["--clip-radius-lg"]]).toEqual(["7px", "10px", "14px"]);
+    expect(t["--clip-bg"]).toBe("#0F0F10");
   });
 });
