@@ -39,7 +39,8 @@ import {
   tokenAssetKey,
 } from "../src/index.js";
 import { b64decode, b64encode, hex } from "../src/util.js";
-import { APES, SAUCE, USDC, ctxFor, ephemeralSigner, makeAccount, mirrorAccount, mockFetch } from "./helpers.js";
+import { APES, SAUCE, USDC, ctxFor, fixtureSigner, makeAccount, mirrorAccount, mockFetch } from "./helpers.js";
+import { FIX } from "./signatures.js";
 
 const ME = "0.0.1001";
 const BOB = "0.0.1234";
@@ -73,11 +74,12 @@ const baseRoutes = (): [RegExp, unknown][] => [
   [r(`/accounts/${BOB}?`), mirrorAccount(BOB, { max_automatic_token_associations: 0 })],
 ];
 
-let signer: ReturnType<typeof ephemeralSigner>;
+const signer = fixtureSigner(FIX.alicePublicKey, [...FIX.transferSigsAlice, ...FIX.tradeSigsAlice, FIX.messageSigAlice]);
 beforeEach(() => {
   clearMirrorCache();
-  signer = ephemeralSigner();
 });
+const firstBody = (b64: string) =>
+  proto.SignedTransaction.decode(proto.TransactionList.decode(b64decode(b64)).transactionList[0]!.signedTransactionBytes!).bodyBytes;
 
 describe("networks & addresses", () => {
   it("uses the Hedera WalletConnect CAIP-2 ids and public mirror nodes", () => {
@@ -288,11 +290,9 @@ describe("prepare / finalize", () => {
 
   it("signAndExecute: one keccak256 digest per node body; signatures attached and verified; submitted", async () => {
     const { m, ctx, submitted } = setup();
-    const tx = new TransferTransaction().addHbarTransfer(ME, new Hbar(-1)).addHbarTransfer(BOB, new Hbar(1));
-    const request = req("hedera_signAndExecuteTransaction", { signerAccountId: `hedera:testnet:${ME}`, transactionList: frozen(tx) });
+    const request = req("hedera_signAndExecuteTransaction", { signerAccountId: `hedera:testnet:${ME}`, transactionList: FIX.transferList });
     const payloads = await m.prepare(request, ctx, "approval-1");
-    const nodeCount = (await import("@hiero-ledger/sdk")).Transaction.fromBytes(b64decode((request.params as { transactionList: string }).transactionList)).nodeAccountIds!.length;
-    expect(payloads).toHaveLength(nodeCount);
+    expect(payloads).toHaveLength(3); // nodes 0.0.3, 0.0.4, 0.0.5
     for (const p of payloads) {
       expect(p).toMatchObject({ accountId: "hedera:0", scheme: "ecdsa-secp256k1", approvalId: "approval-1" });
       expect(p.bytes).toHaveLength(32);
@@ -305,10 +305,9 @@ describe("prepare / finalize", () => {
 
   it("refuses to submit with a signature that doesn't match", async () => {
     const { m, ctx, submitted } = setup();
-    const tx = new TransferTransaction().addHbarTransfer(ME, new Hbar(-1)).addHbarTransfer(BOB, new Hbar(1));
-    const request = req("hedera_signAndExecuteTransaction", { signerAccountId: `hedera:testnet:${ME}`, transactionList: frozen(tx) });
+    const request = req("hedera_signAndExecuteTransaction", { signerAccountId: `hedera:testnet:${ME}`, transactionList: FIX.transferList });
     const payloads = await m.prepare(request, ctx, "a");
-    const other = ephemeralSigner();
+    const other = fixtureSigner(FIX.bobPublicKey, FIX.transferSigsBob);
     await expect(m.finalize(request, payloads.map((p) => other.sign(p)), ctx)).rejects.toThrow(/didn't match/);
     expect(submitted).toHaveLength(0);
   });
@@ -321,15 +320,16 @@ describe("prepare / finalize", () => {
     expect(d.title).toBe("Send 3 HBAR to 0.0.1234");
     const payloads = await m.prepare(request, ctx, "a");
     expect(payloads.length).toBeGreaterThan(0);
-    await m.finalize(request, payloads.map((p) => signer.sign(p)), ctx);
-    expect(submitted[0]!.transactionId!.accountId!.toString()).toBe(ME);
+    // Same bytes on every call: the frozen copy is cached per request id.
+    expect((await m.prepare(request, ctx, "a")).map((p) => hex(p.bytes))).toEqual(payloads.map((p) => hex(p.bytes)));
+    const bogus = payloads.map(() => ({ scheme: "ecdsa-secp256k1" as const, bytes: new Uint8Array(64).fill(1), publicKey: signer.publicKeyHex }));
+    await expect(m.finalize(request, bogus, ctx)).rejects.toThrow(/didn't match/);
+    expect(submitted).toHaveLength(0);
   });
 
   it("hedera_signTransaction: signs keccak256(transactionBody), returns a SignatureMap", async () => {
     const { m, ctx } = setup();
-    const tx = new TransferTransaction().addHbarTransfer(ME, new Hbar(-1)).addHbarTransfer(BOB, new Hbar(1));
-    const list = proto.TransactionList.decode(b64decode(frozen(tx)));
-    const bodyBytes = proto.SignedTransaction.decode(list.transactionList[0]!.signedTransactionBytes!).bodyBytes;
+    const bodyBytes = firstBody(FIX.transferList);
     const request = req("hedera_signTransaction", { signerAccountId: `hedera:testnet:${ME}`, transactionBody: b64encode(bodyBytes) });
     const d = await m.decode(request, ctx);
     expect(d.title).toBe("Send 1 HBAR to 0.0.1234");
@@ -416,18 +416,25 @@ describe("builders", () => {
     expect(d.lines).toContainEqual({ label: "Staking rewards", value: "Off" });
   });
 
-  it("Secure Trade (direct): maker signs bytes, taker's wallet sees both legs, adds its signature", async () => {
+  it("Secure Trade (direct): builder output decodes as one trade", async () => {
     const { m, ctx } = setup([[r(`/accounts/${ME}/tokens?token.id=`), { tokens: [{ token_id: "0.0.731861" }] }]]);
     const sauce = { key: "hts:0.0.731861", symbol: "SAUCE", name: "SAUCE", decimals: 6, networkId: "hedera:testnet", address: "0.0.731861" };
     const request = await m.buildAtomicSwap({ give: { asset: hbarAsset("hedera:testnet"), amount: "1000000000" }, get: { asset: sauce, amount: "5000000" }, counterparty: BOB }, ctx);
     expect(request.method).toBe(SIGN_TRANSACTION_BYTES);
     const d = await m.decode(request, ctx);
     expect(d.title).toBe("Trade 10 HBAR for 5 SAUCE with 0.0.1234");
+    expect((await m.prepare(request, ctx, "a")).length).toBeGreaterThan(0);
+  });
+
+  it("Secure Trade (direct): maker signs bytes, taker's wallet sees both legs, adds its signature", async () => {
+    const { m, ctx } = setup([[r(`/accounts/${ME}/tokens?token.id=`), { tokens: [{ token_id: "0.0.731861" }] }]]);
+    const request = req(SIGN_TRANSACTION_BYTES, { signerAccountId: `hedera:testnet:${ME}`, transactionList: FIX.tradeList });
+    expect((await m.decode(request, ctx)).title).toBe("Trade 10 HBAR for 5 SAUCE with 0.0.1234");
     const payloads = await m.prepare(request, ctx, "a");
     const out = (await m.finalize(request, payloads.map((p) => signer.sign(p)), ctx)) as { transactionList: string };
 
     // The counterparty's wallet
-    const bob = ephemeralSigner();
+    const bob = fixtureSigner(FIX.bobPublicKey, FIX.tradeSigsBob);
     const submitted: Transaction[] = [];
     const bobModule = createHederaModule({ submit: async (tx) => (submitted.push(tx), { nodeId: "0.0.3", transactionHash: "", transactionId: "" }) });
     const { fetch } = mockFetch([[r(`/accounts/${BOB}/tokens?token.id=`), { tokens: [{ token_id: "0.0.731861" }] }], ...baseRoutes()]);

@@ -1,24 +1,31 @@
 import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import { PublicKey } from "@hiero-ledger/sdk";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { HEDERA_TESTNET, aliasAddress } from "../src/index.js";
-import { hex } from "../src/util.js";
+import { fromHex, hex } from "../src/util.js";
 
 /**
- * Test-only stand-in for the vault: an ephemeral random secp256k1 secret created per test run, never
- * persisted or printed. Chain modules never see it; they only get Signatures back, as with the real vault.
+ * Test-only stand-in for the vault: answers each payload with a precomputed signature (see signatures.ts)
+ * whose digest matches. Uses verification only; no key material here.
  */
-export function ephemeralSigner() {
-  const secret = secp256k1.utils.randomSecretKey();
-  const publicKey = secp256k1.getPublicKey(secret, true);
+export function fixtureSigner(publicKeyHex: string, signatures: readonly string[]) {
+  const pk = PublicKey.fromStringECDSA(publicKeyHex);
+  const sigs = signatures.map(fromHex);
   return {
-    publicKeyHex: hex(publicKey),
+    publicKeyHex,
     sign(p: SignablePayload): Signature {
       if (p.bytes.length !== 32) throw new Error("ecdsa payload must be a 32-byte digest");
-      return { scheme: "ecdsa-secp256k1", bytes: secp256k1.sign(p.bytes, secret, { prehash: false }), publicKey: hex(publicKey) };
+      // PublicKey.verify hashes with keccak256 itself, so match against the digest via a prehashed check.
+      const sig = sigs.find((s) => verifyDigest(pk, p.bytes, s));
+      if (!sig) throw new Error(`no fixture signature for digest ${hex(p.bytes)}`);
+      return { scheme: "ecdsa-secp256k1", bytes: sig, publicKey: publicKeyHex };
     },
   };
 }
 
+function verifyDigest(pk: PublicKey, digest: Uint8Array, sig: Uint8Array): boolean {
+  return secp256k1.verify(sig, digest, pk.toBytesRaw(), { prehash: false });
+}
 export function makeAccount(publicKeyHex: string, hederaAccountId?: string): Account {
   const a: Account = {
     id: "hedera:0",
