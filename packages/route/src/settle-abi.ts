@@ -1,6 +1,6 @@
 /**
  * Subsets of the compiled "settle on Hedera" ABIs, vendored from the CLPRouter repo, branch `feat/settle-on-hedera`
- * (working tree on top of 6342ca8; sources src/settle/SettleOrderBook.sol, src/settle/SettleDeposit.sol,
+ * (commit a56cf60; sources src/settle/SettleOrderBook.sol, src/settle/SettleDeposit.sol,
  * src/settle/SettleTypes.sol; compiled with `forge build` into out/SettleOrderBook.sol/SettleOrderBook.json and
  * out/SettleDeposit.sol/SettleDeposit.json). Only what the wallet reads or asks the user to approve.
  * `SettleDeposit.deposit` selector: 0x1257b39b. Re-vendor with jq from those files; never edit by hand.

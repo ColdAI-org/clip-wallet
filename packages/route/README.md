@@ -41,7 +41,7 @@ the deposit transaction), `OPEN` → `deposited` (`defaulted` once Hedera's cloc
 `DELIVERED` → `settled`, `DEFAULTED`/`CANCELLED` → `paid-from-bond`, `REJECTED` → `rejected`.
 
 ### Sources
-- Contracts: CLPRouter repo, branch `feat/settle-on-hedera` (working tree on 6342ca8):
+- Contracts: CLPRouter repo, branch `feat/settle-on-hedera` (commit a56cf60, quote vector from 7593128):
   `src/settle/SettleTypes.sol` (quote, EIP-712 domain `ClprSettle`/`1`, ledger = keccak256 of the CAIP-2 id),
   `src/settle/SettleDeposit.sol`, `src/settle/SettleDelivery.sol`, `src/settle/SettleOrderBook.sol`,
   `src/settle/interfaces/ISettlePaymentProver.sol`. ABI subsets in `src/settle-abi.ts` come from
