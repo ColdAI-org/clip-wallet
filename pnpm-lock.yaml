@@ -248,9 +248,21 @@ importers:
 
   packages/1mask:
     dependencies:
+      '@aptos-labs/ts-sdk':
+        specifier: ^7.3.0
+        version: 7.3.0
+      '@aptos-labs/wallet-standard':
+        specifier: ^2.0.0
+        version: 2.0.0(@aptos-labs/ts-sdk@7.3.0)(@wallet-standard/core@1.1.2)
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../core
+      '@mysten/sui':
+        specifier: ^2.33.2
+        version: 2.33.2(typescript@5.9.3)
+      '@mysten/wallet-standard':
+        specifier: ^0.21.31
+        version: 0.21.31(@mysten/sui@2.33.2(typescript@5.9.3))
       '@reown/walletkit':
         specifier: ^1.6.0
         version: 1.6.0(typescript@5.9.3)(zod@4.6.5)
@@ -288,6 +300,21 @@ importers:
       vitest:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(lightningcss@1.33.0)(supports-color@8.1.1)
+
+  packages/chains-aptos:
+    dependencies:
+      '@aptos-labs/ts-sdk':
+        specifier: ^7.3.0
+        version: 7.3.0
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: ^2.4.0
+        version: 2.4.0
 
   packages/chains-bitcoin:
     dependencies:
@@ -357,6 +384,21 @@ importers:
       '@solana/kit':
         specifier: ^8.4.0
         version: 8.4.0(typescript@5.9.3)
+
+  packages/chains-sui:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@mysten/sui':
+        specifier: ^2.33.2
+        version: 2.33.2(typescript@5.9.3)
+      '@noble/curves':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: ^2.4.0
+        version: 2.4.0
 
   packages/config:
     dependencies:
@@ -603,6 +645,13 @@ packages:
   '@aptos-labs/ts-sdk@7.3.0':
     resolution: {integrity: sha512-Tgpcz+MBoEB61JcLAT52JEo2311Yy4T9my1/ZOUN0PVFZgfN6KCTBBNa6gcNSuEH80L7UL1qwxZdansXWVQAgQ==}
     engines: {node: '>=22.0.0'}
+
+  '@aptos-labs/wallet-standard@2.0.0':
+    resolution: {integrity: sha512-A5bEyaUzb0w1rSzllkfcTycN/5V+9RlWbJmDkBnzaUcSngGFCH2p6i2UXBFQRG1GsJk5RnvE4YW5QYkYDwtAGA==}
+    engines: {node: '>=22.0.0'}
+    peerDependencies:
+      '@aptos-labs/ts-sdk': ^7.1.0
+      '@wallet-standard/core': ^1.0.3
 
   '@asamuzakjp/css-color@7.1.2':
     resolution: {integrity: sha512-99DHAnXDB5z6EEK+9GMpVI7Mw4oxj97dY5bpOzMnjADQWxI8rN6TvTduuFLUhUMlS7/CfVZ06tcZsus6cltnNw==}
@@ -1142,6 +1191,11 @@ packages:
 
   '@mysten/utils@0.4.1':
     resolution: {integrity: sha512-gffLJ84CbqG/CcOPuVlwXIRu37tFn0BtUx7CQtbLwJzWjUE7FU2Gq8BXWjzxImnvufcyLTaNWtCPG6wq22Zhog==}
+
+  '@mysten/wallet-standard@0.21.31':
+    resolution: {integrity: sha512-qTtpG5Iej3bA0l3Zd+1OI2SLcWeAZgrfGez3Z9xRLWsOtmg6Hc4Zt+p51pR3b0mvwqI4r6mMmc4PrlOt6zf7+w==}
+    peerDependencies:
+      '@mysten/sui': ^2.33.2
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     resolution: {integrity: sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==}
@@ -2332,9 +2386,22 @@ packages:
   '@vitest/utils@2.1.9':
     resolution: {integrity: sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ==}
 
+  '@wallet-standard/app@1.1.1':
+    resolution: {integrity: sha512-WDGwoByhP5gwHH01r5EaLgQdLVkACPCdOMQhmhn8rsm10h/siSgTorShzBxrn0ExSPof+Lu+C3TfgqBrPa1xoQ==}
+    engines: {node: '>=22'}
+
   '@wallet-standard/base@1.1.1':
     resolution: {integrity: sha512-gggIHTtxicF9XFMQ12DkfS6NAG92Ak795JeSA7f2whAQ6Y3AkMWWuCMxSZXG2NIPN42kEaZSNVjqMsJRaJRxMQ==}
     engines: {node: '>=22'}
+
+  '@wallet-standard/core@1.1.2':
+    resolution: {integrity: sha512-QcVLGDkFtsWjTpkej2jx4FyP2cu+qOAW/lVnvlWjyhCkSEje6z+vEKURV5v+7L6IXjbze5pyFBe24yrPyoUuyw==}
+    engines: {node: '>=22'}
+
+  '@wallet-standard/errors@0.1.2':
+    resolution: {integrity: sha512-oEzKUqJefKby6wcIvaJgrSEe/uNn/rnqkJ0P/85K+h0i5Tdo9E3L22VWq/j5K1e8hHMnZd6LgaIr8m/Wn7X/Ng==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   '@wallet-standard/features@1.1.1':
     resolution: {integrity: sha512-aCWYmVeSCGViyEU5k7GMoW8zxE4Gs+C1s1Pp2XLesvSNlnZ4PMES9HUnTB3hl0b3RVj7C61yze3IWyrncqg4MA==}
@@ -2798,6 +2865,10 @@ packages:
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
+
+  commander@13.1.0:
+    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
+    engines: {node: '>=18'}
 
   commander@14.0.3:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
@@ -5070,6 +5141,11 @@ snapshots:
       jwt-decode: 4.0.0
       poseidon-lite: 0.3.0
 
+  '@aptos-labs/wallet-standard@2.0.0(@aptos-labs/ts-sdk@7.3.0)(@wallet-standard/core@1.1.2)':
+    dependencies:
+      '@aptos-labs/ts-sdk': 7.3.0
+      '@wallet-standard/core': 1.1.2
+
   '@asamuzakjp/css-color@7.1.2':
     dependencies:
       '@csstools/css-calc': 3.4.2(@csstools/css-parser-algorithms@4.0.2(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
@@ -5699,6 +5775,11 @@ snapshots:
   '@mysten/utils@0.4.1':
     dependencies:
       '@scure/base': 2.4.0
+
+  '@mysten/wallet-standard@0.21.31(@mysten/sui@2.33.2(typescript@5.9.3))':
+    dependencies:
+      '@mysten/sui': 2.33.2(typescript@5.9.3)
+      '@wallet-standard/core': 1.1.2
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
@@ -6976,7 +7057,24 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 1.2.0
 
+  '@wallet-standard/app@1.1.1':
+    dependencies:
+      '@wallet-standard/base': 1.1.1
+
   '@wallet-standard/base@1.1.1': {}
+
+  '@wallet-standard/core@1.1.2':
+    dependencies:
+      '@wallet-standard/app': 1.1.1
+      '@wallet-standard/base': 1.1.1
+      '@wallet-standard/errors': 0.1.2
+      '@wallet-standard/features': 1.1.1
+      '@wallet-standard/wallet': 1.1.1
+
+  '@wallet-standard/errors@0.1.2':
+    dependencies:
+      chalk: 5.6.2
+      commander: 13.1.0
 
   '@wallet-standard/features@1.1.1':
     dependencies:
@@ -7685,6 +7783,8 @@ snapshots:
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
+
+  commander@13.1.0: {}
 
   commander@14.0.3: {}
 

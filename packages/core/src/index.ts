@@ -91,7 +91,7 @@ export interface TokenBalance {
 
 export interface Nft {
   networkId: NetworkId;
-  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal";
+  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal" | "sui-object" | "aptos-digital-asset";
   collection: { address: string; name: string };
   tokenId: string;
   name?: string;
