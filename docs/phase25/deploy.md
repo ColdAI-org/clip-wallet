@@ -138,8 +138,18 @@ To switch it off again: `npx wrangler secret delete RESEND_API_KEY` (health goes
 
 ## Google / Apple sign-in
 
-Implemented in `services/backup/src/oidc.ts` (stream p25/extensibility). **Not deployed**: the Worker running
-today predates it. Each provider is switched on independently, by its own client id (a var in `wrangler.jsonc`)
+Implemented in `services/backup/src/oidc.ts` (stream p25/extensibility). **Deployed 2026-10-03 without any
+provider configured**: migration `0002_oidc` is applied to `clip-backup-db` and the Worker (version `722f6aed`) serves
+the endpoints. No OAuth or email secret is set, so every sign-in method reports "not configured" and stores nothing:
+
+| Request | Result |
+|---|---|
+| `GET /v1/health` | 200 `{"ok":true,"emailSignIn":false}` |
+| `GET /v1/auth/providers` | 200 `{"email":false,"google":false,"apple":false}` |
+| `POST /v1/auth/oidc/start` (google, apple) | 503 `provider-unavailable` "That sign-in option isn't set up." (refused before D1) |
+| `POST /v1/auth/start` (email) | 503 `email-unavailable` "Email isn't configured." |
+| `GET /v1/auth/oidc/callback`, `POST /v1/auth/oidc/finish` | 503 (refused before D1) |
+| D1 rows afterwards (accounts, magic_links, sessions, backups, rate_limits, oidc_states) | all 0; R2 0 objects | Each provider is switched on independently, by its own client id (a var in `wrangler.jsonc`)
 and its own secret. Email, Google and Apple don't depend on each other. With a provider's id or secret unset,
 `GET /v1/auth/providers` reports it `false`, `POST /v1/auth/oidc/start` answers 503 `provider-unavailable`, and
 the wallet hides the button.
@@ -149,7 +159,7 @@ blob, and the Worker keeps no email (only `HMAC(EMAIL_PEPPER, "<provider>:<sub>"
 
 Shared by both providers (once):
 
-1. Apply the new migration (adds `oidc_states`) before deploying the new code:
+1. (Done 2026-10-03.) Apply the new migration (adds `oidc_states`) before deploying the new code:
 
    ```
    cd services/backup
