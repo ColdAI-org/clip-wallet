@@ -23,6 +23,7 @@
     "@clip-wallet/chains-solana": "workspace:*",
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/features": "workspace:*",
     "@clip-wallet/route": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@clip-wallet/vault": "workspace:*",
