@@ -12,5 +12,6 @@ export {
   KnownDappRegistry,
   type WalletConnectAdapterOptions,
 } from "./adapters.js";
-export { walletNetworks, walletAssets, publicNetworks } from "./catalog.js";
+export { publicNetworks } from "./public-networks.js";
+// Chain-package wiring (catalog, real modules) lives at "@clip-wallet/engine/wiring" so light hosts/tests skip it.
 export type * from "./types.js";

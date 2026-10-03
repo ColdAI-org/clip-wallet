@@ -1,0 +1,14 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": false,
+    // Type-check workspace packages against their default (Node/browser) typings. Metro still bundles the
+    // "react-native" export condition at runtime (see docs/phase2/integration/mobile.md, Hedera note).
+    "customConditions": [],
+    "types": ["jest"]
+  },
+  "include": ["index.ts", "app.config.ts", "clip.config.ts", "src", "test", "scripts/*.d.ts"],
+  "exclude": ["node_modules", "dist", "ios", "android", "test/**/*.vitest.ts"]
+}

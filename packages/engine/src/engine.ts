@@ -30,7 +30,7 @@ import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "./kv.js";
 import { EngineRequest, type EngineResponseMap } from "./messages.js";
 import { PasskeyCeremonies } from "./passkey-ceremonies.js";
-import type { DappHost, Dependencies, EngineEnv, PermissionStoreLike, PrfProvider } from "./types.js";
+import type { DappHost, Dependencies, EngineEnv, PasskeyInfoLike, PermissionStoreLike, PrfProvider } from "./types.js";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -251,9 +251,19 @@ export class WalletEngine implements DappHost {
    * Enrol a PRF provider that runs in this JS context (react-native-passkey, or the biometric device key).
    * The vault re-checks the password, then wraps its key under the PRF output.
    */
-  async enrollPasskeyWith(password: string, prf: PrfProvider): Promise<void> {
+  async enrollPasskeyWith(password: string, prf: PrfProvider): Promise<PasskeyInfoLike> {
     this.requireUnlocked(await this.deps.vault.status());
-    await this.deps.vault.enrollPasskey(password, prf);
+    const info = await this.deps.vault.enrollPasskey(password, prf);
+    this.env.broadcast();
+    return info;
+  }
+
+  async listPasskeys(): Promise<PasskeyInfoLike[]> {
+    return (await this.deps.vault.status()) === "empty" ? [] : this.deps.vault.listPasskeys();
+  }
+
+  async removePasskey(credentialId: Uint8Array): Promise<void> {
+    await this.deps.vault.removePasskey(credentialId);
     this.env.broadcast();
   }
 

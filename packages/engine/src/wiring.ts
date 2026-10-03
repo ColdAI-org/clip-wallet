@@ -12,6 +12,8 @@ import { KnownDappRegistry, NoNameResolver, OneMaskConnector, ReferencePriceFeed
 import { walletAssets, walletNetworks } from "./catalog.js";
 import type { Dependencies, WalletVault } from "./types.js";
 
+export { walletNetworks, walletAssets } from "./catalog.js";
+
 export interface EngineWiringOptions {
   config: ClipConfig;
   vault: WalletVault;

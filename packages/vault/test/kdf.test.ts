@@ -58,6 +58,21 @@ describe("injectable argon2id", () => {
     expect((await b.deriveAccount("evm", 0)).address).toBe(evmA.address);
   });
 
+  it("hash-wasm can't run without WebAssembly (React Native's Hermes), which is why the seam exists", async () => {
+    const g = globalThis as { WebAssembly?: unknown };
+    const saved = g.WebAssembly;
+    delete g.WebAssembly;
+    try {
+      await expect(hashWasmArgon2id({ password: "x", salt: SALT, memoryKiB: 256, iterations: 1, parallelism: 1, hashLength: 32 })).rejects.toThrow(/WebAssembly is not supported/);
+      // ...while an injected non-WASM implementation still opens a vault.
+      const v = new ClipVault({ storage: new MemoryStorage(), argon2: FAST, argon2id: noble, autoLockMs: 0 });
+      await v.importPhrase(ABANDON, PW);
+      expect(await v.status()).toBe("unlocked");
+    } finally {
+      g.WebAssembly = saved;
+    }
+  });
+
   it("rejects an implementation that returns the wrong length", async () => {
     const short: Argon2idFn = async () => new Uint8Array(16);
     const v = new ClipVault({ storage: new MemoryStorage(), argon2: FAST, argon2id: short, autoLockMs: 0 });

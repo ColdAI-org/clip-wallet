@@ -1,0 +1,116 @@
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Modal, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import * as Linking from "expo-linking";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import type { ApprovalView } from "@clip-wallet/ui";
+import type { MobileWallet } from "./background/host";
+import { WalletProvider, useWallet, type Route } from "./ui/context";
+import { Onboarding, Unlock } from "./screens/Onboarding";
+import { AssetDetail, Home } from "./screens/Home";
+import { Collectibles } from "./screens/Collectibles";
+import { Activity } from "./screens/Activity";
+import { Send } from "./screens/Send";
+import { Receive } from "./screens/Receive";
+import { Settings } from "./screens/Settings";
+import { Scan } from "./screens/Scan";
+import { Browser } from "./screens/Browser";
+import { ApprovalScreen } from "./screens/Approval";
+import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
+import { APP } from "./env";
+
+function Routes(props: { route: Route }) {
+  const r = props.route;
+  switch (r.name) {
+    case "home":
+      return <Home />;
+    case "collectibles":
+      return <Collectibles />;
+    case "activity":
+      return <Activity />;
+    case "browser":
+      return <Browser url={r.url} />;
+    case "settings":
+      return <Settings />;
+    case "asset":
+      return <AssetDetail id={r.id} />;
+    case "send":
+      return <Send assetKey={r.assetKey} />;
+    case "receive":
+      return <Receive assetKey={r.assetKey} />;
+    case "scan":
+      return <Scan />;
+  }
+}
+
+function ApprovalSheet() {
+  const { approvalId, showApproval, client, state } = useWallet();
+  const [view, setView] = useState<ApprovalView | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (!approvalId) setView(null);
+    else void client.getApproval(approvalId).then((v) => live && (v ? setView(v) : showApproval(null)));
+    return () => {
+      live = false;
+    };
+  }, [approvalId, client, showApproval, state?.pendingApprovals]);
+  const done = async () => {
+    // Show the next waiting request, if any.
+    const [next] = await client.listApprovals();
+    showApproval(next?.id ?? null);
+  };
+  return (
+    <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done)}>
+      {view && <ApprovalScreen key={view.id} approval={view} onDone={done} />}
+    </Modal>
+  );
+}
+
+function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
+  const { state, refresh, route, navigate, client, theme } = useWallet();
+  useEffect(() => {
+    if (state?.status !== "unlocked" || !props.pendingLink) return;
+    const l = props.pendingLink;
+    props.clearLink();
+    if (l.kind === "browse") navigate({ name: "browser", url: l.url });
+    else void client.pairWalletConnect(l.uri).catch(() => navigate({ name: "settings" }));
+  }, [state?.status, props.pendingLink]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!state) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.c.bg }}>
+        <ActivityIndicator color={theme.c.accent} />
+      </View>
+    );
+  }
+  return (
+    <>
+      <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
+      {state.status === "empty" ? (
+        <Onboarding onFinished={() => (navigate({ name: "home" }), void refresh())} />
+      ) : state.status === "locked" ? (
+        <Unlock onUnlocked={() => void refresh()} />
+      ) : (
+        <Routes route={route} />
+      )}
+      <ApprovalSheet />
+    </>
+  );
+}
+
+export function App(props: { wallet: MobileWallet; initialRoute?: Route }) {
+  const [link, setLink] = useState<DeepLink>(null);
+  useEffect(() => {
+    const opts = { scheme: APP.scheme, universalHost: process.env.CLIP_ASSOCIATED_DOMAIN };
+    void Linking.getInitialURL().then((u) => setLink(parseDeepLink(u, opts)));
+    const sub = Linking.addEventListener("url", (e) => setLink(parseDeepLink(e.url, opts)));
+    return () => sub.remove();
+  }, []);
+  return (
+    <SafeAreaProvider>
+      <WalletProvider wallet={props.wallet} initialRoute={props.initialRoute}>
+        <Shell pendingLink={link} clearLink={() => setLink(null)} />
+      </WalletProvider>
+    </SafeAreaProvider>
+  );
+}

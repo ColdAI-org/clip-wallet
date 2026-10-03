@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineConfig } from "@clip-wallet/config";
 import { createEngineDependencies } from "../src/wiring.js";
-import { publicNetworks } from "../src/catalog.js";
+import { publicNetworks } from "../src/public-networks.js";
 import { FakeVault } from "./fixtures.js";
 
 const config = defineConfig({ name: "Clip Wallet", rdns: "org.coldai.clipwallet", networks: ["evm:*", "hedera", "solana", "bitcoin"], mainnet: false, walletConnect: {} });

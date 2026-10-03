@@ -1,0 +1,166 @@
+/**
+ * Home: one total, assets merged across networks (@clip-wallet/ui mergeBalances), Send / Receive.
+ * Networks are invisible here; they appear only on an asset's "Where it is" split.
+ */
+import { useMemo } from "react";
+import { Pressable, RefreshControl, ScrollView, View } from "react-native";
+import { formatFiat, formatUnits, mergeBalances, shortAddress, userMessageOf, type MergedAsset } from "@clip-wallet/ui";
+import { useAsync, useWallet } from "../ui/context";
+import { AssetIcon, Button, Card, Chip, Empty, ErrorNote, IconButton, Row, Screen, Spinner, T, Toggle } from "../ui/kit";
+import { IconArrowDown, IconArrowUp, IconLock } from "../ui/icons";
+import { APP } from "../env";
+
+function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => void }) {
+  const { theme } = useWallet();
+  const a = props.asset;
+  return (
+    <Pressable accessibilityRole="button" testID={`asset-${a.id}`} onPress={props.onOpen} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}>
+      <AssetIcon symbol={a.symbol} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+          <T style={{ fontWeight: "600" }}>{a.symbol}</T>
+          {a.bridged && <Chip tone="muted">bridged</Chip>}
+        </View>
+        <T v="hint">{`${formatUnits(a.amount, a.decimals, 4)} ${a.symbol}`}</T>
+      </View>
+      <T style={{ fontWeight: "500", color: theme.c.text }}>{formatFiat(a.fiatValue, props.currency)}</T>
+    </Pressable>
+  );
+}
+
+export function Home() {
+  const { client, state, refresh, navigate, theme, showApproval } = useWallet();
+  const prefs = state?.prefs;
+  const { data, error, loading, reload } = useAsync(() => client.getPortfolio(), [client, prefs?.displayCurrency]);
+  const currency = data?.currency ?? prefs?.displayCurrency ?? "USD";
+  const merged = useMemo(
+    () => mergeBalances(data?.balances ?? [], { pinned: prefs?.pinned, hideSmallBalances: prefs?.hideSmallBalances, showSpam: prefs?.showSpam }),
+    [data, prefs?.pinned, prefs?.hideSmallBalances, prefs?.showSpam],
+  );
+  const setPref = async (patch: Parameters<typeof client.setPrefs>[0]) => {
+    await client.setPrefs(patch);
+    await refresh();
+  };
+
+  return (
+    <Screen
+      nav
+      scroll={false}
+      title={<T v="h1" style={{ fontSize: 18 }}>{APP.config.name}</T>}
+      actions={
+        <IconButton label="Lock wallet" testID="lock" onPress={async () => (await client.lock(), await refresh())}>
+          <IconLock color={theme.c.text} />
+        </IconButton>
+      }
+    >
+      <ScrollView
+        contentContainerStyle={{ padding: theme.s(4), gap: theme.s(4) }}
+        refreshControl={<RefreshControl refreshing={loading && !!data} onRefresh={async () => (await client.getPortfolio({ refresh: true }), reload())} />}
+      >
+        {state && state.pendingApprovals > 0 && (
+          <Pressable
+            testID="pending-banner"
+            onPress={async () => {
+              const [first] = await client.listApprovals();
+              if (first) showApproval(first.id);
+            }}
+            style={{ backgroundColor: theme.c.accentSoft, borderRadius: theme.r.md, padding: 12 }}
+          >
+            <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+              {state.pendingApprovals === 1 ? "1 request is waiting for you" : `${state.pendingApprovals} requests are waiting for you`}
+            </T>
+          </Pressable>
+        )}
+
+        <View style={{ alignItems: "center", gap: 4, paddingVertical: theme.s(4) }}>
+          <T v="label">Total balance</T>
+          {loading && !data ? <Spinner /> : <T v="display" testID="total" style={{ fontSize: 40 }}>{formatFiat(merged.total, currency)}</T>}
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Button onPress={() => navigate({ name: "send" })} testID="send">
+            <IconArrowUp color={theme.c.accentText} />
+            <T color={theme.c.accentText} style={{ fontWeight: "600" }}>Send</T>
+          </Button>
+          <Button variant="secondary" onPress={() => navigate({ name: "receive" })} testID="receive">
+            <IconArrowDown color={theme.c.text} />
+            <T style={{ fontWeight: "600" }}>Receive</T>
+          </Button>
+        </View>
+
+        <ErrorNote message={error ? userMessageOf(error) : null} />
+
+        {data && merged.assets.length === 0 ? (
+          <Empty title="Nothing here yet">Tap Receive to add money from another wallet or exchange.</Empty>
+        ) : (
+          <Card style={{ gap: 0, paddingVertical: 6 }}>
+            {merged.assets.map((a) => (
+              <AssetRow key={a.id} asset={a} currency={currency} onOpen={() => navigate({ name: "asset", id: a.id })} />
+            ))}
+          </Card>
+        )}
+
+        {data && (
+          <View style={{ gap: 12 }}>
+            <Toggle label="Hide small balances" checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
+            {(merged.hiddenSpam > 0 || prefs?.showSpam) && (
+              <Pressable onPress={() => setPref({ showSpam: !prefs?.showSpam })}>
+                <T v="hint" color={theme.c.accent}>
+                  {prefs?.showSpam ? "Hide suspicious tokens" : `${merged.hiddenSpam} suspicious token${merged.hiddenSpam === 1 ? "" : "s"} hidden`}
+                </T>
+              </Pressable>
+            )}
+            {data.stale.length > 0 && <T v="hint">Some balances may be a few minutes old.</T>}
+          </View>
+        )}
+      </ScrollView>
+    </Screen>
+  );
+}
+
+export function AssetDetail(props: { id: string }) {
+  const { client, state, refresh, navigate, theme } = useWallet();
+  const { data } = useAsync(() => client.getPortfolio(), [client]);
+  const prefs = state?.prefs;
+  const currency = data?.currency ?? prefs?.displayCurrency ?? "USD";
+  const asset = useMemo(() => mergeBalances(data?.balances ?? [], { showSpam: true, pinned: prefs?.pinned }).assets.find((a) => a.id === props.id), [data, props.id, prefs?.pinned]);
+  if (!data) return <Screen back title="Asset"><Spinner /></Screen>;
+  if (!asset) return <Screen back title="Asset"><Empty title="You don't hold this anymore" /></Screen>;
+  const name = (id: string) => data.networks.find((n) => n.id === id)?.name ?? id;
+  const togglePin = async () => {
+    const pinned = new Set(prefs?.pinned ?? []);
+    if (pinned.has(asset.id)) pinned.delete(asset.id);
+    else pinned.add(asset.id);
+    await client.setPrefs({ pinned: [...pinned] });
+    await refresh();
+  };
+  return (
+    <Screen back title={asset.name} actions={<Button variant="ghost" onPress={togglePin}>{asset.pinned ? "Unpin" : "Pin"}</Button>}>
+      <View style={{ alignItems: "center", gap: 8 }}>
+        <AssetIcon symbol={asset.symbol} size={48} />
+        <T v="h1">{`${formatUnits(asset.amount, asset.decimals, 6)} ${asset.symbol}`}</T>
+        <T v="label">{formatFiat(asset.fiatValue, currency)}</T>
+        {asset.bridged && <Chip tone="muted">{`bridged copy — not the original ${asset.symbol}`}</Chip>}
+      </View>
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <Button onPress={() => navigate({ name: "send", assetKey: asset.key })}>Send</Button>
+        <Button variant="secondary" onPress={() => navigate({ name: "receive", assetKey: asset.key })}>
+          Receive
+        </Button>
+      </View>
+      {asset.parts.length > 1 || prefs?.advanced ? (
+        <View style={{ gap: 8 }} testID="network-split">
+          <T v="h2">Where it is</T>
+          <Card style={{ gap: 0 }}>
+            {asset.parts.map((p) => (
+              <Row key={p.asset.networkId + (p.asset.address ?? "")} label={name(p.asset.networkId)} value={`${formatUnits(p.amount, p.asset.decimals, 4)} ${p.asset.symbol}`} hint={formatFiat(p.fiatValue, currency)} />
+            ))}
+          </Card>
+          <T v="hint">{`You don't need to manage this — ${asset.symbol} is spent from wherever it is.`}</T>
+        </View>
+      ) : null}
+      {prefs?.advanced &&
+        asset.parts.map((p) => (p.asset.address ? <Row key={`addr-${p.asset.networkId}`} label={`Contract (${name(p.asset.networkId)})`} value={<T v="mono">{shortAddress(p.asset.address, 6)}</T>} /> : null))}
+    </Screen>
+  );
+}

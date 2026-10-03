@@ -31,6 +31,8 @@ export const VAULT_DIRS = ["packages/vault/"];
 export const VAULT_IMPORT_ALLOW = [
   /^packages\/vault\//,
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
+  // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
+  /^apps\/mobile\/src\/background\//,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
