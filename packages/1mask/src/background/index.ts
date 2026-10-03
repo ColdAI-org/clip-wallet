@@ -18,3 +18,20 @@ export {
 export { createMemoryPermissionStore, type PermissionStore } from "./permissions.js";
 export { BITCOIN_METHODS_ALLOWED, EVM_METHODS, HEDERA_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
 export { PORT_NAME } from "../shared/protocol.js";
+export {
+  CARDANO_METHODS_ALLOWED,
+  SUBSTRATE_METHODS_ALLOWED,
+  cardanoSubstrateAllowlist,
+  dispatchCardanoSubstrate,
+  type CardanoSubstrateRouterHelpers,
+} from "./cardano-substrate.js";
+export {
+  STARKNET_METHODS_ALLOWED,
+  TON_METHODS_ALLOWED,
+  createStarknetTonDispatch,
+  starknetFeltChainId,
+  starknetTonAllowlist,
+  type StarknetTonHelpers,
+  type StarknetTonOptions,
+  type TonAddrItem,
+} from "./starknet-ton.js";

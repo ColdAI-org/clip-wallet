@@ -3,6 +3,8 @@ import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
 import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS } from "../inpage/aptos.js";
 import { SUI_SIGNING_METHODS } from "../inpage/sui.js";
 import { p2InjectedAllowlist } from "./p2-families.js";
+import { cardanoSubstrateAllowlist } from "./cardano-substrate.js";
+import { starknetTonAllowlist } from "./starknet-ton.js";
 
 /**
  * Method allowlists per family. Anything not listed is answered with 4200 (unsupported method)
@@ -112,6 +114,12 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
     case "tezos":
     case "algorand":
       return p2InjectedAllowlist(family);
+    case "cardano":
+    case "substrate":
+      return cardanoSubstrateAllowlist(family);
+    case "starknet":
+    case "ton":
+      return starknetTonAllowlist(family);
     default:
       // Phase 2 families register their injected methods here as their connectors land.
       return new Set<string>();

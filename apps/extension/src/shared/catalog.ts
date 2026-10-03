@@ -10,6 +10,10 @@ type CuratedToken = (typeof CURATED_TOKENS)[number];
 import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
 import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
 import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
+import { CARDANO_NETWORKS } from "@clip-wallet/chains-cardano";
+import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@clip-wallet/chains-substrate";
+import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@clip-wallet/chains-starknet";
+import { TON_MAINNET, TON_TESTNET } from "@clip-wallet/chains-ton";
 import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui";
 import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos";
 import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near";
@@ -34,6 +38,12 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     SOLANA_DEVNET,
     SOLANA_MAINNET,
     ...BITCOIN_NETWORKS.filter((n) => n.name !== "Bitcoin Signet"),
+    ...CARDANO_NETWORKS,
+    ...SUBSTRATE_NETWORKS,
+    STARKNET_SEPOLIA,
+    STARKNET_MAINNET,
+    TON_TESTNET,
+    TON_MAINNET,
     SUI_TESTNET,
     SUI_MAINNET,
     APTOS_TESTNET,
@@ -64,6 +74,17 @@ export function walletAssets(networks: Network[]): AssetRef[] {
       const id = USDC_TOKEN_IDS[ledgerOf(n.id)];
       if (id) out.push({ key: htsKey(n.id, id), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: id });
     }
+    if (n.family === "substrate") {
+      const spec = SUBSTRATE_SPECS.find((sp) => caip2Of(sp.genesisHash) === n.id);
+      for (const a of spec?.assets ?? []) out.push({ key: a.key, symbol: a.symbol, name: a.name, decimals: a.decimals, networkId: n.id, address: String(a.id) });
+    }
+    if (n.family === "starknet") {
+      for (const t of STARKNET_TOKENS) {
+        if (STARKNET_CHAINS[t.chain].caip2 !== n.id || t.key === "strk") continue;
+        out.push({ key: t.key, symbol: t.symbol, name: t.name, decimals: t.decimals, networkId: n.id, address: t.address, ...(t.bridged ? { bridged: true } : {}) });
+      }
+    }
+    // TON has no curated testnet jettons; on mainnet USD₮ shows up from balances.
     if (n.family === "solana") {
       const mint = USDC_MINTS[n.testnet ? "devnet" : "mainnet"];
       if (mint) out.push({ key: splKey(n.id, mint), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: mint });

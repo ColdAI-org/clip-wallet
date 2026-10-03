@@ -22,7 +22,9 @@ import {
 import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
 import { METHOD_APTOS_NETWORK } from "../inpage/aptos.js";
 import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
+import { dispatchCardanoSubstrate, type CardanoSubstrateRouterHelpers } from "./cardano-substrate.js";
 import type { PermissionStore } from "./permissions.js";
+import { createStarknetTonDispatch, type StarknetTonOptions } from "./starknet-ton.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
 export interface RouterPort {
@@ -42,7 +44,7 @@ export interface AccountLike {
   addressType?: string;
 }
 
-export interface OneMaskRouterOptions {
+export interface OneMaskRouterOptions extends StarknetTonOptions {
   /** The wallet's network registry. Chains outside it do not exist for dapps. */
   networks: Network[];
   /**
@@ -463,6 +465,39 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     opts.tezosBeacon ? { beacon: opts.tezosBeacon } : {},
   );
 
+  /* ------------------------------------------------------------ Cardano (CIP-30) & Substrate (injectedWeb3) */
+
+  const cardanoSubstrateHelpers: CardanoSubstrateRouterHelpers = {
+    permitted,
+    accounts,
+    connect,
+    approve,
+    read: (req) => withTimeout(opts.handle(req), readMs, req.id),
+    makeReq,
+    requireNetwork,
+    requirePermission,
+    revoke: (origin, family) => revoke(origin, family),
+  };
+
+  /* ------------------------------------------------------------ Starknet (get-starknet) & TON (TON Connect) */
+
+  // `revoke` is declared below; it is only called at dispatch time.
+  const starknetTon = createStarknetTonDispatch(
+    {
+      permitted,
+      accounts,
+      connect,
+      approve,
+      makeReq,
+      selectedNetwork,
+      setSelected,
+      candidates,
+      emit,
+      revoke: (origin, family, o) => revoke(origin, family, o),
+    },
+    opts,
+  );
+
   /* ------------------------------------------------------------ public */
 
   /** Errors leave the router as ProviderRpcError {code,message} only: no stacks, no causes. */
@@ -483,6 +518,9 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       return dispatchStandard(origin, family, method, params, chain);
     }
     if (P2_FAMILIES.has(family)) return p2.dispatch(origin, family, method, params, chain);
+    if (family === "cardano" || family === "substrate") return dispatchCardanoSubstrate(cardanoSubstrateHelpers, origin, family, method, params, chain);
+    if (family === "starknet") return starknetTon.starknet(origin, method, params);
+    if (family === "ton") return starknetTon.ton(origin, method, params);
     throw rpcError.unsupportedMethod(method);
   };
 

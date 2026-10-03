@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -23,6 +23,7 @@ import { hashSignablePayload } from "@clip-wallet/vault";
 import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
+import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@clip-wallet/chains-cardano";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -83,7 +84,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 }
 const APPROVAL_TTL_MS = 2 * 60_000;
-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin", "sui", "aptos", "near", "stellar", "tezos", "algorand"];
+const FAMILIES: readonly Family[] = CORE_FAMILIES;
 
 function parseUnits(value: string, decimals: number): bigint {
   const [w = "0", f = ""] = value.split(".");
@@ -765,6 +766,14 @@ export class WalletService implements DappHost {
     const body = (await res.json().catch(() => ({}))) as { result?: unknown; error?: { code?: number; message?: string } };
     if (body.error) throw Object.assign(new Error(body.error.message ?? "RPC error"), { code: body.error.code ?? -32603 });
     return body.result;
+  }
+
+  async chainRead(req: DappRequest): Promise<unknown> {
+    const m = this.deps.chains.cardano as CardanoModule | undefined;
+    if (req.family !== "cardano" || !m || typeof m.read !== "function" || !(CARDANO_READ_METHODS as readonly string[]).includes(req.method)) {
+      throw new ClipError("This request isn't available.", "chain-read/unsupported");
+    }
+    return m.read(req.method as CardanoReadMethod, req.params, await this.ctx(req.networkId));
   }
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */

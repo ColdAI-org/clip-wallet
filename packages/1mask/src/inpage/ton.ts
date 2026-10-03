@@ -1,3 +1,4 @@
+import { OWN_GLOBAL_ROOTS } from "./injected-base.js";
 import { RpcErrorCode } from "../shared/errors.js";
 import type { InpageTransport } from "./transport.js";
 
@@ -172,8 +173,23 @@ export class ClipTonConnectBridge {
 export function injectTonConnect(win: Window, key: string, bridge: ClipTonConnectBridge): { injected: boolean; stop(): void } {
   if (!/^[A-Za-z_$][\w$]*$/.test(key)) throw new Error("1Mask: TON Connect bridge key must be a JS identifier");
   const w = win as unknown as Record<string, unknown>;
-  if (w[key] !== undefined) return { injected: false, stop: () => {} };
-  const holder = Object.freeze({ tonconnect: bridge });
-  Object.defineProperty(win, key, { value: holder, configurable: true, enumerable: true, writable: false });
-  return { injected: true, stop: () => void (w[key] === holder && delete w[key]) };
+  const existing = w[key];
+  // Share 1Mask's own window.clipwallet root with the NEAR/Stellar/Algorand providers; never touch another wallet's.
+  if (existing !== undefined && !(typeof existing === "object" && existing !== null && OWN_GLOBAL_ROOTS.has(existing) && !("tonconnect" in existing))) {
+    return { injected: false, stop: () => {} };
+  }
+  const holder = (existing as Record<string, unknown> | undefined) ?? (Object.create(null) as Record<string, unknown>);
+  Object.defineProperty(holder, "tonconnect", { value: bridge, configurable: true, enumerable: true, writable: false });
+  if (!existing) {
+    OWN_GLOBAL_ROOTS.add(holder);
+    Object.defineProperty(win, key, { value: holder, configurable: true, enumerable: true, writable: false });
+  }
+  return {
+    injected: true,
+    stop: () => {
+      if (w[key] !== holder) return;
+      delete holder.tonconnect;
+      if (Object.keys(holder).every((k) => k === "info")) delete w[key];
+    },
+  };
 }

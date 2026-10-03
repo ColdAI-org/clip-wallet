@@ -4,7 +4,7 @@
  *   dependency         real (default build)                                  fixture mode (CLIP_MOCKS=1)
  *   -----------------  ----------------------------------------------------  ---------------------------
  *   vault              @clip-wallet/vault ClipVault                          same (always real)
- *   chain modules      @clip-wallet/chains-{evm,hedera,solana,bitcoin}       mocks/mock-chains.ts
+ *   chain modules      @clip-wallet/chains-* (all 14 families)               mocks/mock-chains.ts
  *   networks/assets    chain packages via shared/catalog.ts + clip.config    mocks/networks.ts
  *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        mocks/mock-dapps.ts
  *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
@@ -31,6 +31,10 @@ import { createNearModule } from "@clip-wallet/chains-near";
 import { createStellarModule } from "@clip-wallet/chains-stellar";
 import { createTezosModule } from "@clip-wallet/chains-tezos";
 import { createAlgorandModule } from "@clip-wallet/chains-algorand";
+import { createCardanoModule } from "@clip-wallet/chains-cardano";
+import { createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { createStarknetModule } from "@clip-wallet/chains-starknet";
+import { createTonModule } from "@clip-wallet/chains-ton";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
@@ -108,6 +112,8 @@ export interface DappHost {
   permissions: PermissionStoreLike;
   /** Read-only JSON-RPC proxy for dapps (eth_call etc.). */
   rpc(networkId: string, method: string, params: unknown): Promise<unknown>;
+  /** Read-only chain calls answered by a chain module (CIP-30 getUtxos/getBalance/…/submitTx). */
+  chainRead(req: DappRequest): Promise<unknown>;
   isUnlocked(): Promise<boolean>;
   /** The connector gave up on a request (timeout / relay expiry): drop its approval. */
   cancel(requestId: string): void;
@@ -209,6 +215,9 @@ export function createDependencies(opts: WiringOptions): Dependencies {
 
   const networks = walletNetworks(opts.config);
   const hedera: HederaModule = createHederaModule();
+  // OpenZeppelin v0.17.0 = the vault's default Starknet address; TON v5r1 = the vault's default wallet.
+  const starknet = createStarknetModule();
+  const ton = createTonModule();
   const prices = new ReferencePriceFeed();
   return {
     mocks: false,
@@ -225,11 +234,15 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       tezos: createTezosModule(),
       // Must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
       algorand: createAlgorandModule(),
+      cardano: createCardanoModule(),
+      substrate: createSubstrateModule(),
+      starknet,
+      ton,
     },
     networks,
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
-    dapps: new OneMaskConnector(networks, { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }),
+    dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet, ton }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
     names: new NoNameResolver(),

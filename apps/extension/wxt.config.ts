@@ -4,12 +4,19 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
 import { walletNetworks } from "./src/shared/catalog";
+import { createTonModule } from "@clip-wallet/chains-ton";
+import pkg from "./package.json" with { type: "json" };
 
 /** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
 const MOCKS = process.env.CLIP_MOCKS === "1";
 const CHANNEL = `clip-${randomUUID()}`;
 const ICON = `data:image/svg+xml;base64,${readFileSync(new URL("./icon.svg", import.meta.url)).toString("base64")}`;
 const PUBLIC_NETWORKS = walletNetworks(clipConfig).map((n) => ({ ...n, rpcUrls: n.rpcUrls.slice(0, 1) }));
+/**
+ * TON Connect JS bridge (window.clipwallet.tonconnect). key/appName must match the wallets-list draft
+ * (docs/listings/ton-connect.md); features come from chains-ton for the vault's wallet version (v5r1).
+ */
+const TON_CONNECT = { key: "clipwallet", appName: "clipwallet", appVersion: pkg.version, features: createTonModule().features };
 
 export default defineConfig({
   srcDir: "src",
@@ -28,7 +35,8 @@ export default defineConfig({
       name: clipConfig.name,
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       permissions: ["storage", "alarms"],
-      host_permissions: rpHost,
+      // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
+      host_permissions: [...rpHost, "https://*.koios.rest/*"],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
       // Argon2id (hash-wasm) needs WebAssembly; nothing else is relaxed. No remote code, no frames.
@@ -44,6 +52,7 @@ export default defineConfig({
       __CLIP_CHANNEL__: JSON.stringify(CHANNEL),
       __CLIP_PUBLIC_NETWORKS__: JSON.stringify(PUBLIC_NETWORKS),
       __CLIP_IDENTITY__: JSON.stringify({ name: clipConfig.name, icon: ICON, rdns: clipConfig.rdns }),
+      __CLIP_TON_CONNECT__: JSON.stringify(TON_CONNECT),
     },
     build: { target: "es2022" },
   }),
