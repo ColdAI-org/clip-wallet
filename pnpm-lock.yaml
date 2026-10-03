@@ -1246,9 +1246,6 @@ importers:
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../names
-      '@hiero-ledger/sdk':
-        specifier: ^2.89.1
-        version: 2.89.1(bn.js@5.2.3)(expo-crypto@57.0.3)(supports-color@8.1.1)
       viem:
         specifier: ^2.57.2
         version: 2.57.2(typescript@5.9.3)(zod@4.6.5)

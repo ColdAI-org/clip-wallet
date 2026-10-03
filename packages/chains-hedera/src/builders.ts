@@ -1,6 +1,6 @@
 import { type AssetRef, type ChainContext, ClipError, type DappRequest } from "@clip-wallet/core";
 import { isAccountId, isEvmAddress, longZeroToAccountId, stripChecksum } from "./address.js";
-import { accountIdString, compareAccountIds, compareEntityIds, dateTimestamp, parseAccountId, parseEntityId } from "./ids.js";
+import { accountIdString, compareAccountIds, compareEntityIds, dateTimestamp, entityIdString, parseAccountId, parseEntityId } from "./ids.js";
 import { Mirror } from "./mirror.js";
 import { ledgerOf, mirrorUrl } from "./networks.js";
 import {
@@ -10,6 +10,7 @@ import {
   type TokenTransferListIn,
   encodeApproveAllowance,
   encodeAssociate,
+  decodeContractCall,
   encodeContractCall,
   encodeCryptoTransfer,
   encodeCryptoUpdate,
@@ -17,7 +18,7 @@ import {
   encodeScheduleCreate,
   encodeScheduleSign,
 } from "./proto/hapi.js";
-import { type TxDraft, type TxInput, defaultMaxFee, freezeInput } from "./tx.js";
+import { type TxDraft, type TxInput, defaultMaxFee, freezeInput, parseTransaction } from "./tx.js";
 import { b64encode, randomId } from "./util.js";
 
 /** Internal-only method: sign a transaction and hand back the signed bytes without submitting (Secure Trade). */
@@ -202,6 +203,23 @@ export function contractCallDraft(p: { contractId: string; gas: number | bigint;
       params: p.functionParameters ?? null,
     }),
   };
+}
+
+/**
+ * The contract call inside transaction bytes (TransactionList or a single Transaction), or null when the bytes
+ * aren't a ContractExecuteTransaction. Lets packages read their own calls back without the Hiero SDK.
+ */
+export function contractCallOf(bytes: Uint8Array): { contractId: string; gas: bigint; payableTinybars: bigint; functionParameters: Uint8Array } | null {
+  let body;
+  try {
+    body = parseTransaction(bytes).body;
+  } catch {
+    return null;
+  }
+  if (body.kind !== BODY.contractCall) return null;
+  const c = decodeContractCall(body.data);
+  if (!c.contractId) return null;
+  return { contractId: entityIdString(c.contractId), gas: c.gas, payableTinybars: c.amount, functionParameters: c.params };
 }
 
 /** AccountAllowanceApproveTransaction with one fungible-token allowance (HIP-336). */

@@ -9,9 +9,8 @@
  */
 import type { ChainContext, DappRequest, DecodedRequest, Family, Warning } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";
-import { freezeNew, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
+import { contractCallDraft, contractCallOf, freezeNew, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { CLIP_HANDLES_ABI, isValidHandle } from "@clip-wallet/names";
-import { ContractExecuteTransaction, ContractId, Transaction } from "@hiero-ledger/sdk";
 import { decodeFunctionData, encodeFunctionData, type Hex } from "viem";
 
 export type HandleAction =
@@ -63,10 +62,8 @@ export function handleGas(action: HandleAction): number {
 export async function buildHandleRequest(action: HandleAction, contract: HandlesContract, ctx: ChainContext): Promise<DappRequest> {
   if (ctx.network.family !== "hedera") throw new ClipError("Clip handles live on Hedera.", "handles/network");
   const payer = await resolvePayer(ctx);
-  const tx = new ContractExecuteTransaction()
-    .setContractId(ContractId.fromString(contract.contractId))
-    .setGas(handleGas(action))
-    .setFunctionParameters(hexToBytes(handleCalldata(action)));
+  // chains-hedera's codec, no Hiero SDK at runtime (same bytes; see chains-hedera test/codec.test.ts).
+  const tx = contractCallDraft({ contractId: contract.contractId, gas: handleGas(action), functionParameters: hexToBytes(handleCalldata(action)) });
   const request = requestFor(freezeNew(tx, payer, ctx), payer, ctx);
   request.origin = "wallet";
   return request;
@@ -129,15 +126,15 @@ export function refineHandleRequest(request: DappRequest, decoded: DecodedReques
 function handleCallOf(request: DappRequest, contractId: string) {
   const params = request.params as { transactionList?: string } | undefined;
   if (!params?.transactionList) return null;
-  let tx: Transaction;
+  let call: ReturnType<typeof contractCallOf>;
   try {
-    tx = Transaction.fromBytes(base64ToBytes(params.transactionList));
+    call = contractCallOf(base64ToBytes(params.transactionList));
   } catch {
     return null;
   }
-  if (!(tx instanceof ContractExecuteTransaction) || tx.contractId?.toString() !== contractId || !tx.functionParameters) return null;
+  if (!call || call.contractId !== contractId || !call.functionParameters.length) return null;
   try {
-    return decodeFunctionData({ abi: CLIP_HANDLES_ABI, data: bytesToHex(tx.functionParameters) });
+    return decodeFunctionData({ abi: CLIP_HANDLES_ABI, data: bytesToHex(call.functionParameters) });
   } catch {
     return null;
   }

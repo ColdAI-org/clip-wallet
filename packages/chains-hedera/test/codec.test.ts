@@ -32,6 +32,7 @@ import { describe, expect, it } from "vitest";
 import {
   aliasAddress,
   approveAllowanceDraft,
+  contractCallOf,
   attachSignatures,
   bodiesToSign,
   contractCallDraft,
@@ -217,6 +218,17 @@ describe("builders are byte-identical to the SDK", () => {
           .approveTokenAllowance("0.0.731861", ME, AccountId.fromString("0.0.1414040"), 0)
           .deleteTokenNftAllowanceAllSerials("0.0.4000", ME, AccountId.fromString(BOB)),
     );
+  });
+
+  it("contractCallOf reads a contract call back from frozen bytes (ours and the SDK's), and nothing else", () => {
+    const opts = { payer: ME, ledger: "testnet" as const, nodes: NODES, validStart: { seconds: 1790000000n, nanos: 5 } };
+    const data = Uint8Array.from([0xde, 0xad, 0xbe, 0xef]);
+    const ours = freezeDraft(contractCallDraft({ contractId: "0.0.5005", gas: 120000, functionParameters: data }), opts);
+    expect(contractCallOf(ours)).toEqual({ contractId: "0.0.5005", gas: 120000n, payableTinybars: 0n, functionParameters: data });
+    const sdk = new ContractExecuteTransaction().setContractId(ContractId.fromString("0.0.5005")).setGas(120000).setFunctionParameters(data);
+    expect(contractCallOf(sdk.setTransactionId(TransactionId.fromString(TX_ID)).setNodeAccountIds(NODES.map((n) => AccountId.fromString(n))).freeze().toBytes())?.contractId).toBe("0.0.5005");
+    expect(contractCallOf(freezeDraft(hbarAllowanceDraft({ owner: ME, spender: BOB, tinybars: 1 }), opts))).toBeNull();
+    expect(contractCallOf(Uint8Array.from([1, 2, 3]))).toBeNull();
   });
 
   it("HIP-745: an unfrozen SDK transaction is frozen like freezeWith (same id and nodes)", () => {
