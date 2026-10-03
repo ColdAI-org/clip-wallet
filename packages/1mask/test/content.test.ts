@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createContentBridge } from "../src/content/index.js";
 import { SOURCE_INPAGE } from "../src/shared/protocol.js";
 import { newWindow, portPair, tick } from "./helpers.js";
@@ -39,10 +39,11 @@ describe("content bridge security", () => {
   it("forwards a valid same-window request and attaches the origin itself", async () => {
     const s = setup();
     s.win.postMessage(s.req(), "*");
-    await tick(10);
-    expect(s.received).toEqual([
-      { type: "request", id: "r1", origin: "https://dapp.example", family: "evm", method: "eth_chainId" },
-    ]);
+    await vi.waitFor(() =>
+      expect(s.received).toEqual([
+        { type: "request", id: "r1", origin: "https://dapp.example", family: "evm", method: "eth_chainId" },
+      ]),
+    );
   });
 
   it("ignores messages from other windows/frames", async () => {
@@ -96,13 +97,14 @@ describe("content bridge security", () => {
   it("relays responses only for in-flight ids, and relays events", async () => {
     const s = setup();
     s.win.postMessage(s.req(), "*");
-    await tick(10);
+    await vi.waitFor(() => expect(s.pairs.length).toBe(1));
     const bg = s.pairs[0]!.background;
     bg.postMessage({ type: "response", id: "unknown", result: 1 });
     bg.postMessage({ type: "response", id: "r1", result: "0x1" });
     bg.postMessage({ type: "event", family: "evm", event: "chainChanged", data: "0x2" });
     bg.postMessage({ type: "bogus" });
-    await tick(10);
+    await vi.waitFor(() => expect(s.toPage.length).toBe(2));
+    await tick(10); // nothing else may arrive
     expect(s.toPage).toEqual([
       { channel: "chan", source: "1mask-content", type: "response", id: "r1", result: "0x1" },
       { channel: "chan", source: "1mask-content", type: "event", family: "evm", event: "chainChanged", data: "0x2" },
@@ -112,12 +114,10 @@ describe("content bridge security", () => {
   it("fails in-flight requests with 4900 when the port drops and reconnects lazily", async () => {
     const s = setup();
     s.win.postMessage(s.req(), "*");
-    await tick(10);
+    await vi.waitFor(() => expect(s.pairs.length).toBe(1));
     s.pairs[0]!.disconnectFromBackground();
-    await tick(10);
-    expect(s.toPage[0]).toMatchObject({ id: "r1", error: { code: 4900 } });
+    await vi.waitFor(() => expect(s.toPage[0]).toMatchObject({ id: "r1", error: { code: 4900 } }));
     s.win.postMessage(s.req({ id: "r2" }), "*");
-    await tick(10);
-    expect(s.connects()).toBe(2);
+    await vi.waitFor(() => expect(s.connects()).toBe(2));
   });
 });

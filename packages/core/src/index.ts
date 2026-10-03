@@ -166,7 +166,9 @@ export interface Warning {
     | "domain-mismatch"
     | "new-recipient"
     | "network-matters"
-    | "simulation-failed";
+    | "simulation-failed"
+    | "inscribed-utxo"
+    | "high-fee";
   message: string;
 }
 
