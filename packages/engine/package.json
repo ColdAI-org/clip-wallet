@@ -11,11 +11,8 @@
     "./platform": "./src/platform.ts",
     "./catalog": "./src/catalog.ts",
     "./features": "./src/features.ts",
-<<<<<<< HEAD
-    "./social-signin": "./src/social-signin.ts"
-=======
+    "./social-signin": "./src/social-signin.ts",
     "./hardware": "./src/hardware.ts"
->>>>>>> p25/mobile-screens
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
