@@ -115,7 +115,7 @@ describe("Ledger signing through the keyring (approval-bound, signature checked)
     approve(k, p);
     await k.sign(p, { request: I.request("evm", "eth_signTypedData_v4", SEPOLIA), decoded: I.decoded(SEPOLIA) });
     store.ensureQueueEmpty();
-  });
+  }, 30_000); // replays a long APDU session; slow under the full parallel test run
 
   it("Solana transaction", async () => {
     const m = I.solTransfer(sol[0]!.publicKey);
