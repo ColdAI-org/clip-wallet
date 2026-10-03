@@ -91,7 +91,18 @@ export interface TokenBalance {
 
 export interface Nft {
   networkId: NetworkId;
-  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal";
+  standard:
+    | "erc721"
+    | "erc1155"
+    | "hts-nft"
+    | "metaplex"
+    | "ordinal"
+    /** Cardano: CIP-25 (label 721 mint metadata) and CIP-68 (reference-token datum). */
+    | "cip25"
+    | "cip68"
+    /** Substrate Asset Hub: the `nfts` and legacy `uniques` pallets. */
+    | "substrate-nfts"
+    | "substrate-uniques";
   collection: { address: string; name: string };
   tokenId: string;
   name?: string;
