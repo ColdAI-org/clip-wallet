@@ -71,6 +71,9 @@ export default defineConfig({
   },
   vite: () => ({
     define: {
+      // Some chain deps (a TextEncoder polyfill pulled in by the Phase 2 families) read `window` or Node's
+      // `global` at load time; a service worker has neither, so the background died before main().
+      global: "globalThis",
       __CLIP_MOCKS__: JSON.stringify(MOCKS),
       __CLIP_CHANNEL__: JSON.stringify(CHANNEL),
       __CLIP_PUBLIC_NETWORKS__: JSON.stringify(PUBLIC_NETWORKS),
