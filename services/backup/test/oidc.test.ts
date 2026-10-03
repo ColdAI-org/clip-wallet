@@ -87,6 +87,19 @@ describe("which sign-in methods are on", () => {
     const h = harness({ env: { APPLE_CLIENT_SECRET: undefined } });
     await expect(h.client().startSocialSignIn("apple", RETURN)).rejects.toMatchObject({ code: "backup/provider-unavailable", userMessage: expect.stringMatching(/Use your email/) });
     expect(h.out).toEqual([]);
+    // Refused before the rate limiter or the state table is touched.
+    for (const table of ["rate_limits", "oidc_states", "accounts", "sessions"]) {
+      expect((await h.E.DB.prepare(`SELECT COUNT(*) AS n FROM ${table}`).first<{ n: number }>())!.n, table).toBe(0);
+    }
+  });
+
+  it("with no provider configured, callback and finish refuse plainly without writing anything", async () => {
+    const h = harness({ env: { GOOGLE_CLIENT_SECRET: undefined, APPLE_CLIENT_SECRET: undefined } });
+    const cb = await h.f(`${PUBLIC_URL}/v1/auth/oidc/callback?state=x&code=y`);
+    expect(cb.status).toBe(503);
+    const fin = await h.f(`${PUBLIC_URL}/v1/auth/oidc/finish`, { method: "POST", body: JSON.stringify({ state: "x", handoff: "y", verifier: "z" }) });
+    expect(fin.status).toBe(503);
+    expect((await h.E.DB.prepare("SELECT COUNT(*) AS n FROM rate_limits").first<{ n: number }>())!.n).toBe(0);
   });
 
   it("only returns to allow-listed wallet URLs", async () => {

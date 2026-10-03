@@ -171,13 +171,23 @@ export function createApp(deps: AppDeps = {}) {
     return !(email instanceof UnconfiguredEmailSender) && (env.EMAIL_PEPPER?.length ?? 0) >= 32;
   }
 
+  /** No provider is switched on: social sign-in endpoints refuse before touching D1 (nothing is stored). */
+  function requireAnyProvider(env: Env) {
+    if (!PROVIDERS.some((p) => providerEnabled(env, p))) throw new HttpError(503, "provider-unavailable", "That sign-in option isn't set up.");
+  }
+
   async function socialStart(req: Request, env: Env): Promise<Response> {
-    await enforce(env.DB, RULES.startPerIp, clientIp(req), now());
     const body = await readJson<{ provider?: string; challenge?: string; returnTo?: string }>(req);
+    // A switched-off provider is refused before the rate limiter writes its row, like email sign-in.
+    if (PROVIDERS.includes(body.provider as never) && !providerEnabled(env, body.provider as never)) {
+      throw new HttpError(503, "provider-unavailable", "That sign-in option isn't set up.");
+    }
+    await enforce(env.DB, RULES.startPerIp, clientIp(req), now());
     return json(200, await oidcStart(env, body, oidcDeps));
   }
 
   async function socialCallback(req: Request, env: Env): Promise<Response> {
+    requireAnyProvider(env);
     await enforce(env.DB, RULES.verifyPerIp, clientIp(req), now());
     let params = new URL(req.url).searchParams;
     if (req.method === "POST") {
@@ -190,6 +200,7 @@ export function createApp(deps: AppDeps = {}) {
   }
 
   async function socialFinish(req: Request, env: Env): Promise<Response> {
+    requireAnyProvider(env);
     await enforce(env.DB, RULES.verifyPerIp, clientIp(req), now());
     const body = await readJson<{ state?: string; handoff?: string; verifier?: string }>(req);
     const { account, provider } = await oidcFinish(env, body, oidcDeps);
