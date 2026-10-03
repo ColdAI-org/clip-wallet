@@ -39,10 +39,11 @@ describe("content bridge security", () => {
   it("forwards a valid same-window request and attaches the origin itself", async () => {
     const s = setup();
     s.win.postMessage(s.req(), "*");
-    await tick(10);
-    expect(s.received).toEqual([
-      { type: "request", id: "r1", origin: "https://dapp.example", family: "evm", method: "eth_chainId" },
-    ]);
+    await vi.waitFor(() =>
+      expect(s.received).toEqual([
+        { type: "request", id: "r1", origin: "https://dapp.example", family: "evm", method: "eth_chainId" },
+      ]),
+    );
   });
 
   it("ignores messages from other windows/frames", async () => {
