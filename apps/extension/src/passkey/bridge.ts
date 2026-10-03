@@ -22,7 +22,7 @@
  *    via Chrome 132+ / Firefox 139; Windows Hello needs Windows 11 24H2+ with the Feb 2026 update
  *    (secondary source: https://www.corbado.com/blog/passkeys-prf-webauthn). Without PRF we throw
  *    "no-prf" and the user keeps the password.
- *  - EMPIRICAL: apps/extension/e2e/passkey.spec.ts runs a real create()+get() with PRF from the built
+ *  - EMPIRICAL: apps/extension/e2e/real.spec.ts ("passkey unlock") enrols and unlocks the real vault with PRF from the built
  *    extension's tab page against Chromium's CDP virtual authenticator (rp.id = extension id).
  *
  * Default: "extension" mode (ceremony in our own tab). Fallback "web-bridge": a small page on a web
