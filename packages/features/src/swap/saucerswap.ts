@@ -1,6 +1,16 @@
 import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
-import { buildAssociate, freezeNew, ledgerOf, mirrorFor, mirrorUrl, requestFor, resolvePayer, type HederaLedger } from "@clip-wallet/chains-hedera";
-import { AccountAllowanceApproveTransaction, AccountId, ContractExecuteTransaction, ContractId, Hbar } from "@hiero-ledger/sdk";
+import {
+  buildAssociate,
+  contractCallDraft,
+  freezeNew,
+  ledgerOf,
+  mirrorFor,
+  mirrorUrl,
+  requestFor,
+  resolvePayer,
+  tokenAllowanceDraft,
+  type HederaLedger,
+} from "@clip-wallet/chains-hedera";
 import { decodeFunctionResult, encodeFunctionData, encodePacked, parseAbi, type Hex } from "viem";
 import { mirrorCall } from "../http.js";
 import type { Step } from "../steps.js";
@@ -177,7 +187,7 @@ export class SaucerSwap implements SwapProvider {
           lines: [{ label: "Limit", value: "Only this amount, for this swap" }],
           request: async () => {
             if (BigInt(quote.sellAmount) > BigInt(Number.MAX_SAFE_INTEGER)) throw new ClipError("That amount is too large to swap in one go.", "swap/amount-too-large");
-            const tx = new AccountAllowanceApproveTransaction().approveTokenAllowance(token, payer, AccountId.fromString(c.router), Number(quote.sellAmount));
+            const tx = tokenAllowanceDraft({ tokenId: token, owner: payer, spender: c.router, amount: BigInt(quote.sellAmount) });
             return requestFor(freezeNew(tx, payer, ctx), payer, ctx);
           },
         });
@@ -210,11 +220,7 @@ export class SaucerSwap implements SwapProvider {
         }
         const est = Number(d.gasEstimate) || 0;
         const gas = Math.min(3_000_000, Math.max(300_000, Math.ceil(est * 1.5) + 100_000));
-        const tx = new ContractExecuteTransaction()
-          .setContractId(ContractId.fromString(c.router))
-          .setGas(gas)
-          .setFunctionParameters(hexToBytes(data));
-        if (hbarIn) tx.setPayableAmount(Hbar.fromTinybars(quote.sellAmount));
+        const tx = contractCallDraft({ contractId: c.router, gas, functionParameters: hexToBytes(data), ...(hbarIn ? { payableTinybars: quote.sellAmount } : {}) });
         return requestFor(freezeNew(tx, payer, ctx), payer, ctx);
       },
     });

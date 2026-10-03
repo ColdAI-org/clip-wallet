@@ -16,6 +16,7 @@ const CATEGORY: Record<FeaturedDappView["category"], string> = {
   bridge: "Move between apps",
   pay: "Pay",
   tools: "Tools",
+  trade: "Trade & earn",
 };
 
 export function Explore() {

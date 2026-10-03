@@ -1,6 +1,15 @@
 import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest } from "@clip-wallet/core";
-import { type SwapLeg, buildAssociate, buildAtomicSwap, buildScheduleSign, hbarAsset, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
-import { Transaction } from "@hiero-ledger/sdk";
+import {
+  type SwapLeg,
+  buildAssociate,
+  buildAtomicSwap,
+  buildScheduleSign,
+  hbarAsset,
+  mirrorFor,
+  parseTransaction,
+  resolvePayer,
+  transactionIdString,
+} from "@clip-wallet/chains-hedera";
 import type { FeatureHost } from "../host.js";
 import { type Step, queueSteps } from "../steps.js";
 import { b64ToBytes, formatUnits, parseUnits } from "../util.js";
@@ -175,7 +184,8 @@ export class SecureTradeService {
           const list = (result as { transactionList?: string } | undefined)?.transactionList;
           if (!list) throw new ClipError("The trade wasn't signed. Nothing happened.", "trade/not-signed");
           payload.tx = list;
-          const inner = Transaction.fromBytes(b64ToBytes(list)).transactionId?.toString();
+          const id = parseTransaction(b64ToBytes(list)).body.transactionId;
+          const inner = id ? transactionIdString(id) : null;
           if (inner) record.transactionId = mirrorTxId(inner);
           payload.expiresAt = this.now() + DIRECT_VALID_MS;
         } else {
