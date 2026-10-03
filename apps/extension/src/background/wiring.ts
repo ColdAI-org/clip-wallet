@@ -52,6 +52,11 @@ export interface WalletVault {
   unlock(password: string): Promise<void>;
   lock(): Promise<void>;
   deriveAccount(family: Family, index: number): Promise<Account>;
+  listAccounts(families?: readonly Family[]): Promise<Account[]>;
+  addAccount(family: Family, label?: string): Promise<Account>;
+  setAccountLabel(family: Family, index: number, label: string): Promise<void>;
+  freshChange: ClipVault["freshChange"];
+  listChange: ClipVault["listChange"];
   registerApproval(approvalId: string, payloadHashes: Uint8Array[], ttlMs: number): void;
   revokeApproval(approvalId: string): void;
   sign: ClipVault["sign"];
@@ -172,6 +177,9 @@ export interface WiringOptions {
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
 
 export function createDependencies(opts: WiringOptions): Dependencies {
+  // Vault-v2 defaults (all testnet): cardanoNetwork "testnet", tonNetwork "testnet", tonWalletVersion "v5r1",
+  // algorandScheme "arc52", starknetScheme "argent-x", starknetAccountClassHash STARKNET_OZ_ACCOUNT_CLASS_HASH.
+  // The chain modules below are created with the matching defaults (TON v5r1, Starknet OpenZeppelin, Algorand ARC-52).
   const vault = new ClipVault({ storage: vaultStorageOf(opts.kv), autoLockMs: VAULT_MAX_IDLE_MS, ...opts.vaultOptions });
   const registry = new KnownDappRegistry();
 

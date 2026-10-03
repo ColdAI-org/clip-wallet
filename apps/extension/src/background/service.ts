@@ -307,10 +307,18 @@ export class WalletService implements DappHost {
   private async ctx(networkId: string): Promise<ChainContext> {
     const network = this.network(networkId);
     const override = (await this.prefs()).rpcOverrides[networkId];
-    return {
+    const account = await this.account(network.family);
+    const base: ChainContext = {
       network: override ? { ...network, rpcUrls: [override, ...network.rpcUrls] } : network,
-      account: await this.account(network.family),
+      account,
       fetch: globalThis.fetch.bind(globalThis),
+    };
+    if (network.family !== "bitcoin") return base;
+    // Bitcoin change addresses (vault-v2): the same list goes to buildTransfer/decode/prepare/finalize.
+    return {
+      ...base,
+      changeAddresses: await this.deps.vault.listChange("bitcoin", account.index),
+      freshChangeAddress: () => this.deps.vault.freshChange("bitcoin", account.index),
     };
   }
 
