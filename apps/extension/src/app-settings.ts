@@ -10,7 +10,7 @@ import config from "../clip.config";
 export const PASSKEY_BRIDGE_URL =
   config.passkeys.rpOrigin?.startsWith("https://") ? `${config.passkeys.rpOrigin}/clip-passkey-bridge` : "https://passkey.clipwallet.example/bridge";
 
-/** WebAuthn rp.id: null = the extension id (default origin of the calling extension page). */
+/** WebAuthn rp.id from clip.config passkeys.rpOrigin; null = use the extension id (passed explicitly: extension pages have no default RP id). */
 export function passkeyRpId(): string | null {
   const o = config.passkeys.rpOrigin;
   if (!o) return null;

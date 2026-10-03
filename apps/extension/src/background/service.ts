@@ -4,7 +4,7 @@
  * 1Mask and WalletConnect talk to it through DappHost. Nothing here returns key material, except
  * revealPhrase for the onboarding screen.
  */
-import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance } from "@clip-wallet/core";
+import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";
 import type {
   ActivityEntry,
@@ -22,7 +22,7 @@ import type {
 import { hashSignablePayload } from "@clip-wallet/vault";
 import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
-import type { DappHost, Dependencies } from "./wiring";
+import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -77,6 +77,11 @@ const K = {
 } as const;
 
 const CACHE_TTL_MS = 30_000;
+const NETWORK_TIMEOUT_MS = 10_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+}
 const APPROVAL_TTL_MS = 2 * 60_000;
 const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin"];
 
@@ -254,6 +259,7 @@ export class WalletService implements DappHost {
   async lock() {
     await this.deps.vault.lock();
     this.accounts.clear();
+    this.deps.dapps.accountsChanged?.();
     this.env.broadcast();
   }
 
@@ -262,9 +268,16 @@ export class WalletService implements DappHost {
     const families = [...new Set(this.deps.networks.map((n) => n.family))];
     for (const f of families) {
       const acct = await this.deps.vault.deriveAccount(f, 0);
-      if (f === "hedera" && this.deps.mocks) acct.hederaAccountId = "0.0.4815162"; // MOCK: real module queries the mirror node
       this.accounts.set(f, acct);
     }
+    const hedera = this.deps.networks.find((n) => n.family === "hedera");
+    const hAcct = this.accounts.get("hedera");
+    if (hedera && hAcct) {
+      // Best effort: a brand-new alias has no 0.0.x until it first receives HBAR.
+      const id = await withTimeout(this.deps.hederaAccountId({ network: hedera, account: hAcct, fetch: globalThis.fetch.bind(globalThis) }), 5000).catch(() => undefined);
+      if (id) hAcct.hederaAccountId = id;
+    }
+    this.deps.dapps.accountsChanged?.();
     await this.kv.set(K.accounts, [...this.accounts.values()]);
     this.env.armAutoLock((await this.prefs()).autoLockMinutes);
     this.env.broadcast();
@@ -323,7 +336,7 @@ export class WalletService implements DappHost {
           return;
         }
         try {
-          const raw = await this.module(n.family).getBalances(await this.ctx(n.id));
+          const raw = await withTimeout(this.module(n.family).getBalances(await this.ctx(n.id)), NETWORK_TIMEOUT_MS);
           const balances = await Promise.all(raw.map(async (b) => ({ ...b, fiatValue: await this.fiat(b.asset, BigInt(b.amount)) })));
           this.cache.set(n.id, { at: Date.now(), balances, nfts: hit?.nfts });
           out.push(...balances);
@@ -335,6 +348,7 @@ export class WalletService implements DappHost {
     );
     return {
       balances: out,
+      assets: this.deps.assets,
       networks: this.deps.networks.map((n) => this.networkView(n)),
       currency: (await this.prefs()).displayCurrency,
       updatedAt: Date.now(),
@@ -346,7 +360,7 @@ export class WalletService implements DappHost {
     const all = await Promise.all(
       this.deps.networks.map(async (n) => {
         try {
-          return await this.module(n.family).getNfts(await this.ctx(n.id));
+          return await withTimeout(this.module(n.family).getNfts(await this.ctx(n.id)), NETWORK_TIMEOUT_MS);
         } catch {
           return this.cache.get(n.id)?.nfts ?? [];
         }
@@ -450,7 +464,7 @@ export class WalletService implements DappHost {
   private async enqueueTransaction(
     request: DappRequest,
     dapp: DappInfo,
-    extra: { recipient?: string } = {},
+    extra: { recipient?: string; warnings?: Warning[] } = {},
   ): Promise<{ id: string; promise: Promise<unknown> }> {
     const network = this.network(request.networkId);
     const ctx = await this.ctx(network.id);
@@ -475,6 +489,10 @@ export class WalletService implements DappHost {
       if (!c.delta.startsWith("-")) continue;
       const v = await this.fiat(c.asset, BigInt(c.delta.slice(1)));
       if (v !== undefined) fiatValue = (fiatValue ?? 0) + v;
+    }
+    if (extra.warnings?.length) decoded.warnings = [...decoded.warnings, ...extra.warnings];
+    if (!this.deps.registry.lookup(request.origin).verified && request.origin !== "wallet" && !decoded.warnings.some((w) => w.code === "domain-mismatch")) {
+      decoded.warnings.push({ level: "caution", code: "domain-mismatch", message: `${domainOf(request.origin)} isn't a site ${this.env.walletName} recognises. Only continue if you opened it yourself.` });
     }
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
     const { balances } = await this.portfolio();
@@ -504,7 +522,7 @@ export class WalletService implements DappHost {
     return { id, promise };
   }
 
-  private async enqueueConnect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string }) {
+  private async enqueueConnect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string; warnings?: Warning[] }) {
     const account = await this.account(p.family);
     const id = crypto.randomUUID();
     const network = this.network(p.networkId);
@@ -559,6 +577,7 @@ export class WalletService implements DappHost {
 
     const req = p.request!;
     const decoded = p.view.decoded!;
+    if (p.view.plan?.problem) throw new ClipError(p.view.plan.problem, "approval/not-payable");
     if (decoded.blind && !((await this.prefs()).advanced && allowBlind)) {
       throw new ClipError(
         "This request can't be read, so it was blocked. Only Advanced mode can override that.",
@@ -651,28 +670,91 @@ export class WalletService implements DappHost {
 
   /* ------------------------------------------------------------------ DappHost (1Mask, WalletConnect) */
 
-  async connectedAccounts(origin: string, family: Family): Promise<Account[]> {
-    const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
-    if (!perms.some((p) => p.origin === origin && p.family === family)) return [];
-    if ((await this.deps.vault.status()) !== "unlocked") return [];
+  readonly permissions: PermissionStoreLike = {
+    has: async (origin, family) => ((await this.kv.get<Permission[]>(K.permissions)) ?? []).some((p) => p.origin === origin && p.family === family),
+    grant: async (origin, family) => {
+      const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
+      if (perms.some((p) => p.origin === origin && p.family === family)) return;
+      const acct = this.accounts.get(family);
+      perms.push({ id: crypto.randomUUID(), origin, family, via: "injected", accountIds: acct ? [acct.id] : [], networkIds: [], connectedAt: Date.now() });
+      await this.kv.set(K.permissions, perms);
+      this.env.broadcast();
+    },
+    revoke: async (origin, family) => {
+      const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
+      await this.kv.set(K.permissions, perms.filter((p) => !(p.origin === origin && p.family === family)));
+      this.env.broadcast();
+    },
+    origins: async () => [...new Set(((await this.kv.get<Permission[]>(K.permissions)) ?? []).map((p) => p.origin))],
+  };
+
+  async isUnlocked() {
+    return (await this.deps.vault.status()) === "unlocked";
+  }
+
+  preferredNetwork(family: Family): string | undefined {
+    const totals = new Map<string, number>();
+    for (const { balances } of this.cache.values()) {
+      for (const b of balances) if (!b.asset.spam) totals.set(b.asset.networkId, (totals.get(b.asset.networkId) ?? 0) + (b.fiatValue ?? 0));
+    }
+    const candidates = this.deps.networks.filter((n) => n.family === family);
+    const best = [...candidates].sort((a, b) => (totals.get(b.id) ?? 0) - (totals.get(a.id) ?? 0))[0];
+    if (best && (totals.get(best.id) ?? 0) > 0) return best.id;
+    const fallback: Partial<Record<Family, string>> = { evm: "eip155:11155111" };
+    return candidates.find((n) => n.id === fallback[family])?.id ?? candidates[0]?.id;
+  }
+
+  cachedAccount(family: Family): Account | undefined {
+    return this.accounts.get(family);
+  }
+
+  async accountsFor(origin: string, family: Family): Promise<Account[]> {
+    if (!(await this.permissions.has(origin, family))) return [];
+    if (!(await this.isUnlocked())) return [];
     return [await this.account(family)];
   }
 
-  async connect(p: Parameters<DappHost["connect"]>[0]): Promise<Account[]> {
-    const already = await this.connectedAccounts(p.origin, p.family);
-    if (already.length) return already;
+  async approveConnect(p: Parameters<DappHost["approveConnect"]>[0]): Promise<boolean> {
+    if (p.via === "injected" && (await this.accountsFor(p.origin, p.family)).length) return true;
     const { id, promise } = await this.enqueueConnect(p);
+    await this.env.openApprovalWindow(id);
+    try {
+      await promise;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async request(req: DappRequest, dapp?: { name?: string; iconUrl?: string; warnings?: Warning[] }): Promise<unknown> {
+    const { id, promise } = await this.enqueueTransaction(req, this.dappInfo(req.origin, dapp?.name, dapp?.iconUrl), { warnings: dapp?.warnings });
     await this.env.openApprovalWindow(id);
     return promise;
   }
 
-  async request(req: DappRequest, dapp?: { name?: string; iconUrl?: string }): Promise<unknown> {
-    if ((await this.connectedAccounts(req.origin, req.family)).length === 0) {
-      throw new ClipError("Connect this site first.", "dapp/not-connected");
+  cancel(requestId: string) {
+    for (const [id, p] of this.approvals) {
+      if (id === requestId || p.request?.id === requestId) {
+        this.approvals.delete(id);
+        p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
+        this.env.broadcast();
+      }
     }
-    const { id, promise } = await this.enqueueTransaction(req, this.dappInfo(req.origin, dapp?.name, dapp?.iconUrl));
-    await this.env.openApprovalWindow(id);
-    return promise;
+  }
+
+  async rpc(networkId: string, method: string, params: unknown): Promise<unknown> {
+    const ctx = await this.ctx(networkId);
+    const url = ctx.network.rpcUrls[0];
+    if (!url) throw new ClipError("This network can't answer that right now.", "rpc/no-endpoint");
+    const res = await withTimeout(
+      fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: params ?? [] }) }),
+      NETWORK_TIMEOUT_MS,
+    ).catch(() => {
+      throw new ClipError("The network didn't answer. Try again in a moment.", "rpc/unavailable");
+    });
+    const body = (await res.json().catch(() => ({}))) as { result?: unknown; error?: { code?: number; message?: string } };
+    if (body.error) throw Object.assign(new Error(body.error.message ?? "RPC error"), { code: body.error.code ?? -32603 });
+    return body.result;
   }
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */

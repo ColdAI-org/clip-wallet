@@ -1,32 +1,47 @@
 /**
- * THE seam. Everything the background service needs from packages that other agents are building is
- * created here, and nowhere else. At merge time, swap each mock for the real package in this file only.
+ * THE seam. Everything the background needs from the other packages is created here, and nowhere else.
  *
- *   dependency          now (feat/app)                         at merge
- *   ------------------  -------------------------------------  ---------------------------------------------
- *   vault               @clip-wallet/vault ClipVault (REAL)    — already real
- *   chain modules       mocks/mock-chains.ts                   @clip-wallet/chains-{evm,hedera,solana,bitcoin}
- *   networks            mocks/networks.ts (testnets)           each chain package's exported testnet list
- *   1Mask (injected)    mocks/mock-dapps.ts MockDappConnector  @clip-wallet/1mask background router
- *   WalletConnect       mocks/mock-dapps.ts MockWalletConnect  @clip-wallet/1mask WalletConnect
- *   route (funding)     mocks/mock-route.ts MockRoutePlanner   @clip-wallet/route CLPRouter quotes
- *   prices / names /    mocks/fixtures.ts                      price + name services (TBD)
- *   dapp registry
+ *   dependency         real (default build)                                  fixture mode (CLIP_MOCKS=1)
+ *   -----------------  ----------------------------------------------------  ---------------------------
+ *   vault              @clip-wallet/vault ClipVault                          same (always real)
+ *   chain modules      @clip-wallet/chains-{evm,hedera,solana,bitcoin}       mocks/mock-chains.ts
+ *   networks/assets    chain packages via shared/catalog.ts + clip.config    mocks/networks.ts
+ *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        mocks/mock-dapps.ts
+ *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
+ *   route (funding)    @clip-wallet/route RouteClient (real.ts)              mocks/mock-route.ts
+ *   prices             reference prices (real.ts) — no price service yet     mocks/fixtures.ts
+ *   names              none yet (real.ts)                                    mocks/fixtures.ts
+ *   dapp registry      curated list (real.ts)                                same
  *
- * The interfaces below are the background's view of those packages. They are local on purpose
- * (packages/core stays the shared contract); real packages are adapted to them here.
+ * Fixture mode drives the UI with realistic balances, collectibles and dapp requests (dev simulator in
+ * Settings) for screenshots and UI work. One chain-module instance per family lives for the background's
+ * lifetime: modules keep prepare→finalize state keyed by request id.
  */
-import type { Account, AssetRef, ChainModule, DappRequest, DecodedRequest, Family, Network, TokenBalance } from "@clip-wallet/core";
-import type { ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
-import { ClipVault, type PasskeyPrf, type PasskeyInfo } from "@clip-wallet/vault";
+import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, TokenBalance, Warning } from "@clip-wallet/core";
+import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
+import type { ClipConfig } from "@clip-wallet/config";
+import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
+import { createEvmModule } from "@clip-wallet/chains-evm";
+import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
+import { createSolanaModule } from "@clip-wallet/chains-solana";
+import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
+import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
+import { walletAssets, walletNetworks } from "../shared/catalog";
 import { createMockChains } from "./mocks/mock-chains";
 import { knownAssets, MOCK_NETWORKS } from "./mocks/networks";
 import { MockDappConnector, MockWalletConnect } from "./mocks/mock-dapps";
 import { MockRoutePlanner } from "./mocks/mock-route";
-import { MOCK_ACTIVITY, MockDappRegistry, MockNameResolver, MockPriceFeed } from "./mocks/fixtures";
-import type { ActivityEntry } from "@clip-wallet/ui";
+import { MOCK_ACTIVITY, MockNameResolver, MockPriceFeed } from "./mocks/fixtures";
+import {
+  KnownDappRegistry,
+  NoNameResolver,
+  OneMaskConnector,
+  ReferencePriceFeed,
+  RoutePlannerAdapter,
+  WalletConnectAdapter,
+} from "./real";
 
 /** The vault surface the background uses: core's Vault plus ClipVault's extras. */
 export interface WalletVault {
@@ -51,21 +66,50 @@ export interface RoutePlanner {
   plan(p: { request: DappRequest; decoded: DecodedRequest; balances: TokenBalance[]; networks: Network[] }): Promise<ApprovalPlan>;
 }
 
+/** 1Mask's PermissionStore shape (per-origin, per-family). */
+export interface PermissionStoreLike {
+  has(origin: string, family: Family): Promise<boolean>;
+  grant(origin: string, family: Family): Promise<void>;
+  revoke(origin: string, family: Family): Promise<void>;
+  origins(): Promise<string[]>;
+}
+
 /** What 1Mask and WalletConnect call into. Implemented by the background service. */
 export interface DappHost {
-  /** A dapp wants accounts. Resolves with the accounts the user approved (wallet picks the right one). */
-  connect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string }): Promise<Account[]>;
-  /** Any signing/sending request. Resolves with the chain module's finalize() result, or rejects with ClipError. */
-  request(req: DappRequest, dapp?: { name?: string; iconUrl?: string }): Promise<unknown>;
-  /** Accounts already granted to an origin (no prompt). */
-  connectedAccounts(origin: string, family: Family): Promise<Account[]>;
+  /** Connect approval ("Connect to Magic Eden?"), no network picker. Resolves true when approved. */
+  approveConnect(p: {
+    origin: string;
+    family: Family;
+    networkId: string;
+    via: "injected" | "walletconnect";
+    name?: string;
+    iconUrl?: string;
+    warnings?: Warning[];
+  }): Promise<boolean>;
+  /** Signing/sending request: decode → approval window → vault → finalize. Rejects with ClipError. */
+  request(req: DappRequest, dapp?: { name?: string; iconUrl?: string; warnings?: Warning[] }): Promise<unknown>;
+  /** Accounts granted to an origin (the wallet picks the right one per family). */
+  accountsFor(origin: string, family: Family): Promise<Account[]>;
+  /** Network a site starts on for a family: where the user holds the most, else a sensible default. */
+  preferredNetwork(family: Family): string | undefined;
+  /** Synchronous view of the derived account (WalletConnect addressesFor). */
+  cachedAccount(family: Family): Account | undefined;
+  permissions: PermissionStoreLike;
+  /** Read-only JSON-RPC proxy for dapps (eth_call etc.). */
+  rpc(networkId: string, method: string, params: unknown): Promise<unknown>;
+  isUnlocked(): Promise<boolean>;
+  /** The connector gave up on a request (timeout / relay expiry): drop its approval. */
+  cancel(requestId: string): void;
 }
 
 /** 1Mask background router (inpage/content ports). */
 export interface DappConnector {
   start(host: DappHost): void;
-  /** Tell connected dapps an origin was disconnected from the wallet side. */
+  attachPort?(port: RouterPort, senderOrigin?: string): void;
+  /** The wallet disconnected an origin: tell the site. */
   disconnected(origin: string): void;
+  /** Accounts appeared/disappeared (unlock/lock). */
+  accountsChanged?(): void;
 }
 
 export interface WalletConnectBridge {
@@ -92,6 +136,7 @@ export interface DappRegistry {
 }
 
 export interface Dependencies {
+  /** True in fixture mode (mock chains/1Mask/route; dev simulator enabled). */
   mocks: boolean;
   vault: WalletVault;
   chains: Record<Family, ChainModule>;
@@ -104,41 +149,65 @@ export interface Dependencies {
   prices: PriceFeed;
   names: NameResolver;
   registry: DappRegistry;
-  /** Seed activity for mock builds (real builds start empty and fill from approvals + indexers). */
+  /** Hedera "0.0.x" for the account's EVM alias, if it exists yet. */
+  hederaAccountId(ctx: ChainContext): Promise<string | undefined>;
+  /** Seed activity (fixture mode only). */
   seedActivity: ActivityEntry[];
 }
 
 export interface WiringOptions {
   kv: KV;
   mocks: boolean;
+  config: ClipConfig;
+  /** Display currency lookup (route fees in fiat). */
+  currency: () => Promise<string>;
+  /** Bundled icon URL for WalletConnect metadata. */
+  iconUrl: string;
   /** Tests pass cheap Argon2 params; production uses the vault's defaults. */
   vaultOptions?: Partial<ConstructorParameters<typeof ClipVault>[0]>;
 }
 
-/** Vault backstop: the background's alarm enforces the user's shorter auto-lock setting. */
+/** Vault backstop: the background's alarm enforces the user's (shorter) auto-lock setting. */
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
 
 export function createDependencies(opts: WiringOptions): Dependencies {
   const vault = new ClipVault({ storage: vaultStorageOf(opts.kv), autoLockMs: VAULT_MAX_IDLE_MS, ...opts.vaultOptions });
+  const registry = new KnownDappRegistry();
 
-  if (!opts.mocks) {
-    // Real chain/1Mask/route packages are not on this branch yet. Until they merge, a non-mock build
-    // still uses the mocks so the extension runs; this branch is where they get swapped in.
-    console.warn("[clip] CLIP_MOCKS=0 requested but real chain/1Mask/route packages are not wired yet");
+  if (opts.mocks) {
+    return {
+      mocks: true,
+      vault,
+      chains: createMockChains(),
+      networks: MOCK_NETWORKS,
+      assets: knownAssets(MOCK_NETWORKS),
+      route: new MockRoutePlanner(),
+      dapps: new MockDappConnector(),
+      walletConnect: new MockWalletConnect(),
+      prices: new MockPriceFeed(),
+      names: new MockNameResolver(),
+      registry,
+      hederaAccountId: async () => "0.0.4815162",
+      seedActivity: MOCK_ACTIVITY,
+    };
   }
 
+  const networks = walletNetworks(opts.config);
+  const hedera: HederaModule = createHederaModule();
+  const prices = new ReferencePriceFeed();
   return {
-    mocks: true,
+    mocks: false,
     vault,
-    chains: createMockChains(),
-    networks: MOCK_NETWORKS,
-    assets: knownAssets(MOCK_NETWORKS),
-    route: new MockRoutePlanner(),
-    dapps: new MockDappConnector(),
-    walletConnect: new MockWalletConnect(),
-    prices: new MockPriceFeed(),
-    names: new MockNameResolver(),
-    registry: new MockDappRegistry(),
-    seedActivity: MOCK_ACTIVITY,
+    chains: { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() },
+    networks,
+    assets: walletAssets(networks),
+    route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
+    dapps: new OneMaskConnector(networks),
+    walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
+    prices,
+    names: new NoNameResolver(),
+    registry,
+    hederaAccountId: async (ctx) => (await hedera.getAccountState(ctx)).accountId ?? undefined,
+    seedActivity: [],
   };
 }

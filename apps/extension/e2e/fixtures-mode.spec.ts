@@ -1,16 +1,19 @@
 import path from "node:path";
-import { test, expect, openPage, onboard, SHOTS } from "./fixtures";
+import { extensionTest, expect, openPage, onboard, SHOTS, FIXTURE_BUILD } from "./fixtures";
 
-test("onboarding → home, and every key screen (mocks)", async ({ context, extensionId }) => {
+/** Fixture mode: realistic balances, collectibles and dapp requests drive every screen. */
+const test = extensionTest(FIXTURE_BUILD);
+
+test("fixtures: every key screen with sample data", async ({ context, extensionId }) => {
   const page = await openPage(context, extensionId, "popup.html");
   const shot = async (name: string) => {
     await page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   };
 
   await expect(page.getByRole("heading", { name: "Clip Wallet" })).toBeVisible();
-  await shot("onboarding-welcome");
-  await onboard(page, { shots: shot });
-  await shot("onboarding-passkey-offer");
+  await shot("fixtures-onboarding-welcome");
+  await onboard(page, { shots: async () => undefined });
+  await shot("fixtures-onboarding-passkey-offer");
   await page.getByRole("button", { name: "Not now" }).click();
   await page.getByRole("button", { name: "Open my wallet" }).click();
 
@@ -20,11 +23,12 @@ test("onboarding → home, and every key screen (mocks)", async ({ context, exte
   await expect(usdc).toHaveCount(1);
   await expect(usdc).toContainText("$412.00");
   await expect(page.getByText("Base Sepolia")).toHaveCount(0);
-  await shot("home-light");
+  await shot("fixtures-home-light");
 
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await shot("home-dark");
+  await page.waitForTimeout(400); // let colour transitions settle
+  await shot("fixtures-home-dark");
   await page.emulateMedia({ colorScheme: "light" });
 
   await usdc.click();
@@ -41,7 +45,7 @@ test("onboarding → home, and every key screen (mocks)", async ({ context, exte
   // Approval for a dapp payment (dev simulator).
   await page.getByRole("button", { name: "Settings" }).click();
   await expect(page.getByRole("heading", { name: "Connected apps" })).toBeVisible();
-  await shot("settings");
+  await shot("fixtures-settings");
   await page.getByRole("button", { name: "pay", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Pay 25 USDC" })).toBeVisible();
   await expect(page.locator(".clip-row", { hasText: "From" })).toContainText("Your balance");
@@ -94,13 +98,13 @@ test("onboarding → home, and every key screen (mocks)", async ({ context, exte
   await page.locator(".clip-asset-row", { hasText: "HBAR" }).click();
   await expect(page.getByTestId("receive-address")).toHaveText("0.0.4815162");
   await expect(page.getByRole("img", { name: /QR code/ })).toBeVisible();
-  await shot("receive");
+  await shot("fixtures-receive");
 
   // Lock and unlock with the password.
   await page.getByRole("button", { name: "Back" }).click();
   await page.getByRole("button", { name: "Lock wallet" }).click();
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
-  await shot("unlock");
+  await shot("fixtures-unlock");
   await page.getByLabel("Password").fill("wrong password");
   await page.getByRole("button", { name: "Unlock" }).click();
   await expect(page.getByRole("alert")).toContainText("That password didn't work");
@@ -109,7 +113,7 @@ test("onboarding → home, and every key screen (mocks)", async ({ context, exte
   await expect(page.getByTestId("total")).toBeVisible();
 });
 
-test("full-tab view", async ({ context, extensionId }) => {
+test("fixtures: full-tab view", async ({ context, extensionId }) => {
   const page = await openPage(context, extensionId, "tab.html");
   await page.setViewportSize({ width: 1100, height: 760 });
   await onboard(page);
@@ -117,5 +121,5 @@ test("full-tab view", async ({ context, extensionId }) => {
   await page.getByRole("button", { name: "Open my wallet" }).click();
   await expect(page.getByTestId("total")).toBeVisible();
   await expect(page.locator(".clip-asset-row").first()).toBeVisible();
-  await page.screenshot({ path: path.join(SHOTS, "tab-home.png") });
+  await page.screenshot({ path: path.join(SHOTS, "fixtures-tab-home.png") });
 });

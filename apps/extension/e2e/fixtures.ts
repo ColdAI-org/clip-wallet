@@ -7,35 +7,43 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-export const EXT_PATH = path.resolve(here, "../.output/chrome-mv3");
+/** Real wiring (default build). */
+export const REAL_BUILD = path.resolve(here, "../.output/chrome-mv3");
+/** Fixture mode (CLIP_MOCKS=1 build): mock chains/1Mask/route + dev simulator. */
+export const FIXTURE_BUILD = path.resolve(here, "../.output-fixtures/chrome-mv3");
 export const SHOTS = path.resolve(here, "../screenshots");
 
-export const test = base.extend<{ context: BrowserContext; extensionId: string }>({
-  // eslint-disable-next-line no-empty-pattern
-  context: async ({}, use) => {
-    const context = await chromium.launchPersistentContext("", {
-      channel: "chromium",
-      headless: true,
-      viewport: { width: 360, height: 600 },
-      args: [`--disable-extensions-except=${EXT_PATH}`, `--load-extension=${EXT_PATH}`],
-    });
-    await use(context);
-    await context.close();
-  },
-  extensionId: async ({ context }, use) => {
-    let [sw] = context.serviceWorkers();
-    if (!sw) sw = await context.waitForEvent("serviceworker");
-    await use(new URL(sw.url()).host);
-  },
-});
+export function extensionTest(extPath: string) {
+  return base.extend<{ context: BrowserContext; extensionId: string }>({
+    // eslint-disable-next-line no-empty-pattern
+    context: async ({}, use) => {
+      const context = await chromium.launchPersistentContext("", {
+        channel: "chromium",
+        headless: true,
+        viewport: { width: 360, height: 600 },
+        args: [`--disable-extensions-except=${extPath}`, `--load-extension=${extPath}`],
+      });
+      await use(context);
+      await context.close();
+    },
+    extensionId: async ({ context }, use) => {
+      let [sw] = context.serviceWorkers();
+      if (!sw) sw = await context.waitForEvent("serviceworker");
+      await use(new URL(sw.url()).host);
+    },
+  });
+}
 
-export const expect = test.expect;
+export const expect = base.expect;
 
-/** Opens an extension page, closing the onboarding tab the extension opens on install. */
+/** Opens an extension page after closing the welcome tab the extension opens on install. */
 export async function openPage(context: BrowserContext, extensionId: string, file: string, hash = ""): Promise<Page> {
+  const isWelcome = (p: Page) => p.url().endsWith("/tab.html#/");
+  const welcome = context.pages().find(isWelcome) ?? (await context.waitForEvent("page", { predicate: isWelcome, timeout: 5000 }).catch(() => undefined));
+  await welcome?.close();
   const page = await context.newPage();
   await page.goto(`chrome-extension://${extensionId}/${file}${hash ? `#${hash}` : ""}`);
-  for (const p of context.pages()) if (p !== page && p.url().includes("/tab.html")) await p.close();
+  await page.bringToFront();
   return page;
 }
 
@@ -58,7 +66,7 @@ export async function onboard(page: Page, opts: { shots?: (name: string) => Prom
   await page.getByRole("button", { name: "Continue" }).click();
   for (const label of await page.locator(".clip-field__label").allTextContents()) {
     const n = Number(label.replace("Word #", ""));
-    await page.getByLabel(label).fill(words[n - 1]!);
+    await page.getByLabel(label, { exact: true }).fill(words[n - 1]!);
   }
   words.length = 0;
   await page.getByRole("button", { name: "Confirm" }).click();

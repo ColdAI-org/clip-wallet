@@ -1,7 +1,7 @@
 /** MOCK fixtures: realistic testnet balances, collectibles, activity, prices, names and dapps. */
 import type { Nft, TokenBalance } from "@clip-wallet/core";
 import type { ActivityEntry } from "@clip-wallet/ui";
-import type { DappRegistry, NameResolver, PriceFeed } from "../wiring";
+import type { NameResolver, PriceFeed } from "../wiring";
 import { MOCK_NETWORKS, NET, USDC, USDC_E } from "./networks";
 
 const nativeOf = (id: string) => MOCK_NETWORKS.find((n) => n.id === id)!.nativeAsset;
@@ -127,25 +127,5 @@ export class MockNameResolver implements NameResolver {
   async resolve(name: string) {
     const address = NAMES[name.toLowerCase()];
     return address ? { address, displayName: name.toLowerCase() } : null;
-  }
-}
-
-const DAPPS: Record<string, { name: string; verified: boolean }> = {
-  "magiceden.io": { name: "Magic Eden", verified: true },
-  "app.uniswap.org": { name: "Uniswap", verified: true },
-  "saucerswap.finance": { name: "SaucerSwap", verified: true },
-  "jup.ag": { name: "Jupiter", verified: true },
-};
-
-export class MockDappRegistry implements DappRegistry {
-  lookup(origin: string) {
-    let host = origin;
-    try {
-      host = new URL(origin).hostname.replace(/^www\./, "");
-    } catch {
-      /* keep raw */
-    }
-    const hit = DAPPS[host];
-    return hit ? { name: hit.name, verified: hit.verified } : { name: host, verified: false };
   }
 }

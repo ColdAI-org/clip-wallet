@@ -175,12 +175,30 @@ importers:
 
   apps/extension:
     dependencies:
+      '@clip-wallet/1mask':
+        specifier: workspace:*
+        version: link:../../packages/1mask
+      '@clip-wallet/chains-bitcoin':
+        specifier: workspace:*
+        version: link:../../packages/chains-bitcoin
+      '@clip-wallet/chains-evm':
+        specifier: workspace:*
+        version: link:../../packages/chains-evm
+      '@clip-wallet/chains-hedera':
+        specifier: workspace:*
+        version: link:../../packages/chains-hedera
+      '@clip-wallet/chains-solana':
+        specifier: workspace:*
+        version: link:../../packages/chains-solana
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@clip-wallet/route':
+        specifier: workspace:*
+        version: link:../../packages/route
       '@clip-wallet/ui':
         specifier: workspace:*
         version: link:../../packages/ui

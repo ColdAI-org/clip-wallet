@@ -6,17 +6,24 @@
   "type": "module",
   "scripts": {
     "dev": "wxt",
-    "dev:firefox": "wxt -b firefox",
+    "dev:firefox": "wxt -b firefox --mv3",
     "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
+    "build:firefox": "wxt build -b firefox --mv3",
+    "build:fixtures": "CLIP_MOCKS=1 wxt build",
     "zip": "wxt zip",
     "typecheck": "wxt prepare && tsc -p . --noEmit",
     "test": "vitest run",
-    "e2e": "wxt build && playwright test"
+    "e2e": "wxt build && CLIP_MOCKS=1 wxt build && playwright test"
   },
   "dependencies": {
+    "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/chains-bitcoin": "workspace:*",
+    "@clip-wallet/chains-evm": "workspace:*",
+    "@clip-wallet/chains-hedera": "workspace:*",
+    "@clip-wallet/chains-solana": "workspace:*",
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/route": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@clip-wallet/vault": "workspace:*",
     "@fontsource-variable/inter": "^5.3.0",

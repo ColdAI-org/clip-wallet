@@ -4,7 +4,7 @@
  */
 import { browser } from "wxt/browser";
 import { ClipError } from "@clip-wallet/core";
-import { enabledFamilies, includesEvmChain } from "@clip-wallet/config";
+import { PORT_NAME } from "@clip-wallet/1mask/background";
 import config from "../../clip.config";
 import { PASSKEY_BRIDGE_URL, passkeyRpId } from "../app-settings";
 import { CHANGE_EVENT, Request, type Envelope } from "../shared/messages";
@@ -21,10 +21,14 @@ export function toEnvelope(e: unknown): Envelope {
 
 export function startBackground() {
   const kv = new AreaKV(browser.storage.local);
-  const deps = createDependencies({ kv, mocks: __CLIP_MOCKS__ });
-  // clip.config `networks` decides which families/chains are on.
-  const families = enabledFamilies(config);
-  deps.networks = deps.networks.filter((n) => families.includes(n.family) && (n.family !== "evm" || (n.chainId !== undefined && includesEvmChain(config, n.chainId))));
+  let service: WalletService | undefined;
+  const deps = createDependencies({
+    kv,
+    mocks: __CLIP_MOCKS__,
+    config,
+    iconUrl: browser.runtime.getURL("/icon/128.png"),
+    currency: async () => (await service!.prefs()).displayCurrency,
+  });
 
   let approvalWindowId: number | undefined;
   const extOrigin = new URL(browser.runtime.getURL("/")).origin;
@@ -53,18 +57,27 @@ export function startBackground() {
     armAutoLock(minutes) {
       void browser.alarms.create(AUTOLOCK_ALARM, { delayInMinutes: minutes });
     },
-    passkey: () => ({ rpId: passkeyRpId(), rpName: config.name, mode: "extension", bridgeUrl: PASSKEY_BRIDGE_URL }),
+    // Extension pages have no default RP id: pass it explicitly (the extension id unless rpOrigin is set).
+    passkey: () => ({ rpId: passkeyRpId() ?? browser.runtime.id, rpName: config.name, mode: "extension", bridgeUrl: PASSKEY_BRIDGE_URL }),
   };
 
-  const service = new WalletService(deps, kv, env);
+  service = new WalletService(deps, kv, env);
   service.start();
+  const svc = service;
+
+  // 1Mask: content scripts connect a port per tab; the router cross-checks the browser-reported origin.
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== PORT_NAME) return;
+    const senderOrigin = port.sender?.origin ?? (port.sender?.url ? new URL(port.sender.url).origin : undefined);
+    deps.dapps.attachPort?.(port as never, senderOrigin);
+  });
 
   browser.windows?.onRemoved.addListener((id) => {
     if (id === approvalWindowId) approvalWindowId = undefined;
   });
 
   browser.alarms.onAlarm.addListener((a) => {
-    if (a.name === AUTOLOCK_ALARM) void service.lock();
+    if (a.name === AUTOLOCK_ALARM) void svc.lock();
   });
 
   browser.runtime.onInstalled.addListener((d) => {
@@ -79,11 +92,11 @@ export function startBackground() {
     if (!parsed.success) {
       return Promise.resolve<Envelope>({ ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "bus/invalid" } });
     }
-    return service.handle(parsed.data).then(
+    return svc.handle(parsed.data).then(
       (data): Envelope => ({ ok: true, data }),
       (e): Envelope => toEnvelope(e),
     );
   });
 
-  return service;
+  return svc;
 }

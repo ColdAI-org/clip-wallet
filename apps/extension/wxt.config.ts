@@ -1,12 +1,19 @@
 import { defineConfig } from "wxt";
 import clipConfig from "./clip.config";
+import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
+import { walletNetworks } from "./src/shared/catalog";
 
-/** Dev flag: wire in-repo mocks for chains/1Mask/route/WalletConnect. Default on until those packages merge. */
-const MOCKS = process.env.CLIP_MOCKS !== "0";
+/** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
+const MOCKS = process.env.CLIP_MOCKS === "1";
+const CHANNEL = `clip-${randomUUID()}`;
+const ICON = `data:image/svg+xml;base64,${readFileSync(new URL("./icon.svg", import.meta.url)).toString("base64")}`;
+const PUBLIC_NETWORKS = walletNetworks(clipConfig).map((n) => ({ ...n, rpcUrls: n.rpcUrls.slice(0, 1) }));
 
 export default defineConfig({
   srcDir: "src",
+  outDir: MOCKS ? ".output-fixtures" : ".output",
   // Explicit imports only. (`imports: false` still lets unimport's Vite plugin inject e.g. `storage` into
   // workspace packages like the vault, so auto-import is switched off at the plugin level too.)
   // @ts-expect-error autoImport is an unimport plugin option that WXT passes through but doesn't type.
@@ -32,7 +39,12 @@ export default defineConfig({
     };
   },
   vite: () => ({
-    define: { __CLIP_MOCKS__: JSON.stringify(MOCKS) },
+    define: {
+      __CLIP_MOCKS__: JSON.stringify(MOCKS),
+      __CLIP_CHANNEL__: JSON.stringify(CHANNEL),
+      __CLIP_PUBLIC_NETWORKS__: JSON.stringify(PUBLIC_NETWORKS),
+      __CLIP_IDENTITY__: JSON.stringify({ name: clipConfig.name, icon: ICON, rdns: clipConfig.rdns }),
+    },
     build: { target: "es2022" },
   }),
 });
