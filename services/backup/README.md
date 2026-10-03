@@ -1,4 +1,4 @@
-# services/backup — passkey backup storage with email sign-in
+# services/backup — passkey backup storage with email, Google or Apple sign-in
 
 A Cloudflare Worker (D1 + R2) that stores the opaque blobs produced by `vault.createPasskeyBackup` so a
 user can restore their wallet on a new device with the passkey that synced there. Deployed for testnet builds
@@ -18,6 +18,8 @@ UI: `packages/ui/src/screens/Backup*.tsx`; integration lines in `docs/phase2/int
 | Backup blob | upload / download | R2 object `b/<random 128-bit id>`: `"CLPB" ‖ 0x01 ‖ salt ‖ nonce ‖ XChaCha20-Poly1305(BIP-39 entropy)` |
 | Passkey credential id + rp id | upload | D1 row next to the blob id (public WebAuthn identifiers; they let a new device ask for the right passkey) |
 | Sign-in link token, session token, PKCE verifier | sign-in | SHA-256 hashes only |
+| Google / Apple account id (`sub`) | social sign-in callback | `HMAC-SHA256(EMAIL_PEPPER, "<provider>:<sub>")` only. The ID token's email claim (Google) is ignored and never stored; Apple is asked for no scope at all |
+| OIDC state, handoff code | social sign-in, ≤ 10 min | SHA-256 hashes; the provider authorization code is used once and never stored; the Worker's own PKCE verifier (Google leg) is dropped after the exchange |
 | Client IP, account hash | each request | SHA-256 inside rate-limit keys, dropped after the window |
 
 **What the server never sees:** the recovery phrase, any private key, the passkey's PRF output, or the key
@@ -52,8 +54,40 @@ which needs the email inbox (or a copy of the blob). The UI says this in plain w
 - *Browser-side.* CORS is limited to `ALLOWED_ORIGINS`; every response is `no-store`, `nosniff`, with a
   `default-src 'none'` CSP.
 
+**Social sign-in (Google / Apple) only identifies the backup owner. It never holds keys.** Signing in with
+Google or Apple answers one question: "which stored ciphertexts are this person's?". The provider never sees
+the blob, the phrase, a key or the passkey, and the service still stores only ciphertext. Whoever controls
+that Google/Apple account can *download* the locked copy (just as with the email inbox), but can't open it
+without the passkey. Email, Google and Apple are **separate accounts**: restore with the method you backed up with.
+
+- *Protocol.* OpenID Connect authorization code flow; the Worker is the confidential client and its callback
+  (`PUBLIC_URL/v1/auth/oidc/callback`) is the registered redirect URI. Google's leg uses PKCE S256 with the
+  Worker's own verifier. Apple publishes no `code_challenge_methods_supported`
+  (https://appleid.apple.com/.well-known/openid-configuration), so its leg relies on the client secret, `state`
+  and `nonce`.
+- *ID token checks* (`src/oidc.ts`, per https://developers.google.com/identity/openid-connect/openid-connect):
+  - RS256 signature against the provider's JWKS (cached; one refetch per minute at most for an unknown `kid`)
+  - `iss`, `aud` = our client id (`azp` too when `aud` is a list)
+  - `exp` / `iat` with 60 s skew
+  - `nonce` = base64url(SHA-256(device verifier))
+- *Device binding.* The wallet keeps a random verifier and sends only its hash at start (it doubles as the
+  OIDC nonce). The callback sends the browser back to an allow-listed wallet URL (`OIDC_RETURN_URLS`) with a
+  one-time `handoff` in the URL fragment. Finishing needs **both** the handoff and the verifier. So an
+  authorization URL that an attacker starts and sends to a victim (login CSRF) signs nobody in: the attacker
+  lacks the handoff, and the victim's browser lacks the verifier. 5 wrong tries burn the attempt.
+- *Secrets.* `GOOGLE_CLIENT_SECRET` and `APPLE_CLIENT_SECRET` are Worker secrets. They are sent only to the
+  provider's token endpoint and never echoed: a failed exchange redirects with `error=failed` and nothing else.
+  Each provider is off (and says so plainly) until its own client id and secret are set.
+
 **Not covered:** traffic analysis by Cloudflare; deletion guarantees inside R2 replicas; an attacker who
 controls both the passkey-sync account and the email inbox (they can restore — that is the design).
+
+## Endpoints (social sign-in)
+
+`GET /v1/auth/providers` → `{ email, google, apple }`; `POST /v1/auth/oidc/start`; `GET|POST
+/v1/auth/oidc/callback` (Apple uses `response_mode=form_post`); `POST /v1/auth/oidc/finish`. Client:
+`BackupClient.providers()`, `startSocialSignIn()`, `completeSocialSignIn()`. Secrets and setup:
+docs/phase25/deploy.md ("Google / Apple sign-in").
 
 ## Email
 
@@ -81,7 +115,7 @@ Set `APP_URL` (where the link lands; the wallet reads `#/backup/sign-in?token=�
 ## Tests
 
 `pnpm --filter @clip-wallet/service-backup test` runs inside workerd via `@cloudflare/vitest-pool-workers`
-0.22 (Vitest 4, local Miniflare D1/R2; nothing remote). 24 tests, including the real
+0.22 (Vitest 4, local Miniflare D1/R2; nothing remote). 46 tests (22 for social sign-in, with mocked token/JWKS endpoints and ID tokens signed offline), including the real
 `@clip-wallet/backup-client` driving the Worker end to end.
 
 Sources: Workers Vitest integration <https://developers.cloudflare.com/workers/testing/vitest-integration/>;

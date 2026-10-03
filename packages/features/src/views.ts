@@ -168,10 +168,23 @@ export interface FeaturedDappView {
   name: string;
   url: string;
   domain: string;
-  category: "swap" | "lend" | "stake" | "nft" | "bridge" | "pay" | "tools";
+  /** Phase 2.5 (additive): "trade" = "Trade & earn" (regulated products, only through the app itself). */
+  category: "swap" | "lend" | "stake" | "nft" | "bridge" | "pay" | "tools" | "trade";
   description: string;
   family: Family;
+  /** "Trade & earn" only: what kind of product it is. */
+  kind?: "perps" | "predictions" | "stocks" | "funds" | "yield";
+  /** "Trade & earn" only: a short plain risk / availability note shown with the app. */
+  note?: string;
 }
+
+/**
+ * Shown above "Trade & earn". These are regulated products (derivatives, prediction markets, securities-like
+ * tokens, yield) that Clip Wallet never offers itself: it only connects the user's wallet to the app, through
+ * 1Mask (injected) or WalletConnect, when the user approves.
+ */
+export const TRADE_DISCLAIMER =
+  "These apps are run by other companies, not Clip Wallet. What's allowed depends on where you live, and some aren't available in your country: check before you use one. Clip Wallet only connects your wallet when you say yes. It doesn't offer, recommend or stand behind these products.";
 
 export interface LpPositionView {
   id: string;

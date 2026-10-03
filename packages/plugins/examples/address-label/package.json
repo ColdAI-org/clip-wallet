@@ -1,0 +1,8 @@
+{
+  "name": "clip-plugin-address-label",
+  "version": "1.0.0",
+  "description": "Example Clip Wallet plugin: names well-known addresses (burn, zero, incinerator) in approvals.",
+  "license": "MIT",
+  "private": true,
+  "files": ["clip.plugin.json", "dist/bundle.js"]
+}

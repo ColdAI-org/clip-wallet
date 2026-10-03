@@ -1,0 +1,17 @@
+<!doctype html>
+<!--
+  Clip Plugins sandbox page. Copy to apps/extension/src/entrypoints/plugin-sandbox/index.html (WXT names it
+  plugin-sandbox.html) and list it under manifest "sandbox.pages" with CSP = SANDBOX_CSP. Chrome serves it in a
+  unique opaque origin with no extension APIs; one iframe runs exactly one plugin.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Clip plugin sandbox</title>
+  </head>
+  <body>
+    <script type="module">
+      import "@clip-wallet/plugins/sandbox";
+    </script>
+  </body>
+</html>

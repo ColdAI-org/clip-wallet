@@ -4,7 +4,7 @@ import { useAsync, useRouter, useUi } from "../context";
 import { Button, Card, Empty, ErrorNote, Field, Row, Screen, Spinner } from "../components";
 import { IconFingerprint } from "../components/icons";
 import { passwordStrength } from "../lib/strength";
-import { asPlatform, type BackupStatusView } from "../platform/client";
+import { asPlatform, type BackupProvidersView, type BackupStatusView } from "../platform/client";
 import { runCeremony } from "../platform/ceremony";
 
 /**
@@ -27,13 +27,51 @@ export function PasskeyBackupExplainer() {
       <p className="clip-lede">Your passkey can lock a copy of your recovery phrase so you can get your wallet back on a new device.</p>
       <ul className="clip-bullets">
         <li>We store only the locked copy. We can't open it, and neither can anyone who breaks into our servers.</li>
-        <li>To restore, you need your email (to fetch the copy) and the passkey (to unlock it), on the new device.</li>
+        <li>To restore, you need the email, Google or Apple account you signed in with (to fetch the copy) and the passkey (to unlock it), on the new device. That sign-in only finds your copy; it can't unlock it.</li>
         <li>
           <strong>Your passkey syncs through your Apple, Google or password-manager account.</strong> Whoever controls that account
-          and can pass its Face ID, fingerprint or PIN could restore this wallet if they also get into your email. Protect both.
+          and can pass its Face ID, fingerprint or PIN could restore this wallet if they also get into the email, Google or Apple account you back up with. Protect both.
         </li>
         <li>Keep your recovery phrase written down too. It works even if this service or your passkey is gone.</li>
       </ul>
+    </div>
+  );
+}
+
+/**
+ * "Continue with Google" / "Sign in with Apple". Shown only for the options the backup service and this build
+ * have switched on. The provider only tells us which backups are yours; it never sees or holds your keys.
+ */
+export function SocialSignIn(props: { providers: BackupProvidersView; onSignedIn: () => void; busy: boolean; setBusy: (b: boolean) => void; setErr: (e: string | null) => void }) {
+  const { client } = useUi();
+  const p = asPlatform(client);
+  const { providers } = props;
+  if (!p.backupSocialSignIn || (!providers.google && !providers.apple)) return null;
+  const go = async (provider: "google" | "apple") => {
+    props.setErr(null);
+    props.setBusy(true);
+    try {
+      await p.backupSocialSignIn!({ provider });
+      props.onSignedIn();
+    } catch (e) {
+      props.setErr(userMessageOf(e));
+    } finally {
+      props.setBusy(false);
+    }
+  };
+  return (
+    <div className="clip-stack" data-testid="backup-social-sign-in">
+      {providers.google && (
+        <Button block variant="secondary" disabled={props.busy} onClick={() => void go("google")}>
+          Continue with Google
+        </Button>
+      )}
+      {providers.apple && (
+        <Button block variant="secondary" disabled={props.busy} onClick={() => void go("apple")}>
+          Sign in with Apple
+        </Button>
+      )}
+      <p className="clip-hint">Google or Apple only tells us which backups are yours. They never see your keys, and your backup stays locked with your passkey.</p>
     </div>
   );
 }
@@ -42,6 +80,7 @@ export function PasskeyBackupExplainer() {
 export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () => void }) {
   const { client } = useUi();
   const p = asPlatform(client);
+  const providers = useAsync(async () => (p.backupProviders ? p.backupProviders() : null), []);
   const [email, setEmail] = useState(props.status.pendingEmail ?? "");
   const [sentTo, setSentTo] = useState<string | undefined>(props.status.pendingEmail);
   const [link, setLink] = useState("");
@@ -61,8 +100,15 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
   };
 
   if (!sentTo) {
+    const pv = providers.data;
+    const social = !!pv && (pv.google || pv.apple) && !!p.backupSocialSignIn;
+    const showEmail = !pv || pv.email || !social;
     return (
       <div className="clip-stack">
+        {social && <SocialSignIn providers={pv!} onSignedIn={props.onSignedIn} busy={busy} setBusy={setBusy} setErr={setErr} />}
+        {social && showEmail && <p className="clip-hint">Or use your email:</p>}
+        {!showEmail && <ErrorNote message={err} />}
+        {showEmail && <>
         <Field label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} hint="We'll email you a sign-in link. No password." />
         <ErrorNote message={err} />
         <Button
@@ -77,6 +123,7 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
         >
           {busy ? "Sending…" : "Email me a link"}
         </Button>
+        </>}
       </div>
     );
   }

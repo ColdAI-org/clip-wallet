@@ -20,6 +20,7 @@ export { Settings, ScanWalletConnect, isWalletConnectUri } from "./screens/Setti
 export { ApprovalQueue } from "./screens/Approvals";
 export { PasskeyEnroll, PasskeyPage } from "./screens/Passkey";
 export * from "./features";
+export * from "./plugins";
 export * from "./platform/client";
 export { runCeremony } from "./platform/ceremony";
 export { RecoveryPhraseBackup, quizPositions } from "./screens/RecoveryPhrase";

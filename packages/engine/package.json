@@ -10,7 +10,8 @@
     "./wiring": "./src/wiring.ts",
     "./platform": "./src/platform.ts",
     "./catalog": "./src/catalog.ts",
-    "./features": "./src/features.ts"
+    "./features": "./src/features.ts",
+    "./social-signin": "./src/social-signin.ts"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",

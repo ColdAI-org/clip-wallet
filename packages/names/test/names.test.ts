@@ -161,3 +161,24 @@ describe("MultiNameResolver", () => {
     expect(await r.reverse("not-an-id", "hedera")).toBeNull();
   });
 });
+
+describe("plugin names (Clip Plugins)", () => {
+  it("are asked only after the built-ins, are labelled with the plugin, and can't claim .eth", async () => {
+    const { PluginBackend } = await import("../src/index.js");
+    const lookup = vi.fn(async (name: string) => ({ name, address: "0x000000000000000000000000000000000000dEaD", family: "evm", pluginId: "p", pluginName: "Labels", from: "from Labels" }));
+    const plugin = new PluginBackend(lookup, () => [".label", ".eth"]);
+    const ens = new EnsBackend({ client: fakeEns({ "alice.eth": { "60": ALICE } }) });
+    const r = new MultiNameResolver({}, [ens, plugin]);
+    expect((await r.resolve("alice.eth"))?.address).toBe(ALICE);
+    expect(lookup).not.toHaveBeenCalled();
+    const p = await r.resolve("burn.label");
+    expect(p).toMatchObject({ service: "plugin", displayName: "burn.label (from Labels)", via: { pluginName: "Labels" } });
+    expect(r.serviceFor("x.unknown")).toBeNull();
+  });
+
+  it("drops answers for families the wallet doesn't know", async () => {
+    const { PluginBackend } = await import("../src/index.js");
+    const plugin = new PluginBackend(async (name) => ({ name, address: "abc", family: "notachain", pluginId: "p", pluginName: "P", from: "from P" }), () => [".label"]);
+    expect(await plugin.resolve("x.label")).toBeNull();
+  });
+});

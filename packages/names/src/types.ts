@@ -1,6 +1,7 @@
 import type { Family, NetworkId } from "@clip-wallet/core";
 
-export type NameService = "ens" | "sns" | "hns";
+/** "plugin" (Phase 2.5, additive): answered by a Clip Plugin; see `ResolvedName.via`. */
+export type NameService = "ens" | "sns" | "hns" | "plugin";
 
 export interface ResolvedName {
   /** The name as typed, normalised ("alice.eth"). */
@@ -21,6 +22,8 @@ export interface ResolvedName {
   addressOn?: Record<NetworkId, string>;
   /** Shown next to the address ("alice.eth"). */
   displayName: string;
+  /** Phase 2.5 (additive): set when a plugin answered; Send shows it as "from <plugin>". */
+  via?: { pluginId: string; pluginName: string; from: string };
 }
 
 /**

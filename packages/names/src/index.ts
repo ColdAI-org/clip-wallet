@@ -12,6 +12,7 @@ export type { Backend, NameResolver, NameService, ResolvedName } from "./types.j
 export { EnsBackend, ENS_L2_CHAIN_IDS, isEnsName, type EnsClient, type EnsOptions } from "./ens.js";
 export { SnsBackend, SNS_PROXY, isSnsName } from "./sns.js";
 export { HnsBackend, HNS_RESOLVERS, isHnsName } from "./hns.js";
+export { PluginBackend, type PluginLookup } from "./plugin.js";
 
 export interface NameResolverOptions {
   fetch?: typeof fetch;

@@ -18,6 +18,7 @@ import { Accounts } from "./screens/Accounts";
 import { BackupHub } from "./screens/Backup";
 import { ConnectHardware, HardwareProvider, HardwareSettings, useHardwareOptional, type FullHardwareClient } from "./hardware";
 import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClient } from "./features";
+import { PluginSettings } from "./plugins";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
   const [p, q] = path.split("?");
@@ -107,6 +108,7 @@ function Routes() {
       return <Activity />;
     case "settings":
       if (seg[1] === "hardware" && hardware) return <HardwareSettings hardware={hardware} onAdd={() => navigate("/hardware/connect")} />;
+      if (seg[1] === "plugins") return <PluginSettings />;
       return <Settings />;
     case "hardware":
       if (!hardware || seg[1] !== "connect") return <Home />;

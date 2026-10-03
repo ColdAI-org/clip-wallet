@@ -2,6 +2,7 @@ import { userMessageOf } from "../client";
 import { useAsync, useUi } from "../context";
 import { Button, Card, Chip, Empty, ErrorNote, Screen, Spinner } from "../components";
 import { formatFiat } from "../lib/format";
+import { TRADE_DISCLAIMER } from "@clip-wallet/features/views";
 import type { FeaturedDappView } from "./client";
 import { useFeatures } from "./context";
 
@@ -13,6 +14,15 @@ const CATEGORY: Record<FeaturedDappView["category"], string> = {
   bridge: "Move between apps",
   pay: "Pay",
   tools: "Tools",
+  trade: "Trade & earn",
+};
+
+const KIND: Record<NonNullable<FeaturedDappView["kind"]>, string> = {
+  perps: "Futures",
+  predictions: "Predictions",
+  stocks: "Stocks",
+  funds: "Funds",
+  yield: "Yield",
 };
 
 /** Featured apps (curated, verified domains) and your liquidity positions. */
@@ -22,7 +32,8 @@ export function Explore() {
   const apps = useAsync(() => features.featured(), [features]);
   const lp = useAsync(() => features.lpPositions(), [features]);
   const groups = new Map<string, FeaturedDappView[]>();
-  for (const d of apps.data ?? []) {
+  const trade = (apps.data ?? []).filter((d) => d.category === "trade");
+  for (const d of (apps.data ?? []).filter((x) => x.category !== "trade")) {
     const k = CATEGORY[d.category];
     groups.set(k, [...(groups.get(k) ?? []), d]);
   }
@@ -71,6 +82,32 @@ export function Explore() {
           </ul>
         </section>
       ))}
+
+      {trade.length > 0 && (
+        <section aria-label="Trade & earn" data-testid="trade-and-earn">
+          <h2 className="clip-h2">Trade & earn</h2>
+          <div className="clip-notice clip-notice--caution" role="note">
+            <span>{TRADE_DISCLAIMER}</span>
+          </div>
+          <ul className="clip-list">
+            {trade.map((d) => (
+              <li key={d.domain}>
+                <button type="button" className="clip-asset-row" onClick={() => void features.openExternal(d.url)}>
+                  <span className="clip-asset-row__main">
+                    <span className="clip-asset-row__symbol">
+                      {d.name} {d.kind && <Chip tone="muted">{KIND[d.kind]}</Chip>}
+                    </span>
+                    <span className="clip-asset-row__name">
+                      {d.description} · {d.domain}
+                    </span>
+                    {d.note && <span className="clip-hint">{d.note}</span>}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </Screen>
   );
 }

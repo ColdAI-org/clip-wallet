@@ -1,0 +1,9 @@
+{
+  "manifestVersion": 1,
+  "name": "Address labels",
+  "version": "1.0.0",
+  "author": "Clip Wallet examples",
+  "description": "Names well-known addresses, like the burn address, in requests you approve.",
+  "permissions": { "transactionInsight": true },
+  "bundle": { "path": "dist/bundle.js", "sha256": "da8855aef5173a9304a913a9d01cecff1acdfa7ad30e0ffc3341e8d4f3ca761a" }
+}
