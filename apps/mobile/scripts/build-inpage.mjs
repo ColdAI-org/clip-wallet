@@ -6,6 +6,25 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * @aptos-labs/ts-sdk has dynamic import()s, so esbuild (no code splitting) wraps those modules in lazy
+ * initialisers. Because the package is `sideEffects: false`, esbuild also drops dist/index.js, which is the
+ * module that would run those initialisers before @aptos-labs/wallet-standard's top-level
+ * `class AccountInfo extends Serializable` — so the injected bundle threw "Class extends value undefined"
+ * and no provider got installed. Keeping ts-sdk's entry (sideEffects: true for that one import) restores the
+ * order; the bundle grows by about 1%.
+ */
+const aptosEntryKeepsInit = {
+  name: "aptos-ts-sdk-entry",
+  setup(b) {
+    b.onResolve({ filter: /^@aptos-labs\/ts-sdk$/ }, async (args) => {
+      if (args.pluginData === "aptos-ts-sdk-entry") return undefined;
+      const r = await b.resolve(args.path, { kind: args.kind, resolveDir: args.resolveDir, importer: args.importer, pluginData: "aptos-ts-sdk-entry" });
+      return r.errors.length ? { errors: r.errors } : { path: r.path, sideEffects: true };
+    });
+  },
+};
 const out = await build({
   entryPoints: [join(root, "src/browser/inpage-entry.ts")],
   bundle: true,
@@ -16,6 +35,7 @@ const out = await build({
   minify: true,
   legalComments: "none",
   logLevel: "warning",
+  plugins: [aptosEntryKeepsInit],
 });
 const js = out.outputFiles[0].text;
 const file = join(root, "src/browser/inpage.generated.ts");

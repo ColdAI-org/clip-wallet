@@ -20,7 +20,7 @@ import {
   type PortResponse,
 } from "../shared/protocol.js";
 import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
-import { METHOD_APTOS_NETWORK } from "../inpage/aptos.js";
+import { METHOD_APTOS_NETWORK } from "../shared/move-methods.js";
 import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
 import { dispatchCardanoSubstrate, type CardanoSubstrateRouterHelpers } from "./cardano-substrate.js";
 import type { PermissionStore } from "./permissions.js";
