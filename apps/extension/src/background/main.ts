@@ -31,7 +31,6 @@ export function startBackground() {
     iconUrl: browser.runtime.getURL("/icon/128.png"),
     currency: async () => (await service!.prefs()).displayCurrency,
     features: __CLIP_FEATURES__,
-    onHardwareChange: () => env.broadcast(),
   });
 
   let approvalWindowId: number | undefined;

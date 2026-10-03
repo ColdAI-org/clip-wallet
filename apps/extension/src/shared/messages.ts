@@ -13,7 +13,6 @@ import type {
   ActivityEntry,
   BackupStatusView,
   HardwareAccountView,
-  HardwareFamilyView,
   ApprovalView,
   PasskeyCeremony,
   PortfolioView,
@@ -23,6 +22,7 @@ import type {
   SessionView,
   WalletState,
 } from "@clip-wallet/ui";
+import type { HardwareSignJob } from "./hardware-job";
 
 const password = z.string().min(1).max(1024);
 const id = z.string().min(1).max(200);
@@ -47,8 +47,46 @@ export const PrefsPatch = z
 
 const hwFamily = z.enum(["evm", "solana", "bitcoin", "hedera"]);
 const pathStyle = z.enum(["standard", "ledger-live", "ledger-legacy"]);
-const urJson = z.object({ type: z.string().regex(/^[a-z0-9-]{1,40}$/), cborHex: z.string().regex(/^[0-9a-f]*$/).max(200_000) }).strict();
 const hwId = z.string().regex(/^hw:(ledger|keystone):[0-9a-f]{8}:[a-z]+:\d{1,10}(:ledger-live|:ledger-legacy)?$/);
+const hex = (max: number) => z.string().regex(/^[0-9a-f]*$/).max(max);
+const bip32Path = z.string().regex(/^m(\/\d{1,10}'?)*$/).max(120);
+const smallInt = z.number().int().min(0).max(0x7fffffff);
+/**
+ * A hardware account as the page that ran the device found it (public data). The background's keyring also
+ * checks the record against its id before storing it.
+ */
+const hwAccount = z
+  .object({
+    id: hwId,
+    family: hwFamily,
+    index: smallInt,
+    curve: z.enum(["secp256k1", "ed25519"]),
+    derivationPath: bip32Path,
+    publicKey: hex(130),
+    address: z.string().min(1).max(120),
+    label: z.string().max(60).optional(),
+    hederaAccountId: z.string().regex(/^\d+\.\d+\.\d+$/).optional(),
+    hardware: z
+      .object({
+        kind: z.enum(["ledger", "keystone"]),
+        fingerprint: z.string().regex(/^[0-9a-f]{8}$/),
+        path: bip32Path,
+        pathStyle,
+        accountXpub: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{100,120}$/).optional(),
+        accountPath: bip32Path.optional(),
+        change: smallInt.optional(),
+        addressIndex: smallInt.optional(),
+        keyIndex: smallInt.optional(),
+        deviceName: z.string().max(60).optional(),
+      })
+      .strict(),
+  })
+  .strict();
+/** A device signature coming back from the approval window. The background verifies it before use. */
+const signatureWire = z
+  .object({ scheme: z.enum(["ecdsa-secp256k1", "ed25519"]), bytes: hex(128), recovery: z.number().int().min(0).max(3).optional(), publicKey: hex(130) })
+  .strict();
+const jobId = z.string().uuid();
 
 export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("getState") }),
@@ -94,16 +132,16 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
   ...FEATURE_REQUESTS,
   // hardware wallets (Ledger, Keystone)
-  z.object({ type: z.literal("hwLedgerAccounts"), family: hwFamily, start: z.number().int().min(0).max(1000), count: z.number().int().min(1).max(20), pathStyle: pathStyle.optional() }),
-  z.object({ type: z.literal("hwKeystoneImport"), ur: urJson }),
-  z.object({ type: z.literal("hwKeystoneAccounts"), family: hwFamily, start: z.number().int().min(0).max(1000), count: z.number().int().min(1).max(20), pathStyle: pathStyle.optional() }),
-  z.object({ type: z.literal("hwAddAccounts"), ids: z.array(hwId).min(1).max(50) }),
+  // Device I/O (Ledger WebHID, Keystone QR) runs in the pages; the background stores accounts and verifies signatures.
+  z.object({ type: z.literal("hwAddAccounts"), accounts: z.array(hwAccount).min(1).max(50) }),
   z.object({ type: z.literal("hwListAccounts") }),
   z.object({ type: z.literal("hwRenameAccount"), id: hwId, label: z.string().max(60) }),
   z.object({ type: z.literal("hwForgetDevice"), kind: z.enum(["ledger", "keystone"]), fingerprint: z.string().regex(/^[0-9a-f]{8}$/) }),
   z.object({ type: z.literal("hwSetActive"), family: hwFamily, accountId: hwId.nullable() }),
-  z.object({ type: z.literal("hwKeystoneAnswer"), id, ur: urJson }),
   z.object({ type: z.literal("hwCancel"), id }),
+  z.object({ type: z.literal("hwSignJobs") }),
+  z.object({ type: z.literal("hwSignResult"), id, jobId, signature: signatureWire }),
+  z.object({ type: z.literal("hwSignFailed"), id, jobId, code: z.string().regex(/^hw\/[a-z0-9-]{1,40}$/), message: z.string().min(1).max(300) }),
   // platform: passkey backup, phrase backup flag, multiple accounts, names
   z.object({ type: z.literal("backupStatus") }),
   z.object({ type: z.literal("backupStartSignIn"), email: z.string().min(3).max(254) }),
@@ -166,16 +204,15 @@ export interface ResponseMap extends FeatureResponseMap {
   getActiveAccounts: ActiveAccounts;
   setActiveAccount: void;
   lookupName: string | null;
-  hwLedgerAccounts: HardwareAccountView[];
-  hwKeystoneImport: { fingerprint: string; families: HardwareFamilyView[] };
-  hwKeystoneAccounts: HardwareAccountView[];
   hwAddAccounts: void;
   hwListAccounts: HardwareAccountView[];
   hwRenameAccount: void;
   hwForgetDevice: void;
   hwSetActive: void;
-  hwKeystoneAnswer: void;
   hwCancel: void;
+  hwSignJobs: HardwareSignJob[];
+  hwSignResult: void;
+  hwSignFailed: void;
 }
 
 export const Envelope = z.union([

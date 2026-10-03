@@ -10,7 +10,9 @@ import config from "../../clip.config";
 import { CURRENCIES, MEDIA_PROXY_URL } from "../app-settings";
 import { createBusClient } from "../shared/bus";
 import { createFeaturesBusClient } from "../shared/features-bus";
-import { hardwareClient } from "../shared/hardware-client";
+import { call, hardwareClient } from "./hardware/client";
+import { SignAgent, withDeviceSteps } from "./hardware/agent";
+import { cancelDevice, deviceSigner, keystoneExchange, onDeviceChange } from "./hardware/devices";
 import { createPasskeyFactory } from "../passkey/bridge";
 
 const options: Partial<UiOptions> = {
@@ -31,7 +33,12 @@ export function mountWallet(variant: Exclude<Variant, "window">) {
 }
 
 export function mountApprovalWindow() {
-  const client = createBusClient(undefined, __CLIP_MOCKS__);
+  const bus = createBusClient(undefined, __CLIP_MOCKS__);
+  // Hardware accounts sign here (WebHID, camera); the background verifies what comes back.
+  const agent = new SignAgent({ call: (m) => call(m as never), signer: deviceSigner, cancelDevice, exchange: keystoneExchange });
+  bus.onChange?.(() => void agent.poll());
+  void agent.poll();
+  const client = withDeviceSteps(bus, agent, onDeviceChange);
   const focusId = decodeURIComponent(location.hash.slice(1)) || undefined;
   render(
     <ApprovalWindowApp

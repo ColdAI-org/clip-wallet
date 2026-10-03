@@ -8,23 +8,32 @@ is used.
 - **Keystone** air-gapped over QR codes (BC-UR): EVM, Solana, Bitcoin.
 
 ```
-background                         this package                         device
-----------                         ------------                         ------
-module.prepare() -> payloads ----> HardwareKeyring.registerApproval
-user approved                      HardwareKeyring.sign(payload)
-                                     approval consumed (hash covers raw)
-                                     LedgerSigner / KeystoneSigner ----> shows `raw`, user confirms
-                                     <------------------------------------ signature
-                                     verifies over payload.bytes + account public key
-module.finalize(signatures) <----- Signature
+background (service worker)                    page with WebHID + camera (approval window)      device
+---------------------------                    -------------------------------------------      ------
+module.prepare() -> payloads
+user approved -> HardwareKeyring.registerApproval
+                 (keeps its own payload copies)
+job: { approvalId, jobId, payload, account } ---> LedgerSigner / KeystoneSigner.sign() -------> shows `raw`,
+                                                                                                user confirms
+HardwareKeyring.acceptSignature(own payload,  <--- signature (wire form) <------------------------ signature
+  signature): verifies over payload.bytes with
+  the account's public key, then consumes the
+  approval (single use)
+module.finalize(signatures)
 ```
+
+The background imports only `@clip-wallet/hardware/core` (no device SDKs). A host that can drive the device
+itself can still use `HardwareKeyring.sign(payload, ctx)` with `signers`, which does the same checks in one call.
+Whatever the page sends back, only a signature over the approved bytes by the account's key is accepted, once:
+the page names the job it answers, never the payload.
 
 ## API
 
 | export | what |
 |---|---|
 | `HardwareSigner` | `{ kind, listAccounts(family, start, count, { pathStyle, fingerprint }), sign(payload, { request, decoded, account }) }`, parallel to the vault's `sign()` |
-| `HardwareKeyring` | the background's entry point: stores accounts (public data), `registerApproval` / `revokeApproval` / `lock`, `sign(payload, { request, decoded })`, `owns(accountId)` |
+| `HardwareKeyring` | the background's entry point: stores accounts (public data, each record checked against its id), `registerApproval` / `revokeApproval` / `lock`, `isApproved(payload)`, `acceptSignature(payload, signature)` (device ran elsewhere), `sign(payload, { request, decoded })` (device driven here), `owns(accountId)` |
+| `toWire` / `fromWire`, `signatureToWire` / `signatureFromWire` | JSON-safe forms (bytes as hex) for a message bus between the background and the page that runs the device |
 | `LedgerSigner` | `new LedgerSigner({ transport?, bitcoinNetwork?, ethResolver?, ethLoadConfig? })` |
 | `KeystoneSigner` | `new KeystoneSigner({ channel, storage, bitcoinNetwork? })`, `importSync(ur)`, `syncs()`, `forget(fingerprint)` |
 | `KeystoneQrChannel` | what the UI implements: `exchange({ request: AnimatedUr, expect, title, requestContext }) → UR` |
@@ -77,8 +86,8 @@ Ledger Live layouts appear only in Advanced mode ("Use Ledger Live's accounts").
 ## Ledger
 
 - Transport: `@ledgerhq/hw-transport-webhid`. `navigator.hid.requestDevice()` needs a click in an extension
-  page; afterwards the background service worker reopens the granted device with `getDevices()`
-  (`TransportWebHID.openConnected()`), which Chrome allows in extension service workers
+  page; afterwards the page reopens the granted device with `getDevices()` (`TransportWebHID.openConnected()`).
+  In the extension the Ledger runs in the page (Connect screen, approval window), not the service worker
   (<https://developer.chrome.com/docs/extensions/how-to/web-platform/webhid>).
 - Every command first asks the device which app is open (`GET_APP_AND_VERSION`, CLA `0xB0`), so "open the
   wrong app" and "on the dashboard" become "Open the Ethereum app on your Ledger". Before signing it re-reads

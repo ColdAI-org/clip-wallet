@@ -50,6 +50,7 @@ export const HardwareErrors = {
   noCamera: (cause?: unknown) =>
     new ClipError("We couldn't use your camera. Allow camera access for Clip Wallet and try again.", "hw/no-camera", cause),
   cancelled: () => new ClipError("Cancelled. Nothing was signed.", "hw/cancelled"),
+  timedOut: () => new ClipError("Your hardware wallet didn't answer in time. Nothing was signed. Please try again.", "hw/timeout"),
 } as const;
 
 /** Ledger status words we map. https://github.com/LedgerHQ/ledger-live/blob/develop/libs/ledgerjs/packages/errors/src/index.ts */

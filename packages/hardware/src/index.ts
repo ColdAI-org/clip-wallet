@@ -9,7 +9,8 @@ export { HardwareApprovals, hashHardwarePayload, MAX_APPROVAL_TTL_MS } from "./a
 export { HardwareKeyring, type HardwareKeyringOptions, type HardwareStorage } from "./keyring.js";
 export { HARDWARE_CURVE, hardwarePath, pathStyles, bitcoinAccountPath, parsePath, formatPath } from "./paths.js";
 export { decodeXpub, encodeXpub, deriveChild, derivePublic, fingerprintOf, publicNode, XPUB_VERSIONS, type PublicNode } from "./bip32pub.js";
-export { assertVerifies, ecdsaSignature, ed25519Signature } from "./verify.js";
+export { assertVerifies, verifiedSignature, ecdsaSignature, ed25519Signature } from "./verify.js";
+export { toWire, fromWire, signatureToWire, signatureFromWire, type SignatureWire } from "./wire.js";
 export { evmAddress } from "./evm.js";
 export { LedgerSigner, type LedgerSignerOptions } from "./ledger/signer.js";
 export { LedgerConnection, webHidTransport, appAndVersion, type TransportFactory } from "./ledger/transport.js";
