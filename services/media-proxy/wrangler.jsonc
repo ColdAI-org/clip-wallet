@@ -1,15 +1,19 @@
-// services/media-proxy — fetches untrusted NFT media for the wallet UI. NOT DEPLOYED.
+// services/media-proxy — fetches untrusted NFT media for the wallet UI.
+// Deployed (testnet builds) to https://clip-media-proxy.<subdomain>.workers.dev; see docs/phase25/deploy.md.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "clip-wallet-media-proxy",
+  "name": "clip-media-proxy",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
-  "workers_dev": false,
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": false },
   "vars": {
-    "IPFS_GATEWAY": "https://ipfs.io",
+    // ipfs.io / dweb.link stopped serving content over HTTP in Sept 2026 (https://gatewaychanges.ipfs.io/).
+    // Filebase's public path gateway serves any CID; swap in a dedicated gateway before real traffic.
+    "IPFS_GATEWAY": "https://ipfs.filebase.io",
     "ARWEAVE_GATEWAY": "https://arweave.net"
   },
-  // Per-client-IP limit (period must be 10 or 60 s). namespace_id is a placeholder: pick one unique to the account.
+  // Per-client-IP limit (period must be 10 or 60 s). namespace_id must be unique within the account.
   "ratelimits": [{ "name": "MEDIA_LIMITER", "namespace_id": "4201", "simple": { "limit": 300, "period": 60 } }]
 }

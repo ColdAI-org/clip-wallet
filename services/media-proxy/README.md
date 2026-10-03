@@ -1,7 +1,7 @@
 # services/media-proxy — sandboxed NFT media
 
 A Cloudflare Worker the wallet UI loads every NFT image/video through, so the extension never fetches an
-untrusted URL itself. **Not deployed** (`wrangler.jsonc` only; the rate-limit `namespace_id` is a placeholder).
+untrusted URL itself. Deployed for testnet builds at `https://clip-media-proxy.doyoka-platform.workers.dev` (see [docs/phase25/deploy.md](../../docs/phase25/deploy.md)).
 
 ```
 GET /v1/media?src=<canonical source>&kind=image|video
@@ -14,7 +14,7 @@ the Worker re-validates with the same code (`parseProxyQuery`), so the two can't
 
 - **Sources:** `https`, `http`, `ipfs://<CIDv0|CIDv1>[/path]`, `ar://<43-char tx>[/path]`. Public IPFS path and
   subdomain gateway URLs and `arweave.net/<tx>` are rewritten to `ipfs://`/`ar://` and fetched through
-  `IPFS_GATEWAY` / `ARWEAVE_GATEWAY`. Rejected: `data:`, `blob:`, `javascript:`, `file:`, userinfo, non-default
+  `IPFS_GATEWAY` (default `https://ipfs.filebase.io`; ipfs.io stopped serving HTTP content in Sept 2026) / `ARWEAVE_GATEWAY`. Rejected: `data:`, `blob:`, `javascript:`, `file:`, userinfo, non-default
   ports, IP literals in private/loopback/link-local/CGNAT/multicast ranges, IPv6 literals, single-label hosts,
   `localhost`, `.local`, `.internal`, `.home.arpa`.
 - **Redirects:** followed by hand (`redirect: "manual"`), at most 3, and every hop is re-validated with the

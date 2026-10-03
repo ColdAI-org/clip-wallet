@@ -33,6 +33,10 @@ export interface Env {
   EMAIL_PEPPER?: string;
   APP_URL: string;
   ALLOWED_ORIGINS?: string;
+  /** Secret. Resend API key; with EMAIL_FROM set, the deployed entry point sends sign-in links through Resend. */
+  RESEND_API_KEY?: string;
+  /** Sender for sign-in emails, on a domain verified in Resend, e.g. "Clip Wallet <backup@example.com>". */
+  EMAIL_FROM?: string;
 }
 
 export interface AppDeps {
@@ -97,6 +101,8 @@ export function createApp(deps: AppDeps = {}) {
   }
 
   async function start(req: Request, env: Env): Promise<Response> {
+    // No provider: refuse before touching the database (no link, no rate-limit row, nothing stored).
+    if (email instanceof UnconfiguredEmailSender) throw new HttpError(503, "email-unavailable", "Email isn't configured.");
     const body = await readJson<Partial<StartSignInBody>>(req);
     if (typeof body.email !== "string" || typeof body.challenge !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(body.challenge)) {
       throw new HttpError(400, "bad-request", "email and challenge are required.");
@@ -212,7 +218,7 @@ export function createApp(deps: AppDeps = {}) {
     const url = new URL(req.url);
     const p = url.pathname.replace(/\/+$/, "");
     const m = req.method;
-    if (m === "GET" && p === "/v1/health") return json(200, { ok: true });
+    if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: !(email instanceof UnconfiguredEmailSender) && (env.EMAIL_PEPPER?.length ?? 0) >= 32 });
     if (m === "POST" && p === "/v1/auth/start") return start(req, env);
     if (m === "POST" && p === "/v1/auth/verify") return verify(req, env);
     if (m === "POST" && p === "/v1/auth/sign-out") {

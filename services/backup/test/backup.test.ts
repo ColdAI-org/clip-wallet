@@ -2,7 +2,7 @@ import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports as workerExports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BackupClient, BLOB_MAX_BYTES, BLOB_MIN_BYTES, b64url, tokenFromLink } from "@clip-wallet/backup-client";
-import { createApp, MemoryEmailSender, type Env } from "../src/index";
+import { createApp, MemoryEmailSender, ResendEmailSender, type Env } from "../src/index";
 
 const E = env as unknown as Env & { TEST_MIGRATIONS: D1Migration[] };
 /** The deployed entry point (src/index.ts default export), as wired by wrangler.jsonc. */
@@ -233,6 +233,42 @@ describe("HTTP surface", () => {
     expect(await res.json()).toEqual({ error: "email-unavailable", message: expect.any(String) });
     const { results } = await E.DB.prepare("SELECT * FROM magic_links WHERE challenge = ?1").bind("B".repeat(43)).all();
     expect(results).toHaveLength(0);
+  });
+
+  it("deployed default refuses before writing anything, even rate-limit counters", async () => {
+    const before = await E.DB.prepare("SELECT (SELECT COUNT(*) FROM rate_limits) + (SELECT COUNT(*) FROM magic_links) + (SELECT COUNT(*) FROM accounts) AS n").first<{ n: number }>();
+    const res = await worker.fetch(new Request("https://backup.test/v1/auth/start", { method: "POST", headers: { "cf-connecting-ip": "198.51.100.201" }, body: "{}" }));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "email-unavailable", message: "Email isn't configured." });
+    const after = await E.DB.prepare("SELECT (SELECT COUNT(*) FROM rate_limits) + (SELECT COUNT(*) FROM magic_links) + (SELECT COUNT(*) FROM accounts) AS n").first<{ n: number }>();
+    expect(after!.n).toBe(before!.n);
+  });
+
+  it("health reports whether email sign-in is ready", async () => {
+    expect(await (await worker.fetch(new Request("https://b/v1/health"))).json()).toEqual({ ok: true, emailSignIn: false });
+    const app = createApp({ email: new MemoryEmailSender() });
+    expect(await (await app.fetch(new Request("https://b/v1/health"), E)).json()).toEqual({ ok: true, emailSignIn: true });
+  });
+
+  it("Resend sender posts the documented request and reports failures without the provider's body", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    let status = 200;
+    const fake = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ url: String(url), init: init! });
+      return new Response(status === 200 ? JSON.stringify({ id: "x" }) : "secret detail", { status });
+    }) as typeof fetch;
+    const s = new ResendEmailSender("re_test_not_a_key", "Clip Wallet <backup@example.com>", fake);
+    await s.send({ to: "a@example.com", subject: "S", text: "T" });
+    expect(calls[0]!.url).toBe("https://api.resend.com/emails");
+    expect(calls[0]!.init.method).toBe("POST");
+    expect(new Headers(calls[0]!.init.headers).get("authorization")).toBe("Bearer re_test_not_a_key");
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ from: "Clip Wallet <backup@example.com>", to: ["a@example.com"], subject: "S", text: "T" });
+    status = 422;
+    await expect(s.send({ to: "a@example.com", subject: "S", text: "T" })).rejects.toThrow(/422/);
+    const app = createApp({ email: s });
+    const res = await app.fetch(new Request("https://b/v1/auth/start", { method: "POST", headers: { "cf-connecting-ip": "198.51.100.202" }, body: JSON.stringify({ email: freshEmail(), challenge: "D".repeat(43) }) }), E);
+    expect(res.status).toBe(502);
+    expect(await res.text()).not.toMatch(/secret detail/);
   });
 
   it("fails closed without the pepper", async () => {
