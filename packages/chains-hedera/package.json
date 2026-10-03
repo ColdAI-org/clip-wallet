@@ -1,0 +1,22 @@
+{
+  "name": "@clip-wallet/chains-hedera",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/core": "workspace:*",
+    "@hiero-ledger/proto": "^2.31.0",
+    "@hiero-ledger/sdk": "^2.89.1",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0"
+  }
+}
