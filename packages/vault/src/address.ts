@@ -9,6 +9,20 @@ import { secp256k1, schnorr } from "@noble/curves/secp256k1.js";
 import { base58, bech32, bech32m } from "@scure/base";
 import type { Family } from "@clip-wallet/core";
 import { concat, toHex } from "./bytes.js";
+import {
+  algorandAddress,
+  aptosAddress,
+  cardanoBaseAddress,
+  nearImplicitAccount,
+  ss58Address,
+  starknetOzAccountAddress,
+  stellarAddress,
+  suiAddress,
+  tezosTz1Address,
+  tonAddress,
+  type Network2,
+  type TonWalletVersion,
+} from "./encodings.js";
 
 export type BitcoinNetwork = "mainnet" | "testnet";
 export type BitcoinAddressType = "p2wpkh" | "p2tr";
@@ -16,6 +30,16 @@ export type BitcoinAddressType = "p2wpkh" | "p2tr";
 export interface AddressContext {
   bitcoinNetwork: BitcoinNetwork;
   bitcoinAddressType: BitcoinAddressType;
+  /** Cardano base addresses carry a network id (addr_test / addr). Default "testnet". */
+  cardanoNetwork?: Network2;
+  /** Cardano: the account's stake key (m/1852'/1815'/i'/2/0); the base address needs both keys. */
+  cardanoStakePublicKey?: Uint8Array;
+  /** TON wallet v5r1 ids differ per network (global id -239 / -3). Default "testnet". */
+  tonNetwork?: Network2;
+  /** TON wallet contract. Default "v5r1". */
+  tonWalletVersion?: TonWalletVersion;
+  /** Starknet: account class whose counterfactual address to compute (OpenZeppelin-style constructor(public_key)). */
+  starknetAccountClassHash?: string;
 }
 
 /** Injectable address function. Receives the public key exactly as stored in Account.publicKey (bytes). */
@@ -73,9 +97,31 @@ export const defaultAddressOf: AddressOf = (family, publicKey, ctx) => {
       return ctx.bitcoinAddressType === "p2tr"
         ? p2trAddress(publicKey, ctx.bitcoinNetwork)
         : p2wpkhAddress(publicKey, ctx.bitcoinNetwork);
+    case "sui":
+      return suiAddress(publicKey);
+    case "aptos":
+      return aptosAddress(publicKey);
+    case "near":
+      return nearImplicitAccount(publicKey);
+    case "stellar":
+      return stellarAddress(publicKey);
+    case "algorand":
+      return algorandAddress(publicKey);
+    case "tezos":
+      return tezosTz1Address(publicKey);
+    case "ton":
+      return tonAddress(publicKey, ctx.tonNetwork ?? "testnet", ctx.tonWalletVersion ?? "v5r1");
+    case "cardano":
+      if (!ctx.cardanoStakePublicKey) throw new Error("cardano base address needs the stake key");
+      return cardanoBaseAddress(publicKey, ctx.cardanoStakePublicKey, ctx.cardanoNetwork ?? "testnet");
+    case "substrate":
+      // Generic Substrate prefix 42; chain modules re-encode for their network (Polkadot 0, Kusama 2, ...).
+      return ss58Address(publicKey, 42);
+    case "starknet":
+      if (!ctx.starknetAccountClassHash) throw new Error("starknet addresses need an account class hash");
+      return starknetOzAccountAddress(publicKey, ctx.starknetAccountClassHash);
     default:
-      // Phase 2 families: their address encodings are added with their derivation.
-      throw new Error(`addresses for ${family} are not supported yet`);
+      throw new Error(`addresses for ${String(family)} are not supported`);
   }
 };
 

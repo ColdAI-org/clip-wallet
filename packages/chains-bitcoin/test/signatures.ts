@@ -19,3 +19,6 @@ export const MSG_SIGS = {
   tr: "6a19d3145d0d0819a4cededc4b5ae4d0d19277a91178df61f41c7e4c67b80547999ad1137e8ca05092b47aca5fdeaff1db8b3efa23f1ba927b874441a51297c4",
   ecdsa: "009e7cb4a9266a6a95da2b4fa03106fc73debd16cce49cc1c407b1c0077c8cedda53d9ae6f667129136962b7acca43c9f5aa79c0f72fa2effd9d6344db65ff16e6",
 } as const;
+
+/** ECDSA r||s over the change-input digest in change.test.ts, made offline with the change key m/84'/0'/0'/1/1. */
+export const CHANGE_SPEND_SIG = "57488cd0a856c15d98c8145503ad6654a27599f2852e6c60f5ea83b9329144df5520629edff64cf0e5f43698be00446f0bd5a0a7eced0bc30c6e65bce7ade0d6";

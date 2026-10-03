@@ -41,8 +41,8 @@ export interface EsploraUtxo {
 }
 
 export interface EsploraAddress {
-  chain_stats: { funded_txo_sum: number; spent_txo_sum: number };
-  mempool_stats: { funded_txo_sum: number; spent_txo_sum: number };
+  chain_stats: { funded_txo_sum: number; spent_txo_sum: number; tx_count?: number };
+  mempool_stats: { funded_txo_sum: number; spent_txo_sum: number; tx_count?: number };
 }
 
 /** sat/vB for ~30 minutes (target 3 blocks), falling back to 6, then 1. Never below 1. */
