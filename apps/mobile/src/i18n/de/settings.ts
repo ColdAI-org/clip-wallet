@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "An",
   "m.settings.about.off": "In dieser Version aus",
   "m.settings.footer": "{name} · nur Testnetzwerke",
+  "m.settings.backupAccounts": "Backup und Konten",
+  "m.settings.menu.backup": "Backup",
+  "m.settings.menu.accounts": "Konten",
+  "m.settings.menu.hardware": "Hardware-Wallets",
+  "m.settings.sessions.accounts": "Konten",
+  "m.settings.sessions.accountsFor": "Konten für {app}",
+  "m.settings.menu.backupHint": "Wiederherstellungsphrase und Passkey-Backup",
+  "m.settings.menu.accountsHint": "Konten hinzufügen, umbenennen und auswählen",
+  "m.settings.menu.hardwareHint": "Ledger und Keystone",
 } satisfies Record<keyof typeof en, string>;

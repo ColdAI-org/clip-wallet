@@ -95,4 +95,12 @@ export default {
   "backup.family.hedera": "Hedera（HBAR）",
   "backup.family.solana": "Solana（SOL）",
   "backup.family.bitcoin": "Bitcoin（BTC）",
+  "backup.explainer.restoreAny": "復元するには、新しい端末で、サインインに使ったメールアドレス、Google アカウントまたは Apple アカウント（コピーの取得用）と、パスキー（ロック解除用）が必要です。サインインで見つけられるのはコピーだけで、ロックを解除することはできません。",
+  "backup.explainer.syncAny": "<b>パスキーは、Apple、Google またはパスワードマネージャーのアカウントを通じて同期されます。</b>そのアカウントを管理し、Face ID、指紋または PIN を通過できる人が、バックアップに使うメールアドレス、Google アカウントまたは Apple アカウントにも入れた場合、このウォレットを復元できてしまいます。両方を守ってください。",
+  "backup.signIn.orEmail": "またはメールアドレスを使う：",
+  "backup.social.google": "Google で続行",
+  "backup.social.apple": "Appleでサインイン",
+  "backup.social.privacy": "Google や Apple が私たちに伝えるのは、どのバックアップがあなたのものかだけです。鍵を見られることはなく、バックアップはパスキーでロックされたままです。",
+  "backup.social.googleAccount": "Google アカウント",
+  "backup.social.appleAccount": "Apple アカウント",
 } satisfies Record<keyof typeof en, string>;

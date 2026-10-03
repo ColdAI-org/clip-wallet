@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "복원하려면 새 기기에서 로그인했던 이메일, Google 또는 Apple 계정(사본을 찾기 위해)과 패스키(잠금을 풀기 위해)가 필요해요. 그 로그인은 사본을 찾기만 할 뿐, 잠금을 풀 수는 없어요.",
+  "backup.explainer.syncAny": "<b>패스키는 Apple, Google 또는 비밀번호 관리자 계정을 통해 동기화돼요.</b> 그 계정을 관리하고 Face ID, 지문 또는 PIN을 통과할 수 있는 사람이 백업에 사용한 이메일, Google 또는 Apple 계정에도 접근하면 이 지갑을 복원할 수 있어요. 두 계정 모두 보호하세요.",
+  "backup.signIn.orEmail": "또는 이메일 사용:",
+  "backup.social.google": "Google 계정으로 계속하기",
+  "backup.social.apple": "Apple로 로그인",
+  "backup.social.privacy": "Google이나 Apple은 어떤 백업이 내 것인지만 알려 줘요. 키는 절대 볼 수 없고, 백업은 계속 패스키로 잠겨 있어요.",
+  "backup.social.googleAccount": "Google 계정",
+  "backup.social.appleAccount": "Apple 계정",
 } satisfies Record<keyof typeof en, string>;

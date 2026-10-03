@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "페어링을 시작했어요. 앱으로 돌아가서 연결을 마치세요.",
   "settings.scan.blocked": "카메라 접근이 차단됐어요. 접근을 허용하거나 대신 코드를 붙여넣으세요.",
   "settings.scan.preview": "카메라 미리보기",
+  "settings.plugins": "플러그인",
 } satisfies Record<keyof typeof en, string>;

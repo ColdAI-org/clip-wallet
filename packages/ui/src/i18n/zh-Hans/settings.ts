@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "已开始配对。返回应用完成连接。",
   "settings.scan.blocked": "摄像头访问被阻止。请允许访问，或改为粘贴代码。",
   "settings.scan.preview": "摄像头预览",
+  "settings.plugins": "插件",
 } satisfies Record<keyof typeof en, string>;

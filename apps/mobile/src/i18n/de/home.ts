@@ -18,4 +18,8 @@ export default {
   "m.home.asset.where": "Wo es liegt",
   "m.home.asset.whereHint": "Darum musst du dich nicht kümmern – {symbol} wird von dort ausgegeben, wo es gerade liegt.",
   "m.home.asset.contract": "Vertrag ({network})",
+  "m.home.moreActions": "Weitere Aktionen",
+  "m.home.swap": "Tauschen",
+  "m.home.buy": "Kaufen",
+  "m.home.stake": "Staken",
 } satisfies Record<keyof typeof en, string>;

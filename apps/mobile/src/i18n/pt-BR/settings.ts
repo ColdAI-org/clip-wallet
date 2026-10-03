@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "Ativado",
   "m.settings.about.off": "Desativado nesta versão",
   "m.settings.footer": "{name} · apenas redes de teste",
+  "m.settings.backupAccounts": "Backup e contas",
+  "m.settings.menu.backup": "Backup",
+  "m.settings.menu.accounts": "Contas",
+  "m.settings.menu.hardware": "Carteiras de hardware",
+  "m.settings.sessions.accounts": "Contas",
+  "m.settings.sessions.accountsFor": "Contas para {app}",
+  "m.settings.menu.backupHint": "Frase de recuperação e backup por chave de acesso",
+  "m.settings.menu.accountsHint": "Adicione, renomeie e escolha contas",
+  "m.settings.menu.hardwareHint": "Ledger e Keystone",
 } satisfies Record<keyof typeof en, string>;

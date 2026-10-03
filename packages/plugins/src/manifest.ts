@@ -101,6 +101,24 @@ export function parseManifest(raw: unknown): PluginManifest {
   return r.data;
 }
 
+/** What a plugin may do, as data (the UI words it in the user's language; describePermissions is the English). */
+export interface PluginCapabilities {
+  transactionInsight: boolean;
+  nameSuffixes?: string[];
+  notifications: boolean;
+  networkHosts?: string[];
+}
+
+export function capabilitiesOf(m: PluginManifest): PluginCapabilities {
+  const p = m.permissions;
+  return {
+    transactionInsight: !!p.transactionInsight,
+    ...(p.nameResolution ? { nameSuffixes: [...p.nameResolution.suffixes] } : {}),
+    notifications: !!p.notifications,
+    ...(p.network ? { networkHosts: p.network.map((o) => new URL(o).host) } : {}),
+  };
+}
+
 /** Plain-words lines for the install prompt. The last line is always the "never" promise. */
 export function describePermissions(m: PluginManifest): string[] {
   const p = m.permissions;

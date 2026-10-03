@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "Eşleştirme başladı. Bağlantıyı tamamlamak için uygulamaya dönün.",
   "settings.scan.blocked": "Kamera erişimi engellendi. İzin verin ya da bunun yerine kodu yapıştırın.",
   "settings.scan.preview": "Kamera önizlemesi",
+  "settings.plugins": "Eklentiler",
 } satisfies Record<keyof typeof en, string>;

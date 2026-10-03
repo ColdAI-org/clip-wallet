@@ -1,0 +1,21 @@
+import type en from "../en/swap";
+export default {
+  "m.swap.title": "スワップ",
+  "m.swap.amountBad": "25 や 0.5 のように数量を入力してください。",
+  "m.swap.expired": "この価格は期限切れです。新しい価格を取得してください。",
+  "m.swap.reviewAndSwap": "確認してスワップ",
+  "m.swap.swap": "スワップ",
+  "m.swap.gettingPrice": "最適な価格を取得しています…",
+  "m.swap.getPrice": "価格を取得",
+  "m.swap.payWith": "支払いに使う資産",
+  "m.swap.amount": "数量",
+  "m.swap.youHave": "保有数：{amount} {symbol}",
+  "m.swap.youGet": "受け取る資産",
+  "m.swap.slippage": "許容する価格変動",
+  "m.swap.slippageHint": "スワップの実行前に価格がこれ以上動いた場合は中止され、何もスワップされません。",
+  "m.swap.youPay": "支払う数量",
+  "m.swap.route": "ルート",
+  "m.swap.priceImpact": "価格への影響",
+  "m.swap.network": "ネットワーク",
+  "m.swap.whatYouApprove": "承認する内容",
+} satisfies Record<keyof typeof en, string>;

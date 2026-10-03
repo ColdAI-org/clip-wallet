@@ -239,6 +239,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
   const t = useMobileT();
   const a = props.approval;
   const advanced = !!state?.prefs.advanced;
+  const phishing = !!a.connect?.warnings?.some((w) => w.level === "danger");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const act = async (approve: boolean) => {
@@ -258,7 +259,9 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
     <Shell
       footer={
         <>
-          {!a.dapp.verified && (
+          {/* Phishing lists and WalletConnect Verify (security stream); a danger finding makes this "Connect anyway". */}
+          <Warnings warnings={a.connect?.warnings ?? []} />
+          {!a.dapp.verified && !a.connect?.warnings?.some((w) => w.code === "domain-mismatch") && (
             <Warnings warnings={[{ level: "caution", code: "domain-mismatch", message: t("m.approval.connect.unknown", { name: APP.config.name, domain: a.dapp.domain }) }]} />
           )}
           <ErrorNote message={err} />
@@ -266,8 +269,8 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
             <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
               {t("m.common.cancel")}
             </Button>
-            <Button onPress={() => act(true)} disabled={busy} testID="approve">
-              {t("m.approval.connect.connect")}
+            <Button variant={phishing ? "danger" : "primary"} onPress={() => act(true)} disabled={busy} testID="approve">
+              {phishing ? t("m.approval.connect.connectAnyway") : t("m.approval.connect.connect")}
             </Button>
           </View>
         </>

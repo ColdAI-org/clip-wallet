@@ -78,4 +78,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "रिस्टोर करने के लिए नए डिवाइस पर आपको वह ईमेल, Google या Apple अकाउंट चाहिए जिससे आपने साइन इन किया था (कॉपी लाने के लिए) और पासकी (उसे खोलने के लिए)। वह साइन-इन सिर्फ़ आपकी कॉपी ढूंढता है; उसे खोल नहीं सकता।",
+  "backup.explainer.syncAny": "<b>आपकी पासकी आपके Apple, Google या पासवर्ड-मैनेजर अकाउंट के ज़रिए सिंक होती है।</b> जिसके पास उस अकाउंट का कंट्रोल है और जो उसका Face ID, फ़िंगरप्रिंट या PIN पार कर सकता है, वह यह वॉलेट रिस्टोर कर सकता है, अगर वह उस ईमेल, Google या Apple अकाउंट में भी पहुंच जाए जिससे आप बैकअप लेते हैं। दोनों को सुरक्षित रखें।",
+  "backup.signIn.orEmail": "या अपना ईमेल इस्तेमाल करें:",
+  "backup.social.google": "Google के साथ जारी रखें",
+  "backup.social.apple": "Apple से साइन इन करें",
+  "backup.social.privacy": "Google या Apple हमें सिर्फ़ यह बताते हैं कि कौन-से बैकअप आपके हैं। वे आपकी कीज़ कभी नहीं देखते, और आपका बैकअप आपकी पासकी से लॉक रहता है।",
+  "backup.social.googleAccount": "आपका Google अकाउंट",
+  "backup.social.appleAccount": "आपका Apple खाता",
 } satisfies Record<keyof typeof en, string>;

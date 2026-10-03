@@ -1,0 +1,21 @@
+/** Namespace "m.swap" (mobile): Swap. */
+export default {
+  "m.swap.title": "Swap",
+  "m.swap.amountBad": "Enter an amount like 25 or 0.5.",
+  "m.swap.expired": "This price expired. Get a new one.",
+  "m.swap.reviewAndSwap": "Review and swap",
+  "m.swap.swap": "Swap",
+  "m.swap.gettingPrice": "Getting the best price…",
+  "m.swap.getPrice": "Get price",
+  "m.swap.payWith": "You pay with",
+  "m.swap.amount": "Amount",
+  "m.swap.youHave": "You have {amount} {symbol}",
+  "m.swap.youGet": "You get",
+  "m.swap.slippage": "Price can move by",
+  "m.swap.slippageHint": "If the price moves more than this before the swap runs, it stops and nothing is swapped.",
+  "m.swap.youPay": "You pay",
+  "m.swap.route": "Route",
+  "m.swap.priceImpact": "Price impact",
+  "m.swap.network": "Network",
+  "m.swap.whatYouApprove": "What you'll approve",
+} satisfies Record<`m.swap.${string}`, string>;

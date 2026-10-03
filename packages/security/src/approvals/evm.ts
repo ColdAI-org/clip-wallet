@@ -259,7 +259,7 @@ export class EvmApprovals implements ApprovalScanner {
       const r = await rpcLogs(ctx, owner, opts.evm.lookbackBlocks, opts.evm.maxBlockRange);
       logs = r.logs;
       if (!r.complete) {
-        partial.push({ code: "approvals/recent-only", message: `On ${ctx.network.name} only recent permissions could be checked. Older ones may still be there.` });
+        partial.push({ code: "approvals/recent-only", network: ctx.network.name, message: `On ${ctx.network.name} only recent permissions could be checked. Older ones may still be there.` });
       }
     }
     const pairs = pairsFromLogs(logs, owner);
@@ -292,6 +292,8 @@ export class EvmApprovals implements ApprovalScanner {
           asset: { symbol: meta.symbol, name: meta.name, address: p.token },
           spender,
           amount: unlimited ? `All your ${meta.symbol}` : `Up to ${formatUnits(amount, meta.decimals)} ${meta.symbol}`,
+        ...(unlimited ? {} : { limit: formatUnits(amount, meta.decimals) }),
+          ...(unlimited ? {} : { limit: formatUnits(amount, meta.decimals) }),
           unlimited,
           grantedAt: p.lastAt,
           ...risksFor({ ...base, unlimited, unused }),

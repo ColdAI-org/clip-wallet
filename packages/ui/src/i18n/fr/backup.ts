@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "Pour restaurer, il vous faut, sur le nouvel appareil, l'e-mail ou le compte Google ou Apple avec lequel vous vous êtes connecté (pour récupérer la copie) et la clé d'accès (pour la déverrouiller). Cette connexion sert uniquement à trouver votre copie ; elle ne peut pas la déverrouiller.",
+  "backup.explainer.syncAny": "<b>Votre clé d'accès se synchronise via votre compte Apple, Google ou celui de votre gestionnaire de mots de passe.</b> Quiconque contrôle ce compte et peut passer son Face ID, son empreinte digitale ou son code PIN pourrait restaurer ce portefeuille s'il accède aussi à l'e-mail ou au compte Google ou Apple que vous utilisez pour la sauvegarde. Protégez les deux.",
+  "backup.signIn.orEmail": "Ou utilisez votre e-mail :",
+  "backup.social.google": "Continuer avec Google",
+  "backup.social.apple": "Se connecter avec Apple",
+  "backup.social.privacy": "Google ou Apple nous indique seulement quelles sauvegardes sont les vôtres. Ils ne voient jamais vos clés, et votre sauvegarde reste verrouillée par votre clé d'accès.",
+  "backup.social.googleAccount": "votre compte Google",
+  "backup.social.appleAccount": "votre compte Apple",
 } satisfies Record<keyof typeof en, string>;

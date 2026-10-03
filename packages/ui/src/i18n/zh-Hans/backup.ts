@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera（HBAR）",
   "backup.family.solana": "Solana（SOL）",
   "backup.family.bitcoin": "Bitcoin（BTC）",
+  "backup.explainer.restoreAny": "要进行恢复，你需要在新设备上使用你登录时所用的邮箱、Google 或 Apple 账户（用于取回副本）以及通行密钥（用于解锁副本）。该登录只能找到你的副本，无法解锁它。",
+  "backup.explainer.syncAny": "<b>你的通行密钥会通过你的 Apple、Google 或密码管理器账户同步。</b>任何控制该账户并能通过其 Face ID、指纹或 PIN 码验证的人，如果还能进入你用于备份的邮箱、Google 或 Apple 账户，就能恢复这个钱包。请同时保护好两者。",
+  "backup.signIn.orEmail": "或使用你的邮箱：",
+  "backup.social.google": "使用 Google 账号继续",
+  "backup.social.apple": "通过 Apple 登录",
+  "backup.social.privacy": "Google 或 Apple 只会告诉我们哪些备份属于你。它们永远看不到你的密钥，你的备份始终由你的通行密钥加锁。",
+  "backup.social.googleAccount": "你的 Google 账户",
+  "backup.social.appleAccount": "你的 Apple 账户",
 } satisfies Record<keyof typeof en, string>;

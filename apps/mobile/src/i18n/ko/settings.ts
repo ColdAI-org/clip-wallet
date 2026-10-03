@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "켜짐",
   "m.settings.about.off": "이 빌드에서는 꺼짐",
   "m.settings.footer": "{name} · 테스트 네트워크 전용",
+  "m.settings.backupAccounts": "백업 및 계정",
+  "m.settings.menu.backup": "백업",
+  "m.settings.menu.accounts": "계정",
+  "m.settings.menu.hardware": "하드웨어 지갑",
+  "m.settings.sessions.accounts": "계정",
+  "m.settings.sessions.accountsFor": "{app}에서 사용하는 계정",
+  "m.settings.menu.backupHint": "복구 문구 및 패스키 백업",
+  "m.settings.menu.accountsHint": "계정 추가, 이름 변경 및 선택",
+  "m.settings.menu.hardwareHint": "Ledger 및 Keystone",
 } satisfies Record<keyof typeof en, string>;

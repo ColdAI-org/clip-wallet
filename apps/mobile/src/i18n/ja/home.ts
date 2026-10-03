@@ -19,4 +19,8 @@ export default {
   "m.home.asset.where": "保管場所",
   "m.home.asset.whereHint": "管理する必要はありません。{symbol}はどこにあっても使えます。",
   "m.home.asset.contract": "コントラクト（{network}）",
+  "m.home.moreActions": "その他の操作",
+  "m.home.swap": "スワップ",
+  "m.home.buy": "購入",
+  "m.home.stake": "ステーキング",
 } satisfies Record<keyof typeof en, string>;

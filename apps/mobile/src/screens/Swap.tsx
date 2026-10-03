@@ -3,18 +3,18 @@
  * The wallet finds where; a network only shows in Advanced mode.
  */
 import { useMemo, useState } from "react";
-import { formatUnits, mergeBalances, userMessageOf, type SwapQuoteView } from "@clip-wallet/ui";
+import { canonicalAmount, formatUnits, mergeBalances, userMessageOf, type SwapQuoteView } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, Notice, Pills, Row, Screen, Spinner, Steps, T, Warnings } from "../ui/kit";
+import { useFormat, useMobileT } from "../i18n";
 
-const SLIPPAGE = [
-  { value: 50, label: "0.5%" },
-  { value: 100, label: "1%" },
-  { value: 300, label: "3%" },
-];
+/** Basis points; shown as locale percentages ("0,5 %" in German). */
+const SLIPPAGE = [50, 100, 300];
 
 export function Swap(props: { sell?: string; buy?: string }) {
   const { client, wallet, state, showApproval } = useWallet();
+  const t = useMobileT();
+  const f = useFormat();
   const { data } = useAsync(() => client.getPortfolio(), [client]);
   const held = useMemo(() => mergeBalances(data?.balances ?? []).assets.filter((a) => !a.spam), [data]);
   const buyable = useMemo(() => {
@@ -40,10 +40,12 @@ export function Swap(props: { sell?: string; buy?: string }) {
   async function getPrice() {
     setErr(null);
     setQuote(null);
-    if (!/^\d+(\.\d+)?$/.test(amount.trim())) return setErr("Enter an amount like 25 or 0.5.");
+    // "0,5" and "0.5" are both half (the amount rule shared with Send); the background gets "0.5".
+    const value = canonicalAmount(amount);
+    if (!value || !/^\d+(\.\d+)?$/.test(value)) return setErr(t("m.swap.amountBad"));
     setBusy(true);
     try {
-      setQuote(await wallet.features.swapQuote({ sell: sellKey, buy: buyKey, amount: amount.trim(), slippageBps }));
+      setQuote(await wallet.features.swapQuote({ sell: sellKey, buy: buyKey, amount: value, slippageBps }));
     } catch (e) {
       setErr(userMessageOf(e));
     } finally {
@@ -58,7 +60,7 @@ export function Swap(props: { sell?: string; buy?: string }) {
     try {
       if (Date.now() > quote.expiresAt + 30_000) {
         setQuote(null);
-        return setErr("This price expired. Get a new one.");
+        return setErr(t("m.swap.expired"));
       }
       const q = await wallet.features.swapExecute({ quoteId: quote.id });
       showApproval(q.approvalId);
@@ -72,7 +74,7 @@ export function Swap(props: { sell?: string; buy?: string }) {
 
   if (!data) {
     return (
-      <Screen back title="Swap">
+      <Screen back title={t("m.swap.title")}>
         <Spinner />
       </Screen>
     );
@@ -81,32 +83,32 @@ export function Swap(props: { sell?: string; buy?: string }) {
   return (
     <Screen
       back
-      title="Swap"
+      title={t("m.swap.title")}
       footer={
         quote?.executable ? (
           <Button block disabled={busy} onPress={() => void swap()} testID="swap-execute">
-            {quote.steps.length > 1 ? "Review and swap" : "Swap"}
+            {quote.steps.length > 1 ? t("m.swap.reviewAndSwap") : t("m.swap.swap")}
           </Button>
         ) : (
           <Button block disabled={busy || !sellKey || !buyKey} onPress={() => void getPrice()} testID="swap-quote">
-            {busy ? "Getting the best price…" : "Get price"}
+            {busy ? t("m.swap.gettingPrice") : t("m.swap.getPrice")}
           </Button>
         )
       }
     >
-      <Pills label="You pay with" testID="swap-sell" value={sellKey} onChange={(v) => (setSell(v), reset())} options={held.map((h) => ({ value: h.key, label: h.symbol }))} />
+      <Pills label={t("m.swap.payWith")} testID="swap-sell" value={sellKey} onChange={(v) => (setSell(v), reset())} options={held.map((h) => ({ value: h.key, label: h.symbol }))} />
       <Field
-        label="Amount"
+        label={t("m.swap.amount")}
         keyboardType="decimal-pad"
         placeholder="0"
         testID="swap-amount"
         value={amount}
-        onChangeText={(t) => (setAmount(t), reset())}
-        hint={sellAsset ? `You have ${formatUnits(sellAsset.amount, sellAsset.decimals, 4)} ${sellAsset.symbol}` : undefined}
+        onChangeText={(v) => (setAmount(v), reset())}
+        hint={sellAsset ? t("m.swap.youHave", { amount: formatUnits(sellAsset.amount, sellAsset.decimals, 4), symbol: sellAsset.symbol }) : undefined}
       />
-      <Pills label="You get" testID="swap-buy" value={buyKey} onChange={(v) => (setBuy(v), reset())} options={buyable.filter((b) => b.key !== sellKey).map((b) => ({ value: b.key, label: b.symbol }))} />
-      <Pills label="Price can move by" testID="swap-slippage" value={slippageBps} onChange={(v) => (setSlippage(v), reset())} options={SLIPPAGE} />
-      <T v="hint">If the price moves more than this before the swap runs, it stops and nothing is swapped.</T>
+      <Pills label={t("m.swap.youGet")} testID="swap-buy" value={buyKey} onChange={(v) => (setBuy(v), reset())} options={buyable.filter((b) => b.key !== sellKey).map((b) => ({ value: b.key, label: b.symbol }))} />
+      <Pills label={t("m.swap.slippage")} testID="swap-slippage" value={slippageBps} onChange={(v) => (setSlippage(v), reset())} options={SLIPPAGE.map((bps) => ({ value: bps, label: f.percent(bps / 100, { maxFraction: 1 }) }))} />
+      <T v="hint">{t("m.swap.slippageHint")}</T>
 
       {quote && (
         <Card>
@@ -114,11 +116,11 @@ export function Swap(props: { sell?: string; buy?: string }) {
             {quote.youGet}
           </T>
           <T v="hint">{quote.atLeast}</T>
-          <Row label="You pay" value={quote.sell.display} />
-          <Row label="Route" value={quote.route} />
-          {quote.priceImpactPct !== undefined && <Row label="Price impact" value={`${quote.priceImpactPct.toFixed(2)}%`} />}
-          {state?.prefs.advanced && <Row label="Network" value={quote.networkId} />}
-          {quote.steps.length > 1 && <Steps label="What you'll approve" items={quote.steps} />}
+          <Row label={t("m.swap.youPay")} value={quote.sell.display} />
+          <Row label={t("m.swap.route")} value={quote.route} />
+          {quote.priceImpactPct !== undefined && <Row label={t("m.swap.priceImpact")} value={f.percent(quote.priceImpactPct, { maxFraction: 2 })} />}
+          {state?.prefs.advanced && <Row label={t("m.swap.network")} value={quote.networkId} />}
+          {quote.steps.length > 1 && <Steps label={t("m.swap.whatYouApprove")} items={quote.steps} />}
           <Warnings warnings={quote.warnings} />
           {quote.note ? <Notice level="info">{quote.note}</Notice> : null}
         </Card>

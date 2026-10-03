@@ -31,7 +31,10 @@ import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-carda
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
 import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
-import { hideKey, isSecurityRequest, type RecipientLog, type SecurityRequest, type SecurityService } from "@clip-wallet/security";
+// Light entry points only: the security package itself loads chain SDKs (it runs in the host, attached later).
+import { hideKey } from "@clip-wallet/security/hide";
+import { isSecurityRequest, type SecurityRequest } from "@clip-wallet/security/messages";
+import type { RecipientLog, SecurityService } from "@clip-wallet/security";
 import { SocialSignInService, type SocialSignInRequest } from "./social-signin.js";
 import { PlatformService, type PlatformRequest } from "./platform.js";
 import type { KV } from "./kv.js";

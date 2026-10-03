@@ -1,0 +1,21 @@
+import type en from "../en/swap";
+export default {
+  "m.swap.title": "Dönüştür",
+  "m.swap.amountBad": "25 veya 0.5 gibi bir miktar girin.",
+  "m.swap.expired": "Bu fiyatın süresi doldu. Yeni bir fiyat alın.",
+  "m.swap.reviewAndSwap": "İncele ve dönüştür",
+  "m.swap.swap": "Dönüştür",
+  "m.swap.gettingPrice": "En iyi fiyat alınıyor…",
+  "m.swap.getPrice": "Fiyat al",
+  "m.swap.payWith": "Ödeme varlığı",
+  "m.swap.amount": "Miktar",
+  "m.swap.youHave": "Bakiyeniz: {amount} {symbol}",
+  "m.swap.youGet": "Alacağınız",
+  "m.swap.slippage": "Fiyatın değişebileceği oran",
+  "m.swap.slippageHint": "Dönüştürme gerçekleşmeden önce fiyat bundan fazla değişirse işlem durur ve hiçbir şey dönüştürülmez.",
+  "m.swap.youPay": "Ödeyeceğiniz",
+  "m.swap.route": "Rota",
+  "m.swap.priceImpact": "Fiyat etkisi",
+  "m.swap.network": "Ağ",
+  "m.swap.whatYouApprove": "Onaylayacaklarınız",
+} satisfies Record<keyof typeof en, string>;

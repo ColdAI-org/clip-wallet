@@ -20,4 +20,8 @@ export default {
   "m.home.asset.whereHint": "You don't need to manage this — {symbol} is spent from wherever it is.",
   /** {network} is a network name, e.g. "Base". */
   "m.home.asset.contract": "Contract ({network})",
+  "m.home.moreActions": "More actions",
+  "m.home.swap": "Swap",
+  "m.home.buy": "Buy",
+  "m.home.stake": "Stake",
 } satisfies Record<`m.home.${string}`, string>;

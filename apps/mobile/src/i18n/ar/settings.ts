@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "مفعّل",
   "m.settings.about.off": "متوقف في هذا الإصدار",
   "m.settings.footer": "{name} · شبكات الاختبار فقط",
+  "m.settings.backupAccounts": "النسخ الاحتياطي والحسابات",
+  "m.settings.menu.backup": "النسخ الاحتياطي",
+  "m.settings.menu.accounts": "الحسابات",
+  "m.settings.menu.hardware": "المحافظ العتادية",
+  "m.settings.sessions.accounts": "الحسابات",
+  "m.settings.sessions.accountsFor": "حسابات {app}",
+  "m.settings.menu.backupHint": "عبارة الاسترداد والنسخ الاحتياطي بمفتاح المرور",
+  "m.settings.menu.accountsHint": "إضافة الحسابات وإعادة تسميتها واختيارها",
+  "m.settings.menu.hardwareHint": "Ledger وKeystone",
 } satisfies Record<keyof typeof en, string>;

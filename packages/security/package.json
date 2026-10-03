@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./views": "./src/views.ts",
-    "./messages": "./src/messages.ts"
+    "./messages": "./src/messages.ts",
+    "./hide": "./src/hide.ts"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",

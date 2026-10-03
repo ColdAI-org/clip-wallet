@@ -8,6 +8,8 @@ import type { Family, NetworkId, Warning } from "@clip-wallet/core";
 export interface Unavailable {
   code: string;
   message: string;
+  /** The network's name, when the message is about one network (lets the UI say it in the user's language). */
+  network?: string;
 }
 
 /* ------------------------------------------------------------------ standing permissions */
@@ -48,6 +50,8 @@ export interface GrantView {
   spender: { address: string; name?: string; known: boolean };
   /** "All your USDC", "Up to 100 USDC", "Every NFT in Pudgy Penguins". */
   amount: string;
+  /** The limit as a number ("100"), when not unlimited and not an NFT permission (for translated titles). */
+  limit?: string;
   unlimited: boolean;
   grantedAt?: number;
   /** Permit2 allowances expire on their own. */
@@ -62,6 +66,8 @@ export interface ApprovalsOverviewView {
   grants: GrantView[];
   /** Plain notes: "Aptos and Sui don't have spending permissions to remove." */
   notes: string[];
+  /** Same notes as stable codes ("no-permissions:aptos", "not-yet:starknet"), in the same order. */
+  noteCodes?: string[];
   /** Networks we couldn't fully check, in plain words. */
   partial: Unavailable[];
   scannedAt: number;
@@ -101,6 +107,18 @@ export type CleanupAction =
   /** Hide from your wallet. Nothing happens on the network. */
   | "hide";
 
+/** Why a cleanup item is listed (CleanupItemView.reasonCode). */
+export type CleanupReason =
+  | "empty-account"
+  | "spam-locked"
+  | "spam-burn"
+  | "spam-gone"
+  | "unused-token"
+  | "spam-deleted"
+  | "spam-held-hedera"
+  | "spam-hide"
+  | "spam-nft-hide";
+
 export interface CleanupItemView {
   id: string;
   family: Family;
@@ -112,6 +130,8 @@ export interface CleanupItemView {
   action: CleanupAction;
   /** Why it's listed and what the action does, in plain words. */
   reason: string;
+  /** `reason` as a stable code (the UI translates it with `symbol` and `reclaim.display`). */
+  reasonCode?: CleanupReason;
   spam: boolean;
   /** Ticked by default (spam and empty accounts are; anything else isn't). */
   preselected: boolean;
@@ -125,6 +145,8 @@ export interface CleanupOverviewView {
   items: CleanupItemView[];
   /** Per-family explanations ("On Ethereum and similar networks spam can only be hidden: …"). */
   notes: string[];
+  /** Same notes as stable codes ("hide-only:evm", "hide-only:other"), in the same order. */
+  noteCodes?: string[];
   partial: Unavailable[];
 }
 
@@ -135,6 +157,8 @@ export interface CleanupSummaryView {
   lines: string[];
   /** How many confirmations you'll see. */
   approvals: number;
+  /** What the chosen items do, counted per action (for translated lines). */
+  counts?: Record<CleanupAction, number>;
   /** Total lamports returned. */
   reclaimLamports: string;
 }

@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "Vinculación iniciada. Vuelve a la app para terminar de conectar.",
   "settings.scan.blocked": "Se bloqueó el acceso a la cámara. Permítelo o pega el código.",
   "settings.scan.preview": "Vista previa de la cámara",
+  "settings.plugins": "Plugins",
 } satisfies Record<keyof typeof en, string>;

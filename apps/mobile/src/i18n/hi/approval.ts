@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "एड्रेस",
   "m.approval.connect.unknown": "{name} {domain} को नहीं पहचानता। सिर्फ़ तभी कनेक्ट करें, जब आपने इसे खुद खोला हो।",
   "m.approval.connect.connect": "कनेक्ट करें",
+  "m.approval.connect.connectAnyway": "फिर भी कनेक्ट करें",
 } satisfies Record<keyof typeof en, string>;

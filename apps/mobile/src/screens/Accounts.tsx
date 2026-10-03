@@ -7,28 +7,31 @@
 import { useState } from "react";
 import { View } from "react-native";
 import type { Family } from "@clip-wallet/core";
-import { FAMILY_LABEL, asPlatform, userMessageOf, type AccountView, type ActiveAccounts } from "@clip-wallet/ui";
+import { asPlatform, userMessageOf, type AccountView, type ActiveAccounts } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Field, Screen, Spinner, T } from "../ui/kit";
+import { useMobileT } from "../i18n";
+import { familyLabel } from "../lib/family-label";
 
 function short(a: string): string {
   return a.length > 16 ? `${a.slice(0, a.startsWith("0x") ? 6 : 4)}…${a.slice(-4)}` : a;
 }
 
 function AccountRow(props: { account: AccountView; active: boolean; onRename: (label: string) => Promise<void>; onUse: () => Promise<void> }) {
+  const t = useMobileT();
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(props.account.label);
   const a = props.account;
   if (editing) {
     return (
       <View style={{ gap: 8 }} testID={`account-${a.id}`}>
-        <Field label={`Name for ${a.label}`} value={label} maxLength={32} autoFocus testID={`rename-${a.id}`} onChangeText={setLabel} />
+        <Field label={t("m.accounts.nameFor", { account: a.label })} value={label} maxLength={32} autoFocus testID={`rename-${a.id}`} onChangeText={setLabel} />
         <View style={{ flexDirection: "row", gap: 8 }}>
           <Button variant="secondary" onPress={() => (setLabel(a.label), setEditing(false))}>
-            Cancel
+            {t("m.common.cancel")}
           </Button>
           <Button disabled={!label.trim()} testID={`save-${a.id}`} onPress={async () => (await props.onRename(label.trim().slice(0, 32)), setEditing(false))}>
-            Save
+            {t("m.accounts.save")}
           </Button>
         </View>
       </View>
@@ -39,16 +42,16 @@ function AccountRow(props: { account: AccountView; active: boolean; onRename: (l
       <View style={{ flex: 1, gap: 2 }}>
         <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
           <T style={{ fontWeight: "600" }}>{a.label}</T>
-          {props.active && <Chip tone="accent">In use</Chip>}
+          {props.active && <Chip tone="accent">{t("m.accounts.inUse")}</Chip>}
         </View>
         <T v="mono">{short(a.displayAddress ?? a.address)}</T>
       </View>
-      <Button variant="ghost" style={{ flex: 0, paddingHorizontal: 8 }} accessibilityLabel={`Rename ${a.label}`} onPress={() => setEditing(true)}>
-        Rename
+      <Button variant="ghost" style={{ flex: 0, paddingHorizontal: 8 }} accessibilityLabel={t("m.accounts.renameAccount", { account: a.label })} onPress={() => setEditing(true)}>
+        {t("m.accounts.rename")}
       </Button>
       {!props.active && (
-        <Button variant="secondary" style={{ flex: 0, paddingHorizontal: 12 }} accessibilityLabel={`Use ${a.label}`} testID={`use-${a.id}`} onPress={() => void props.onUse()}>
-          Use
+        <Button variant="secondary" style={{ flex: 0, paddingHorizontal: 12 }} accessibilityLabel={t("m.accounts.useAccount", { account: a.label })} testID={`use-${a.id}`} onPress={() => void props.onUse()}>
+          {t("m.accounts.use")}
         </Button>
       )}
     </View>
@@ -57,6 +60,7 @@ function AccountRow(props: { account: AccountView; active: boolean; onRename: (l
 
 export function Accounts(props: { origin?: string }) {
   const { client } = useWallet();
+  const t = useMobileT();
   const p = asPlatform(client);
   const data = useAsync(async () => {
     const [accounts, active] = await Promise.all([p.listAccounts(), p.getActiveAccounts(props.origin ? { origin: props.origin } : {})]);
@@ -75,8 +79,8 @@ export function Accounts(props: { origin?: string }) {
     }
   };
 
-  if (data.loading && !data.data) return <Screen back title="Accounts"><Spinner /></Screen>;
-  if (!data.data) return <Screen back title="Accounts"><ErrorNote message={userMessageOf(data.error)} /></Screen>;
+  if (data.loading && !data.data) return <Screen back title={t("m.accounts.title")}><Spinner /></Screen>;
+  if (!data.data) return <Screen back title={t("m.accounts.title")}><ErrorNote message={userMessageOf(data.error)} /></Screen>;
   const { accounts, active } = data.data;
   const byFamily = new Map<Family, AccountView[]>();
   for (const a of accounts) byFamily.set(a.family, [...(byFamily.get(a.family) ?? []), a]);
@@ -92,12 +96,12 @@ export function Accounts(props: { origin?: string }) {
     : null;
 
   return (
-    <Screen back title={host ? `Accounts for ${host}` : "Accounts"}>
-      {host && <T v="lede">{`Choose which account ${host} sees. Other apps keep their own choice.`}</T>}
+    <Screen back title={host ? t("m.accounts.titleFor", { site: host }) : t("m.accounts.title")}>
+      {host && <T v="lede">{t("m.accounts.forSiteLede", { site: host })}</T>}
       <ErrorNote message={err} />
       {[...byFamily.entries()].map(([family, list]) => (
         <Card key={family}>
-          <T v="h2">{FAMILY_LABEL[family] ?? family}</T>
+          <T v="h2">{familyLabel(family, t)}</T>
           <View style={{ gap: 0 }}>
             {list.map((a) => (
               <AccountRow
@@ -126,12 +130,12 @@ export function Accounts(props: { origin?: string }) {
                 })
               }
             >
-              {adding === family ? "Adding…" : "Add account"}
+              {adding === family ? t("m.accounts.adding") : t("m.accounts.add")}
             </Button>
           )}
           {host && active.forOrigin?.[family] && (
             <Button variant="ghost" block onPress={() => act(() => p.setActiveAccount({ family, accountId: null, origin: props.origin! }))}>
-              Use my default account here
+              {t("m.accounts.useDefault")}
             </Button>
           )}
         </Card>

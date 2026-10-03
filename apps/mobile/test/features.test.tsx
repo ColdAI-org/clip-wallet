@@ -83,12 +83,15 @@ describe("Swap", () => {
     expect((await wallet.client.listApprovals()).length).toBe(1);
   });
 
-  it("refuses an amount it can't read", async () => {
+  it("refuses an amount it can't read; a comma decimal is half, as everywhere else", async () => {
     const wallet = await ready();
     renderWith(wallet, <Swap buy="usdc" />, { name: "swap" });
-    fireEvent.changeText(await eventually(() => screen.getByTestId("swap-amount")), "1,5");
+    fireEvent.changeText(await eventually(() => screen.getByTestId("swap-amount")), "1.2.3");
     await act(async () => fireEvent.press(screen.getByTestId("swap-quote")));
     expect(screen.getByText("Enter an amount like 25 or 0.5.")).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId("swap-amount"), "1,5");
+    await act(async () => fireEvent.press(screen.getByTestId("swap-quote")));
+    await eventually(() => expect(wallet.featureCalls.some((c) => c.type === "featSwapQuote" && c.amount === "1.5")).toBe(true));
   });
 });
 

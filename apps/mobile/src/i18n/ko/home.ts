@@ -18,4 +18,8 @@ export default {
   "m.home.asset.where": "보관 위치",
   "m.home.asset.whereHint": "따로 관리할 필요 없어요. {symbol}은(는) 있는 곳에서 바로 사용돼요.",
   "m.home.asset.contract": "컨트랙트({network})",
+  "m.home.moreActions": "더보기",
+  "m.home.swap": "스왑",
+  "m.home.buy": "구매",
+  "m.home.stake": "스테이킹",
 } satisfies Record<keyof typeof en, string>;

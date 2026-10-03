@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "オン",
   "m.settings.about.off": "このビルドではオフ",
   "m.settings.footer": "{name} · テストネットワーク専用",
+  "m.settings.backupAccounts": "バックアップとアカウント",
+  "m.settings.menu.backup": "バックアップ",
+  "m.settings.menu.accounts": "アカウント",
+  "m.settings.menu.hardware": "ハードウェアウォレット",
+  "m.settings.sessions.accounts": "アカウント",
+  "m.settings.sessions.accountsFor": "{app}のアカウント",
+  "m.settings.menu.backupHint": "リカバリーフレーズとパスキーでのバックアップ",
+  "m.settings.menu.accountsHint": "アカウントの追加、名前の変更、選択",
+  "m.settings.menu.hardwareHint": "Ledger と Keystone",
 } satisfies Record<keyof typeof en, string>;

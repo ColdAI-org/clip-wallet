@@ -28,4 +28,5 @@ export default {
   "approval.connect.address": "Adresse",
   "approval.connect.unknown": "{name} kennt {domain} nicht. Verbinde dich nur, wenn du die Seite selbst geöffnet hast.",
   "approval.connect.connect": "Verbinden",
+  "approval.connect.connectAnyway": "Trotzdem verbinden",
 } satisfies Record<keyof typeof en, string>;

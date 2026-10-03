@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "Adres",
   "m.approval.connect.unknown": "{name}, {domain} alan adını tanımıyor. Yalnızca siteyi kendiniz açtıysanız bağlanın.",
   "m.approval.connect.connect": "Bağlan",
+  "m.approval.connect.connectAnyway": "Yine de bağlan",
 } satisfies Record<keyof typeof en, string>;

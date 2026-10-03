@@ -12,6 +12,8 @@ export interface PluginView {
   author: string;
   description: string;
   permissions: string[];
+  /** The same permissions as data (newer backgrounds), so the prompt can be shown in the user's language. */
+  capabilities?: { transactionInsight: boolean; nameSuffixes?: string[]; notifications: boolean; networkHosts?: string[] };
   enabled: boolean;
   installedAt: number;
 }

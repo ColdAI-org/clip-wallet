@@ -19,4 +19,8 @@ export default {
   "m.home.asset.where": "Nerede bulunuyor",
   "m.home.asset.whereHint": "Bunu yönetmeniz gerekmez — {symbol}, bulunduğu yerden harcanır.",
   "m.home.asset.contract": "Sözleşme ({network})",
+  "m.home.moreActions": "Diğer işlemler",
+  "m.home.swap": "Dönüştür",
+  "m.home.buy": "Satın al",
+  "m.home.stake": "Stake",
 } satisfies Record<keyof typeof en, string>;

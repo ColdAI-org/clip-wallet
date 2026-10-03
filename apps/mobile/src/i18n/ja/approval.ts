@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "アドレス",
   "m.approval.connect.unknown": "{name}は{domain}を認識していません。自分で開いたサイトの場合のみ接続してください。",
   "m.approval.connect.connect": "接続",
+  "m.approval.connect.connectAnyway": "それでも接続",
 } satisfies Record<keyof typeof en, string>;

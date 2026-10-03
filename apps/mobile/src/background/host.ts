@@ -77,7 +77,7 @@ export interface MobileWallet {
    * Face ID / Touch ID / fingerprint (or the device passcode) before showing something sensitive. Resolves
    * false when the device has no biometrics set up (the password check still applies); throws when cancelled.
    */
-  confirmPresence(reason: string): Promise<boolean>;
+  confirmPresence(reason: string, cancelLabel?: string): Promise<boolean>;
   /** Contacts, Clip handles, notifications and Discover (same services as the extension). */
   social: SocialClient;
   /** One notification check now (foreground timer; the background task calls the same). */
@@ -301,10 +301,10 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     ledger: ble,
     passkeyPrf: passkeysConfigured(APP.passkeyRpId) ? { create: (c) => nativePasskeyPrf(c.rpId ?? APP.passkeyRpId!, c.rpName) } : null,
     openSheet,
-    async confirmPresence(reason) {
+    async confirmPresence(reason, cancelLabel = "Cancel") {
       const info = await biometricInfo().catch(() => null);
       if (!info?.available) return false;
-      const r = await LocalAuthentication.authenticateAsync({ promptMessage: reason, cancelLabel: "Cancel" });
+      const r = await LocalAuthentication.authenticateAsync({ promptMessage: reason, cancelLabel });
       if (!r.success) throw new ClipError("Cancelled. Nothing was shown.", "presence/cancelled");
       return true;
     },

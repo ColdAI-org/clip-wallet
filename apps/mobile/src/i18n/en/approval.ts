@@ -30,5 +30,6 @@ export default {
   "m.approval.connect.account": "account",
   "m.approval.connect.address": "Address",
   "m.approval.connect.unknown": "{name} doesn't recognise {domain}. Only connect if you opened it yourself.",
+  "m.approval.connect.connectAnyway": "Connect anyway",
   "m.approval.connect.connect": "Connect",
 } satisfies Record<`m.approval.${string}`, string>;

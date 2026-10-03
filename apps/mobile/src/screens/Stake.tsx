@@ -1,20 +1,31 @@
 /**
  * Stake: the extension's StakeHome / StakeAsset (packages/ui/src/features/Stake.tsx) in React Native. Every
- * provider the engine's StakingService exposes shows up (live ones: HBAR node staking, SOL native staking;
- * the rest say "coming soon" in plain words). No network names: the wallet picks where.
+ * provider the engine's StakingService exposes shows up. No network names: the wallet picks where.
+ * Like the extension: Cardano asks how the stake counts in community votes before rewards can be collected,
+ * a partial unstake takes an amount, and Tezos can delegate without staking an amount.
  */
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { parseUnits, userMessageOf, type StakeAssetView, type StakePositionView } from "@clip-wallet/ui";
+import { canonicalAmount, parseUnits, userMessageOf, type StakeAssetView, type StakePositionView } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, Choices, Empty, ErrorNote, Field, Row, Screen, Spinner, T } from "../ui/kit";
+import { useMobileT, type MobileMessageId } from "../i18n";
 
-const ACTION_LABEL: Record<StakePositionView["actions"][number], string> = {
-  unstake: "Unstake",
-  withdraw: "Move to balance",
-  claim: "Collect rewards",
-  change: "Change",
+type Action = StakePositionView["actions"][number];
+
+const ACTION_LABEL: Record<Action, MobileMessageId> = {
+  unstake: "m.stake.action.unstake",
+  withdraw: "m.stake.action.withdraw",
+  claim: "m.stake.action.claim",
+  change: "m.stake.action.change",
 };
+
+/** Cardano's vote choices arrive in English from the features package; the known ones are translated by id. */
+function choiceText(c: { id: string; title: string; detail: string }, t: ReturnType<typeof useMobileT>): { title: string; detail: string } {
+  if (c.id === "abstain") return { title: t("m.stake.choice.abstain"), detail: t("m.stake.choice.abstainDetail") };
+  if (c.id === "no-confidence") return { title: t("m.stake.choice.noConfidence"), detail: t("m.stake.choice.noConfidenceDetail") };
+  return c;
+}
 
 export function Stake(props: { assetKey?: string }) {
   return props.assetKey ? <StakeAsset assetKey={props.assetKey} /> : <StakeHome />;
@@ -22,16 +33,31 @@ export function Stake(props: { assetKey?: string }) {
 
 export function StakeHome() {
   const { wallet, navigate, showApproval } = useWallet();
+  const t = useMobileT();
   const { data, error, reload } = useAsync(() => wallet.features.stakingOverview(), [wallet]);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  /** A claim waiting for the vote choice, or an unstake waiting for an amount. */
+  const [pending, setPending] = useState<{ positionId: string; action: "claim" | "unstake" } | null>(null);
+  const [choice, setChoice] = useState<string>();
+  const [unstakeAmount, setUnstakeAmount] = useState("");
 
-  async function act(a: StakeAssetView, p: StakePositionView, action: StakePositionView["actions"][number]) {
+  async function act(a: StakeAssetView, p: StakePositionView, action: Action, extra: { amount?: string; choice?: string } = {}) {
     if (action === "change") return navigate({ name: "stake", assetKey: a.assetKey });
+    if (action === "claim" && p.claimChoices && !extra.choice) return setPending({ positionId: p.id, action });
+    if (action === "unstake" && p.partialUnstake && extra.amount === undefined) return setPending({ positionId: p.id, action });
     setBusy(p.id + action);
     setErr(null);
     try {
-      const q = await wallet.features.stakeAction({ assetKey: a.assetKey, positionId: p.id, action });
+      const q = await wallet.features.stakeAction({
+        assetKey: a.assetKey,
+        positionId: p.id,
+        action,
+        ...(extra.amount ? { amount: extra.amount } : {}),
+        ...(extra.choice ? { choice: extra.choice } : {}),
+      });
+      setPending(null);
+      setUnstakeAmount("");
       showApproval(q.approvalId);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -42,11 +68,11 @@ export function StakeHome() {
   }
 
   return (
-    <Screen back title="Stake">
-      <T v="lede">Earn rewards on coins you hold. You stay in control the whole time.</T>
+    <Screen back title={t("m.stake.title")}>
+      <T v="lede">{t("m.stake.lede")}</T>
       <ErrorNote message={err ?? (error ? userMessageOf(error) : null)} />
       {!data && !error && <Spinner />}
-      {data?.length === 0 && <Empty title="Nothing to stake yet">Coins you can stake show up here.</Empty>}
+      {data?.length === 0 && <Empty title={t("m.stake.empty")}>{t("m.stake.emptyHint")}</Empty>}
       {data?.map((a) => (
         <Card key={a.assetKey}>
           <View testID={`stake-asset-${a.assetKey}`} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -55,7 +81,7 @@ export function StakeHome() {
             <View style={{ flex: 1 }} />
             {!a.unavailable && (
               <Button variant="secondary" style={{ flex: 0 }} testID={`stake-open-${a.assetKey}`} onPress={() => navigate({ name: "stake", assetKey: a.assetKey })}>
-                {a.positions.length > 0 && a.wholeBalance ? "Change" : `Stake ${a.symbol}`}
+                {a.positions.length > 0 && a.wholeBalance ? t("m.stake.action.change") : t("m.stake.stakeSymbol", { symbol: a.symbol })}
               </Button>
             )}
           </View>
@@ -63,13 +89,42 @@ export function StakeHome() {
           {a.positions.map((p) => (
             <View key={p.id} testID="stake-position" style={{ gap: 2 }}>
               <Row label={p.amountDisplay} value={p.statusText} />
-              <Row label="With" value={p.with} />
-              {p.pendingReward ? <Row label="Rewards on the way" value={p.pendingReward.display} /> : null}
+              <Row label={t("m.stake.with")} value={p.with} />
+              {p.pendingReward ? <Row label={t("m.stake.rewardsOnTheWay")} value={p.pendingReward.display} /> : null}
+              {pending?.positionId === p.id && pending.action === "claim" && p.claimChoices && (
+                <View style={{ gap: 8 }} testID="stake-claim-choice">
+                  <T v="hint">{t("m.stake.choice.lede")}</T>
+                  <Choices
+                    label={t("m.stake.choice.label")}
+                    value={choice}
+                    onChange={setChoice}
+                    options={p.claimChoices.map((c) => ({ value: c.id, ...choiceText(c, t), hint: choiceText(c, t).detail }))}
+                  />
+                  <Button disabled={busy !== null || !choice} testID="stake-claim-confirm" onPress={() => void act(a, p, "claim", { choice })}>
+                    {t("m.stake.action.claim")}
+                  </Button>
+                </View>
+              )}
+              {pending?.positionId === p.id && pending.action === "unstake" && (
+                <View style={{ gap: 8 }}>
+                  <Field
+                    label={t("m.stake.partial.label")}
+                    keyboardType="decimal-pad"
+                    placeholder={t("m.stake.partial.placeholder")}
+                    value={unstakeAmount}
+                    onChangeText={setUnstakeAmount}
+                    testID="stake-unstake-amount"
+                  />
+                  <Button variant="ghost" disabled={busy !== null} testID="stake-unstake-confirm" onPress={() => void act(a, p, "unstake", { amount: canonicalAmount(unstakeAmount) ?? "" })}>
+                    {unstakeAmount.trim() ? t("m.stake.partial.some", { amount: unstakeAmount.trim(), symbol: a.symbol }) : t("m.stake.partial.all", { symbol: a.symbol })}
+                  </Button>
+                </View>
+              )}
               {p.actions.length > 0 && (
                 <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                   {p.actions.map((action) => (
                     <Button key={action} variant={action === "unstake" ? "ghost" : "secondary"} disabled={busy !== null} testID={`stake-${action}`} onPress={() => void act(a, p, action)}>
-                      {ACTION_LABEL[action]}
+                      {t(ACTION_LABEL[action])}
                     </Button>
                   ))}
                 </View>
@@ -85,6 +140,7 @@ export function StakeHome() {
 /** "Stake SOL": how it works, where (picked for you), how much. */
 export function StakeAsset(props: { assetKey: string }) {
   const { wallet, showApproval } = useWallet();
+  const t = useMobileT();
   const overview = useAsync(() => wallet.features.stakingOverview(), [wallet]);
   const options = useAsync(() => wallet.features.stakingOptions({ assetKey: props.assetKey }), [wallet, props.assetKey]);
   const asset = overview.data?.find((a) => a.assetKey === props.assetKey);
@@ -99,26 +155,30 @@ export function StakeAsset(props: { assetKey: string }) {
 
   if (overview.error || options.error) {
     return (
-      <Screen back title="Stake">
+      <Screen back title={t("m.stake.title")}>
         <ErrorNote message={userMessageOf(overview.error ?? options.error)} />
       </Screen>
     );
   }
   if (!asset || !options.data) {
     return (
-      <Screen back title="Stake">
+      <Screen back title={t("m.stake.title")}>
         <Spinner />
       </Screen>
     );
   }
-  const amountBad = !asset.wholeBalance && amount !== "" && parseUnits(amount, 18) === null;
+  const typed = amount.trim();
+  const canonical = typed ? canonicalAmount(typed) : null;
+  const amountBad = !asset.wholeBalance && typed !== "" && (canonical === null || canonical === undefined || parseUnits(canonical, 18) === null);
+  // Tezos: an empty amount only delegates (the whole balance counts, nothing is locked).
+  const delegateOnly = !!asset.amountOptional && typed === "";
 
   async function submit() {
     setErr(null);
-    if (!asset!.wholeBalance && (!amount || amountBad)) return setErr("Enter how much to stake.");
+    if (!asset!.wholeBalance && ((!typed && !asset!.amountOptional) || amountBad)) return setErr(t("m.stake.amountMissing"));
     setBusy(true);
     try {
-      const q = await wallet.features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance ? undefined : amount.trim() });
+      const q = await wallet.features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance || !typed ? undefined : canonical! });
       showApproval(q.approvalId);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -130,24 +190,37 @@ export function StakeAsset(props: { assetKey: string }) {
   return (
     <Screen
       back
-      title={`Stake ${asset.symbol}`}
+      title={t("m.stake.stakeSymbol", { symbol: asset.symbol })}
       footer={
         <Button block disabled={busy} onPress={() => void submit()} testID="stake-submit">
-          {asset.wholeBalance ? `Stake my ${asset.symbol}` : `Stake ${amount || ""} ${asset.symbol}`.replace(/\s+/g, " ")}
+          {asset.wholeBalance || delegateOnly
+            ? t("m.stake.stakeAll", { symbol: asset.symbol })
+            : typed
+              ? t("m.stake.stakeAmount", { amount: typed, symbol: asset.symbol })
+              : t("m.stake.stakeSymbol", { symbol: asset.symbol })}
         </Button>
       }
     >
       <T v="lede">{asset.howItWorks}</T>
       {!asset.wholeBalance && (
-        <Field label="Amount" keyboardType="decimal-pad" placeholder="0" value={amount} onChangeText={setAmount} testID="stake-amount" error={amountBad ? "Enter an amount like 2 or 0.5." : null} />
+        <Field
+          label={asset.amountOptional ? t("m.stake.amountOptional") : t("m.stake.amount")}
+          keyboardType="decimal-pad"
+          placeholder="0"
+          value={amount}
+          onChangeText={setAmount}
+          testID="stake-amount"
+          error={amountBad ? t("m.stake.amountBad") : null}
+          hint={asset.amountOptional ? t("m.stake.amountOptionalHint", { symbol: asset.symbol }) : undefined}
+        />
       )}
-      <T v="h2">Where</T>
+      <T v="h2">{t("m.stake.where")}</T>
       <Choices
-        label="Where to stake"
+        label={t("m.stake.whereLabel")}
         testID="stake-option"
         value={optionId}
         onChange={setOptionId}
-        options={options.data.map((o) => ({ value: o.id, title: o.title, hint: o.detail, badge: o.recommended ? "Picked for you" : undefined }))}
+        options={options.data.map((o) => ({ value: o.id, title: o.title, hint: o.detail, badge: o.recommended ? t("m.stake.pickedForYou") : undefined }))}
       />
       <ErrorNote message={err} />
     </Screen>

@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "بدأ الإقران. يُرجى العودة إلى التطبيق لإكمال الاتصال.",
   "settings.scan.blocked": "تم حظر الوصول إلى الكاميرا. يُرجى السماح به، أو لصق الرمز بدلًا من ذلك.",
   "settings.scan.preview": "معاينة الكاميرا",
+  "settings.plugins": "المكوّنات الإضافية",
 } satisfies Record<keyof typeof en, string>;

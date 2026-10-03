@@ -18,4 +18,8 @@ export default {
   "m.home.asset.where": "यह कहां है",
   "m.home.asset.whereHint": "आपको इसे मैनेज करने की ज़रूरत नहीं — {symbol} जहां भी है, वहीं से खर्च होता है।",
   "m.home.asset.contract": "कॉन्ट्रैक्ट ({network})",
+  "m.home.moreActions": "और विकल्प",
+  "m.home.swap": "स्वैप",
+  "m.home.buy": "खरीदें",
+  "m.home.stake": "स्टेक",
 } satisfies Record<keyof typeof en, string>;

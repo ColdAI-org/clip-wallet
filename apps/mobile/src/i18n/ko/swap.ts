@@ -1,0 +1,21 @@
+import type en from "../en/swap";
+export default {
+  "m.swap.title": "스왑",
+  "m.swap.amountBad": "25 또는 0.5처럼 수량을 입력하세요.",
+  "m.swap.expired": "가격이 만료됐어요. 새 가격을 받아 오세요.",
+  "m.swap.reviewAndSwap": "검토 후 스왑",
+  "m.swap.swap": "스왑",
+  "m.swap.gettingPrice": "최적 가격을 찾는 중…",
+  "m.swap.getPrice": "가격 확인",
+  "m.swap.payWith": "지불할 자산",
+  "m.swap.amount": "수량",
+  "m.swap.youHave": "보유: {amount} {symbol}",
+  "m.swap.youGet": "받는 자산",
+  "m.swap.slippage": "허용 가격 변동폭",
+  "m.swap.slippageHint": "스왑이 실행되기 전에 가격이 이 범위보다 더 많이 움직이면 스왑이 중단되고 아무것도 교환되지 않아요.",
+  "m.swap.youPay": "지불 금액",
+  "m.swap.route": "경로",
+  "m.swap.priceImpact": "가격 영향",
+  "m.swap.network": "네트워크",
+  "m.swap.whatYouApprove": "승인할 내용",
+} satisfies Record<keyof typeof en, string>;

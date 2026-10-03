@@ -46,10 +46,8 @@ interface Item {
 export const HIDE_NOTE =
   "On Ethereum and similar networks, spam tokens can only be hidden. Getting rid of them would mean calling the spam token's own contract, which is what the scammers want, so Clip Wallet never does that.";
 
-/** Stable id for hiding: network + token address/mint (+ serial for NFTs). */
-export function hideKey(networkId: string, addressOrMint: string, serial?: string): string {
-  return [networkId, addressOrMint.startsWith("0x") ? addressOrMint.toLowerCase() : addressOrMint, serial].filter(Boolean).join("|");
-}
+import { hideKey } from "../hide.js";
+export { hideKey };
 
 export class CleanupService {
   private last = new Map<string, Item>();
@@ -70,7 +68,7 @@ export class CleanupService {
   async scan(): Promise<CleanupOverviewView> {
     const [balances, nfts, hidden] = await Promise.all([this.host.balances().catch(() => [] as TokenBalance[]), this.host.nfts?.().catch(() => [] as Nft[]) ?? [], this.hidden()]);
     const items: Item[] = [];
-    const notes = new Set<string>();
+    const notes = new Map<string, string>();
     const partial: Unavailable[] = [];
     await Promise.all(
       this.host.networks().map(async (n) => {
@@ -79,12 +77,12 @@ export class CleanupService {
           else if (n.family === "hedera") items.push(...(await this.hedera(await this.host.ctx(n.id), balances)));
           else {
             const hides = this.hideOnly(n, balances, nfts);
-            if (hides.length && n.family === "evm") notes.add(HIDE_NOTE);
-            else if (hides.length) notes.add("On this network spam can only be hidden from your wallet.");
+            if (hides.length && n.family === "evm") notes.set("hide-only:evm", HIDE_NOTE);
+            else if (hides.length) notes.set("hide-only:other", "On this network spam can only be hidden from your wallet.");
             items.push(...hides);
           }
         } catch {
-          partial.push({ code: "cleanup/unreachable", message: `Couldn't check ${n.name} right now. Try again in a moment.` });
+          partial.push({ code: "cleanup/unreachable", network: n.name, message: `Couldn't check ${n.name} right now. Try again in a moment.` });
         }
       }),
     );
@@ -97,7 +95,7 @@ export class CleanupService {
     // Already-hidden "hide" items are done; keep them out of the list.
     const live = items.filter((i) => !(i.view.hidden && i.view.action === "hide"));
     this.last = new Map(live.map((i) => [i.view.id, i]));
-    return { items: live.map((i) => i.view), notes: [...notes], partial };
+    return { items: live.map((i) => i.view), notes: [...notes.values()], noteCodes: [...notes.keys()], partial };
   }
 
   private spam(networkId: string, addr: string, balances: TokenBalance[], symbol: string, name: string): boolean {
@@ -122,16 +120,16 @@ export class CleanupService {
       const frozen = a.state === "frozen";
       if (BigInt(a.amount) === 0n) {
         if (frozen) continue;
-        out.push({ solana: a, view: { ...base, balance: "0", action: "close", reason: `Empty ${symbol} account. Closing it gives you back its ${reclaim.display} deposit.`, spam: false, preselected: true, reclaim } });
+        out.push({ solana: a, view: { ...base, balance: "0", reasonCode: "empty-account", action: "close", reason: `Empty ${symbol} account. Closing it gives you back its ${reclaim.display} deposit.`, spam: false, preselected: true, reclaim } });
         continue;
       }
       const spam = !!nft?.spam || !!asset?.spam || this.spam(ctx.network.id, a.mint, balances, symbol, name);
       if (!spam) continue;
       const balance = isNft ? "1 NFT" : `${formatUnits(a.amount, a.decimals)} ${symbol}`;
       if (frozen) {
-        out.push({ solana: a, view: { ...base, id: hideKey(ctx.network.id, a.mint), balance, action: "hide", reason: "Spam that can't be destroyed (it's locked by its creator), so Clip Wallet hides it.", spam, preselected: true } });
+        out.push({ solana: a, view: { ...base, id: hideKey(ctx.network.id, a.mint), balance, reasonCode: "spam-locked", action: "hide", reason: "Spam that can't be destroyed (it's locked by its creator), so Clip Wallet hides it.", spam, preselected: true } });
       } else {
-        out.push({ solana: a, view: { ...base, balance, action: "burn-close", reason: `Spam. Destroying it and closing its account gives you back ${reclaim.display}.`, spam, preselected: true, reclaim } });
+        out.push({ solana: a, view: { ...base, balance, reasonCode: "spam-burn", action: "burn-close", reason: `Spam. Destroying it and closing its account gives you back ${reclaim.display}.`, spam, preselected: true, reclaim } });
       }
     }
     return out;
@@ -158,18 +156,18 @@ export class CleanupService {
       if (BigInt(r.balance) === 0n) {
         out.push({
           hedera: { tokenId: r.token_id },
-          view: { ...base, id: `${base.id}|dissociate`, balance: "0", action: "dissociate", reason: spam ? "Spam you don't hold any more. Removing it frees a token slot." : "You don't hold any. Removing it frees a token slot; you can add it back any time.", spam, preselected: spam },
+          view: { ...base, id: `${base.id}|dissociate`, balance: "0", action: "dissociate", reasonCode: spam ? "spam-gone" : "unused-token", reason: spam ? "Spam you don't hold any more. Removing it frees a token slot." : "You don't hold any. Removing it frees a token slot; you can add it back any time.", spam, preselected: spam },
         });
         continue;
       }
       if (!spam) continue;
       const balance = isNft ? `${r.balance} NFT${r.balance === 1 ? "" : "s"}` : `${formatUnits(String(r.balance), Number(info?.decimals ?? r.decimals ?? 0))} ${symbol}`;
       if (info?.deleted) {
-        out.push({ hedera: { tokenId: r.token_id }, view: { ...base, id: `${base.id}|dissociate`, balance, action: "dissociate", reason: "Spam whose creator deleted it. Removing it clears it from your account.", spam, preselected: true } });
+        out.push({ hedera: { tokenId: r.token_id }, view: { ...base, id: `${base.id}|dissociate`, balance, action: "dissociate", reasonCode: "spam-deleted", reason: "Spam whose creator deleted it. Removing it clears it from your account.", spam, preselected: true } });
       } else {
         out.push({
           hedera: { tokenId: r.token_id },
-          view: { ...base, balance, action: "hide", reason: "Spam you still hold. Hedera only removes tokens you hold none of, and sending it back can cost fees, so Clip Wallet hides it.", spam, preselected: true },
+          view: { ...base, balance, reasonCode: "spam-held-hedera", action: "hide", reason: "Spam you still hold. Hedera only removes tokens you hold none of, and sending it back can cost fees, so Clip Wallet hides it.", spam, preselected: true },
         });
       }
     }
@@ -189,7 +187,7 @@ export class CleanupService {
           name: b.asset.name,
           balance: `${formatUnits(b.amount, b.asset.decimals)} ${b.asset.symbol}`,
           action: "hide",
-          reason: "Spam. Hidden from your wallet; nothing happens on the network.",
+          reasonCode: "spam-hide", reason: "Spam. Hidden from your wallet; nothing happens on the network.",
           spam: true,
           preselected: true,
           networkId: n.id,
@@ -207,7 +205,7 @@ export class CleanupService {
           name: t.collection.name,
           balance: "1 NFT",
           action: "hide",
-          reason: "Spam NFT. Hidden from your wallet; nothing happens on the network. Don't open its links.",
+          reasonCode: "spam-nft-hide", reason: "Spam NFT. Hidden from your wallet; nothing happens on the network. Don't open its links.",
           spam: true,
           preselected: true,
           networkId: n.id,
@@ -249,6 +247,7 @@ export class CleanupService {
       lines,
       approvals,
       reclaimLamports: lamports.toString(),
+      counts: { close: close.length, "burn-close": burn.length, dissociate: diss.length, hide: hide.length },
     };
   }
 

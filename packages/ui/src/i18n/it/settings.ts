@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "Abbinamento avviato. Torna all'app per completare il collegamento.",
   "settings.scan.blocked": "L'accesso alla fotocamera è stato bloccato. Consentilo, oppure incolla il codice.",
   "settings.scan.preview": "Anteprima della fotocamera",
+  "settings.plugins": "Plugin",
 } satisfies Record<keyof typeof en, string>;

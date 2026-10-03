@@ -47,6 +47,7 @@ export class SolanaApprovals implements ApprovalScanner {
           asset: { symbol, name: known?.name ?? "Token", address: a.mint },
           spender: { address: a.delegate, name, known: !!name },
           amount: amountText,
+          ...(all ? {} : { limit: formatUnits(delegated, a.decimals) }),
           unlimited,
           ...risksFor({ unlimited, spenderKnown: !!name, flagged: opts.isFlagged(a.delegate), now: opts.now, oldAfterDays: opts.oldAfterDays }),
           networkId: ctx.network.id,

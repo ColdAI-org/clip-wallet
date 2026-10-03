@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "Açık",
   "m.settings.about.off": "Bu sürümde kapalı",
   "m.settings.footer": "{name} · yalnızca test ağları",
+  "m.settings.backupAccounts": "Yedekleme ve hesaplar",
+  "m.settings.menu.backup": "Yedekleme",
+  "m.settings.menu.accounts": "Hesaplar",
+  "m.settings.menu.hardware": "Donanım cüzdanları",
+  "m.settings.sessions.accounts": "Hesaplar",
+  "m.settings.sessions.accountsFor": "{app} uygulamasının hesapları",
+  "m.settings.menu.backupHint": "Kurtarma ifadesi ve geçiş anahtarı yedeği",
+  "m.settings.menu.accountsHint": "Hesap ekleyin, yeniden adlandırın ve seçin",
+  "m.settings.menu.hardwareHint": "Ledger ve Keystone",
 } satisfies Record<keyof typeof en, string>;

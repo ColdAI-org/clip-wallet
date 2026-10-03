@@ -1,0 +1,20 @@
+import type en from "../en/accounts";
+export default {
+  "m.accounts.title": "Konten",
+  "m.accounts.nameFor": "Name für {account}",
+  "m.accounts.save": "Speichern",
+  "m.accounts.inUse": "Aktiv",
+  "m.accounts.rename": "Umbenennen",
+  "m.accounts.renameAccount": "{account} umbenennen",
+  "m.accounts.use": "Nutzen",
+  "m.accounts.useAccount": "{account} nutzen",
+  "m.accounts.adding": "Wird hinzugefügt…",
+  "m.accounts.add": "Konto hinzufügen",
+  "m.accounts.useDefault": "Hier mein Standardkonto nutzen",
+  "m.accounts.family.evm": "Ethereum-artig (ETH, USDC, Base, Arbitrum…)",
+  "m.accounts.family.hedera": "Hedera (HBAR)",
+  "m.accounts.family.solana": "Solana (SOL)",
+  "m.accounts.family.bitcoin": "Bitcoin (BTC)",
+  "m.accounts.titleFor": "Konten für {site}",
+  "m.accounts.forSiteLede": "Wähle, welches Konto {site} sieht. Andere Apps behalten ihre eigene Auswahl.",
+} satisfies Record<keyof typeof en, string>;

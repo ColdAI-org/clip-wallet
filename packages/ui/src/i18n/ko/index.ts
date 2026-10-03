@@ -36,6 +36,8 @@ import send from "./send";
 import approval from "./approval";
 import explore from "./explore";
 import social from "./social";
+import plugins from "./plugins";
+import security from "./security";
 
 const messages: Translation<UiMessages> = {
   ...common,
@@ -58,5 +60,7 @@ const messages: Translation<UiMessages> = {
   ...approval,
   ...explore,
   ...social,
+  ...plugins,
+  ...security,
 };
 export default messages;

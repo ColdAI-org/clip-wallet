@@ -80,6 +80,7 @@ describe("Solana cleanup", () => {
       lines: ["Close 2 empty accounts", "Destroy and close 2 spam tokens", "Hide 1 item (only on this device)"],
       approvals: 2,
       reclaimLamports: "8191920",
+      counts: { close: 2, "burn-close": 2, dissociate: 0, hide: 1 },
     });
     const run = await svc.run(ids);
     expect(run.hidden).toBe(1);
@@ -185,7 +186,7 @@ describe("SecurityService bus", () => {
     const svc = new SecurityService(host, { testnet: true, threat: { openLists: false } });
     expect((await svc.handle({ type: "secThreatStatus" })).map((s) => s.id)).toEqual(["local", "blockaid"]);
     expect(await svc.handle({ type: "secCheckSite", origin: "https://a.example" })).toEqual({ origin: "https://a.example", warnings: [], safe: true });
-    expect(await svc.handle({ type: "secCleanupScan" })).toEqual({ items: [], notes: [], partial: [] });
+    expect(await svc.handle({ type: "secCleanupScan" })).toEqual({ items: [], notes: [], noteCodes: [], partial: [] });
     expect(await svc.handle({ type: "secUnhide", ids: ["x"] })).toEqual({ ok: true });
   });
 });

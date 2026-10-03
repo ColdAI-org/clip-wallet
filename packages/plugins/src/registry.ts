@@ -6,7 +6,7 @@
  *   - "Plugins" is switched on (Settings → Advanced → Plugins).
  * Turning either off stops every plugin. Installing needs an explicit confirm after the permission prompt.
  */
-import { describePermissions } from "./manifest.js";
+import { capabilitiesOf, describePermissions, type PluginCapabilities } from "./manifest.js";
 import type { InstalledPlugin } from "./host.js";
 import { InstallError, prepareInstallFromNpm, type NpmOptions, type PendingInstall } from "./npm.js";
 
@@ -31,6 +31,8 @@ export interface PluginView {
   description: string;
   /** Plain-words permission lines (same as the install prompt). */
   permissions: string[];
+  /** The same permissions as data, for a translated prompt. */
+  capabilities?: PluginCapabilities;
   enabled: boolean;
   installedAt: number;
 }
@@ -76,6 +78,7 @@ function view(p: InstalledPlugin): PluginView {
     author: p.manifest.author,
     description: p.manifest.description,
     permissions: describePermissions(p.manifest),
+    capabilities: capabilitiesOf(p.manifest),
     enabled: p.enabled,
     installedAt: p.installedAt,
   };
@@ -132,6 +135,7 @@ export class PluginRegistry {
       author: p.manifest.author,
       description: p.manifest.description,
       permissions: p.permissions,
+      capabilities: capabilitiesOf(p.manifest),
       enabled: true,
       installedAt: 0,
       integrity: p.integrity,

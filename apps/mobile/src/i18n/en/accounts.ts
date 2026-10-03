@@ -1,0 +1,20 @@
+/** Namespace "m.accounts" (mobile): Settings → Accounts (several accounts per kind, per-app choice). */
+export default {
+  "m.accounts.title": "Accounts",
+  "m.accounts.titleFor": "Accounts for {site}",
+  "m.accounts.forSiteLede": "Choose which account {site} sees. Other apps keep their own choice.",
+  "m.accounts.nameFor": "Name for {account}",
+  "m.accounts.save": "Save",
+  "m.accounts.inUse": "In use",
+  "m.accounts.rename": "Rename",
+  "m.accounts.renameAccount": "Rename {account}",
+  "m.accounts.use": "Use",
+  "m.accounts.useAccount": "Use {account}",
+  "m.accounts.adding": "Adding…",
+  "m.accounts.add": "Add account",
+  "m.accounts.useDefault": "Use my default account here",
+  "m.accounts.family.evm": "Ethereum-style (ETH, USDC, Base, Arbitrum…)",
+  "m.accounts.family.hedera": "Hedera (HBAR)",
+  "m.accounts.family.solana": "Solana (SOL)",
+  "m.accounts.family.bitcoin": "Bitcoin (BTC)",
+} satisfies Record<`m.accounts.${string}`, string>;

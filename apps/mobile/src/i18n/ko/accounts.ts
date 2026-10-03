@@ -1,0 +1,20 @@
+import type en from "../en/accounts";
+export default {
+  "m.accounts.title": "계정",
+  "m.accounts.nameFor": "{account} 이름",
+  "m.accounts.save": "저장",
+  "m.accounts.inUse": "사용 중",
+  "m.accounts.rename": "이름 변경",
+  "m.accounts.renameAccount": "{account} 이름 변경",
+  "m.accounts.use": "사용",
+  "m.accounts.useAccount": "{account} 사용",
+  "m.accounts.adding": "추가 중…",
+  "m.accounts.add": "계정 추가",
+  "m.accounts.useDefault": "여기서 기본 계정 사용",
+  "m.accounts.family.evm": "Ethereum 계열(ETH, USDC, Base, Arbitrum…)",
+  "m.accounts.family.hedera": "Hedera (HBAR)",
+  "m.accounts.family.solana": "Solana (SOL)",
+  "m.accounts.family.bitcoin": "Bitcoin (BTC)",
+  "m.accounts.titleFor": "{site}용 계정",
+  "m.accounts.forSiteLede": "{site}에 보여 줄 계정을 선택하세요. 다른 앱은 각자 선택한 계정을 그대로 유지해요.",
+} satisfies Record<keyof typeof en, string>;

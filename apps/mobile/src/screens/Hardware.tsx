@@ -16,6 +16,15 @@ import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Checkbox, Chip, Choices, Empty, ErrorNote, Field, Screen, Spinner, Steps, T, Toggle } from "../ui/kit";
 import { AnimatedUrQr, UrScanner } from "../ui/ur";
 import type { LedgerDeviceView } from "../background/ledger-ble";
+import { useMobileT, type MobileMessageId } from "../i18n";
+
+/** Family words for the device screens ("Ethereum and EVM apps" / "ETH, USDC and tokens…"); the app name stays. */
+const FAMILY_TEXT: Record<HardwareFamilyView, { title: MobileMessageId; assets: MobileMessageId }> = {
+  evm: { title: "m.hardware.family.evm.title", assets: "m.hardware.family.evm.assets" },
+  solana: { title: "m.hardware.family.solana.title", assets: "m.hardware.family.solana.assets" },
+  bitcoin: { title: "m.hardware.family.bitcoin.title", assets: "m.hardware.family.bitcoin.assets" },
+  hedera: { title: "m.hardware.family.hedera.title", assets: "m.hardware.family.hedera.assets" },
+};
 
 const PAGE = 5;
 export const KEYSTONE_EXPORT_TYPES = ["crypto-multi-accounts", "crypto-hdkey", "crypto-account"];
@@ -45,6 +54,7 @@ function devices(accounts: HardwareAccountView[]): Device[] {
 
 export function HardwareSettings() {
   const { wallet, navigate } = useWallet();
+  const t = useMobileT();
   const hw = wallet.hardware;
   const { data, error, reload } = useAsync(() => hw.listAccounts(), [hw]);
   const [editing, setEditing] = useState<string | null>(null);
@@ -61,10 +71,10 @@ export function HardwareSettings() {
     }
   };
   const forget = (d: Device) =>
-    Alert.alert(`Remove ${d.name}?`, "Your funds stay on the device. You can connect it again any time.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("m.hardware.removeTitle", { device: d.name }), t("m.hardware.removeBody"), [
+      { text: t("m.common.cancel"), style: "cancel" },
       {
-        text: "Remove",
+        text: t("m.hardware.remove"),
         style: "destructive",
         onPress: () =>
           void run(async () => {
@@ -77,10 +87,10 @@ export function HardwareSettings() {
   return (
     <Screen
       back
-      title="Hardware wallets"
+      title={t("m.hardware.title")}
       footer={
         <Button block onPress={() => navigate({ name: "hardware-connect" })} testID="hw-connect">
-          Connect a hardware wallet
+          {t("m.hardware.connect")}
         </Button>
       }
     >
@@ -88,7 +98,7 @@ export function HardwareSettings() {
       {!data ? (
         error ? null : <Spinner />
       ) : data.length === 0 ? (
-        <Empty title="No hardware wallet yet">Connect a Ledger or Keystone to keep your keys off this phone.</Empty>
+        <Empty title={t("m.hardware.none")}>{t("m.hardware.noneHint")}</Empty>
       ) : (
         devices(data).map((d) => (
           <Card key={d.key}>
@@ -96,25 +106,25 @@ export function HardwareSettings() {
             {d.accounts.map((a) =>
               editing === a.id ? (
                 <View key={a.id} style={{ gap: 8 }}>
-                  <Field label="Account name" value={label} onChangeText={setLabel} autoFocus testID={`hw-name-${a.id}`} />
-                  <Button onPress={() => (setEditing(null), void run(() => hw.renameAccount(a.id, label.trim())))}>Save</Button>
+                  <Field label={t("m.hardware.accountName")} value={label} onChangeText={setLabel} autoFocus testID={`hw-name-${a.id}`} />
+                  <Button onPress={() => (setEditing(null), void run(() => hw.renameAccount(a.id, label.trim())))}>{t("m.hardware.save")}</Button>
                 </View>
               ) : (
                 <View key={a.id} testID={`hw-account-${a.id}`} style={{ gap: 6, paddingVertical: 6 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    <T style={{ fontWeight: "600" }}>{a.label ?? `${FAMILY_WORDS[a.family].title} · Account ${a.index + 1}`}</T>
+                    <T style={{ fontWeight: "600" }}>{a.label ?? t("m.hardware.accountLabel", { family: t(FAMILY_TEXT[a.family].title), n: a.index + 1 })}</T>
                     {a.hardware.pathStyle !== "standard" && <T v="hint">(Ledger Live)</T>}
-                    {a.active && <Chip tone="accent">In use</Chip>}
+                    {a.active && <Chip tone="accent">{t("m.hardware.inUse")}</Chip>}
                   </View>
-                  <T v="mono">{a.address ? short(a.address) : "No account id yet"}</T>
+                  <T v="mono">{a.address ? short(a.address) : t("m.hardware.noAccountId")}</T>
                   <View style={{ flexDirection: "row", gap: 8 }}>
                     {!a.active && (
                       <Button variant="secondary" testID={`hw-use-${a.id}`} onPress={() => void run(() => hw.setActive(a.family, a.id))}>
-                        Use this account
+                        {t("m.hardware.useThis")}
                       </Button>
                     )}
                     <Button variant="ghost" onPress={() => (setEditing(a.id), setLabel(a.label ?? ""))}>
-                      Rename
+                      {t("m.hardware.rename")}
                     </Button>
                   </View>
                 </View>
@@ -122,11 +132,11 @@ export function HardwareSettings() {
             )}
             {d.accounts.some((a) => a.active) && (
               <Button variant="ghost" block onPress={() => void run(async () => { for (const a of d.accounts.filter((x) => x.active)) await hw.setActive(a.family, null); })}>
-                Use my recovery-phrase accounts instead
+                {t("m.hardware.usePhrase")}
               </Button>
             )}
             <Button variant="danger" block onPress={() => forget(d)} testID={`hw-forget-${d.kind}`}>
-              {`Remove ${d.name}`}
+              {t("m.hardware.removeDevice", { device: d.name })}
             </Button>
           </Card>
         ))
@@ -146,35 +156,36 @@ type Step =
 
 export function ConnectHardware(props: { onDone?: () => void }) {
   const { back, state } = useWallet();
+  const t = useMobileT();
   const [step, setStep] = useState<Step>({ s: "pick-device" });
   const goBack = step.s === "pick-device" ? true : () => setStep({ s: "pick-device" });
   const done = props.onDone ?? back;
   return (
-    <Screen back={goBack} title="Connect a hardware wallet">
+    <Screen back={goBack} title={t("m.hardware.connect")}>
       {step.s === "pick-device" && (
         <>
-          <T v="lede">Your keys stay on the device. This app only sees your addresses, and every payment needs your OK on the device.</T>
+          <T v="lede">{t("m.hardware.connectLede")}</T>
           <Choices
-            label="Device"
+            label={t("m.hardware.device")}
             testID="hw-device"
             value={undefined}
             onChange={(kind: HardwareKindView) => setStep({ s: "pick-family", kind })}
             options={[
-              { value: "ledger", title: "Ledger", hint: "Nano X, Stax or Flex, over Bluetooth." },
-              { value: "keystone", title: "Keystone", hint: "No cable or Bluetooth: you scan QR codes with the camera." },
+              { value: "ledger", title: "Ledger", hint: t("m.hardware.ledgerHint") },
+              { value: "keystone", title: "Keystone", hint: t("m.hardware.keystoneHint") },
             ]}
           />
         </>
       )}
       {step.s === "pick-family" && (
         <>
-          <T v="lede">What do you keep on it?</T>
+          <T v="lede">{t("m.hardware.holds")}</T>
           <Choices
-            label="What it holds"
+            label={t("m.hardware.holdsLabel")}
             testID="hw-family"
             value={undefined}
             onChange={(family: HardwareFamilyView) => setStep(step.kind === "keystone" ? { s: "keystone-scan", family } : { s: "ledger-device", family })}
-            options={DEVICE_FAMILIES[step.kind].map((f) => ({ value: f, title: FAMILY_WORDS[f].title, hint: FAMILY_WORDS[f].assets }))}
+            options={DEVICE_FAMILIES[step.kind].map((f) => ({ value: f, title: t(FAMILY_TEXT[f].title), hint: t(FAMILY_TEXT[f].assets) }))}
           />
         </>
       )}
@@ -187,6 +198,7 @@ export function ConnectHardware(props: { onDone?: () => void }) {
 
 function PickLedger(props: { app: string; onPicked: () => void }) {
   const { wallet } = useWallet();
+  const t = useMobileT();
   const [phase, setPhase] = useState<"intro" | "scanning">("intro");
   const [found, setFound] = useState<LedgerDeviceView[]>([]);
   const [known, setKnown] = useState<LedgerDeviceView | null>(null);
@@ -225,26 +237,26 @@ function PickLedger(props: { app: string; onPicked: () => void }) {
   return (
     <>
       <Steps
-        label="Before you connect"
-        items={["Turn on your Ledger and unlock it with your PIN.", "Turn on Bluetooth on your Ledger (Settings → Bluetooth).", `Open the ${props.app} app on it.`]}
+        label={t("m.hardware.before")}
+        items={[t("m.hardware.ledgerStep1"), t("m.hardware.ledgerStep2", { menu: "Settings → Bluetooth" }), t("m.hardware.ledgerStep3", { app: props.app })]}
       />
       {known && phase === "intro" && (
         <Button block variant="secondary" testID="ledger-known" onPress={() => props.onPicked()}>
-          {`Use ${known.name} again`}
+          {t("m.hardware.useAgain", { device: known.name })}
         </Button>
       )}
       {phase === "intro" ? (
         <Button block disabled={busy} onPress={() => void start()} testID="ledger-scan">
-          {busy ? "Checking Bluetooth…" : "Look for my Ledger"}
+          {busy ? t("m.hardware.checkingBluetooth") : t("m.hardware.lookFor")}
         </Button>
       ) : (
         <Card>
-          <T v="h2">Ledgers nearby</T>
+          <T v="h2">{t("m.hardware.nearby")}</T>
           {found.length === 0 && <Spinner />}
           {found.map((d) => (
             <Pressable key={d.id} accessibilityRole="button" testID={`ledger-${d.id}`} onPress={() => void pick(d)} style={{ paddingVertical: 10 }}>
               <T style={{ fontWeight: "600" }}>{d.name}</T>
-              <T v="hint">Tap to connect. Your Ledger may ask you to confirm a pairing code.</T>
+              <T v="hint">{t("m.hardware.tapToConnect")}</T>
             </Pressable>
           ))}
         </Card>
@@ -256,15 +268,16 @@ function PickLedger(props: { app: string; onPicked: () => void }) {
 
 function KeystoneSync(props: { onSynced: () => void }) {
   const { wallet } = useWallet();
+  const t = useMobileT();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   return (
     <>
       <Steps
         items={[
-          "On your Keystone, open the menu and choose “Connect Software Wallet”.",
-          "Pick a wallet that supports the networks you want (any “Keystone” or “MetaMask” option works for Ethereum).",
-          "Hold the QR code it shows in front of this camera.",
+          t("m.hardware.keystoneStep1", { menu: "Connect Software Wallet" }),
+          t("m.hardware.keystoneStep2", { a: "Keystone", b: "MetaMask" }),
+          t("m.hardware.keystoneStep3"),
         ]}
       />
       {busy ? (
@@ -272,7 +285,7 @@ function KeystoneSync(props: { onSynced: () => void }) {
       ) : (
         <UrScanner
           expect={KEYSTONE_EXPORT_TYPES}
-          label="Camera preview for your Keystone's code"
+          label={t("m.hardware.cameraCode")}
           onComplete={(ur) => {
             setBusy(true);
             wallet.hardware
@@ -292,6 +305,7 @@ function KeystoneSync(props: { onSynced: () => void }) {
 
 function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyView; advanced: boolean; onDone: () => void }) {
   const { wallet } = useWallet();
+  const t = useMobileT();
   const hw = wallet.hardware;
   const [style, setStyle] = useState<PathStyleView>("standard");
   const [accounts, setAccounts] = useState<HardwareAccountView[] | null>(null);
@@ -316,18 +330,18 @@ function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyVie
   if (!accounts) {
     return (
       <>
-        <T v="lede">{props.kind === "ledger" ? "Keep your Ledger unlocked with the app open." : "Got it. Now pick the accounts to add."}</T>
+        <T v="lede">{props.kind === "ledger" ? t("m.hardware.keepUnlocked") : t("m.hardware.gotIt")}</T>
         {props.advanced && props.family !== "hedera" && (
           <Toggle
-            label="Use Ledger Live's accounts"
-            description="Only if you made these accounts in Ledger Live. The usual accounts match MetaMask, Phantom and other wallets."
+            label={t("m.hardware.ledgerLive")}
+            description={t("m.hardware.ledgerLiveHint")}
             checked={style === "ledger-live"}
             onChange={(v) => setStyle(v ? "ledger-live" : "standard")}
           />
         )}
         <ErrorNote message={err} />
         <Button block disabled={busy} onPress={() => void load(0)} testID="hw-load">
-          {busy ? "Connecting…" : "Show accounts"}
+          {busy ? t("m.hardware.connecting") : t("m.hardware.showAccounts")}
         </Button>
       </>
     );
@@ -335,13 +349,13 @@ function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyVie
 
   return (
     <>
-      <T v="lede">Pick the accounts to add. You can add more later in Settings.</T>
+      <T v="lede">{t("m.hardware.pickAccounts")}</T>
       <Card>
         {accounts.map((a) => (
           <View key={a.id} style={{ gap: 2, paddingVertical: 4 }}>
             <Checkbox
               testID={`hw-pick-${a.index}`}
-              label={`Account ${a.index + 1}`}
+              label={t("m.hardware.account", { n: a.index + 1 })}
               checked={picked.has(a.id)}
               onChange={(on) => {
                 const next = new Set(picked);
@@ -351,14 +365,14 @@ function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyVie
               }}
             />
             <T v="mono" style={{ marginLeft: 32 }}>
-              {a.address ? short(a.address) : "New Hedera account"}
+              {a.address ? short(a.address) : t("m.hardware.newHedera")}
             </T>
           </View>
         ))}
       </Card>
       <ErrorNote message={err} />
       <Button variant="ghost" block disabled={busy} onPress={() => void load(accounts.length)}>
-        Show more
+        {t("m.hardware.showMore")}
       </Button>
       <Button
         block
@@ -375,7 +389,7 @@ function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyVie
           }
         }}
       >
-        {picked.size === 1 ? "Add 1 account" : `Add ${picked.size} accounts`}
+        {t("m.hardware.add", { count: picked.size })}
       </Button>
     </>
   );
@@ -384,20 +398,21 @@ function PickAccounts(props: { kind: HardwareKindView; family: HardwareFamilyVie
 /* ------------------------------------------------------------------ during an approval */
 
 export function LedgerConfirm(props: { title: string; app: string; error?: string | null; onCancel: () => void }) {
+  const t = useMobileT();
   return (
     <>
-      <T v="h1">Confirm on your Ledger</T>
+      <T v="h1">{t("m.hardware.confirmLedger")}</T>
       <T v="lede">{props.title}</T>
       {props.error ? (
         <ErrorNote message={props.error} />
       ) : (
         <>
-          <Steps items={[`Make sure the ${props.app} app is open on your Ledger.`, "Check that what your Ledger shows matches this request.", "Approve it on the Ledger."]} />
+          <Steps items={[t("m.hardware.confirmStep1", { app: props.app }), t("m.hardware.confirmStep2"), t("m.hardware.confirmStep3")]} />
           <Spinner />
         </>
       )}
       <Button variant="ghost" block onPress={props.onCancel} testID="hw-cancel">
-        Cancel
+        {t("m.common.cancel")}
       </Button>
     </>
   );
@@ -405,29 +420,30 @@ export function LedgerConfirm(props: { title: string; app: string; error?: strin
 
 export function KeystoneExchange(props: { title: string; request: KeystoneRequestView; onSignature: (ur: { type: string; cborHex: string }) => void; onCancel: () => void; error?: string | null }) {
   const [phase, setPhase] = useState<"show" | "scan">("show");
+  const t = useMobileT();
   return (
     <>
-      <T v="h1">{phase === "show" ? "Scan with your Keystone" : "Scan the signature"}</T>
+      <T v="h1">{phase === "show" ? t("m.hardware.scanWithKeystone") : t("m.hardware.scanSignature")}</T>
       <T v="lede">{props.title}</T>
       {phase === "show" ? (
         <>
-          <AnimatedUrQr ur={props.request} label="Request for your Keystone" />
-          <T v="hint">Scan this with your Keystone, check the details on its screen and approve. Then come back here.</T>
+          <AnimatedUrQr ur={props.request} label={t("m.hardware.requestQr")} />
+          <T v="hint">{t("m.hardware.scanThis")}</T>
           <Button block onPress={() => setPhase("scan")} testID="keystone-next">
-            Next: scan the signature
+            {t("m.hardware.nextScan")}
           </Button>
         </>
       ) : (
         <>
-          <UrScanner expect={props.request.expect} onComplete={props.onSignature} label="Camera preview for your Keystone's signature" />
+          <UrScanner expect={props.request.expect} onComplete={props.onSignature} label={t("m.hardware.cameraSignature")} />
           <Button variant="ghost" block onPress={() => setPhase("show")}>
-            Show the request again
+            {t("m.hardware.showRequestAgain")}
           </Button>
         </>
       )}
       <ErrorNote message={props.error} />
       <Button variant="ghost" block onPress={props.onCancel} testID="hw-cancel">
-        Cancel
+        {t("m.common.cancel")}
       </Button>
     </>
   );

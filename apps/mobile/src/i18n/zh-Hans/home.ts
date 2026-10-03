@@ -18,4 +18,8 @@ export default {
   "m.home.asset.where": "所在位置",
   "m.home.asset.whereHint": "你无需管理这些：无论 {symbol} 在哪里，都可以直接花费。",
   "m.home.asset.contract": "合约（{network}）",
+  "m.home.moreActions": "更多操作",
+  "m.home.swap": "兑换",
+  "m.home.buy": "购买",
+  "m.home.stake": "质押",
 } satisfies Record<keyof typeof en, string>;

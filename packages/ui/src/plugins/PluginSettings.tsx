@@ -2,23 +2,50 @@ import { useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useUi } from "../context";
 import { Button, Card, Empty, ErrorNote, Field, Screen, Spinner, Toggle } from "../components";
-import { asPlugins, type PendingPluginView, type PluginsClient } from "./client";
+import { asPlugins, type PendingPluginView, type PluginView, type PluginsClient } from "./client";
+import { useUiT } from "../i18n";
 
 /** Settings → Advanced → Plugins. Off by default; install needs an explicit yes after the permission prompt. */
 export function PluginSettings() {
   const { client } = useUi();
+  const t = useUiT();
   const plugins = asPlugins(client);
   if (!plugins) {
     return (
-      <Screen title="Plugins" back>
-        <Empty title="Plugins aren't available in this version" />
+      <Screen title={t("plugins.title")} back>
+        <Empty title={t("plugins.unavailable")} />
       </Screen>
     );
   }
   return <PluginSettingsInner plugins={plugins} />;
 }
 
+/** What a plugin may do, in the user's language (falls back to the background's English lines). */
+function Permissions(props: { plugin: PluginView }) {
+  const t = useUiT();
+  const c = props.plugin.capabilities;
+  const name = props.plugin.name;
+  const lines = c
+    ? [
+        ...(c.transactionInsight ? [t("plugins.perm.insight", { plugin: name })] : []),
+        ...(c.nameSuffixes ? [t("plugins.perm.names", { suffixes: c.nameSuffixes.join(", "), plugin: name })] : []),
+        ...(c.notifications ? [t("plugins.perm.notifications")] : []),
+        ...(c.networkHosts ? [t(c.transactionInsight || c.nameSuffixes ? "plugins.perm.networkSees" : "plugins.perm.network", { hosts: c.networkHosts.join(", ") })] : []),
+        t("plugins.perm.never"),
+      ]
+    : props.plugin.permissions;
+  return (
+    <ul className="clip-bullets">
+      {lines.map((l) => (
+        <li key={l}>{l}</li>
+      ))}
+    </ul>
+  );
+}
+
 function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
+  const t = useUiT();
+  const { config } = useUi();
   const status = useAsync(() => plugins.pluginsStatus(), [plugins]);
   const [name, setName] = useState("");
   const [pending, setPending] = useState<PendingPluginView | null>(null);
@@ -41,32 +68,32 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
   const st = status.data;
   if (!st) {
     return (
-      <Screen title="Plugins" back>
+      <Screen title={t("plugins.title")} back>
         {status.error ? <ErrorNote message={userMessageOf(status.error)} /> : <Spinner />}
       </Screen>
     );
   }
   if (!st.advanced) {
     return (
-      <Screen title="Plugins" back>
-        <Empty title="Plugins are an Advanced feature">Turn on Advanced mode in Settings to use them.</Empty>
+      <Screen title={t("plugins.title")} back>
+        <Empty title={t("plugins.advancedOnly")}>{t("plugins.advancedOnlyHint")}</Empty>
       </Screen>
     );
   }
 
   return (
-    <Screen title="Plugins" back>
-      <p className="clip-lede">Plugins add notes to requests you approve, look up names, or send you a notification.</p>
+    <Screen title={t("plugins.title")} back>
+      <p className="clip-lede">{t("plugins.lede")}</p>
       <ul className="clip-bullets">
-        <li>A plugin can never sign, move your funds, or see your recovery phrase or keys.</li>
-        <li>What a plugin says is always marked with its name. Clip Wallet doesn't check it.</li>
-        <li>Only install plugins from people you trust.</li>
+        <li>{t("plugins.rule.never")}</li>
+        <li>{t("plugins.rule.marked", { name: config.name })}</li>
+        <li>{t("plugins.rule.trust")}</li>
       </ul>
-      <Toggle label="Use plugins" description="Off stops every plugin." checked={st.enabled} disabled={busy} onChange={(v) => void run(() => plugins.pluginsSetEnabled({ enabled: v }))} />
+      <Toggle label={t("plugins.use")} description={t("plugins.useHint")} checked={st.enabled} disabled={busy} onChange={(v) => void run(() => plugins.pluginsSetEnabled({ enabled: v }))} />
 
       {st.enabled && !pending && (
         <div className="clip-stack">
-          <Field label="npm package name" autoComplete="off" spellCheck={false} value={name} onChange={(e) => setName(e.target.value)} hint="For example clip-plugin-address-label" />
+          <Field label={t("plugins.package")} autoComplete="off" spellCheck={false} value={name} onChange={(e) => setName(e.target.value)} hint={t("plugins.packageHint", { example: "clip-plugin-address-label" })} />
           <Button
             block
             variant="secondary"
@@ -77,7 +104,7 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
               })
             }
           >
-            {busy ? "Checking…" : "Look up plugin"}
+            {busy ? t("plugins.checking") : t("plugins.lookUp")}
           </Button>
         </div>
       )}
@@ -85,21 +112,13 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
       {pending && (
         <Card>
           <div data-testid="plugin-permission-prompt" className="clip-stack">
-            <h2 className="clip-h2">
-              Install {pending.name} {pending.version}?
-            </h2>
-            <p className="clip-hint">
-              By {pending.author} · npm package {pending.id}
-            </p>
+            <h2 className="clip-h2">{t("plugins.install.title", { plugin: pending.name, version: pending.version })}</h2>
+            <p className="clip-hint">{t("plugins.install.by", { author: pending.author, id: pending.id })}</p>
             <p>{pending.description}</p>
             <p>
-              <strong>It will be able to:</strong>
+              <strong>{t("plugins.install.able")}</strong>
             </p>
-            <ul className="clip-bullets">
-              {pending.permissions.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
+            <Permissions plugin={pending} />
             <Button
               block
               disabled={busy}
@@ -111,7 +130,7 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
                 })
               }
             >
-              Install
+              {t("plugins.install.confirm")}
             </Button>
             <Button
               block
@@ -124,7 +143,7 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
                 })
               }
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
           </div>
         </Card>
@@ -132,24 +151,20 @@ function PluginSettingsInner({ plugins }: { plugins: PluginsClient }) {
 
       <ErrorNote message={err} />
 
-      <h2 className="clip-h2">Installed</h2>
-      {st.plugins.length === 0 && <p className="clip-hint">No plugins yet.</p>}
+      <h2 className="clip-h2">{t("plugins.installed")}</h2>
+      {st.plugins.length === 0 && <p className="clip-hint">{t("plugins.none")}</p>}
       {st.plugins.map((p) => (
         <Card key={p.id}>
           <Toggle
-            label={`${p.name} ${p.version}`}
-            description={`By ${p.author}. ${p.description}`}
+            label={t("plugins.item.label", { plugin: p.name, version: p.version })}
+            description={t("plugins.item.description", { author: p.author, description: p.description })}
             checked={p.enabled}
             disabled={busy || !st.enabled}
             onChange={(v) => void run(() => plugins.pluginsSetPluginEnabled({ id: p.id, enabled: v }))}
           />
-          <ul className="clip-bullets">
-            {p.permissions.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
+          <Permissions plugin={p} />
           <Button variant="ghost" disabled={busy} onClick={() => void run(() => plugins.pluginsRemove({ id: p.id }))}>
-            Remove {p.name}
+            {t("plugins.remove", { plugin: p.name })}
           </Button>
         </Card>
       ))}

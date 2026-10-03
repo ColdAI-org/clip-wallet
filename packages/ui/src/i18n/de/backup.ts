@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "Um wiederherzustellen, brauchst du auf dem neuen Gerät das E-Mail-, Google- oder Apple-Konto, mit dem du dich angemeldet hast (um die Kopie abzurufen), und den Passkey (um sie zu öffnen). Diese Anmeldung findet nur deine Kopie; öffnen kann sie sie nicht.",
+  "backup.explainer.syncAny": "<b>Dein Passkey wird über dein Apple-, Google- oder Passwortmanager-Konto synchronisiert.</b> Wer dieses Konto kontrolliert und dessen Face ID, Fingerabdruck oder PIN überwinden kann, könnte dieses Wallet wiederherstellen, wenn er auch Zugang zu dem E-Mail-, Google- oder Apple-Konto bekommt, mit dem du sicherst. Schütze beides.",
+  "backup.signIn.orEmail": "Oder nutze deine E-Mail:",
+  "backup.social.google": "Weiter mit Google",
+  "backup.social.apple": "Mit Apple anmelden",
+  "backup.social.privacy": "Google oder Apple teilt uns nur mit, welche Backups dir gehören. Sie sehen nie deine Schlüssel, und dein Backup bleibt mit deinem Passkey verschlossen.",
+  "backup.social.googleAccount": "dein Google-Konto",
+  "backup.social.appleAccount": "deinen Apple Account",
 } satisfies Record<keyof typeof en, string>;

@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "العنوان",
   "m.approval.connect.unknown": "لا تتعرّف {name} على {domain}. لا تتصل إلا إذا فتحته بنفسك.",
   "m.approval.connect.connect": "اتصال",
+  "m.approval.connect.connectAnyway": "الاتصال على أي حال",
 } satisfies Record<keyof typeof en, string>;

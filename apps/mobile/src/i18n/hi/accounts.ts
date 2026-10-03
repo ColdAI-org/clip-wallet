@@ -1,0 +1,20 @@
+import type en from "../en/accounts";
+export default {
+  "m.accounts.title": "अकाउंट",
+  "m.accounts.nameFor": "{account} का नाम",
+  "m.accounts.save": "सेव करें",
+  "m.accounts.inUse": "इस्तेमाल में",
+  "m.accounts.rename": "नाम बदलें",
+  "m.accounts.renameAccount": "{account} का नाम बदलें",
+  "m.accounts.use": "इस्तेमाल करें",
+  "m.accounts.useAccount": "{account} इस्तेमाल करें",
+  "m.accounts.adding": "जोड़ा जा रहा है…",
+  "m.accounts.add": "अकाउंट जोड़ें",
+  "m.accounts.useDefault": "यहां मेरा डिफ़ॉल्ट अकाउंट इस्तेमाल करें",
+  "m.accounts.family.evm": "Ethereum जैसे (ETH, USDC, Base, Arbitrum…)",
+  "m.accounts.family.hedera": "Hedera (HBAR)",
+  "m.accounts.family.solana": "Solana (SOL)",
+  "m.accounts.family.bitcoin": "Bitcoin (BTC)",
+  "m.accounts.titleFor": "{site} के लिए अकाउंट",
+  "m.accounts.forSiteLede": "चुनें कि {site} कौन-सा अकाउंट देखे। दूसरे ऐप्स अपनी चुनी हुई सेटिंग रखते हैं।",
+} satisfies Record<keyof typeof en, string>;

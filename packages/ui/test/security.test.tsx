@@ -50,6 +50,7 @@ const GRANTS: GrantView[] = [
     asset: { symbol: "SAUCE", name: "SAUCE" },
     spender: { address: "0.0.1414040", name: "SaucerSwap", known: true },
     amount: "Up to 5 SAUCE",
+    limit: "5",
     unlimited: false,
     risks: [],
     riskLevel: "low",

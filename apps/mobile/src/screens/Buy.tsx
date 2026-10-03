@@ -10,9 +10,12 @@ import { userMessageOf, type OnRampView } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Empty, ErrorNote, Field, Screen, Spinner, T } from "../ui/kit";
 import { IconChevron } from "../ui/icons";
+import { canonicalAmount } from "@clip-wallet/ui";
+import { useMobileT } from "../i18n";
 
 export function Buy(props: { assetKey?: string }) {
   const { wallet, state, theme } = useWallet();
+  const t = useMobileT();
   const currency = state?.prefs.displayCurrency ?? "USD";
   const assets = useAsync(() => wallet.features.buyAssets(), [wallet]);
   const [assetKey, setAssetKey] = useState(props.assetKey ?? "");
@@ -21,12 +24,12 @@ export function Buy(props: { assetKey?: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (assets.error) return <Screen back title="Buy"><ErrorNote message={userMessageOf(assets.error)} /></Screen>;
-  if (!assets.data) return <Screen back title="Buy"><Spinner /></Screen>;
+  if (assets.error) return <Screen back title={t("m.buy.title")}><ErrorNote message={userMessageOf(assets.error)} /></Screen>;
+  if (!assets.data) return <Screen back title={t("m.buy.title")}><Spinner /></Screen>;
   if (!assets.data.length) {
     return (
-      <Screen back title="Buy">
-        <Empty title="Buying isn't switched on in this build">You can still receive crypto from someone else.</Empty>
+      <Screen back title={t("m.buy.title")}>
+        <Empty title={t("m.buy.off")}>{t("m.buy.offHint")}</Empty>
       </Screen>
     );
   }
@@ -34,8 +37,8 @@ export function Buy(props: { assetKey?: string }) {
   const picked = assets.data.find((a) => a.assetKey === assetKey);
   if (!picked) {
     return (
-      <Screen back title="Buy">
-        <T v="lede">What would you like to buy?</T>
+      <Screen back title={t("m.buy.title")}>
+        <T v="lede">{t("m.buy.what")}</T>
         <Card style={{ gap: 0, paddingVertical: 4 }}>
           {assets.data.map((a) => (
             <Pressable key={a.assetKey} accessibilityRole="button" testID={`buy-${a.assetKey}`} onPress={() => setAssetKey(a.assetKey)} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}>
@@ -55,8 +58,8 @@ export function Buy(props: { assetKey?: string }) {
   async function seeOptions() {
     setErr(null);
     setView(null);
-    const n = Number(amount);
-    if (!Number.isFinite(n) || n <= 0) return setErr(`Enter how much you want to spend in ${currency}.`);
+    const n = Number(canonicalAmount(amount) ?? NaN);
+    if (!Number.isFinite(n) || n <= 0) return setErr(t("m.buy.amountMissing", { currency }));
     setBusy(true);
     try {
       setView(await wallet.features.buyOptions({ assetKey: picked!.assetKey, fiatAmount: n, fiatCurrency: currency }));
@@ -77,12 +80,12 @@ export function Buy(props: { assetKey?: string }) {
   }
 
   return (
-    <Screen back={props.assetKey ? true : () => (setAssetKey(""), setView(null))} title={`Buy ${picked.symbol}`}>
-      <Field label={`How much (${currency})`} keyboardType="decimal-pad" placeholder="50" testID="buy-amount" value={amount} onChangeText={(t) => (setAmount(t), setView(null))} />
+    <Screen back={props.assetKey ? true : () => (setAssetKey(""), setView(null))} title={t("m.buy.buySymbol", { symbol: picked.symbol })}>
+      <Field label={t("m.buy.howMuch", { currency })} keyboardType="decimal-pad" placeholder="50" testID="buy-amount" value={amount} onChangeText={(v) => (setAmount(v), setView(null))} />
       <ErrorNote message={err} />
       {!view && (
         <Button block disabled={busy} onPress={() => void seeOptions()} testID="buy-options">
-          See ways to pay
+          {t("m.buy.seeWays")}
         </Button>
       )}
       {view && (
@@ -96,14 +99,14 @@ export function Buy(props: { assetKey?: string }) {
               </View>
               {o.url ? (
                 <Button variant="secondary" block testID={`buy-with-${o.provider}`} onPress={() => void open(o.url!)}>
-                  {`Continue with ${o.name}`}
+                  {t("m.buy.continueWith", { provider: o.name })}
                 </Button>
               ) : (
                 <T v="hint">{o.unavailable?.message ?? ""}</T>
               )}
             </Card>
           ))}
-          <T v="hint">You finish the purchase on the provider's page. They may ask to verify who you are.</T>
+          <T v="hint">{t("m.buy.finish")}</T>
         </>
       )}
     </Screen>

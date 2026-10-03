@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "已开启",
   "m.settings.about.off": "此版本未开启",
   "m.settings.footer": "{name} · 仅限测试网络",
+  "m.settings.backupAccounts": "备份和账户",
+  "m.settings.menu.backup": "备份",
+  "m.settings.menu.accounts": "账户",
+  "m.settings.menu.hardware": "硬件钱包",
+  "m.settings.sessions.accounts": "账户",
+  "m.settings.sessions.accountsFor": "{app} 的账户",
+  "m.settings.menu.backupHint": "助记词和通行密钥备份",
+  "m.settings.menu.accountsHint": "添加、重命名和选择账户",
+  "m.settings.menu.hardwareHint": "Ledger 和 Keystone",
 } satisfies Record<keyof typeof en, string>;

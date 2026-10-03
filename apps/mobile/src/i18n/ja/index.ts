@@ -34,6 +34,13 @@ import approval from "./approval";
 import settings from "./settings";
 import explore from "./explore";
 import social from "./social";
+import accounts from "./accounts";
+import backup from "./backup";
+import buy from "./buy";
+import hardware from "./hardware";
+import stake from "./stake";
+import swap from "./swap";
+import trade from "./trade";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -51,5 +58,12 @@ const messages: Translation<MobileMessages> = {
   ...settings,
   ...explore,
   ...social,
+  ...accounts,
+  ...backup,
+  ...buy,
+  ...hardware,
+  ...stake,
+  ...swap,
+  ...trade,
 };
 export default messages;

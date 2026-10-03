@@ -45,6 +45,7 @@ export function PasskeyBackupExplainer() {
  */
 export function SocialSignIn(props: { providers: BackupProvidersView; onSignedIn: () => void; busy: boolean; setBusy: (b: boolean) => void; setErr: (e: string | null) => void }) {
   const { client } = useUi();
+  const t = useUiT();
   const p = asPlatform(client);
   const { providers } = props;
   if (!p.backupSocialSignIn || (!providers.google && !providers.apple)) return null;
@@ -64,17 +65,24 @@ export function SocialSignIn(props: { providers: BackupProvidersView; onSignedIn
     <div className="clip-stack" data-testid="backup-social-sign-in">
       {providers.google && (
         <Button block variant="secondary" disabled={props.busy} onClick={() => void go("google")}>
-          Continue with Google
+          {t("backup.social.google")}
         </Button>
       )}
       {providers.apple && (
         <Button block variant="secondary" disabled={props.busy} onClick={() => void go("apple")}>
-          Sign in with Apple
+          {t("backup.social.apple")}
         </Button>
       )}
-      <p className="clip-hint">Google or Apple only tells us which backups are yours. They never see your keys, and your backup stays locked with your passkey.</p>
+      <p className="clip-hint">{t("backup.social.privacy")}</p>
     </div>
   );
+}
+
+/** The background labels a Google/Apple session in English ("your Google account"); say it in the user's language. */
+function accountLabel(email: string, t: ReturnType<typeof useUiT>): string {
+  if (email === "your Google account") return t("backup.social.googleAccount");
+  if (email === "your Apple Account") return t("backup.social.appleAccount");
+  return email;
 }
 
 /** Email sign-in by one-time link. The link only works on the device that asked for it. */
@@ -236,7 +244,7 @@ export function PasskeyBackup() {
                 }
               />
             ))}
-            {st.email && <p className="clip-hint">{t("backup.passkey.signedInAs", { email: st.email })}</p>}
+            {st.email && <p className="clip-hint">{t("backup.passkey.signedInAs", { email: accountLabel(st.email, t) })}</p>}
           </Card>
         )}
 

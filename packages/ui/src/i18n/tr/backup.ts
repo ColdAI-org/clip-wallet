@@ -95,4 +95,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "Geri yüklemek için yeni cihazda, giriş yaptığınız e-posta, Google veya Apple hesabına (kopyayı getirmek için) ve geçiş anahtarına (kilidini açmak için) ihtiyacınız var. Bu giriş yalnızca kopyanızı bulur; kilidini açamaz.",
+  "backup.explainer.syncAny": "<b>Geçiş anahtarınız Apple, Google veya parola yöneticisi hesabınız üzerinden eşitlenir.</b> Bu hesabı kontrol eden ve hesabın Face ID, parmak izi veya PIN doğrulamasını geçebilen biri, yedekleme için kullandığınız e-posta, Google veya Apple hesabına da erişirse bu cüzdanı geri yükleyebilir. İkisini de koruyun.",
+  "backup.signIn.orEmail": "Ya da e-postanızı kullanın:",
+  "backup.social.google": "Google ile devam et",
+  "backup.social.apple": "Apple ile Giriş Yap",
+  "backup.social.privacy": "Google veya Apple bize yalnızca hangi yedeklerin size ait olduğunu söyler. Anahtarlarınızı asla görmezler ve yedeğiniz geçiş anahtarınızla kilitli kalır.",
+  "backup.social.googleAccount": "Google hesabınız",
+  "backup.social.appleAccount": "Apple Hesabınız",
 } satisfies Record<keyof typeof en, string>;

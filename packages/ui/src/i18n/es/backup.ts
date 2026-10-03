@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "Para restaurar, necesitas en el dispositivo nuevo el correo, la cuenta de Google o la cuenta de Apple con que iniciaste sesión (para recuperar la copia) y la llave de acceso (para descifrarla). Ese inicio de sesión solo encuentra tu copia; no puede descifrarla.",
+  "backup.explainer.syncAny": "<b>Tu llave de acceso se sincroniza a través de tu cuenta de Apple, de Google o de tu gestor de contraseñas.</b> Quien controle esa cuenta y pueda superar su Face ID, huella o PIN podría restaurar esta billetera si además entra en el correo o la cuenta de Google o de Apple con que haces la copia. Protege ambas.",
+  "backup.signIn.orEmail": "O usa tu correo:",
+  "backup.social.google": "Continuar con Google",
+  "backup.social.apple": "Iniciar sesión con Apple",
+  "backup.social.privacy": "Google o Apple solo nos dicen qué copias son tuyas. Nunca ven tus claves, y tu copia sigue cifrada con tu llave de acceso.",
+  "backup.social.googleAccount": "tu cuenta de Google",
+  "backup.social.appleAccount": "tu cuenta de Apple",
 } satisfies Record<keyof typeof en, string>;

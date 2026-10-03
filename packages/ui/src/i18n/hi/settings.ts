@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "पेयरिंग शुरू हो गई। कनेक्ट करना पूरा करने के लिए ऐप पर वापस जाएं।",
   "settings.scan.blocked": "कैमरे की अनुमति ब्लॉक है। अनुमति दें, या इसकी जगह कोड पेस्ट करें।",
   "settings.scan.preview": "कैमरा प्रीव्यू",
+  "settings.plugins": "प्लगइन",
 } satisfies Record<keyof typeof en, string>;

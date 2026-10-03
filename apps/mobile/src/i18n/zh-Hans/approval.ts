@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "地址",
   "m.approval.connect.unknown": "{name} 不认识 {domain}。仅在你自己打开该网站时才连接。",
   "m.approval.connect.connect": "连接",
+  "m.approval.connect.connectAnyway": "仍然连接",
 } satisfies Record<keyof typeof en, string>;

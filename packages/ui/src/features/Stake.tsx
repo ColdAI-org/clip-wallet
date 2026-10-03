@@ -93,30 +93,30 @@ export function StakeHome() {
               )}
               {pending?.positionId === p.id && pending.action === "claim" && p.claimChoices && (
                 <fieldset className="clip-rows">
-                  <legend className="clip-hint">To collect rewards, choose how your stake counts in community votes first.</legend>
+                  <legend className="clip-hint">{t("stake.claimChoice.lede")}</legend>
                   <ul className="clip-list">
                     {p.claimChoices.map((c) => (
                       <li key={c.id}>
                         <label className="clip-select-row">
                           <input type="radio" name={`claim-${p.id}`} checked={choice === c.id} onChange={() => setChoice(c.id)} />
                           <span className="clip-asset-row__main">
-                            <span className="clip-asset-row__symbol">{c.title}</span>
-                            <span className="clip-asset-row__name">{c.detail}</span>
+                            <span className="clip-asset-row__symbol">{claimChoiceText(c, t).title}</span>
+                            <span className="clip-asset-row__name">{claimChoiceText(c, t).detail}</span>
                           </span>
                         </label>
                       </li>
                     ))}
                   </ul>
                   <Button disabled={busy !== null || !choice} onClick={() => void act(a, p, "claim", { choice })}>
-                    Collect rewards
+                    {t("stake.claimChoice.collect")}
                   </Button>
                 </fieldset>
               )}
               {pending?.positionId === p.id && pending.action === "unstake" && (
                 <div className="clip-rows">
-                  <Field label="How much to unstake (leave empty for all)" inputMode="decimal" placeholder="All" autoComplete="off" value={unstakeAmount} onChange={(e) => setUnstakeAmount(e.target.value)} />
-                  <Button variant="ghost" disabled={busy !== null} onClick={() => void act(a, p, "unstake", { amount: unstakeAmount.trim() })}>
-                    {unstakeAmount.trim() ? `Unstake ${unstakeAmount.trim()} ${a.symbol}` : `Unstake all ${a.symbol}`}
+                  <Field label={t("stake.partial.label")} inputMode="decimal" placeholder={t("stake.partial.placeholder")} autoComplete="off" value={unstakeAmount} onChange={(e) => setUnstakeAmount(e.target.value)} />
+                  <Button variant="ghost" disabled={busy !== null} onClick={() => void act(a, p, "unstake", { amount: canonicalAmount(unstakeAmount) ?? unstakeAmount.trim() })}>
+                    {unstakeAmount.trim() ? t("stake.partial.some", { amount: unstakeAmount.trim(), symbol: a.symbol }) : t("stake.partial.all", { symbol: a.symbol })}
                   </Button>
                 </div>
               )}
@@ -135,6 +135,13 @@ export function StakeHome() {
       ))}
     </Screen>
   );
+}
+
+/** Cardano's vote choices come from the features package in English; the known ones are translated by id. */
+function claimChoiceText(c: { id: string; title: string; detail: string }, t: ReturnType<typeof useUiT>): { title: string; detail: string } {
+  if (c.id === "abstain") return { title: t("stake.claimChoice.abstain"), detail: t("stake.claimChoice.abstainDetail") };
+  if (c.id === "no-confidence") return { title: t("stake.claimChoice.noConfidence"), detail: t("stake.claimChoice.noConfidenceDetail") };
+  return c;
 }
 
 /** "Stake SOL": how it works, where (picked for you), how much. */
@@ -188,7 +195,16 @@ export function StakeAsset(props: { assetKey: string }) {
     <Screen back title={t("stake.stakeSymbol", { symbol: asset.symbol })}>
       <p className="clip-lede">{asset.howItWorks}</p>
       {!asset.wholeBalance && (
-        <Field label={asset.amountOptional ? t("stake.amountOptional") : t("stake.amount")} inputMode="decimal" placeholder="0" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} error={amountBad ? t("stake.amountBad") : null} />
+        <Field
+          label={asset.amountOptional ? t("stake.amountOptional") : t("stake.amount")}
+          inputMode="decimal"
+          placeholder="0"
+          autoComplete="off"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          error={amountBad ? t("stake.amountBad") : null}
+          hint={asset.amountOptional ? t("stake.amountOptionalHint", { symbol: asset.symbol }) : undefined}
+        />
       )}
       <h2 className="clip-h2">{t("stake.where")}</h2>
       <ul className="clip-list" aria-label={t("stake.whereLabel")}>

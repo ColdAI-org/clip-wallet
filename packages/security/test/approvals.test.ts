@@ -303,7 +303,7 @@ describe("ApprovalsService", () => {
     const m = mockFetch([[/blockscout\.test\/api\?/, { error: "down" }, 503]], { eth_call: ethCall });
     const host = fakeHost({ networks: [SEPOLIA], fetch: m.fetch, now: () => NOW });
     const view = await new ApprovalsService(host).scan();
-    expect(view.partial).toEqual([{ code: "approvals/unreachable", message: "Couldn't check Ethereum Sepolia right now. Try again in a moment." }]);
+    expect(view.partial).toEqual([{ code: "approvals/unreachable", network: "Ethereum Sepolia", message: "Couldn't check Ethereum Sepolia right now. Try again in a moment." }]);
     await expect(new ApprovalsService(host).revoke(["nope"])).rejects.toMatchObject({ code: "approvals/none" });
   });
 

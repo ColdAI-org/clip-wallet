@@ -58,4 +58,13 @@ export default {
   "m.settings.about.on": "चालू",
   "m.settings.about.off": "इस बिल्ड में बंद",
   "m.settings.footer": "{name} · सिर्फ़ टेस्ट नेटवर्क",
+  "m.settings.backupAccounts": "बैकअप और अकाउंट",
+  "m.settings.menu.backup": "बैकअप",
+  "m.settings.menu.accounts": "अकाउंट",
+  "m.settings.menu.hardware": "हार्डवेयर वॉलेट",
+  "m.settings.sessions.accounts": "अकाउंट",
+  "m.settings.sessions.accountsFor": "{app} के लिए अकाउंट",
+  "m.settings.menu.backupHint": "रिकवरी फ़्रेज़ और पासकी बैकअप",
+  "m.settings.menu.accountsHint": "अकाउंट जोड़ें, उनका नाम बदलें और चुनें",
+  "m.settings.menu.hardwareHint": "Ledger और Keystone",
 } satisfies Record<keyof typeof en, string>;

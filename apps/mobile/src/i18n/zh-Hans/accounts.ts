@@ -1,0 +1,20 @@
+import type en from "../en/accounts";
+export default {
+  "m.accounts.title": "账户",
+  "m.accounts.nameFor": "{account} 的名称",
+  "m.accounts.save": "保存",
+  "m.accounts.inUse": "使用中",
+  "m.accounts.rename": "重命名",
+  "m.accounts.renameAccount": "重命名 {account}",
+  "m.accounts.use": "使用",
+  "m.accounts.useAccount": "使用 {account}",
+  "m.accounts.adding": "正在添加…",
+  "m.accounts.add": "添加账户",
+  "m.accounts.useDefault": "在此使用我的默认账户",
+  "m.accounts.family.evm": "以太坊类（ETH、USDC、Base、Arbitrum…）",
+  "m.accounts.family.hedera": "Hedera（HBAR）",
+  "m.accounts.family.solana": "Solana（SOL）",
+  "m.accounts.family.bitcoin": "Bitcoin（BTC）",
+  "m.accounts.titleFor": "{site} 使用的账户",
+  "m.accounts.forSiteLede": "选择 {site} 能看到哪个账户。其他应用保留各自的选择。",
+} satisfies Record<keyof typeof en, string>;

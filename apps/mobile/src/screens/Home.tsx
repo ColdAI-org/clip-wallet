@@ -33,23 +33,24 @@ function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => v
 /** Swap / Buy / Stake, as on the extension's Home and asset screens. Stake only where a provider is live. */
 function MoreActions(props: { onSwap: () => void; onBuy: () => void; onStake?: () => void }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   return (
-    <View style={{ flexDirection: "row", gap: 8 }} accessibilityLabel="More actions">
+    <View style={{ flexDirection: "row", gap: 8 }} accessibilityLabel={t("m.home.moreActions")}>
       <Button variant="ghost" onPress={props.onSwap} testID="action-swap">
         <IconSwap color={theme.c.accent} />
         <T color={theme.c.accent} style={{ fontWeight: "600" }}>
-          Swap
+          {t("m.home.swap")}
         </T>
       </Button>
       <Button variant="ghost" onPress={props.onBuy} testID="action-buy">
         <T color={theme.c.accent} style={{ fontWeight: "600" }}>
-          Buy
+          {t("m.home.buy")}
         </T>
       </Button>
       {props.onStake && (
         <Button variant="ghost" onPress={props.onStake} testID="action-stake">
           <T color={theme.c.accent} style={{ fontWeight: "600" }}>
-            Stake
+            {t("m.home.stake")}
           </T>
         </Button>
       )}

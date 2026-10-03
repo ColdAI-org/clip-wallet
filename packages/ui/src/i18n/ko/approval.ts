@@ -28,4 +28,5 @@ export default {
   "approval.connect.address": "주소",
   "approval.connect.unknown": "{name}에서 {domain}을(를) 알아보지 못했어요. 직접 연 사이트인 경우에만 연결하세요.",
   "approval.connect.connect": "연결",
+  "approval.connect.connectAnyway": "그래도 연결",
 } satisfies Record<keyof typeof en, string>;

@@ -28,4 +28,5 @@ export default {
   "m.approval.connect.address": "Indirizzo",
   "m.approval.connect.unknown": "{name} non riconosce {domain}. Collegati solo se l'hai aperto tu.",
   "m.approval.connect.connect": "Collega",
+  "m.approval.connect.connectAnyway": "Collega comunque",
 } satisfies Record<keyof typeof en, string>;

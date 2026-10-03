@@ -64,4 +64,5 @@ export default {
   "settings.scan.started": "ペアリングを開始しました。アプリに戻って接続を完了してください。",
   "settings.scan.blocked": "カメラへのアクセスがブロックされました。アクセスを許可するか、代わりにコードを貼り付けてください。",
   "settings.scan.preview": "カメラのプレビュー",
+  "settings.plugins": "プラグイン",
 } satisfies Record<keyof typeof en, string>;

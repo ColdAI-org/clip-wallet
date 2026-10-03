@@ -51,14 +51,16 @@ export class ApprovalsService {
     const a = { ...DEFAULTS, ...this.config.approvals };
     const opts = { now, oldAfterDays: a.oldAfterDays, isFlagged: this.isFlagged, evm: { lookbackBlocks: a.lookbackBlocks, maxBlockRange: a.maxBlockRange } };
     const partial: Unavailable[] = [];
-    const notes = new Set<string>();
+    const notes = new Map<string, string>();
     const grants: Grant[] = [];
     await Promise.all(
       this.host.networks().map(async (n) => {
         const scanner = this.scanners.get(n.family);
         if (!scanner) {
-          const note = NO_PERMISSIONS[n.family] ?? NOT_YET[n.family];
-          if (note) notes.add(note);
+          const none = NO_PERMISSIONS[n.family];
+          const notYet = NOT_YET[n.family];
+          if (none) notes.set(`no-permissions:${n.family}`, none);
+          else if (notYet) notes.set(`not-yet:${n.family}`, notYet);
           return;
         }
         try {
@@ -66,14 +68,14 @@ export class ApprovalsService {
           grants.push(...r.grants);
           partial.push(...r.partial);
         } catch {
-          partial.push({ code: "approvals/unreachable", message: `Couldn't check ${n.name} right now. Try again in a moment.` });
+          partial.push({ code: "approvals/unreachable", network: n.name, message: `Couldn't check ${n.name} right now. Try again in a moment.` });
         }
       }),
     );
     const order = { high: 0, medium: 1, low: 2 } as const;
     grants.sort((x, y) => order[x.view.riskLevel] - order[y.view.riskLevel] || x.view.title.localeCompare(y.view.title));
     this.last = new Map(grants.map((g) => [g.view.id, g]));
-    return { grants: grants.map((g) => g.view), notes: [...notes], partial, scannedAt: now };
+    return { grants: grants.map((g) => g.view), notes: [...notes.values()], noteCodes: [...notes.keys()], partial, scannedAt: now };
   }
 
   /** Steps that revoke the chosen grants, grouped per network (batched where the network allows). */

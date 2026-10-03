@@ -5,27 +5,31 @@ import { Button, Card, Chip, Empty, ErrorNote, Screen, Spinner } from "../compon
 import { relativeTime } from "../lib/format";
 import type { CleanupItemView, CleanupSummaryView, GrantView } from "./client";
 import { useSecurity } from "./context";
+import { useFormat, useUiT, type UiMessageId } from "../i18n";
+import { cleanupLines, cleanupReason, grantTitle, noteText, partialText, privacyText, riskText, sourceName, sourceUnavailable } from "./text";
 
 /* ------------------------------------------------------------------ menu */
 
-const MENU = [
-  { path: "/settings/security/permissions", title: "App permissions", text: "See which apps can spend your tokens or move your NFTs, and take that back." },
-  { path: "/settings/security/cleanup", title: "Clean up spam", text: "Remove spam tokens and empty accounts. On Solana you get a little SOL back." },
-  { path: "/settings/security/protection", title: "Scam protection", text: "The scam lists Clip Wallet checks before you connect or sign, and what each one sees." },
-] as const;
+const MENU: readonly { path: string; title: UiMessageId; text: UiMessageId }[] = [
+  { path: "/settings/security/permissions", title: "security.menu.permissions", text: "security.menu.permissionsHint" },
+  { path: "/settings/security/cleanup", title: "security.menu.cleanup", text: "security.menu.cleanupHint" },
+  { path: "/settings/security/protection", title: "security.menu.protection", text: "security.menu.protectionHint" },
+];
 
 /** Settings → Security. */
 export function SecurityHome() {
   const { navigate } = useRouter();
+  const { config } = useUi();
+  const t = useUiT();
   return (
-    <Screen back title="Security">
-      <nav className="clip-menu" aria-label="Security">
+    <Screen back title={t("security.title")}>
+      <nav className="clip-menu" aria-label={t("security.title")}>
         {MENU.map((m) => (
           <div key={m.path}>
             <button type="button" className="clip-menu__item" onClick={() => navigate(m.path)}>
-              {m.title}
+              {t(m.title)}
             </button>
-            <p className="clip-hint">{m.text}</p>
+            <p className="clip-hint">{t(m.text, { name: config.name })}</p>
           </div>
         ))}
       </nav>
@@ -36,7 +40,7 @@ export function SecurityHome() {
 /* ------------------------------------------------------------------ permissions */
 
 const RISK_TONE = { danger: "accent", caution: "neutral", info: "muted" } as const;
-const LEVEL_TEXT = { high: "High risk", medium: "Worth a look", low: "Looks fine" } as const;
+const LEVEL_TEXT = { high: "security.level.high", medium: "security.level.medium", low: "security.level.low" } as const satisfies Record<string, UiMessageId>;
 
 function Selector(props: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
@@ -51,6 +55,7 @@ export function Permissions() {
   const security = useSecurity();
   const { navigate } = useRouter();
   const { state } = useUi();
+  const t = useUiT();
   const advanced = !!state?.prefs.advanced;
   const { data, error, reload, loading } = useAsync(() => security.approvalsScan(), [security]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -87,43 +92,42 @@ export function Permissions() {
   return (
     <Screen
       back
-      title="App permissions"
+      title={t("security.menu.permissions")}
       footer={
         data && data.grants.length > 0 ? (
           <Button block variant="danger" disabled={busy || picked.size === 0} onClick={() => void revoke()}>
-            {picked.size === 0 ? "Pick permissions to remove" : picked.size === 1 ? "Remove 1 permission" : `Remove ${picked.size} permissions`}
+            {picked.size === 0 ? t("security.perm.pick") : t("security.perm.remove", { count: picked.size })}
           </Button>
         ) : undefined
       }
     >
-      <p className="clip-lede">Apps you've used may still be allowed to spend your tokens or move your NFTs. Removing a permission moves nothing; you'll confirm each change.</p>
+      <p className="clip-lede">{t("security.perm.lede")}</p>
       <ErrorNote message={err ?? (error ? userMessageOf(error) : null)} />
-      {loading && !data && <Spinner label="Checking your permissions" />}
+      {loading && !data && <Spinner label={t("security.perm.checking")} />}
       {data?.partial.map((p) => (
         <p key={p.code + p.message} className="clip-hint" role="status">
-          {p.message}
+          {partialText(p, t)}
         </p>
       ))}
-      {data && data.grants.length === 0 && <Empty title="No apps can spend your tokens">Nothing to remove.</Empty>}
-      <ul className="clip-list" aria-label="Permissions">
+      {data && data.grants.length === 0 && <Empty title={t("security.perm.none")}>{t("security.perm.noneHint")}</Empty>}
+      <ul className="clip-list" aria-label={t("security.perm.list")}>
         {data?.grants.map((g) => (
           <li key={g.id} data-testid="grant">
             <Card>
               <div className="clip-select-row">
                 <span>
-                  <strong>{g.title}</strong>
+                  <strong>{grantTitle(g, t)}</strong>
                   <span className="clip-hint" style={{ display: "block" }}>
-                    {g.spender.name ?? g.spender.address}
-                    {g.grantedAt ? ` · set ${relativeTime(g.grantedAt)}` : ""}
+                    {g.grantedAt ? t("security.perm.spenderSet", { spender: g.spender.name ?? g.spender.address, when: relativeTime(g.grantedAt) }) : (g.spender.name ?? g.spender.address)}
                   </span>
                 </span>
-                <Selector checked={picked.has(g.id)} onChange={(v) => toggle(g, v)} label={`Remove: ${g.title}`} />
+                <Selector checked={picked.has(g.id)} onChange={(v) => toggle(g, v)} label={t("security.perm.removeOne", { title: grantTitle(g, t) })} />
               </div>
               <div className="clip-actions">
-                <Chip tone={g.riskLevel === "high" ? "accent" : "muted"}>{LEVEL_TEXT[g.riskLevel]}</Chip>
+                <Chip tone={g.riskLevel === "high" ? "accent" : "muted"}>{t(LEVEL_TEXT[g.riskLevel])}</Chip>
                 {g.risks.map((r) => (
                   <Chip key={r.code} tone={RISK_TONE[r.level]}>
-                    {r.label}
+                    {riskText(r, g, t)}
                   </Chip>
                 ))}
                 {advanced && <Chip tone="muted">{g.networkId}</Chip>}
@@ -132,9 +136,9 @@ export function Permissions() {
           </li>
         ))}
       </ul>
-      {data?.notes.map((n) => (
+      {data?.notes.map((n, i) => (
         <p key={n} className="clip-hint">
-          {n}
+          {noteText(data.noteCodes?.[i], n, t)}
         </p>
       ))}
     </Screen>
@@ -143,11 +147,11 @@ export function Permissions() {
 
 /* ------------------------------------------------------------------ cleanup */
 
-const ACTION_TEXT: Record<CleanupItemView["action"], string> = {
-  close: "Close",
-  "burn-close": "Destroy and close",
-  dissociate: "Remove",
-  hide: "Hide",
+const ACTION_TEXT: Record<CleanupItemView["action"], UiMessageId> = {
+  close: "security.action.close",
+  "burn-close": "security.action.burnClose",
+  dissociate: "security.action.dissociate",
+  hide: "security.action.hide",
 };
 
 /** Spam and empty accounts, with a clear summary of what one tap does. */
@@ -160,6 +164,7 @@ export function Cleanup() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const t = useUiT();
 
   useEffect(() => {
     if (data) setPicked(new Set(data.items.filter((i) => i.preselected).map((i) => i.id)));
@@ -188,7 +193,7 @@ export function Cleanup() {
       const r = await security.cleanupRun({ ids });
       if (r.queued) navigate(`/approval/${encodeURIComponent(r.queued.approvalId)}`);
       else {
-        setDone(r.hidden === 1 ? "Hid 1 item." : `Hid ${r.hidden} items.`);
+        setDone(t("security.clean.hid", { count: r.hidden }));
         reload();
       }
     } catch (e) {
@@ -209,11 +214,11 @@ export function Cleanup() {
   return (
     <Screen
       back
-      title="Clean up spam"
+      title={t("security.menu.cleanup")}
       footer={
         data && data.items.length > 0 ? (
           <Button block disabled={busy || ids.length === 0} onClick={() => void run()}>
-            {summary?.headline ?? "Pick items to clean up"}
+            {summary ? cleanupLines(summary, t).headline : t("security.clean.pick")}
           </Button>
         ) : undefined
       }
@@ -224,56 +229,57 @@ export function Cleanup() {
           {done}
         </p>
       )}
-      {loading && !data && <Spinner label="Looking for spam" />}
+      {loading && !data && <Spinner label={t("security.clean.looking")} />}
       {data?.partial.map((p) => (
         <p key={p.code + p.message} className="clip-hint" role="status">
-          {p.message}
+          {partialText(p, t)}
         </p>
       ))}
-      {data && data.items.length === 0 && <Empty title="Nothing to clean up">No spam or empty accounts found.</Empty>}
+      {data && data.items.length === 0 && <Empty title={t("security.clean.none")}>{t("security.clean.noneHint")}</Empty>}
       {summary && (
         <Card>
-          <div aria-label="Summary" data-testid="cleanup-summary">
-            <strong>{summary.headline}</strong>
+          <div aria-label={t("security.clean.summary")} data-testid="cleanup-summary">
+            <strong>{cleanupLines(summary, t).headline}</strong>
             <ul className="clip-list">
-              {summary.lines.map((l) => (
+              {cleanupLines(summary, t).lines.map((l) => (
                 <li key={l}>{l}</li>
               ))}
             </ul>
-            {summary.approvals > 0 && <p className="clip-hint">{summary.approvals === 1 ? "You'll confirm 1 transaction." : `You'll confirm ${summary.approvals} transactions.`}</p>}
+            {summary.approvals > 0 && <p className="clip-hint">{t("security.clean.confirmations", { count: summary.approvals })}</p>}
           </div>
         </Card>
       )}
       {data && data.items.length > 0 && (
         <div className="clip-actions">
           <Button variant="ghost" onClick={() => setPicked(new Set(data.items.map((i) => i.id)))}>
-            Select all
+            {t("security.clean.selectAll")}
           </Button>
           <Button variant="ghost" onClick={() => setPicked(new Set())}>
-            Select none
+            {t("security.clean.selectNone")}
           </Button>
         </div>
       )}
-      <ul className="clip-list" aria-label="Items">
+      <ul className="clip-list" aria-label={t("security.clean.items")}>
         {data?.items.map((i) => (
           <li key={i.id} data-testid="cleanup-item">
             <Card>
               <div className="clip-select-row">
                 <span>
-                  <strong>{i.symbol}</strong> <Chip tone={i.spam ? "accent" : "muted"}>{i.spam ? "Spam" : i.action === "close" ? "Empty" : "Unused"}</Chip>
+                  <strong>{i.symbol}</strong>{" "}
+                  <Chip tone={i.spam ? "accent" : "muted"}>{i.spam ? t("security.clean.spam") : i.action === "close" ? t("security.clean.empty") : t("security.clean.unused")}</Chip>
                   <span className="clip-hint" style={{ display: "block" }}>
-                    {ACTION_TEXT[i.action]} · {i.reason}
+                    {t("security.clean.itemLine", { action: t(ACTION_TEXT[i.action]), reason: cleanupReason(i, t) })}
                   </span>
                 </span>
-                <Selector checked={picked.has(i.id)} onChange={(v) => toggle(i.id, v)} label={`${ACTION_TEXT[i.action]} ${i.symbol}`} />
+                <Selector checked={picked.has(i.id)} onChange={(v) => toggle(i.id, v)} label={t("security.clean.itemLabel", { action: t(ACTION_TEXT[i.action]), symbol: i.symbol })} />
               </div>
             </Card>
           </li>
         ))}
       </ul>
-      {data?.notes.map((n) => (
+      {data?.notes.map((n, i) => (
         <p key={n} className="clip-hint">
-          {n}
+          {noteText(data.noteCodes?.[i], n, t)}
         </p>
       ))}
     </Screen>
@@ -287,6 +293,9 @@ export function Protection() {
   const security = useSecurity();
   const { data, error, reload } = useAsync(() => security.threatStatus(), [security]);
   const [busy, setBusy] = useState(false);
+  const t = useUiT();
+  const f = useFormat();
+  const { config } = useUi();
 
   async function refresh() {
     setBusy(true);
@@ -299,32 +308,33 @@ export function Protection() {
   }
 
   return (
-    <Screen back title="Scam protection">
-      <p className="clip-lede">Before you connect to a site or sign, Clip Wallet checks it against these sources. Lists are downloaded and checked on your device.</p>
+    <Screen back title={t("security.menu.protection")}>
+      <p className="clip-lede">{t("security.protect.lede", { name: config.name })}</p>
       <ErrorNote message={error ? userMessageOf(error) : null} />
       {!data && !error && <Spinner />}
-      <ul className="clip-list" aria-label="Sources">
+      <ul className="clip-list" aria-label={t("security.protect.sources")}>
         {data?.map((p) => (
           <li key={p.id} data-testid="threat-source">
             <Card>
               <div className="clip-select-row">
-                <strong>{p.name}</strong>
-                <Chip tone={p.enabled ? "accent" : "muted"}>{p.enabled ? "On" : "Off"}</Chip>
+                <strong>{sourceName(p, t)}</strong>
+                <Chip tone={p.enabled ? "accent" : "muted"}>{p.enabled ? t("security.protect.on") : t("security.protect.off")}</Chip>
               </div>
-              <p className="clip-hint">{p.privacy}</p>
+              <p className="clip-hint">{privacyText(p, t)}</p>
               {p.updatedAt && (
                 <p className="clip-hint">
-                  Updated {relativeTime(p.updatedAt)}
-                  {p.entries ? ` · ${p.entries.toLocaleString("en-US")} entries` : ""}
+                  {p.entries
+                    ? t("security.protect.updatedEntries", { when: relativeTime(p.updatedAt), entries: f.number(p.entries), count: p.entries })
+                    : t("security.protect.updated", { when: relativeTime(p.updatedAt) })}
                 </p>
               )}
-              {p.unavailable && <p className="clip-hint">{p.unavailable.message}</p>}
+              {p.unavailable && <p className="clip-hint">{sourceUnavailable(p.unavailable, t)}</p>}
             </Card>
           </li>
         ))}
       </ul>
       <Button variant="secondary" disabled={busy} onClick={() => void refresh()}>
-        Update lists now
+        {t("security.protect.refresh")}
       </Button>
     </Screen>
   );

@@ -76,4 +76,12 @@ export default {
   "backup.family.hedera": "Hedera (HBAR)",
   "backup.family.solana": "Solana (SOL)",
   "backup.family.bitcoin": "Bitcoin (BTC)",
+  "backup.explainer.restoreAny": "لاستعادة المحفظة، تحتاج على الجهاز الجديد إلى البريد الإلكتروني أو حساب Google أو Apple الذي سجّلت الدخول به (لجلب النسخة) وإلى مفتاح المرور (لفتح قفلها). تسجيل الدخول هذا يعثر على نسختك فقط؛ ولا يمكنه فتح قفلها.",
+  "backup.explainer.syncAny": "<b>تتم مزامنة مفتاح المرور عبر حسابك في Apple أو Google أو مدير كلمات المرور.</b> أي شخص يتحكم في ذلك الحساب ويستطيع اجتياز Face ID أو بصمة الإصبع أو رمز PIN الخاص به يمكنه استعادة هذه المحفظة إذا تمكّن أيضًا من الدخول إلى البريد الإلكتروني أو حساب Google أو Apple الذي تنسخ به احتياطيًا. احمِ كليهما.",
+  "backup.signIn.orEmail": "أو استخدم بريدك الإلكتروني:",
+  "backup.social.google": "المتابعة باستخدام Google",
+  "backup.social.apple": "تسجيل الدخول باستخدام Apple",
+  "backup.social.privacy": "لا تخبرنا Google أو Apple إلا بالنسخ الاحتياطية التي تخصّك. لا تريان مفاتيحك أبدًا، وتبقى نسختك الاحتياطية مقفلة بمفتاح المرور.",
+  "backup.social.googleAccount": "حساب Google الخاص بك",
+  "backup.social.appleAccount": "حساب Apple الخاص بك",
 } satisfies Record<keyof typeof en, string>;
