@@ -1,5 +1,5 @@
 import type { DappRequest, Family, Network } from "@clip-wallet/core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   CARDANO_METHODS_ALLOWED,
   cardanoSubstrateAllowlist,
@@ -253,9 +253,10 @@ describe("injectedWeb3 connector", () => {
     const injected = await provider.enable("x");
     const seen: unknown[] = [];
     const unsub = injected.accounts.subscribe((a) => void seen.push(a.map((x) => x.address)));
-    await tick(10);
+    // Wait for each delivery rather than a fixed delay: under parallel load the first fetch can take longer.
+    await vi.waitFor(() => expect(seen).toEqual([[ALICE_42]]));
     emit("accountsChanged", "substrate", []);
-    await tick(10);
+    await vi.waitFor(() => expect(seen).toHaveLength(2));
     unsub();
     emit("accountsChanged", "substrate", [{ address: ALICE_42 }]);
     await tick(10);
