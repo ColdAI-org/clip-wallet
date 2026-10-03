@@ -26,6 +26,13 @@ export interface BackupStatusView {
   available: boolean;
 }
 
+/** Sign-in methods offered for passkey backups. */
+export interface BackupProvidersView {
+  email: boolean;
+  google: boolean;
+  apple: boolean;
+}
+
 export interface AccountView {
   /** `${family}:${index}` */
   id: string;
@@ -73,6 +80,12 @@ export interface PlatformClient {
   getActiveAccounts(p?: { origin?: string }): Promise<ActiveAccounts>;
   /** `origin` omitted = wallet-wide default; `accountId: null` clears a site override. */
   setActiveAccount(p: { family: Family; accountId: string | null; origin?: string }): Promise<void>;
+
+  /* Phase 2.5: social sign-in for backups (optional until wired; docs/phase25/integration/extensibility.md) */
+  /** Which sign-in methods the backup service and this build support. */
+  backupProviders?(): Promise<BackupProvidersView>;
+  /** Opens Google / Apple, then signs in to backups. Identifies the backup owner only; never touches keys. */
+  backupSocialSignIn?(p: { provider: "google" | "apple" }): Promise<void>;
 
   /* names */
   /** Reverse lookup for display ("alice.eth"). */

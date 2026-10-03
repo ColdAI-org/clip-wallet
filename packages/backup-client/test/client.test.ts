@@ -98,3 +98,42 @@ describe("BackupClient", () => {
     await expect(c.download("b")).rejects.toMatchObject({ code: "backup/bad-blob" });
   });
 });
+
+describe("social sign-in (Google / Apple)", () => {
+  const STATE = "S".repeat(43);
+  const HANDOFF = "H".repeat(43);
+  const RETURN = "https://abcdefghijklmnop.chromiumapp.org/backup";
+
+  it("providers() reports what the service has switched on, and none when unreachable", async () => {
+    const r = recorder([[200, { email: false, google: true, apple: false }]]);
+    expect(await new BackupClient({ baseUrl: "https://b.test", fetch: r.f }).providers()).toEqual({ email: false, google: true, apple: false });
+    const down = (async () => {
+      throw new Error("offline");
+    }) as unknown as typeof fetch;
+    expect(await new BackupClient({ baseUrl: "https://b.test", fetch: down }).providers()).toEqual({ email: false, google: false, apple: false });
+  });
+
+  it("start sends only the challenge; finish sends the verifier with state + handoff from the fragment", async () => {
+    const r = recorder([
+      [200, { authorizationUrl: `https://accounts.google.com/o/oauth2/v2/auth?state=${STATE}&nonce=x` }],
+      [200, { session: "T".repeat(43), expiresAt: Date.now() + 60_000, provider: "google" }],
+    ]);
+    const c = new BackupClient({ baseUrl: "https://b.test", fetch: r.f, randomBytes: (n) => new Uint8Array(n).fill(9) });
+    const { authorizationUrl, pending } = await c.startSocialSignIn("google", RETURN);
+    expect(authorizationUrl).toContain("accounts.google.com");
+    const startBody = JSON.parse(String(r.calls[0]!.init.body));
+    expect(startBody).toEqual({ provider: "google", challenge: await sha256b64url(pending.verifier), returnTo: RETURN });
+    expect(JSON.stringify(startBody)).not.toContain(pending.verifier);
+    await c.completeSocialSignIn(`${RETURN}#state=${STATE}&handoff=${HANDOFF}`, pending);
+    expect(JSON.parse(String(r.calls[1]!.init.body))).toEqual({ state: STATE, handoff: HANDOFF, verifier: pending.verifier });
+    expect(c.signedIn).toBe(true);
+  });
+
+  it("refuses a return for another attempt, and maps cancel/fail to plain words", async () => {
+    const pending = { provider: "apple" as const, verifier: "v".repeat(43), state: STATE, startedAt: 0 };
+    const c = new BackupClient({ baseUrl: "https://b.test", fetch: recorder([]).f });
+    await expect(c.completeSocialSignIn(`${RETURN}#state=${"X".repeat(43)}&handoff=${HANDOFF}`, pending)).rejects.toMatchObject({ code: "backup/state-invalid" });
+    await expect(c.completeSocialSignIn(`${RETURN}#state=${STATE}&error=cancelled`, pending)).rejects.toMatchObject({ code: "backup/social-cancelled" });
+    await expect(c.completeSocialSignIn(`${RETURN}#state=${STATE}&error=failed`, pending)).rejects.toMatchObject({ code: "backup/social-failed", userMessage: expect.stringMatching(/use your email/) });
+  });
+});

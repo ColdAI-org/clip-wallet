@@ -322,3 +322,51 @@ describe("Backup hub and Settings entry points", () => {
     expect(await screen.findByRole("button", { name: "Back up with your passkey" })).toBeInTheDocument();
   });
 });
+
+describe("passkey backup: Google / Apple sign-in", () => {
+  it("offers only the switched-on providers, says what they can't do, and signs in", async () => {
+    const user = userEvent.setup();
+    let signedIn = false;
+    const c = client({
+      backupStatus: vi.fn(async () => ({ signedIn, backups: [], available: true, ...(signedIn ? { email: "your Google account" } : {}) })),
+      backupProviders: vi.fn(async () => ({ email: true, google: true, apple: false })),
+      backupSocialSignIn: vi.fn(async () => {
+        signedIn = true;
+      }),
+    });
+    renderWithPasskeys(<PasskeyBackup />, c, fakePasskeys());
+    await user.click(await screen.findByLabelText(/I understand who can restore/));
+    const social = await screen.findByTestId("backup-social-sign-in");
+    expect(within(social).getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
+    expect(within(social).queryByRole("button", { name: "Sign in with Apple" })).not.toBeInTheDocument();
+    expect(social).toHaveTextContent(/never see your keys/);
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    await user.click(within(social).getByRole("button", { name: "Continue with Google" }));
+    expect(c.backupSocialSignIn).toHaveBeenCalledWith({ provider: "google" });
+    expect(await screen.findByLabelText("Your wallet password")).toBeInTheDocument();
+  });
+
+  it("shows only email when the service has no social providers on", async () => {
+    const user = userEvent.setup();
+    const c = client({ backupProviders: vi.fn(async () => ({ email: true, google: false, apple: false })), backupSocialSignIn: vi.fn() });
+    renderWithPasskeys(<PasskeyBackup />, c, fakePasskeys());
+    await user.click(await screen.findByLabelText(/I understand who can restore/));
+    expect(await screen.findByLabelText("Email")).toBeInTheDocument();
+    expect(screen.queryByTestId("backup-social-sign-in")).not.toBeInTheDocument();
+  });
+
+  it("a cancelled sign-in shows a plain message", async () => {
+    const user = userEvent.setup();
+    const c = client({
+      backupProviders: vi.fn(async () => ({ email: false, google: false, apple: true })),
+      backupSocialSignIn: vi.fn(async () => {
+        throw Object.assign(new Error("x"), { userMessage: "Sign-in was cancelled.", code: "backup/social-cancelled" });
+      }),
+    });
+    renderWithPasskeys(<PasskeyBackup />, c, fakePasskeys());
+    await user.click(await screen.findByLabelText(/I understand who can restore/));
+    await user.click(await screen.findByRole("button", { name: "Sign in with Apple" }));
+    expect(await screen.findByText("Sign-in was cancelled.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+  });
+});

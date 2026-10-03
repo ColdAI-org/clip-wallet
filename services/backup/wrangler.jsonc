@@ -1,6 +1,7 @@
 // services/backup — passkey-encrypted backup blobs + email sign-in.
 // Deployed (testnet builds) to https://clip-backup.<subdomain>.workers.dev; see docs/phase25/deploy.md.
-// Secrets (never in this file): EMAIL_PEPPER (set), RESEND_API_KEY (unset = email sign-in off, 503).
+// Secrets (never in this file): EMAIL_PEPPER (set), RESEND_API_KEY (unset = email sign-in off, 503),
+// GOOGLE_CLIENT_SECRET / APPLE_CLIENT_SECRET (unset = that provider off).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "clip-backup",
@@ -24,7 +25,16 @@
     // Browser origins allowed to call the API (comma-separated), e.g. chrome-extension://<id>.
     "ALLOWED_ORIGINS": "",
     // Sender for sign-in links (domain verified in Resend). Email stays off until RESEND_API_KEY is also set.
-    "EMAIL_FROM": ""
+    "EMAIL_FROM": "",
+    // Social sign-in (src/oidc.ts). Each provider is on only when its client id here AND its secret are set:
+    //   Google: GOOGLE_CLIENT_ID + secret GOOGLE_CLIENT_SECRET; Apple: APPLE_CLIENT_ID (Services ID) + secret APPLE_CLIENT_SECRET.
+    // This Worker's own URL; the provider redirect URI is PUBLIC_URL + "/v1/auth/oidc/callback".
+    "PUBLIC_URL": "https://clip-backup.doyoka-platform.workers.dev",
+    // Exact wallet URLs the callback may send the browser back to (comma-separated), e.g. the extension's
+    // chrome.identity.getRedirectURL("backup") = https://<extension id>.chromiumapp.org/backup.
+    "OIDC_RETURN_URLS": "",
+    "GOOGLE_CLIENT_ID": "",
+    "APPLE_CLIENT_ID": ""
   },
   // Hourly cleanup of expired links, sessions and rate-limit windows.
   "triggers": { "crons": ["17 * * * *"] }

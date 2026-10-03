@@ -9,6 +9,10 @@
  *   GET    /v1/backups/:id                              → 200 BackupRecord
  *   DELETE /v1/backups/:id                              → 204
  *   DELETE /v1/account                                  → 204   (every backup and session for this email)
+ *   GET    /v1/auth/providers                           → 200 { email, google, apple }   which sign-in methods are switched on
+ *   POST   /v1/auth/oidc/start  { provider, challenge, returnTo } → 200 { authorizationUrl }   (src/oidc.ts)
+ *   GET|POST /v1/auth/oidc/callback  (from Google / Apple)  → 303 returnTo#state=…&handoff=…
+ *   POST   /v1/auth/oidc/finish { state, handoff, verifier } → 200 { session, expiresAt, provider }
  *   GET    /v1/health                                   → 200
  */
 import {
@@ -23,10 +27,11 @@ import {
   sha256b64url,
 } from "@clip-wallet/backup-client/protocol";
 import { EmailUnavailableError, UnconfiguredEmailSender, signInEmail, type EmailSender } from "./email.js";
+import { PROVIDERS, oidcCallback, oidcFinish, oidcStart, providerEnabled, type OidcEnv } from "./oidc.js";
 import { RULES, cleanupWindows, enforce } from "./ratelimit.js";
 import { HttpError, hmacHex, randomToken, readJson, safeEqual, sha256Hex } from "./util.js";
 
-export interface Env {
+export interface Env extends OidcEnv {
   DB: D1Database;
   BLOBS: R2Bucket;
   /** Secret. Keys accounts by HMAC(email); without it the service refuses to run (fails closed). */
@@ -42,6 +47,8 @@ export interface Env {
 export interface AppDeps {
   email?: EmailSender;
   now?: () => number;
+  /** Outbound fetch for the OIDC token and JWKS endpoints (tests pass a mock). */
+  fetch?: typeof fetch;
   walletName?: string;
 }
 
@@ -83,6 +90,8 @@ function clientIp(req: Request): string {
 export function createApp(deps: AppDeps = {}) {
   const email = deps.email ?? new UnconfiguredEmailSender();
   const now = deps.now ?? Date.now;
+  const outbound: typeof fetch = deps.fetch ?? ((...a) => fetch(...a));
+  const oidcDeps = { fetch: outbound, now };
 
   async function accountOf(env: Env, rawEmail: string): Promise<{ email: string; account: string }> {
     const e = normaliseEmail(rawEmail);
@@ -145,13 +154,46 @@ export function createApp(deps: AppDeps = {}) {
     // Single use: only the request that flips `used` gets a session.
     const claimed = await env.DB.prepare("UPDATE magic_links SET used = 1 WHERE token_hash = ?1 AND used = 0").bind(tokenHash).run();
     if (!claimed.meta.changes) throw new HttpError(400, "link-invalid", "That link has expired or was already used.");
+    return json(200, await createSession(env, link.account));
+  }
+
+  async function createSession(env: Env, account: string): Promise<{ session: string; expiresAt: number }> {
     const session = randomToken();
     const expiresAt = now() + LIMITS.sessionTtlMs;
     await env.DB.batch([
-      env.DB.prepare("INSERT INTO accounts (id, created_at) VALUES (?1, ?2) ON CONFLICT (id) DO NOTHING").bind(link.account, now()),
-      env.DB.prepare("INSERT INTO sessions (token_hash, account, expires_at) VALUES (?1, ?2, ?3)").bind(await sha256Hex(session), link.account, expiresAt),
+      env.DB.prepare("INSERT INTO accounts (id, created_at) VALUES (?1, ?2) ON CONFLICT (id) DO NOTHING").bind(account, now()),
+      env.DB.prepare("INSERT INTO sessions (token_hash, account, expires_at) VALUES (?1, ?2, ?3)").bind(await sha256Hex(session), account, expiresAt),
     ]);
-    return json(200, { session, expiresAt });
+    return { session, expiresAt };
+  }
+
+  function emailEnabled(env: Env): boolean {
+    return !(email instanceof UnconfiguredEmailSender) && (env.EMAIL_PEPPER?.length ?? 0) >= 32;
+  }
+
+  async function socialStart(req: Request, env: Env): Promise<Response> {
+    await enforce(env.DB, RULES.startPerIp, clientIp(req), now());
+    const body = await readJson<{ provider?: string; challenge?: string; returnTo?: string }>(req);
+    return json(200, await oidcStart(env, body, oidcDeps));
+  }
+
+  async function socialCallback(req: Request, env: Env): Promise<Response> {
+    await enforce(env.DB, RULES.verifyPerIp, clientIp(req), now());
+    let params = new URL(req.url).searchParams;
+    if (req.method === "POST") {
+      // Apple answers with an HTML form POST (response_mode=form_post).
+      const text = await req.text();
+      if (text.length > 8192) throw new HttpError(413, "too-large", "Request body too large.");
+      params = new URLSearchParams(text);
+    }
+    return oidcCallback(env, params, oidcDeps);
+  }
+
+  async function socialFinish(req: Request, env: Env): Promise<Response> {
+    await enforce(env.DB, RULES.verifyPerIp, clientIp(req), now());
+    const body = await readJson<{ state?: string; handoff?: string; verifier?: string }>(req);
+    const { account, provider } = await oidcFinish(env, body, oidcDeps);
+    return json(200, { ...(await createSession(env, account)), provider });
   }
 
   async function listBackups(env: Env, account: string): Promise<Response> {
@@ -209,6 +251,7 @@ export function createApp(deps: AppDeps = {}) {
       env.DB.prepare("DELETE FROM backups WHERE account = ?1").bind(account),
       env.DB.prepare("DELETE FROM sessions WHERE account = ?1").bind(account),
       env.DB.prepare("DELETE FROM magic_links WHERE account = ?1").bind(account),
+      env.DB.prepare("DELETE FROM oidc_states WHERE account = ?1").bind(account),
       env.DB.prepare("DELETE FROM accounts WHERE id = ?1").bind(account),
     ]);
     return json(204, null);
@@ -218,7 +261,13 @@ export function createApp(deps: AppDeps = {}) {
     const url = new URL(req.url);
     const p = url.pathname.replace(/\/+$/, "");
     const m = req.method;
-    if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: !(email instanceof UnconfiguredEmailSender) && (env.EMAIL_PEPPER?.length ?? 0) >= 32 });
+    if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: emailEnabled(env) });
+    if (m === "GET" && p === "/v1/auth/providers") {
+      return json(200, { email: emailEnabled(env), ...Object.fromEntries(PROVIDERS.map((x) => [x, providerEnabled(env, x)])) });
+    }
+    if (m === "POST" && p === "/v1/auth/oidc/start") return socialStart(req, env);
+    if ((m === "GET" || m === "POST") && p === "/v1/auth/oidc/callback") return socialCallback(req, env);
+    if (m === "POST" && p === "/v1/auth/oidc/finish") return socialFinish(req, env);
     if (m === "POST" && p === "/v1/auth/start") return start(req, env);
     if (m === "POST" && p === "/v1/auth/verify") return verify(req, env);
     if (m === "POST" && p === "/v1/auth/sign-out") {
@@ -260,6 +309,7 @@ export function createApp(deps: AppDeps = {}) {
       await env.DB.batch([
         env.DB.prepare("DELETE FROM magic_links WHERE expires_at < ?1").bind(t - 24 * 60 * 60_000),
         env.DB.prepare("DELETE FROM sessions WHERE expires_at < ?1").bind(t),
+        env.DB.prepare("DELETE FROM oidc_states WHERE expires_at < ?1").bind(t - 60 * 60_000),
       ]);
       await cleanupWindows(env.DB, t);
     },

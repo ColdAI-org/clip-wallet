@@ -109,3 +109,50 @@ export interface ErrorBody {
   error: string;
   message: string;
 }
+
+/* ------------------------------------------------------------------ social sign-in (Google / Apple, OIDC) */
+
+export type SocialProvider = "google" | "apple";
+
+/** GET /v1/auth/providers: which sign-in methods this deployment has switched on. */
+export interface ProvidersResponse {
+  email: boolean;
+  google: boolean;
+  apple: boolean;
+}
+export interface SocialStartBody {
+  provider: SocialProvider;
+  /** base64url(SHA-256(verifier)); also the ID token's nonce. */
+  challenge: string;
+  /** Must be one of the deployment's OIDC_RETURN_URLS (e.g. chrome.identity's https://<id>.chromiumapp.org/backup). */
+  returnTo: string;
+}
+export interface SocialStartResponse {
+  authorizationUrl: string;
+}
+export interface SocialFinishBody {
+  state: string;
+  /** One-time code from the redirect fragment. */
+  handoff: string;
+  verifier: string;
+}
+export interface SocialSessionResponse extends SessionResponse {
+  provider: SocialProvider;
+}
+
+/** Reads `state` and `handoff` (or `error`) from the URL the provider flow ended on (fragment or query). */
+export function socialResultFromUrl(url: string): { state: string; handoff?: string; error?: string } | null {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  const p = new URLSearchParams(u.hash.replace(/^#/, "") || u.search);
+  const state = p.get("state");
+  if (!state || !/^[A-Za-z0-9_-]{43}$/.test(state)) return null;
+  const handoff = p.get("handoff");
+  const error = p.get("error");
+  if (handoff && /^[A-Za-z0-9_-]{43}$/.test(handoff)) return { state, handoff };
+  return { state, error: error && /^[a-z-]{1,40}$/.test(error) ? error : "failed" };
+}

@@ -138,14 +138,86 @@ To switch it off again: `npx wrangler secret delete RESEND_API_KEY` (health goes
 
 ## Google / Apple sign-in
 
-**Not implemented.** The backup Worker only knows email links; there is no OAuth/OpenID code path, so no secret
-or command turns Google or Apple sign-in on today. Setting `GOOGLE_*`/`APPLE_*` secrets would do nothing. What the
-owner will need once the code exists (the sign-in stream adds it, then this section gets the exact commands):
+Implemented in `services/backup/src/oidc.ts` (stream p25/extensibility). **Not deployed**: the Worker running
+today predates it. Each provider is switched on independently, by its own client id (a var in `wrangler.jsonc`)
+and its own secret. Email, Google and Apple don't depend on each other. With a provider's id or secret unset,
+`GET /v1/auth/providers` reports it `false`, `POST /v1/auth/oidc/start` answers 503 `provider-unavailable`, and
+the wallet hides the button.
 
-- Google: an OAuth 2.0 client in Google Cloud Console (APIs & Services → Credentials), with the redirect URI the
-  Worker will expose, plus the OAuth consent screen filled in.
-- Apple: an Apple Developer Program membership, a Services ID with "Sign in with Apple" enabled and the return
-  URL registered, and a Sign in with Apple private key (`.p8`) with its Key ID and Team ID.
+Social sign-in only identifies whose backups these are. Google and Apple never see keys, the phrase or the
+blob, and the Worker keeps no email (only `HMAC(EMAIL_PEPPER, "<provider>:<sub>")`).
 
-Those values would go in as Worker secrets through `npx wrangler secret put <NAME>` (prompted, never on the
-command line), and the client ids into `wrangler.jsonc` vars.
+Shared by both providers (once):
+
+1. Apply the new migration (adds `oidc_states`) before deploying the new code:
+
+   ```
+   cd services/backup
+   npx wrangler d1 migrations apply clip-backup-db --remote
+   ```
+
+2. In `services/backup/wrangler.jsonc` vars:
+   - `PUBLIC_URL` is already `https://clip-backup.doyoka-platform.workers.dev`. The redirect URI you register
+     with both providers is therefore **`https://clip-backup.doyoka-platform.workers.dev/v1/auth/oidc/callback`**.
+   - `OIDC_RETURN_URLS`: where the callback may send the browser back. This is the extension's
+     `chrome.identity.getRedirectURL("backup")`, i.e. `https://<extension id>.chromiumapp.org/backup`
+     (comma-separate several builds). The extension id must be stable: give the manifest a `key`, or use the
+     Chrome Web Store id.
+
+### Google
+
+1. Google Cloud Console → APIs & Services → OAuth consent screen: fill it in (app name, support email). The
+   scope used is `openid email`. Google requires `openid` plus `email` or `profile`; the Worker ignores the
+   email claim and never stores it.
+2. APIs & Services → Credentials → Create credentials → OAuth client ID → type **Web application** →
+   Authorized redirect URIs: `https://clip-backup.doyoka-platform.workers.dev/v1/auth/oidc/callback`.
+3. Put the **client ID** in `wrangler.jsonc` → `"GOOGLE_CLIENT_ID": "<id>.apps.googleusercontent.com"` (not secret).
+4. Set the **client secret** (wrangler prompts; nothing lands in shell history):
+
+   ```
+   cd services/backup
+   npx wrangler secret put GOOGLE_CLIENT_SECRET
+   ```
+
+### Apple
+
+Apple's token endpoint wants `client_secret` to be an ES256 JWT that you sign with your Sign in with Apple key
+and that lasts at most 6 months (https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret).
+The Worker doesn't hold the `.p8`: you mint the JWT on your machine and store only the JWT as a secret.
+
+1. Apple Developer → Certificates, Identifiers & Profiles:
+   - **Identifiers → App ID** with "Sign in with Apple" enabled (primary App ID).
+   - **Identifiers → Services ID** (e.g. `org.example.clip.backup`) → enable Sign in with Apple → Configure:
+     Domains `clip-backup.doyoka-platform.workers.dev`, Return URL
+     `https://clip-backup.doyoka-platform.workers.dev/v1/auth/oidc/callback`. If Apple refuses the shared
+     workers.dev domain, put the Worker on a custom domain you own and update `PUBLIC_URL` and both registrations.
+   - **Keys → +** with "Sign in with Apple" → download `AuthKey_<KEYID>.p8` (once). Note the Key ID and your Team ID.
+2. Put the **Services ID** in `wrangler.jsonc` → `"APPLE_CLIENT_ID": "org.example.clip.backup"`.
+3. Mint the client secret and pipe it straight into wrangler (it is printed nowhere):
+
+   ```
+   cd services/backup
+   node scripts/apple-client-secret.mjs --key /path/to/AuthKey_KEYID.p8 --key-id KEYID --team-id TEAMID \
+     --client-id org.example.clip.backup | npx wrangler secret put APPLE_CLIENT_SECRET
+   ```
+
+   The script prints the expiry date to stderr. **Re-run it before then** (≤ 182 days), or Sign in with Apple
+   stops working (users see "We couldn't sign you in with that account", and email/Google keep working).
+
+### Deploy and check
+
+```
+cd services/backup
+npx wrangler deploy
+curl -s https://clip-backup.doyoka-platform.workers.dev/v1/auth/providers   # {"email":…,"google":true,"apple":true}
+```
+
+### Switch one off
+
+```
+npx wrangler secret delete GOOGLE_CLIENT_SECRET     # or APPLE_CLIENT_SECRET
+```
+
+The other methods keep working. Rotate the Google secret by adding a new secret in the console, running
+`npx wrangler secret put GOOGLE_CLIENT_SECRET`, then deleting the old one. Rotate Apple's by re-running the
+mint command above; revoke the key in Apple Developer if the `.p8` leaked.
