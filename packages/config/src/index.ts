@@ -42,6 +42,8 @@ const NETWORK_MESSAGE = `use "evm:*", "evm:<chain id>", ${NETWORK_FAMILIES.filte
   .map((f) => `"${f}"`)
   .join(", ")
   .replace(/, ([^,]+)$/, " or $1")}`;
+/** An https origin with an optional path, no query or fragment, no trailing slash. */
+const HTTPS_BASE = /^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/[\w.~-]+)*$/;
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const RDNS = /^[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)+$/;
 
@@ -170,6 +172,17 @@ export const clipConfigSchema = z
       })
       .strict()
       .default({ enabled: true }),
+    /**
+     * Optional hosted services (services/ in this repo; none deployed yet). Unset = the feature is hidden:
+     * passkey backup says it isn't available, and NFT media show placeholders instead of fetching anything.
+     */
+    services: z
+      .object({
+        backupUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/backup deployment, like https://backup.example.com").optional(),
+        mediaProxyUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/media-proxy deployment, like https://media.example.com").optional(),
+      })
+      .strict()
+      .default({}),
     mainnet,
   })
   .strict();

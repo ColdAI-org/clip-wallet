@@ -25,9 +25,7 @@ import {
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { bytesToB64, formatUnits, percent, randomId, shortAddress } from "../util.js";
 import type { StakeBuild, StakingProvider } from "./types.js";
-import { COMPUTE_BUDGET_PROGRAM, STAKE_PROGRAM, SYSTEM_PROGRAM as SYSTEM, onlyPrograms } from "../solana-verify.js";
 
-const verifyStake = (r: Parameters<typeof onlyPrograms>[0]) => onlyPrograms(r, [SYSTEM, STAKE_PROGRAM, COMPUTE_BUDGET_PROGRAM]);
 
 /**
  * Solana native delegation through the Stake program (https://github.com/solana-program/stake), built with
@@ -266,7 +264,6 @@ export class SolanaStaking implements StakingProvider {
         {
           title: `Stake ${formatUnits(amount, 9)} SOL`,
           request,
-          verify: verifyStake,
           lines: [
             { label: "With", value: `Validator ${shortAddress(vote)}` },
             { label: "Opening cost", value: `${formatUnits(rent, 9)} SOL, returned when you withdraw` },
@@ -295,7 +292,6 @@ export class SolanaStaking implements StakingProvider {
         {
           title: `Unstake ${formatUnits(String(acct.account.lamports), 9, 4)} SOL`,
           request,
-          verify: verifyStake,
           lines: [{ label: "Ready", value: "In about 2 days, then move it back to your balance" }],
         },
       ],
@@ -314,7 +310,7 @@ export class SolanaStaking implements StakingProvider {
       [getWithdrawInstruction({ stake: address(acct.pubkey), recipient: me, withdrawAuthority: createNoopSigner(me), args: lamports })],
       ctx,
     );
-    return { steps: [{ title: `Move ${formatUnits(lamports, 9, 4)} SOL back to your balance`, request, verify: verifyStake }] };
+    return { steps: [{ title: `Move ${formatUnits(lamports, 9, 4)} SOL back to your balance`, request }] };
   }
 
   private async toRequest(instructions: Instruction[], ctx: ChainContext): Promise<DappRequest> {

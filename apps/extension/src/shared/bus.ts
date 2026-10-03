@@ -56,6 +56,20 @@ export function createBusClient(transport: Transport = runtimeTransport, mocks =
     disconnect: (id) => call({ type: "disconnect", id }),
     pairWalletConnect: (uri) => call({ type: "pairWalletConnect", uri }),
     openFullTab: (route) => call({ type: "openFullTab", route }),
+    backupStatus: () => call({ type: "backupStatus" }),
+    backupStartSignIn: (p) => call({ type: "backupStartSignIn", ...p }),
+    backupCompleteSignIn: (p) => call({ type: "backupCompleteSignIn", ...p }),
+    backupSignOut: () => call({ type: "backupSignOut" }),
+    backupDelete: (p) => call({ type: "backupDelete", ...p }),
+    passkeyBackupBegin: (p) => call({ type: "passkeyBackupBegin", ...p }),
+    passkeyRestoreBegin: (p) => call({ type: "passkeyRestoreBegin", ...p }),
+    markPhraseBackedUp: () => call({ type: "markPhraseBackedUp" }),
+    listAccounts: () => call({ type: "listAccounts" }),
+    addAccount: (p) => call({ type: "addAccount", family: p.family }),
+    renameAccount: (p) => call({ type: "renameAccount", ...p }),
+    getActiveAccounts: (p) => call({ type: "getActiveAccounts", ...(p?.origin ? { origin: p.origin } : {}) }),
+    setActiveAccount: (p) => call({ type: "setActiveAccount", ...p }),
+    lookupName: (p) => call({ type: "lookupName", ...p }),
     onChange: (cb) => {
       const on = (m: unknown) => {
         if (m && typeof m === "object" && (m as { event?: string }).event === CHANGE_EVENT) cb();

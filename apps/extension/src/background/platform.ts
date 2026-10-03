@@ -5,15 +5,13 @@
  * New file so the stream merges cleanly; docs/phase2/integration/platform.md has the exact lines that route
  * bus messages here from service.ts and build it in wiring.ts.
  *
- * Key material: the phrase never comes through here on backup (vault.createPasskeyBackup encrypts inside the
- * vault). On restore, until the vault-v2 stream adds `restorePasskeyBackup(blob, prfOutput, password)`, the
- * fallback decrypts with the vault package's `passkeyBackup.decrypt` and hands the phrase straight to
- * `vault.importPhrase` within this function (same path `importWallet` already takes). PRF outputs are wiped
- * right after use.
+ * Key material: the phrase never comes through here. Backup encrypts inside the vault
+ * (vault.createPasskeyBackup) and restore decrypts and imports inside it (vault.restorePasskeyBackup).
+ * PRF outputs are wiped right after use.
  */
 import type { Account, Family } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";
-import { BACKUP_PRF_INPUT, passkeyBackup } from "@clip-wallet/vault";
+import { BACKUP_PRF_INPUT } from "@clip-wallet/vault";
 import type { KV } from "../shared/storage";
 import { b64url, fromB64url, type CeremonyMeta, type PasskeyCeremonies } from "./passkey-proxy";
 
@@ -22,12 +20,11 @@ import { b64url, fromB64url, type CeremonyMeta, type PasskeyCeremonies } from ".
 /** The vault surface used here. `restorePasskeyBackup` and `addAccount` are requested from the vault-v2 stream. */
 export interface PlatformVault {
   status(): Promise<"empty" | "locked" | "unlocked">;
-  importPhrase(phrase: string, password: string): Promise<void>;
   deriveAccount(family: Family, index: number): Promise<Account>;
   /** Phase 2 (exists in ClipVault): encrypts the phrase under a PRF output, inside the vault. */
   createPasskeyBackup(password: string, prfOutput: Uint8Array): Promise<Uint8Array>;
-  /** vault-v2 (requested): decrypt + import without the phrase leaving the vault. */
-  restorePasskeyBackup?(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
+  /** Decrypts a passkey backup and imports it into an empty vault; the phrase never leaves the vault. */
+  restorePasskeyBackup(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
   /** vault-v2 (ClipVault on main): allocates and persists the next account index for a family. */
   addAccount?(family: Family, label?: string): Promise<Account>;
   /** vault-v2: stored accounts (with labels) for these families; account 0 when none stored. */
@@ -298,17 +295,12 @@ export class PlatformService {
     return this.d.ceremonies.begin("unlock", async (prf) => {
       const prfOutput = await prf.evaluate(credentialId, BACKUP_PRF_INPUT);
       try {
-        if (this.d.vault.restorePasskeyBackup) {
-          await this.d.vault.restorePasskeyBackup(blob, prfOutput, password);
-        } else {
-          let phrase: string;
-          try {
-            phrase = passkeyBackup.decrypt(blob, prfOutput);
-          } catch {
-            throw new ClipError("That passkey can't unlock this backup. Try the passkey you used when you made it.", "backup/wrong-passkey");
-          }
-          await this.d.vault.importPhrase(phrase, password);
+        await this.d.vault.restorePasskeyBackup(blob, prfOutput, password);
+      } catch (e) {
+        if (e instanceof ClipError && e.code === "vault/backup-mismatch") {
+          throw new ClipError("That passkey can't unlock this backup. Try the passkey you used when you made it.", "backup/wrong-passkey");
         }
+        throw e;
       } finally {
         prfOutput.fill(0);
       }

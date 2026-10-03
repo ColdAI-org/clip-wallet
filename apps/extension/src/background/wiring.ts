@@ -10,7 +10,8 @@
  *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
  *   route (funding)    @clip-wallet/route RouteClient (real.ts)              mocks/mock-route.ts
  *   prices             CoinGecko feed (features.ts)                          mocks/fixtures.ts
- *   names              none yet (real.ts)                                    mocks/fixtures.ts
+ *   names              @clip-wallet/names (ENS / SNS / Hedera names)         mocks/fixtures.ts
+ *   backup service     @clip-wallet/backup-client if services.backupUrl set  none
  *   dapp registry      curated list (real.ts)                                same
  *
  * Fixture mode drives the UI with realistic balances, collectibles and dapp requests (dev simulator in
@@ -46,12 +47,14 @@ import { MockRoutePlanner } from "./mocks/mock-route";
 import { MOCK_ACTIVITY, MockNameResolver, MockPriceFeed } from "./mocks/fixtures";
 import {
   KnownDappRegistry,
-  NoNameResolver,
   OneMaskConnector,
   RoutePlannerAdapter,
   WalletConnectAdapter,
 } from "./real";
 import { createPriceFeed } from "./features";
+import { BackupClient } from "@clip-wallet/backup-client";
+import { MultiNameResolver } from "@clip-wallet/names";
+import { BACKUP_SERVICE_URL } from "../app-settings";
 
 /** The vault surface the background uses: core's Vault plus ClipVault's extras. */
 export interface WalletVault {
@@ -74,6 +77,10 @@ export interface WalletVault {
   unlockWithPasskey(prf: PasskeyPrf, credentialId?: Uint8Array): Promise<void>;
   listPasskeys(): Promise<PasskeyInfo[]>;
   removePasskey(credentialId: Uint8Array): Promise<void>;
+  /** Encrypts the phrase under a passkey PRF output, inside the vault (platform: passkey backup). */
+  createPasskeyBackup(password: string, prfOutput: Uint8Array): Promise<Uint8Array>;
+  /** Decrypts a passkey backup and imports it into an empty vault, inside the vault. */
+  restorePasskeyBackup(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
 }
 
 /** CLPRouter: how a request gets paid for ("From: Your balance", funding moves, sponsored gas, ETA). */
@@ -144,8 +151,13 @@ export interface PriceFeed {
 }
 
 export interface NameResolver {
-  /** "alice.eth", "alice.hbar", "alice.sol" → address, or null. */
-  resolve(name: string): Promise<{ address: string; displayName: string } | null>;
+  /**
+   * "alice.eth", "alice.hbar", "alice.sol" → address, or null. `networkIds` = networks the name points at
+   * specifically (empty = any of its family); `addressOn` = ENS per-network address records.
+   */
+  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string> } | null>;
+  /** Primary name for an address, for display. */
+  reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
 }
 
 export interface DappRegistry {
@@ -167,6 +179,8 @@ export interface Dependencies {
   prices: PriceFeed;
   names: NameResolver;
   registry: DappRegistry;
+  /** services/backup client factory; null when no backup service is configured (clip.config services.backupUrl). */
+  backup: ((session: { token: string; expiresAt: number } | null) => BackupClient) | null;
   /** Hedera "0.0.x" for the account's EVM alias, if it exists yet. */
   hederaAccountId(ctx: ChainContext): Promise<string | undefined>;
   /** Seed activity (fixture mode only). */
@@ -210,6 +224,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       prices: new MockPriceFeed(),
       names: new MockNameResolver(),
       registry,
+      backup: null,
       hederaAccountId: async () => "0.0.4815162",
       seedActivity: MOCK_ACTIVITY,
     };
@@ -247,8 +262,10 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet, ton }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
-    names: new NoNameResolver(),
+    // ENS (.eth), SNS (.sol) and Hedera names (.hbar …), limited to the networks this wallet has.
+    names: new MultiNameResolver({ networks }),
     registry,
+    backup: BACKUP_SERVICE_URL ? (session) => new BackupClient({ baseUrl: BACKUP_SERVICE_URL!, session }) : null,
     hederaAccountId: async (ctx) => (await hedera.getAccountState(ctx)).accountId ?? undefined,
     seedActivity: [],
   };

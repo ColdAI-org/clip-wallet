@@ -174,7 +174,7 @@ describe("Solana staking", () => {
     expect(req.method).toBe("solana:signAndSendTransaction");
     expect(req.params.inputs[0]!.chain).toBe("solana:devnet");
     expect(onlyPrograms(req as never, [SYSTEM_PROGRAM, STAKE_PROGRAM])).toBe(true);
-    expect(step.verify!(req as never)).toBe(true);
+    expect(step.verify).toBeUndefined(); // chains-solana decodes native staking itself (platform §5b)
     // Seed 0 is taken (mock), so the wallet uses clip-stake-1.
     const expected = await createAddressWithSeed({ baseAddress: address(ME_SOL), programAddress: address(STAKE_PROGRAM), seed: "clip-stake-1" });
     const [tx] = getTransactionDecoder().read(Buffer.from(req.params.inputs[0]!.transaction, "base64"), 0);
@@ -205,7 +205,7 @@ describe("Solana staking", () => {
 });
 
 describe("StakingService", () => {
-  it("speaks in assets, queues the stake on the approval path, and refines the blind decode after a clean dry run", async () => {
+  it("speaks in assets, queues the stake on the approval path, and keeps the module's verdict on blindness", async () => {
     const { fetch } = solanaRpc();
     const host = fakeHost({ networks: [DEVNET], fetch, balances: [{ asset: sol(DEVNET.id), amount: "5000000000" }] });
     const svc = new StakingService(host, [new HederaStaking(), new SolanaStaking()]);
@@ -217,10 +217,11 @@ describe("StakingService", () => {
     expect(q).toEqual({ approvalId: "approval-1", steps: ["Stake 1.5 SOL"] });
     const req = host.enqueued[0]!.request;
     const blind = { requestId: req.id, title: "Unreadable request", lines: [], balanceChanges: [], simulated: true, blind: true, warnings: [{ level: "danger" as const, code: "blind-signing" as const, message: "x" }], networkId: DEVNET.id };
-    const refined = refineDecoded(req, blind);
-    expect(refined).toMatchObject({ title: "Stake 1.5 SOL", blind: false });
-    expect(refined.warnings.every((w) => w.level === "info")).toBe(true);
-    // Without a dry run it stays blind.
+    // chains-solana decodes the stake (not blind): the wallet's plain title is kept.
+    const read = { ...blind, title: "Stake 1.5 SOL with validator Abcd…wxyz", blind: false, warnings: [] };
+    expect(refineDecoded(req, read)).toMatchObject({ title: "Stake 1.5 SOL", blind: false });
+    // Something the module couldn't read stays blind, dry run or not.
+    expect(refineDecoded(req, blind).blind).toBe(true);
     expect(refineDecoded(req, { ...blind, simulated: false }).blind).toBe(true);
     await flush();
   });

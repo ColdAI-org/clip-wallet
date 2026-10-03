@@ -25,6 +25,7 @@ import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
 import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@clip-wallet/chains-cardano";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
+import { PlatformService, type PlatformRequest } from "./platform";
 import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@clip-wallet/features";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -116,6 +117,8 @@ export class WalletService implements DappHost {
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
   private features?: FeaturesService;
+  /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
+  readonly platform: PlatformService;
 
   constructor(
     readonly deps: Dependencies,
@@ -123,6 +126,27 @@ export class WalletService implements DappHost {
     private readonly env: Env,
   ) {
     this.ceremonies = new PasskeyCeremonies(() => env.passkey());
+    const names = deps.names;
+    this.platform = new PlatformService({
+      vault: deps.vault,
+      kv,
+      ceremonies: this.ceremonies,
+      ceremonyMeta: () => env.passkey(),
+      backup: deps.backup,
+      families: () => [...new Set(deps.networks.map((n) => n.family))],
+      hederaAccountId: (account) => {
+        const network = deps.networks.find((n) => n.family === "hedera");
+        return network ? deps.hederaAccountId({ network, account, fetch: globalThis.fetch.bind(globalThis) }) : Promise.resolve(undefined);
+      },
+      ...(names.reverse ? { names: { reverse: (a, f, n) => names.reverse!(a, f, n) } } : {}),
+      changed: () => {
+        this.accounts.clear();
+        this.cache.clear();
+        this.deps.dapps.accountsChanged?.();
+        env.broadcast();
+      },
+      onRestored: () => this.afterUnlock(),
+    });
   }
 
   start() {
@@ -147,7 +171,7 @@ export class WalletService implements DappHost {
   }
   async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
     const network = this.network(request.networkId);
-    return this.module(network.family).decode(request, await this.ctx(network.id));
+    return this.module(network.family).decode(request, await this.ctx(network.id, request.origin));
   }
 
   /* ------------------------------------------------------------------ bus entry */
@@ -165,6 +189,8 @@ export class WalletService implements DappHost {
   }
 
   private async dispatch(m: Request, status: "empty" | "locked" | "unlocked"): Promise<unknown> {
+    // Platform messages check their own lock state (restore runs while the vault is empty).
+    if (this.platform.handles(m.type)) return this.platform.handle(m as PlatformRequest);
     switch (m.type) {
       case "getState":
         return this.state(status);
@@ -294,7 +320,7 @@ export class WalletService implements DappHost {
   private async afterUnlock() {
     const families = [...new Set(this.deps.networks.map((n) => n.family))];
     for (const f of families) {
-      const acct = await this.deps.vault.deriveAccount(f, 0);
+      const acct = await this.platform.activeAccount(f);
       this.accounts.set(f, acct);
     }
     const hedera = this.deps.networks.find((n) => n.family === "hedera");
@@ -310,10 +336,22 @@ export class WalletService implements DappHost {
     this.env.broadcast();
   }
 
+  /** The account a site sees (its own choice in Settings → Accounts, else the wallet default). */
+  private async siteAccount(family: Family, origin: string): Promise<Account> {
+    try {
+      return await this.platform.activeAccount(family, origin);
+    } catch (e) {
+      // An origin that isn't a URL (some WalletConnect peers) can't have its own choice: use the default.
+      if (e instanceof ClipError && e.code === "accounts/bad-origin") return this.account(family);
+      throw e;
+    }
+  }
+
+  /** The wallet's active account for a family (Settings → Accounts default; account 0 until chosen). */
   private async account(family: Family): Promise<Account> {
     let a = this.accounts.get(family);
     if (!a) {
-      a = await this.deps.vault.deriveAccount(family, 0);
+      a = await this.platform.activeAccount(family);
       this.accounts.set(family, a);
     }
     return a;
@@ -331,10 +369,11 @@ export class WalletService implements DappHost {
     return n;
   }
 
-  private async ctx(networkId: string): Promise<ChainContext> {
+  /** `origin` (a dapp request): sign with the account that site sees; otherwise the wallet's active account. */
+  private async ctx(networkId: string, origin?: string): Promise<ChainContext> {
     const network = this.network(networkId);
     const override = (await this.prefs()).rpcOverrides[networkId];
-    const account = await this.account(network.family);
+    const account = origin && origin !== "wallet" ? await this.siteAccount(network.family, origin) : await this.account(network.family);
     const base: ChainContext = {
       network: override ? { ...network, rpcUrls: [override, ...network.rpcUrls] } : network,
       account,
@@ -423,23 +462,37 @@ export class WalletService implements DappHost {
   async resolveRecipient(input: string, assetKey: string): Promise<RecipientResolution> {
     let address = input.trim();
     let displayName: string | undefined;
-    const looksLikeName = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.(eth|hbar|sol|btc)$/i.test(address);
+    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream).
+    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream)$/i.test(address);
+    let implied: string[] = [];
+    let addressOn: Record<string, string> = {};
     if (looksLikeName) {
-      const hit = await this.deps.names.resolve(address);
+      let hit: Awaited<ReturnType<Dependencies["names"]["resolve"]>>;
+      try {
+        hit = await this.deps.names.resolve(address);
+      } catch {
+        return { kind: "invalid", message: `We couldn't look up ${address} right now. Try again, or paste their address.` };
+      }
       if (!hit) return { kind: "invalid", message: `We couldn't find ${address}. Check the spelling, or paste their address.` };
       address = hit.address;
       displayName = hit.displayName;
+      implied = hit.networkIds ?? [];
+      addressOn = hit.addressOn ?? {};
     }
     const carrying = this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id));
     const recognised = FAMILIES.filter((f) => !!this.deps.chains[f]?.isAddress(address));
     if (recognised.length === 0) return { kind: "invalid", message: "That doesn't look like an address. Check it and try again." };
-    const candidates = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
+    const all = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
+    // A name that points at specific networks narrows the choice (no prompt when only one is left).
+    const narrowed = implied.length ? all.filter((n) => implied.includes(n.id)) : all;
+    const candidates = narrowed.length ? narrowed : all;
+    const on = (id: string) => addressOn[id] ?? address;
     const symbol = this.deps.assets.find((a) => a.key === assetKey)?.symbol ?? "this";
     if (candidates.length === 0) return { kind: "invalid", message: `That address can't receive ${symbol}. Ask them for a different address.` };
-    if (candidates.length === 1) return { kind: "resolved", address, displayName, networkId: candidates[0]!.id };
+    if (candidates.length === 1) return { kind: "resolved", address: on(candidates[0]!.id), displayName, networkId: candidates[0]!.id };
 
     const remembered = ((await this.kv.get<Record<string, string>>(K.recipients)) ?? {})[`${address.toLowerCase()}|${assetKey}`];
-    if (remembered && candidates.some((c) => c.id === remembered)) return { kind: "resolved", address, displayName, networkId: remembered };
+    if (remembered && candidates.some((c) => c.id === remembered)) return { kind: "resolved", address: on(remembered), displayName, networkId: remembered };
 
     const { balances } = await this.portfolio();
     return {
@@ -461,10 +514,14 @@ export class WalletService implements DappHost {
     if (!asset) throw new ClipError("That asset can't be sent there.", "send/asset");
     const network = this.network(m.networkId);
     const mod = this.module(network.family);
-    // Re-check the recipient in the background: never trust the page's network choice blindly.
-    const ok = mod.isAddress(m.to) || (await this.deps.names.resolve(m.to)) !== null;
-    if (!ok) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
-    const to = mod.isAddress(m.to) ? m.to : (await this.deps.names.resolve(m.to))!.address;
+    // Re-check the recipient in the background: never trust the page's network choice blindly. Names are
+    // re-resolved here, using the name's own address for this network when it has one (ENS per-chain records).
+    let to = m.to;
+    if (!mod.isAddress(m.to)) {
+      const hit = await this.deps.names.resolve(m.to).catch(() => null);
+      to = hit ? (hit.addressOn?.[m.networkId] ?? hit.address) : "";
+    }
+    if (!to || !mod.isAddress(to)) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
     const amount = parseUnits(m.amount, asset.decimals);
     if (amount <= 0n) throw new ClipError("Enter an amount above zero.", "send/amount");
     const ctx = await this.ctx(network.id);
@@ -504,7 +561,7 @@ export class WalletService implements DappHost {
     extra: { recipient?: string; warnings?: Warning[] } = {},
   ): Promise<{ id: string; promise: Promise<unknown> }> {
     const network = this.network(request.networkId);
-    const ctx = await this.ctx(network.id);
+    const ctx = await this.ctx(network.id, request.origin);
     let decoded: DecodedRequest;
     try {
       decoded = await this.module(network.family).decode(request, ctx);
@@ -561,7 +618,7 @@ export class WalletService implements DappHost {
   }
 
   private async enqueueConnect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string; warnings?: Warning[] }) {
-    const account = await this.account(p.family);
+    const account = await this.siteAccount(p.family, p.origin);
     const id = crypto.randomUUID();
     const network = this.network(p.networkId);
     const view: ApprovalView = {
@@ -624,7 +681,7 @@ export class WalletService implements DappHost {
     }
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
-    const ctx = await this.ctx(network.id);
+    const ctx = await this.ctx(network.id, req.origin);
     let result: unknown;
     try {
       const payloads = await mod.prepare(req, ctx, id);
@@ -749,7 +806,7 @@ export class WalletService implements DappHost {
   async accountsFor(origin: string, family: Family): Promise<Account[]> {
     if (!(await this.permissions.has(origin, family))) return [];
     if (!(await this.isUnlocked())) return [];
-    return [await this.account(family)];
+    return [await this.siteAccount(family, origin)];
   }
 
   async approveConnect(p: Parameters<DappHost["approveConnect"]>[0]): Promise<boolean> {
@@ -800,7 +857,7 @@ export class WalletService implements DappHost {
     if (req.family !== "cardano" || !m || typeof m.read !== "function" || !(CARDANO_READ_METHODS as readonly string[]).includes(req.method)) {
       throw new ClipError("This request isn't available.", "chain-read/unsupported");
     }
-    return m.read(req.method as CardanoReadMethod, req.params, await this.ctx(req.networkId));
+    return m.read(req.method as CardanoReadMethod, req.params, await this.ctx(req.networkId, req.origin));
   }
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */

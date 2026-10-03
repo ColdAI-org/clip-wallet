@@ -38,6 +38,7 @@ describe("defaults", () => {
       hardware: ["ledger", "keystone"],
       walletConnect: {},
       passkeys: { enabled: true },
+      services: {},
       mainnet: false,
     });
     expect(isMainnetEnabled(c)).toBe(false);
@@ -77,6 +78,16 @@ describe("validation errors in plain words", () => {
     ]);
     expect(problems({ ...base, theme: { radius: 99 } })).toEqual(["theme.radius: keep the corner radius at 32 pixels or less"]);
     expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21);
+  });
+
+  it("services are optional https base URLs", () => {
+    expect(defineConfig(base).services).toEqual({});
+    expect(defineConfig({ ...base, services: { backupUrl: "https://backup.example.com", mediaProxyUrl: "https://example.com/media" } }).services).toEqual({
+      backupUrl: "https://backup.example.com",
+      mediaProxyUrl: "https://example.com/media",
+    });
+    expect(problems({ ...base, services: { backupUrl: "http://backup.example.com" } })[0]).toMatch(/^services.backupUrl: use the https base URL/);
+    expect(problems({ ...base, services: { mediaProxyUrl: "https://media.example.com/?x=1" } })[0]).toMatch(/^services.mediaProxyUrl:/);
   });
 
   it("accepts all 14 chain families", () => {

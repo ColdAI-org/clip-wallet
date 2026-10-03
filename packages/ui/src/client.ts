@@ -5,6 +5,7 @@
  * Nothing here carries key material, with one deliberate exception: `revealPhrase`, used only by the
  * onboarding phrase screen (and a future backup screen).
  */
+import type { PlatformClient } from "./platform/client";
 import type {
   AssetRef,
   DecodedRequest,
@@ -177,7 +178,7 @@ export interface SessionView {
   networkIds: NetworkId[];
 }
 
-export interface WalletClient {
+export interface WalletClient extends PlatformClient {
   getState(): Promise<WalletState>;
   setPrefs(patch: Partial<Prefs>): Promise<Prefs>;
 

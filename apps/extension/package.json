@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/backup-client": "workspace:*",
     "@clip-wallet/chains-algorand": "workspace:*",
     "@clip-wallet/chains-aptos": "workspace:*",
     "@clip-wallet/chains-bitcoin": "workspace:*",
@@ -35,6 +36,7 @@
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
     "@clip-wallet/kit-modules": "workspace:*",
+    "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@clip-wallet/vault": "workspace:*",

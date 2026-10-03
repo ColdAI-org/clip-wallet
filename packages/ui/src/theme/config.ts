@@ -15,7 +15,8 @@ export interface UiOptions {
   iconUrl: string;
   /**
    * Media proxy for untrusted NFT media. Every image/video URL from token metadata is rewritten to
-   * `${mediaProxyUrl}?url=<encoded>` and fetched only from there. Unset = no remote media at all
+   * `${mediaProxyUrl}/v1/media?src=<canonical>&kind=image|video` (@clip-wallet/media-client) and fetched
+   * only from there. Unset = no remote media at all
    * (placeholders are drawn instead).
    */
   mediaProxyUrl?: string;

@@ -27,6 +27,7 @@ function Section(props: { title: string; children: React.ReactNode; id?: string 
 
 function Sessions() {
   const { client, state } = useUi();
+  const { navigate } = useRouter();
   const { data, reload, error } = useAsync(() => client.listSessions(), [client]);
   return (
     <Section title="Connected apps">
@@ -42,6 +43,11 @@ function Sessions() {
                 {state?.prefs.advanced && s.networkIds.length > 0 && <> · {s.networkIds.join(", ")}</>}
               </div>
             </div>
+            {s.via === "injected" && (
+              <Button variant="ghost" aria-label={`Accounts for ${s.dapp.name}`} onClick={() => navigate(`/accounts?origin=${encodeURIComponent(s.dapp.origin)}`)}>
+                Accounts
+              </Button>
+            )}
             <Button
               variant="secondary"
               aria-label={`Disconnect ${s.dapp.name}`}
@@ -223,6 +229,10 @@ export function Settings() {
           )}
         </div>
         {enrolling && <PasskeyEnroll onDone={() => setEnrolling(false)} />}
+        <nav className="clip-menu" aria-label="Backup and accounts">
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/backup")}>Backup</button>
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/accounts")}>Accounts</button>
+        </nav>
         <Button
           variant="secondary"
           block

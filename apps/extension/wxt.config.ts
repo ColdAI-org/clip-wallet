@@ -51,7 +51,15 @@ export default defineConfig({
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       permissions: ["storage", "alarms"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
-      host_permissions: [...rpHost, "https://*.koios.rest/*", "https://api.coingecko.com/*", "https://api.jup.ag/*", "https://api.0x.org/*"],
+      host_permissions: [
+        ...rpHost,
+        "https://*.koios.rest/*",
+        "https://api.coingecko.com/*",
+        "https://api.jup.ag/*",
+        "https://api.0x.org/*",
+        // Optional hosted services from clip.config (unset by default).
+        ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
+      ],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
       // Argon2id (hash-wasm) needs WebAssembly; nothing else is relaxed. No remote code, no frames.

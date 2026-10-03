@@ -178,6 +178,9 @@ importers:
       '@clip-wallet/1mask':
         specifier: workspace:*
         version: link:../../packages/1mask
+      '@clip-wallet/backup-client':
+        specifier: workspace:*
+        version: link:../../packages/backup-client
       '@clip-wallet/chains-algorand':
         specifier: workspace:*
         version: link:../../packages/chains-algorand
@@ -232,6 +235,9 @@ importers:
       '@clip-wallet/kit-modules':
         specifier: workspace:*
         version: link:../../packages/kit-modules
+      '@clip-wallet/names':
+        specifier: workspace:*
+        version: link:../../packages/names
       '@clip-wallet/route':
         specifier: workspace:*
         version: link:../../packages/route
@@ -940,6 +946,9 @@ importers:
       '@clip-wallet/features':
         specifier: workspace:*
         version: link:../features
+      '@clip-wallet/media-client':
+        specifier: workspace:*
+        version: link:../media-client
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4

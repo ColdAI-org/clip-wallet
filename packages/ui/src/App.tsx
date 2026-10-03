@@ -12,6 +12,10 @@ import { Receive } from "./screens/Receive";
 import { ScanWalletConnect, Settings } from "./screens/Settings";
 import { ApprovalQueue } from "./screens/Approvals";
 import { PasskeyPage } from "./screens/Passkey";
+import { RecoveryPhraseBackup } from "./screens/RecoveryPhrase";
+import { BackupLinkLanding, PasskeyBackup, PasskeyRestore } from "./screens/PasskeyBackup";
+import { Accounts } from "./screens/Accounts";
+import { BackupHub } from "./screens/Backup";
 import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClient } from "./features";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
@@ -32,6 +36,19 @@ function Routes() {
   }, [state?.status]);
 
   if (!state) return <div className="clip-screen clip-center"><Spinner /></div>;
+  // Restore on a new device runs while the vault is empty; the emailed sign-in link can land empty or locked.
+  if (pathname === "/restore/passkey" && (state.status === "empty" || onboarding)) {
+    return (
+      <PasskeyRestore
+        onDone={async () => {
+          setOnboarding(false);
+          await refresh();
+          navigate("/", { replace: true });
+        }}
+      />
+    );
+  }
+  if (pathname === "/backup/sign-in") return <BackupLinkLanding link={typeof location !== "undefined" ? location.href : path} />;
   if (state.status === "empty" || onboarding) {
     return (
       <div className="clip-screen">
@@ -84,6 +101,12 @@ function Routes() {
       return <ScanWalletConnect />;
     case "passkey":
       return <PasskeyPage mode={seg[1] === "unlock" ? "unlock" : "enroll"} onDone={() => navigate("/settings", { replace: true })} />;
+    case "backup":
+      if (seg[1] === "phrase") return <RecoveryPhraseBackup onDone={() => navigate("/backup", { replace: true })} />;
+      if (seg[1] === "passkey") return <PasskeyBackup />;
+      return <BackupHub />;
+    case "accounts":
+      return <Accounts {...(query.get("origin") ? { origin: query.get("origin")! } : {})} />;
     default:
       return <Home />;
   }

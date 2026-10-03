@@ -5,10 +5,13 @@
  * these messages (the background checks the sender is an extension page).
  */
 import { z } from "zod";
-import type { Nft } from "@clip-wallet/core";
+import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features";
 import type {
+  AccountView,
+  ActiveAccounts,
   ActivityEntry,
+  BackupStatusView,
   ApprovalView,
   PasskeyCeremony,
   PortfolioView,
@@ -22,6 +25,9 @@ import type {
 const password = z.string().min(1).max(1024);
 const id = z.string().min(1).max(200);
 const b64url = z.string().regex(/^[A-Za-z0-9_-]*$/).max(4096);
+const family = z.enum(FAMILIES as [string, ...string[]]);
+const origin = z.string().url().max(500);
+const backupId = z.string().regex(/^[A-Za-z0-9_-]{22}$/);
 
 export const PrefsPatch = z
   .object({
@@ -80,6 +86,21 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
   ...FEATURE_REQUESTS,
+  // platform: passkey backup, phrase backup flag, multiple accounts, names
+  z.object({ type: z.literal("backupStatus") }),
+  z.object({ type: z.literal("backupStartSignIn"), email: z.string().min(3).max(254) }),
+  z.object({ type: z.literal("backupCompleteSignIn"), link: z.string().min(1).max(2000) }),
+  z.object({ type: z.literal("backupSignOut") }),
+  z.object({ type: z.literal("backupDelete"), id: backupId }),
+  z.object({ type: z.literal("passkeyBackupBegin"), password }),
+  z.object({ type: z.literal("passkeyRestoreBegin"), backupId, password }),
+  z.object({ type: z.literal("markPhraseBackedUp") }),
+  z.object({ type: z.literal("listAccounts") }),
+  z.object({ type: z.literal("addAccount"), family }),
+  z.object({ type: z.literal("renameAccount"), id, label: z.string().min(1).max(64) }),
+  z.object({ type: z.literal("getActiveAccounts"), origin: origin.optional() }),
+  z.object({ type: z.literal("setActiveAccount"), family, accountId: id.nullable(), origin: origin.optional() }),
+  z.object({ type: z.literal("lookupName"), address: z.string().min(1).max(200), family, networkId: id.optional() }),
 ]);
 
 export type Request = z.infer<typeof Request>;
@@ -113,6 +134,20 @@ export interface ResponseMap extends FeatureResponseMap {
   pairWalletConnect: void;
   openFullTab: void;
   devSimulateRequest: string;
+  backupStatus: BackupStatusView;
+  backupStartSignIn: void;
+  backupCompleteSignIn: void;
+  backupSignOut: void;
+  backupDelete: void;
+  passkeyBackupBegin: PasskeyCeremony;
+  passkeyRestoreBegin: PasskeyCeremony;
+  markPhraseBackedUp: void;
+  listAccounts: AccountView[];
+  addAccount: AccountView;
+  renameAccount: void;
+  getActiveAccounts: ActiveAccounts;
+  setActiveAccount: void;
+  lookupName: string | null;
 }
 
 export const Envelope = z.union([

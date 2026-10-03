@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { userMessageOf } from "../client";
-import { useUi } from "../context";
+import { useAsync, useRouter, useUi } from "../context";
 import { Button, ErrorNote, Field } from "../components";
 import { IconFingerprint, IconShield } from "../components/icons";
 import { passwordStrength } from "../lib/strength";
@@ -25,7 +25,10 @@ export function pickConfirmIndexes(count: number, rand: () => number = Math.rand
 }
 
 function Welcome(props: { onCreate: () => void; onImport: () => void }) {
-  const { config, options } = useUi();
+  const { config, options, client } = useUi();
+  const { navigate } = useRouter();
+  // Offered only when this build has a backup service (services/backup); otherwise there's nothing to restore from.
+  const backup = useAsync(async () => (typeof client.backupStatus === "function" ? (await client.backupStatus()).available : false), [client]);
   return (
     <div className="clip-onboard clip-onboard--welcome">
       <img className="clip-brand-icon" src={options.iconUrl} alt="" width={64} height={64} />
@@ -38,6 +41,11 @@ function Welcome(props: { onCreate: () => void; onImport: () => void }) {
         <Button block variant="secondary" onClick={props.onImport}>
           I already have a recovery phrase
         </Button>
+        {backup.data && (
+          <Button block variant="ghost" onClick={() => navigate("/restore/passkey")}>
+            Restore with a passkey backup
+          </Button>
+        )}
       </div>
     </div>
   );

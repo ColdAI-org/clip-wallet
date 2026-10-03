@@ -68,7 +68,7 @@ describe("untrusted NFT media", () => {
     expect(normaliseMediaUrl("ipfs://bafy/1.svg")).toBe("https://ipfs.io/ipfs/bafy/1.svg");
     expect(proxyMedia("https://x.example/a.mp4", "https://proxy.example/m")).toEqual({
       kind: "video",
-      src: "https://proxy.example/m?url=https%3A%2F%2Fx.example%2Fa.mp4&kind=video",
+      src: "https://proxy.example/m/v1/media?src=https%3A%2F%2Fx.example%2Fa.mp4&kind=video",
     });
   });
 
@@ -82,7 +82,7 @@ describe("untrusted NFT media", () => {
     );
     const img = screen.getByRole("img") as HTMLImageElement;
     expect(img.tagName).toBe("IMG");
-    expect(img.getAttribute("src")).toMatch(/^https:\/\/proxy\.example\/m\?url=/);
+    expect(img.getAttribute("src")).toMatch(/^https:\/\/proxy\.example\/m\/v1\/media\?src=/);
     expect(img.getAttribute("referrerpolicy")).toBe("no-referrer");
     expect(document.querySelector("svg image, iframe, object, embed")).toBeNull();
   });

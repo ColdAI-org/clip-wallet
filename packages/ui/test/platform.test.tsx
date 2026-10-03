@@ -13,6 +13,7 @@ import { asPlatform } from "../src/platform/client";
 import { runCeremony } from "../src/platform/ceremony";
 import { fakeClient, state } from "./fake-client";
 import { renderUi } from "./render";
+import { WalletApp } from "../src/App";
 
 const WORDS = "alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo lima".split(" ");
 
@@ -295,7 +296,29 @@ describe("Accounts", () => {
     expect(c.setActiveAccount).toHaveBeenCalledWith({ family: "evm", accountId: null, origin: "https://app.uniswap.org" });
   });
 
-  it("asPlatform fails loudly when the client isn't wired yet", () => {
-    expect(() => asPlatform(fakeClient())).toThrow(/integration\/platform\.md/);
+  it("asPlatform fails loudly when a client is missing the platform methods", () => {
+    const { backupStatus: _omit, ...partial } = fakeClient();
+    expect(() => asPlatform(partial as never)).toThrow(/integration\/platform\.md/);
+    expect(asPlatform(fakeClient()).backupStatus).toBeTypeOf("function");
+  });
+});
+
+describe("Backup hub and Settings entry points", () => {
+  it("Settings links to Backup and Accounts; without a backup service the hub says so plainly", async () => {
+    const user = userEvent.setup();
+    const c = fakeClient();
+    renderUi(<WalletApp client={c} memoryRouter initialRoute="/settings" />, { client: c });
+    const menu = await screen.findByRole("navigation", { name: "Backup and accounts" });
+    expect(menu).toHaveTextContent("Accounts");
+    await user.click(screen.getByRole("button", { name: "Backup" }));
+    expect(await screen.findByTestId("passkey-backup-unavailable")).toHaveTextContent("isn't available in this version");
+    expect(screen.queryByRole("button", { name: /Back up with your passkey/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Back up recovery phrase" })).toBeInTheDocument();
+  });
+
+  it("offers passkey backup when the service is configured", async () => {
+    const c = fakeClient({ backupStatus: vi.fn(async () => ({ signedIn: false, backups: [], available: true })) });
+    renderUi(<WalletApp client={c} memoryRouter initialRoute="/backup" />, { client: c });
+    expect(await screen.findByRole("button", { name: "Back up with your passkey" })).toBeInTheDocument();
   });
 });

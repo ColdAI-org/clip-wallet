@@ -12,7 +12,7 @@ import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/backgro
 import type { KV } from "../shared/storage";
 import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
 import { isFeaturedOrigin } from "@clip-wallet/features";
-import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
+import type { DappConnector, DappHost, DappRegistry, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
 
 const CONNECT_METHODS = new Set<string>([
   "eth_requestAccounts",
@@ -306,12 +306,6 @@ export class ReferencePriceFeed implements PriceFeed {
   }
   fx(currency: string) {
     return FX[currency] ?? 1;
-  }
-}
-
-export class NoNameResolver implements NameResolver {
-  async resolve() {
-    return null;
   }
 }
 
