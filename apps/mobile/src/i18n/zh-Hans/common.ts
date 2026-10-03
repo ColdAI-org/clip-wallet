@@ -1,0 +1,21 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "返回",
+  "m.common.continue": "继续",
+  "m.common.cancel": "取消",
+  "m.common.copy": "复制",
+  "m.common.copied": "已复制",
+  "m.common.max": "最大",
+  "m.common.send": "发送",
+  "m.common.receive": "接收",
+  "m.common.somethingWentWrong": "出了点问题，请重试。",
+  "m.common.tab.home": "首页",
+  "m.common.tab.collectibles": "收藏品",
+  "m.common.tab.activity": "活动",
+  "m.common.tab.browse": "浏览",
+  "m.common.tab.settings": "设置",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "马上",
+  "m.common.readyIn.seconds": "约 {n, plural, other {# 秒后}}",
+  "m.common.readyIn.minutes": "约 {n, plural, other {# 分钟后}}",
+} satisfies Record<keyof typeof en, string>;

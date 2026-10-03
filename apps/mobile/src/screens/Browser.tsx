@@ -12,6 +12,7 @@ import { IconBack, IconChevron, IconReload, IconShield } from "../ui/icons";
 import { createWebViewBridge, webOrigin } from "../browser/bridge";
 import { INPAGE_JS } from "../browser/inpage.generated";
 import { APP } from "../env";
+import { useMobileT } from "../i18n";
 
 export const START_URL = "https://app.uniswap.org";
 
@@ -25,6 +26,7 @@ export function normaliseAddress(input: string): string | null {
 
 export function Browser(props: { url?: string }) {
   const { wallet, theme } = useWallet();
+  const t = useMobileT();
   const insets = useSafeAreaInsets();
   const web = useRef<WebView>(null);
   const [url, setUrl] = useState(props.url ?? START_URL);
@@ -62,17 +64,17 @@ export function Browser(props: { url?: string }) {
   return (
     <View style={{ flex: 1, backgroundColor: theme.c.bg, paddingTop: insets.top }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 6 }}>
-        <IconButton label="Back" onPress={() => web.current?.goBack()}>
+        <IconButton label={t("m.common.back")} onPress={() => web.current?.goBack()}>
           <IconBack color={nav.canGoBack ? theme.c.text : theme.c.text3} />
         </IconButton>
-        <IconButton label="Forward" onPress={() => web.current?.goForward()}>
+        <IconButton label={t("m.browser.forward")} onPress={() => web.current?.goForward()}>
           <IconChevron color={nav.canGoForward ? theme.c.text : theme.c.text3} />
         </IconButton>
         <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: theme.c.surface2, borderRadius: theme.r.md, paddingHorizontal: 10 }}>
           {secure && <IconShield color={theme.c.positive} size={14} />}
           <TextInput
             testID="address-bar"
-            accessibilityLabel="Address"
+            accessibilityLabel={t("m.browser.address")}
             value={typed}
             onChangeText={setTyped}
             autoCapitalize="none"
@@ -88,7 +90,7 @@ export function Browser(props: { url?: string }) {
             style={{ flex: 1, color: theme.c.text, paddingVertical: 9, fontSize: 15 }}
           />
         </View>
-        <IconButton label="Reload" onPress={() => web.current?.reload()}>
+        <IconButton label={t("m.browser.reload")} onPress={() => web.current?.reload()}>
           <IconReload color={theme.c.text} />
         </IconButton>
       </View>
@@ -113,7 +115,7 @@ export function Browser(props: { url?: string }) {
         webviewDebuggingEnabled={__DEV__}
         style={{ flex: 1, backgroundColor: theme.c.bg }}
       />
-      {nav.loading && <T v="hint" style={{ position: "absolute", top: insets.top + 52, alignSelf: "center" }}>Loading…</T>}
+      {nav.loading && <T v="hint" style={{ position: "absolute", top: insets.top + 52, alignSelf: "center" }}>{t("m.browser.loading")}</T>}
       <TabBar />
     </View>
   );

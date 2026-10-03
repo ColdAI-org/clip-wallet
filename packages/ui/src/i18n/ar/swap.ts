@@ -1,0 +1,23 @@
+import type en from "../en/swap";
+export default {
+  "swap.title": "المبادلة",
+  "swap.youPayWith": "تدفع باستخدام",
+  "swap.sellAsset": "الأصل المراد مبادلته",
+  "swap.amount": "المبلغ",
+  "swap.youHave": "لديك {amount} {symbol}",
+  "swap.youGet": "تحصل على",
+  "swap.buyAsset": "الأصل المراد الحصول عليه",
+  "swap.slippage": "الحد الأقصى لتغيّر السعر",
+  "swap.slippageHint": "إذا تغيّر السعر بأكثر من هذا الحد قبل تنفيذ المبادلة، فإنها تتوقف ولا تتم مبادلة أي شيء.",
+  "swap.youPay": "تدفع",
+  "swap.route": "المسار",
+  "swap.priceImpact": "تأثير السعر",
+  "swap.network": "الشبكة",
+  "swap.steps": "ما ستوافق عليه",
+  "swap.reviewAndSwap": "المراجعة والمبادلة",
+  "swap.swap": "مبادلة",
+  "swap.gettingPrice": "جارٍ الحصول على أفضل سعر…",
+  "swap.getPrice": "الحصول على السعر",
+  "swap.amountBad": "أدخل مبلغًا مثل 25 أو 0.5.",
+  "swap.expired": "انتهت صلاحية هذا السعر. يُرجى الحصول على سعر جديد.",
+} satisfies Record<keyof typeof en, string>;

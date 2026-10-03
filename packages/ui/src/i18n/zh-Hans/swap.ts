@@ -1,0 +1,23 @@
+import type en from "../en/swap";
+export default {
+  "swap.title": "兑换",
+  "swap.youPayWith": "支付资产",
+  "swap.sellAsset": "要兑换的资产",
+  "swap.amount": "金额",
+  "swap.youHave": "你有 {amount} {symbol}",
+  "swap.youGet": "你将获得",
+  "swap.buyAsset": "要获得的资产",
+  "swap.slippage": "价格最大变动",
+  "swap.slippageHint": "如果在兑换执行前价格变动超过此幅度，兑换将停止，不会兑换任何资产。",
+  "swap.youPay": "你支付",
+  "swap.route": "路径",
+  "swap.priceImpact": "价格影响",
+  "swap.network": "网络",
+  "swap.steps": "你需要批准的内容",
+  "swap.reviewAndSwap": "检查并兑换",
+  "swap.swap": "兑换",
+  "swap.gettingPrice": "正在获取最优价格…",
+  "swap.getPrice": "获取价格",
+  "swap.amountBad": "请输入金额，例如 25 或 0.5。",
+  "swap.expired": "此报价已过期。请重新获取。",
+} satisfies Record<keyof typeof en, string>;

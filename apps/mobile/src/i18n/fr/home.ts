@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "Verrouiller le portefeuille",
+  "m.home.pending": "{n, plural, one {# demande vous attend} other {# demandes vous attendent}}",
+  "m.home.total": "Solde total",
+  "m.home.bridged": "bridgé",
+  "m.home.empty.title": "Rien pour l'instant",
+  "m.home.empty.body": "Touchez Recevoir pour ajouter de l'argent depuis un autre portefeuille ou une plateforme d'échange.",
+  "m.home.hideSmall": "Masquer les petits soldes",
+  "m.home.spam.hide": "Masquer les jetons suspects",
+  "m.home.spam.hidden": "{n, plural, one {# jeton suspect masqué} other {# jetons suspects masqués}}",
+  "m.home.stale": "Certains soldes peuvent dater de quelques minutes.",
+  "m.home.asset.title": "Actif",
+  "m.home.asset.gone": "Vous ne détenez plus cet actif",
+  "m.home.asset.pin": "Épingler",
+  "m.home.asset.unpin": "Désépingler",
+  "m.home.asset.bridgedCopy": "copie bridgée — pas le {symbol} d'origine",
+  "m.home.asset.where": "Où il se trouve",
+  "m.home.asset.whereHint": "Vous n'avez rien à gérer — le {symbol} est dépensé là où il se trouve.",
+  "m.home.asset.contract": "Contrat ({network})",
+} satisfies Record<keyof typeof en, string>;

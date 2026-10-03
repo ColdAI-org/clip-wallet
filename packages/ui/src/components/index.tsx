@@ -6,6 +6,7 @@ import { hueFor, proxyMedia } from "../lib/media";
 import { useRouter, useUi } from "../context";
 import { IconAlert, IconBack, IconClock, IconCompass, IconGear, IconGrid, IconHome } from "./icons";
 import { useFeaturesOptional } from "../features/context";
+import { useUiT } from "../i18n";
 
 /* ------------------------------------------------------------------ buttons */
 
@@ -37,6 +38,7 @@ export function Screen(props: {
   nav?: boolean;
   className?: string;
 }) {
+  const t = useUiT();
   const router = useRouter();
   const onBack = typeof props.back === "function" ? props.back : router.back;
   return (
@@ -44,7 +46,7 @@ export function Screen(props: {
       {(props.title || props.back || props.actions) && (
         <header className="clip-header">
           {props.back ? (
-            <button type="button" className="clip-icon-btn" onClick={onBack} aria-label="Back">
+            <button type="button" className="clip-icon-btn" onClick={onBack} aria-label={t("common.back")}>
               <IconBack />
             </button>
           ) : (
@@ -62,18 +64,19 @@ export function Screen(props: {
 }
 
 export function TabBar() {
+  const t = useUiT();
   const { path, navigate } = useRouter();
   const features = useFeaturesOptional();
   const items = [
-    { to: "/", label: "Home", icon: <IconHome /> },
-    { to: "/collectibles", label: "Collectibles", icon: <IconGrid /> },
+    { to: "/", label: t("common.nav.home"), icon: <IconHome /> },
+    { to: "/collectibles", label: t("common.nav.collectibles"), icon: <IconGrid /> },
     // Explore (featured apps) appears when the app was given a features client.
-    ...(features ? [{ to: "/explore", label: "Explore", icon: <IconCompass /> }] : []),
-    { to: "/activity", label: "Activity", icon: <IconClock /> },
-    { to: "/settings", label: "Settings", icon: <IconGear /> },
+    ...(features ? [{ to: "/explore", label: t("common.nav.explore"), icon: <IconCompass /> }] : []),
+    { to: "/activity", label: t("common.nav.activity"), icon: <IconClock /> },
+    { to: "/settings", label: t("common.nav.settings"), icon: <IconGear /> },
   ];
   return (
-    <nav className="clip-tabbar" aria-label="Main">
+    <nav className="clip-tabbar" aria-label={t("common.nav.main")}>
       {items.map((it) => {
         const active = it.to === "/" ? path === "/" : path.startsWith(it.to);
         return (
@@ -197,10 +200,11 @@ export function ErrorNote(props: { message: string | null | undefined }) {
 }
 
 export function Spinner(props: { label?: string }) {
+  const t = useUiT();
   return (
     <div className="clip-spinner" role="status" aria-live="polite">
       <span className="clip-spinner__dot" />
-      <span className="clip-visually-hidden">{props.label ?? "Loading"}</span>
+      <span className="clip-visually-hidden">{props.label ?? t("components.loading")}</span>
     </div>
   );
 }
@@ -236,10 +240,11 @@ export function AssetIcon(props: { symbol: string; logoUrl?: string; size?: numb
 
 /** Untrusted NFT media: proxied <img>/<video> only, never inline SVG/HTML/iframe. */
 export function NftMedia(props: { nft: Nft; size?: "tile" | "full" }) {
+  const t = useUiT();
   const { options } = useUi();
   const media = proxyMedia(props.nft.mediaUrl, options.mediaProxyUrl);
   const [failed, setFailed] = useState(false);
-  const label = props.nft.name ?? `${props.nft.collection.name} #${props.nft.tokenId}`;
+  const label = props.nft.name ?? t("components.nftLabel", { collection: props.nft.collection.name, tokenId: props.nft.tokenId });
   if (!media || failed) {
     const hue = hueFor(props.nft.collection.address + props.nft.tokenId);
     return (
@@ -301,6 +306,7 @@ export function Qr(props: { value: string; label: string }) {
 }
 
 export function CopyButton(props: { value: string; label?: string }) {
+  const t = useUiT();
   const [done, setDone] = useState(false);
   return (
     <Button
@@ -315,7 +321,7 @@ export function CopyButton(props: { value: string; label?: string }) {
         }
       }}
     >
-      {done ? "Copied" : props.label ?? "Copy"}
+      {done ? t("common.copied") : props.label ?? t("common.copy")}
     </Button>
   );
 }

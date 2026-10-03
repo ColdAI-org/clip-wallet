@@ -6,12 +6,25 @@ import type { Family, Network, NetworkId } from "@clip-wallet/core";
 import { EnsBackend, type EnsClient } from "./ens.js";
 import { HnsBackend } from "./hns.js";
 import { SnsBackend } from "./sns.js";
+import { ClipHandlesBackend, isClipHandle, type ClipHandlesOptions } from "./clip.js";
 import type { Backend, NameResolver, NameService, ResolvedName } from "./types.js";
 
 export type { Backend, NameResolver, NameService, ResolvedName } from "./types.js";
 export { EnsBackend, ENS_L2_CHAIN_IDS, isEnsName, type EnsClient, type EnsOptions } from "./ens.js";
 export { SnsBackend, SNS_PROXY, isSnsName } from "./sns.js";
 export { HnsBackend, HNS_RESOLVERS, isHnsName } from "./hns.js";
+export {
+  ClipHandlesBackend,
+  CLIP_HANDLES_ABI,
+  CLIP_HANDLES_DEPLOYMENTS,
+  RECENT_HANDLE_MS,
+  isClipHandle,
+  isValidHandle,
+  parseHandle,
+  type ClipHandlesOptions,
+  type HandleRecords,
+  type HandlesReader,
+} from "./clip.js";
 
 export interface NameResolverOptions {
   fetch?: typeof fetch;
@@ -21,6 +34,8 @@ export interface NameResolverOptions {
   sns?: { baseUrl?: string } | false;
   /** Hedera ledger to resolve .hbar on. Default: testnet if the wallet has hedera:testnet, else mainnet. */
   hns?: { ledger?: "mainnet" | "testnet" } | false;
+  /** Clip handles ("@alex", "alex.clip"). Off (a plain "not switched on" message) until a contract address is known. */
+  clip?: Omit<ClipHandlesOptions, "networks" | "fetch" | "now"> | false;
   /** Results are cached this long (ms). Default 60 s; misses are not cached. */
   cacheMs?: number;
   now?: () => number;
@@ -28,6 +43,7 @@ export interface NameResolverOptions {
 
 /** Looks like a name any backend could handle (cheap, no network). */
 export function looksLikeName(input: string): boolean {
+  if (isClipHandle(input)) return true;
   return /^[^\s/:]+\.[a-z]{2,}$/iu.test(input.trim()) && !/^0x/i.test(input.trim()) && !/^0\.0\.\d+$/.test(input.trim());
 }
 
@@ -56,6 +72,17 @@ export class MultiNameResolver implements NameResolver {
     if (opts.sns !== false) list.push(new SnsBackend({ ...(opts.fetch ? { fetch: opts.fetch } : {}), ...(opts.sns?.baseUrl ? { baseUrl: opts.sns.baseUrl } : {}) }));
     if (opts.hns !== false)
       list.push(new HnsBackend({ ledger: opts.hns?.ledger ?? (hasHederaTestnet ? "testnet" : "mainnet"), ...(opts.fetch ? { fetch: opts.fetch } : {}), now: this.now }));
+    if (opts.clip !== false) {
+      list.push(
+        new ClipHandlesBackend({
+          ledger: hasHederaTestnet ? "testnet" : "mainnet",
+          ...(opts.clip ?? {}),
+          ...(opts.networks ? { networks: opts.networks } : {}),
+          ...(opts.fetch ? { fetch: opts.fetch } : {}),
+          now: this.now,
+        }),
+      );
+    }
     this.backends = list;
   }
 

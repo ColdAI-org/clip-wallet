@@ -10,7 +10,8 @@
     "./wiring": "./src/wiring.ts",
     "./platform": "./src/platform.ts",
     "./catalog": "./src/catalog.ts",
-    "./features": "./src/features.ts"
+    "./features": "./src/features.ts",
+    "./social": "./src/social.ts"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
@@ -36,8 +37,10 @@
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@noble/hashes": "^2.4.0",
     "zod": "^4.6.5"

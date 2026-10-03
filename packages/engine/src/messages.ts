@@ -4,8 +4,10 @@
  * untrusted page input to `WalletEngine.handle` and get the same checks.
  */
 import { z } from "zod";
+import { LOCALE_CODES } from "@clip-wallet/i18n";
 import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
+import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
 import type {
   AccountView,
   ActiveAccounts,
@@ -38,6 +40,7 @@ export const PrefsPatch = z
     hideSmallBalances: z.boolean(),
     showSpam: z.boolean(),
     rpcOverrides: z.record(z.string().max(200), z.string().url().startsWith("https://").max(500)),
+    locale: z.enum(["system", ...LOCALE_CODES]),
   })
   .partial()
   .strict();
@@ -85,6 +88,7 @@ export const EngineRequest = z.discriminatedUnion("type", [
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
   // features: staking, swaps, buy, Secure Trade, explore
   ...FEATURE_REQUESTS,
+  ...SOCIAL_REQUESTS,
   // platform: passkey backup, phrase backup flag, multiple accounts, names
   z.object({ type: z.literal("backupStatus") }),
   z.object({ type: z.literal("backupStartSignIn"), email: z.string().min(3).max(254) }),
@@ -106,7 +110,7 @@ export type EngineRequest = z.infer<typeof EngineRequest>;
 export type EngineRequestType = EngineRequest["type"];
 
 /** What each request returns. */
-export interface EngineResponseMap extends FeatureResponseMap {
+export interface EngineResponseMap extends FeatureResponseMap, SocialResponseMap {
   getState: WalletState;
   setPrefs: Prefs;
   createWallet: void;

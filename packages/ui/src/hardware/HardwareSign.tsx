@@ -4,34 +4,36 @@
  */
 import { useCallback, useState } from "react";
 import { Button, ErrorNote, Screen, Spinner } from "../components";
+import { useUiT } from "../i18n";
 import { AnimatedQr, UrScanner, type ScannerStart } from "./qr";
 import type { KeystoneRequestView } from "./types";
 
 export function LedgerConfirm(props: { title: string; app: string; error?: string | null; onRetry?: () => void; onCancel: () => void }) {
+  const t = useUiT();
   return (
-    <Screen title="Confirm on your Ledger">
+    <Screen title={t("hardware.ledgerSign.title")}>
       <p className="clip-lede">{props.title}</p>
       {props.error ? (
         <>
           <ErrorNote message={props.error} />
           {props.onRetry && (
             <Button block onClick={props.onRetry}>
-              Try again
+              {t("common.retry")}
             </Button>
           )}
         </>
       ) : (
         <>
           <ol className="clip-steps">
-            <li className="clip-step">Make sure the {props.app} app is open on your Ledger.</li>
-            <li className="clip-step">Check that what your Ledger shows matches this request.</li>
-            <li className="clip-step">Approve it on the Ledger.</li>
+            <li className="clip-step">{t("hardware.ledgerSign.step1", { app: props.app })}</li>
+            <li className="clip-step">{t("hardware.ledgerSign.step2")}</li>
+            <li className="clip-step">{t("hardware.ledgerSign.step3")}</li>
           </ol>
-          <Spinner label="Waiting for your Ledger" />
+          <Spinner label={t("hardware.ledgerSign.waiting")} />
         </>
       )}
       <Button variant="ghost" block onClick={props.onCancel}>
-        Cancel
+        {t("common.cancel")}
       </Button>
     </Screen>
   );
@@ -45,31 +47,32 @@ export function KeystoneExchangeScreen(props: {
   scanner?: ScannerStart;
   error?: string | null;
 }) {
+  const t = useUiT();
   const [phase, setPhase] = useState<"show" | "scan">("show");
   const { onSignature } = props;
   const done = useCallback((ur: { type: string; cborHex: string }) => onSignature(ur), [onSignature]);
   return (
-    <Screen title={phase === "show" ? "Scan with your Keystone" : "Scan the signature"}>
+    <Screen title={phase === "show" ? t("hardware.keystoneSign.showTitle") : t("hardware.keystoneSign.scanTitle")}>
       <p className="clip-lede">{props.title}</p>
       {phase === "show" ? (
         <>
-          <AnimatedQr ur={props.request} label="Request for your Keystone" />
-          <p className="clip-hint">Scan this with your Keystone, check the details on its screen and approve. Then come back here.</p>
+          <AnimatedQr ur={props.request} label={t("hardware.keystoneSign.request")} />
+          <p className="clip-hint">{t("hardware.keystoneSign.hint")}</p>
           <Button block onClick={() => setPhase("scan")}>
-            Next: scan the signature
+            {t("hardware.keystoneSign.next")}
           </Button>
         </>
       ) : (
         <>
-          <UrScanner expect={props.request.expect} onComplete={done} start={props.scanner} label="Camera preview for your Keystone's signature" />
+          <UrScanner expect={props.request.expect} onComplete={done} start={props.scanner} label={t("hardware.keystoneSign.camera")} />
           <Button variant="ghost" onClick={() => setPhase("show")}>
-            Show the request again
+            {t("hardware.keystoneSign.showAgain")}
           </Button>
         </>
       )}
       <ErrorNote message={props.error} />
       <Button variant="ghost" block onClick={props.onCancel}>
-        Cancel
+        {t("common.cancel")}
       </Button>
     </Screen>
   );

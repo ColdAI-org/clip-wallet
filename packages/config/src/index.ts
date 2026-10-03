@@ -180,6 +180,15 @@ export const clipConfigSchema = z
       .object({
         backupUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/backup deployment, like https://backup.example.com").optional(),
         mediaProxyUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/media-proxy deployment, like https://media.example.com").optional(),
+        /** ClipHandles on Hedera (contracts/handles). Unset = handles say they aren't switched on yet. */
+        clipHandles: z
+          .object({
+            address: z.string().regex(/^0x[0-9a-fA-F]{40}$/, "use the contract's EVM address (0x…) from the deploy output"),
+            contractId: z.string().regex(/^0\.0\.\d+$/, "use the contract's Hedera id (0.0.x) from HashScan"),
+            ledger: z.enum(["testnet", "mainnet"]).default("testnet"),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .default({}),

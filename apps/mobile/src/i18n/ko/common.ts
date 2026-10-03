@@ -1,0 +1,21 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "뒤로",
+  "m.common.continue": "계속",
+  "m.common.cancel": "취소",
+  "m.common.copy": "복사",
+  "m.common.copied": "복사됨",
+  "m.common.max": "최대",
+  "m.common.send": "보내기",
+  "m.common.receive": "받기",
+  "m.common.somethingWentWrong": "문제가 발생했어요. 다시 시도해 주세요.",
+  "m.common.tab.home": "홈",
+  "m.common.tab.collectibles": "수집품",
+  "m.common.tab.activity": "활동",
+  "m.common.tab.browse": "브라우저",
+  "m.common.tab.settings": "설정",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "잠시 후",
+  "m.common.readyIn.seconds": "약 {n, plural, other {#초}} 후",
+  "m.common.readyIn.minutes": "약 {n, plural, other {#분}} 후",
+} satisfies Record<keyof typeof en, string>;

@@ -1,0 +1,21 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "Zurück",
+  "m.common.continue": "Weiter",
+  "m.common.cancel": "Abbrechen",
+  "m.common.copy": "Kopieren",
+  "m.common.copied": "Kopiert",
+  "m.common.max": "Max.",
+  "m.common.send": "Senden",
+  "m.common.receive": "Empfangen",
+  "m.common.somethingWentWrong": "Etwas ist schiefgelaufen. Bitte versuch es noch einmal.",
+  "m.common.tab.home": "Start",
+  "m.common.tab.collectibles": "Sammlerstücke",
+  "m.common.tab.activity": "Aktivität",
+  "m.common.tab.browse": "Browser",
+  "m.common.tab.settings": "Einstellungen",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "gleich",
+  "m.common.readyIn.seconds": "in etwa {n, plural, one {# Sekunde} other {# Sekunden}}",
+  "m.common.readyIn.minutes": "in etwa {n, plural, one {# Minute} other {# Minuten}}",
+} satisfies Record<keyof typeof en, string>;

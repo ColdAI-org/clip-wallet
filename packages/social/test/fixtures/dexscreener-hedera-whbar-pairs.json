@@ -1,0 +1,207 @@
+[
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0xc5b707348da504e9be1bd4e21525459830e7b11d",
+  "pairAddress": "0xC5B707348dA504E9Be1bD4E21525459830e7B11d",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x000000000000000000000000000000000006f89a",
+   "name": "USD Coin",
+   "symbol": "USDC"
+  },
+  "priceUsd": "0.1016",
+  "volume": {
+   "h24": 2791142.26,
+   "h6": 313205.22,
+   "h1": 40053.12,
+   "m5": 346.95
+  },
+  "priceChange": {
+   "h1": 0.08,
+   "h6": 0.5,
+   "h24": -4.26
+  },
+  "liquidity": {
+   "usd": 4893428.24,
+   "base": 34077600,
+   "quote": 1428722
+  },
+  "fdv": 20166454,
+  "marketCap": 20166454,
+  "pairCreatedAt": 1700239142000
+ },
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0xdb34c1ef944883f0e5a2fc18b6c1978b088bd31d",
+  "pairAddress": "0xdB34c1Ef944883f0e5A2fC18B6C1978B088bD31d",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x000000000000000000000000000000000006f89a",
+   "name": "USD Coin",
+   "symbol": "USDC"
+  },
+  "priceUsd": "0.1015",
+  "volume": {
+   "h24": 36145.89,
+   "h6": 3726.19,
+   "h1": 303.96,
+   "m5": 0
+  },
+  "priceChange": {
+   "h1": -0.22,
+   "h6": 0.13,
+   "h24": -4.42
+  },
+  "liquidity": {
+   "usd": 560570.52,
+   "base": 2760965,
+   "quote": 280285
+  },
+  "fdv": 20135922,
+  "marketCap": 20135922,
+  "pairCreatedAt": 1669848076000
+ },
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0xb6d4c5a61a0c104b6c9222630fac403178725f7f",
+  "pairAddress": "0xb6D4C5A61A0C104b6c9222630faC403178725f7f",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x00000000000000000000000000000000000cbA44",
+   "name": "HBARX",
+   "symbol": "HBARX"
+  },
+  "priceUsd": "0.1020",
+  "volume": {
+   "h24": 227.8,
+   "h6": 32.57,
+   "h1": 0,
+   "m5": 0
+  },
+  "priceChange": {
+   "h6": 2.71,
+   "h24": -4.34
+  },
+  "liquidity": {
+   "usd": 4927584.07,
+   "base": 24133243,
+   "quote": 16887133
+  },
+  "fdv": 20249794,
+  "marketCap": 20249794,
+  "pairCreatedAt": 1669920670000
+ },
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0x2a286e6498d248974d97f18b9fff4a23487ba00d",
+  "pairAddress": "0x2A286e6498d248974D97f18B9fFF4A23487Ba00d",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x0000000000000000000000000000000000101Ae3",
+   "name": "USD Coin",
+   "symbol": "USDC[hts]"
+  },
+  "priceUsd": "0.1075",
+  "volume": {
+   "h24": 110.19,
+   "h6": 14.49,
+   "h1": 0,
+   "m5": 0
+  },
+  "priceChange": {
+   "h24": -0.01
+  },
+  "liquidity": {
+   "usd": 55182.02,
+   "base": 211564,
+   "quote": 32422
+  },
+  "fdv": 21337637,
+  "marketCap": 21337637,
+  "pairCreatedAt": 1700239360000
+ },
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0x6df3b3fbfbd7d7fcc10e6509856d17cb1e3d37a5",
+  "pairAddress": "0x6Df3B3FBFbd7d7fCC10e6509856d17CB1e3d37A5",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x0000000000000000000000000000000000101aF0",
+   "name": "Tether USD",
+   "symbol": "USDT[hts]"
+  },
+  "priceUsd": "0.1050",
+  "volume": {
+   "h24": 2.51,
+   "h6": 0,
+   "h1": 0,
+   "m5": 0
+  },
+  "priceChange": {},
+  "liquidity": {
+   "usd": 24524.65,
+   "base": 146219,
+   "quote": 9157.06203
+  },
+  "fdv": 20846460,
+  "marketCap": 20846460,
+  "pairCreatedAt": 1700239524000
+ },
+ {
+  "chainId": "hedera",
+  "dexId": "saucerswap",
+  "url": "https://dexscreener.com/hedera/0x10585ce05ee668023315db1d41037335415f6eeb",
+  "pairAddress": "0x10585CE05ee668023315Db1D41037335415f6EEb",
+  "baseToken": {
+   "address": "0x0000000000000000000000000000000000163B5a",
+   "name": "Wrapped Hbar",
+   "symbol": "WHBAR"
+  },
+  "quoteToken": {
+   "address": "0x0000000000000000000000000000000000101Ae3",
+   "name": "USD Coin",
+   "symbol": "USDC[hts]"
+  },
+  "priceUsd": "0.1072",
+  "volume": {
+   "h24": 0.54,
+   "h6": 0,
+   "h1": 0,
+   "m5": 0
+  },
+  "priceChange": {},
+  "liquidity": {
+   "usd": 764.26,
+   "base": 3563.7851,
+   "quote": 382.1305
+  },
+  "fdv": 21268286,
+  "marketCap": 21268286,
+  "pairCreatedAt": 1690969272000
+ }
+]

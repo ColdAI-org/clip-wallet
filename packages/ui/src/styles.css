@@ -73,8 +73,7 @@ code {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  border-left: 1px solid var(--clip-border);
-  border-right: 1px solid var(--clip-border);
+  border-inline: 1px solid var(--clip-border);
 }
 
 .clip-screen {
@@ -285,7 +284,7 @@ code {
   color: var(--clip-text-2);
 }
 .clip-row__value {
-  text-align: right;
+  text-align: end;
   font-weight: 500;
   display: flex;
   flex-direction: column;
@@ -479,7 +478,7 @@ code {
 .clip-switch__thumb {
   position: absolute;
   top: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -533,7 +532,7 @@ code {
   font-weight: 600;
   padding: var(--clip-space-3);
   cursor: pointer;
-  text-align: left;
+  text-align: start;
 }
 
 .clip-spinner {
@@ -616,7 +615,7 @@ code {
   width: 100%;
   border: 0;
   background: none;
-  text-align: left;
+  text-align: start;
   padding: var(--clip-space-3) var(--clip-space-2);
   border-radius: var(--clip-radius-md);
   cursor: pointer;
@@ -697,7 +696,7 @@ code {
   border: 0;
   padding: 0;
   background: none;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 .clip-nft-tile__name {
@@ -744,7 +743,7 @@ code {
   width: 100%;
   border: 0;
   background: none;
-  text-align: left;
+  text-align: start;
   padding: var(--clip-space-3) var(--clip-space-2);
   border-radius: var(--clip-radius-md);
   cursor: pointer;
@@ -786,9 +785,11 @@ code {
   color: var(--clip-positive);
 }
 .clip-legs {
-  margin: 0 var(--clip-space-2) var(--clip-space-2) 56px;
-  padding: 0 0 0 var(--clip-space-3);
-  border-left: 2px solid var(--clip-border);
+  margin: 0 var(--clip-space-2) var(--clip-space-2);
+  margin-inline-start: 56px;
+  padding: 0;
+  padding-inline-start: var(--clip-space-3);
+  border-inline-start: 2px solid var(--clip-border);
   color: var(--clip-text-2);
   font-size: 13px;
   display: flex;
@@ -952,7 +953,7 @@ svg.is-open {
 }
 .clip-bullets {
   margin: 0;
-  padding-left: 18px;
+  padding-inline-start: 18px;
   color: var(--clip-text-2);
   display: flex;
   flex-direction: column;
@@ -1095,7 +1096,7 @@ svg.is-open {
 .clip-onboard--welcome .clip-field,
 .clip-onboard--welcome > .clip-btn {
   width: 100%;
-  text-align: left;
+  text-align: start;
 }
 .clip-brand-icon {
   border-radius: 18px;
@@ -1168,7 +1169,7 @@ svg.is-open {
   color: var(--clip-text-3);
   font-weight: 500;
   min-width: 16px;
-  text-align: right;
+  text-align: end;
 }
 .clip-phrase__reveal {
   white-space: nowrap;
@@ -1269,7 +1270,7 @@ svg.is-open {
   color: var(--clip-text);
   font: inherit;
   font-weight: 500;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 .clip-menu__item::after {
@@ -1283,4 +1284,86 @@ svg.is-open {
 }
 .clip-menu__item:hover {
   color: var(--clip-accent);
+}
+
+/* ------------------------------------------------------------------ right-to-left (Arabic) */
+/* Layout uses logical properties (inline-start/end), so it mirrors by itself; these are the few physical bits. */
+[dir="rtl"] .clip-switch.is-on .clip-switch__thumb {
+  transform: translateX(-18px);
+}
+[dir="rtl"] .clip-icon-btn svg,
+[dir="rtl"] .clip-approval__details-toggle svg {
+  transform: scaleX(-1);
+}
+/* Addresses, hashes and amounts stay left-to-right inside right-to-left text. */
+[dir="rtl"] .clip-mono,
+[dir="rtl"] code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ------------------------------------------------------------------ social: contacts, handles, notifications, discover */
+.clip-contact-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 50%;
+  font-weight: 700;
+}
+.clip-contact-suggest {
+  list-style: none;
+  margin: calc(-1 * var(--clip-space-2)) 0 0;
+  padding: var(--clip-space-1);
+  border: 1px solid var(--clip-border);
+  border-radius: var(--clip-radius-md, 12px);
+  background: var(--clip-surface);
+}
+.clip-contact-addresses {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--clip-space-3);
+}
+.clip-contact-address {
+  display: grid;
+  gap: var(--clip-space-2);
+  padding: var(--clip-space-3);
+  border: 1px solid var(--clip-border);
+  border-radius: var(--clip-radius-md, 12px);
+}
+.clip-contact-address .clip-link {
+  justify-self: end;
+}
+.clip-recipient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--clip-space-2);
+  font-weight: 600;
+}
+.clip-check {
+  display: flex;
+  gap: var(--clip-space-2);
+  align-items: center;
+  margin-block-start: var(--clip-space-2);
+  font-weight: 500;
+}
+.clip-discover .clip-row {
+  align-items: center;
+}
+.clip-discover h3.clip-h2 {
+  font-size: 0.95rem;
+  margin-block: var(--clip-space-3) var(--clip-space-1);
+}
+textarea.clip-input {
+  width: 100%;
+  font: inherit;
+  padding: var(--clip-space-2) var(--clip-space-3);
+  border: 1px solid var(--clip-border);
+  border-radius: var(--clip-radius-md, 12px);
+  background: var(--clip-surface);
+  color: var(--clip-text);
+  resize: vertical;
 }

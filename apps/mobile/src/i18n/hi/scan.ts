@@ -1,0 +1,10 @@
+import type en from "../en/scan";
+export default {
+  "m.scan.title": "कनेक्ट करने के लिए स्कैन करें",
+  "m.scan.allowCamera": "कैमरे की अनुमति दें",
+  "m.scan.cameraWhy": "कैमरा सिर्फ़ कनेक्शन कोड पढ़ने के लिए इस्तेमाल होता है। या इसकी जगह सेटिंग्स में कोड पेस्ट करें।",
+  "m.scan.point": "अपना कैमरा ऐप के QR कोड की ओर करें।",
+  "m.scan.notWalletConnect": "यह QR कोड {wc} कोड नहीं है।",
+  "m.scan.found": "मिल गया। कनेक्ट हो रहा है…",
+  "m.scan.pairing": "पेयरिंग शुरू हो गई। ऐप आपसे कनेक्ट करने के लिए कहेगा।",
+} satisfies Record<keyof typeof en, string>;

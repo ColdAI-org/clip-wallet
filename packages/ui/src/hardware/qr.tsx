@@ -7,17 +7,22 @@ import QRCode from "qrcode";
 import { AnimatedUr, UrCollector, WrongUrType, startQrScanner, urFromJson, urToJson, type QrScanner, type UrJson } from "@clip-wallet/hardware/qr";
 import { userMessageOf } from "../client";
 import { ErrorNote, Spinner } from "../components";
+import { useUiT } from "../i18n";
 
 export type ScannerStart = typeof startQrScanner;
 
 /** Collects one UR of the expected types from the camera; calls onComplete once. */
 export function UrScanner(props: { expect: string[]; onComplete: (ur: UrJson) => void; start?: ScannerStart; label?: string }) {
+  const t = useUiT();
   const video = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [err, setErr] = useState<string | null>(null);
   const done = useRef(false);
   const { onComplete } = props;
   const expectKey = props.expect.join(",");
+  // A ref, so a language change doesn't restart the camera.
+  const wrongCode = useRef("");
+  wrongCode.current = t("hardware.qr.wrongCode");
 
   useEffect(() => {
     let scanner: QrScanner | undefined;
@@ -38,7 +43,7 @@ export function UrScanner(props: { expect: string[]; onComplete: (ur: UrJson) =>
             onComplete(ur);
           }
         } catch (e) {
-          setErr(e instanceof WrongUrType ? "That's a different QR code. Scan the one your Keystone shows for this step." : userMessageOf(e));
+          setErr(e instanceof WrongUrType ? wrongCode.current : userMessageOf(e));
         }
       },
     })
@@ -55,9 +60,9 @@ export function UrScanner(props: { expect: string[]; onComplete: (ur: UrJson) =>
 
   return (
     <div className="clip-stack">
-      <video ref={video} className="clip-scan-video" muted playsInline aria-label={props.label ?? "Camera preview"} />
-      <div role="progressbar" aria-label="Scanned" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="clip-hint">
-        {progress > 0 && progress < 1 ? `Reading… ${Math.round(progress * 100)}%` : "Hold the code steady in front of the camera."}
+      <video ref={video} className="clip-scan-video" muted playsInline aria-label={props.label ?? t("hardware.qr.camera")} />
+      <div role="progressbar" aria-label={t("hardware.qr.scanned")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="clip-hint">
+        {progress > 0 && progress < 1 ? t("hardware.qr.reading", { pct: Math.round(progress * 100) }) : t("hardware.qr.hold")}
       </div>
       <ErrorNote message={err} />
     </div>

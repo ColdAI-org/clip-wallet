@@ -5,8 +5,10 @@
  * these messages (the background checks the sender is an extension page).
  */
 import { z } from "zod";
+import { LOCALE_CODES } from "@clip-wallet/i18n";
 import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
+import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
 import type {
   AccountView,
   ActiveAccounts,
@@ -41,6 +43,7 @@ export const PrefsPatch = z
     hideSmallBalances: z.boolean(),
     showSpam: z.boolean(),
     rpcOverrides: z.record(z.string().max(200), z.string().url().startsWith("https://").max(500)),
+    locale: z.enum(["system", ...LOCALE_CODES]),
   })
   .partial()
   .strict();
@@ -93,6 +96,7 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
   ...FEATURE_REQUESTS,
+  ...SOCIAL_REQUESTS,
   // hardware wallets (Ledger, Keystone)
   z.object({ type: z.literal("hwLedgerAccounts"), family: hwFamily, start: z.number().int().min(0).max(1000), count: z.number().int().min(1).max(20), pathStyle: pathStyle.optional() }),
   z.object({ type: z.literal("hwKeystoneImport"), ur: urJson }),
@@ -125,7 +129,7 @@ export type Request = z.infer<typeof Request>;
 export type RequestType = Request["type"];
 
 /** What each request returns. Kept beside the schema so client and service can't drift. */
-export interface ResponseMap extends FeatureResponseMap {
+export interface ResponseMap extends FeatureResponseMap, SocialResponseMap {
   getState: WalletState;
   setPrefs: Prefs;
   createWallet: void;

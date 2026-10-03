@@ -15,18 +15,30 @@
  *  - Older browsers can use the web-bridge page on a configured origin.
  */
 
+import type { UiMessageId } from "../i18n/en";
+
 export interface PasskeyPrf {
   enroll(prfInput: Uint8Array): Promise<{ credentialId: Uint8Array; prfOutput: Uint8Array }>;
   evaluate(credentialId: Uint8Array, prfInput: Uint8Array): Promise<Uint8Array>;
 }
 
 export class PasskeyError extends Error {
+  /**
+   * `userMessage` is the English text (callers without a translator, e.g. the extension bridge, pass only
+   * that); `messageId` names the same text in the UI catalog so screens can show it translated.
+   */
   constructor(
     public readonly userMessage: string,
     public readonly code: "unsupported" | "no-prf" | "cancelled" | "failed",
+    public readonly messageId?: UiMessageId,
   ) {
     super(`${code}: ${userMessage}`);
   }
+}
+
+/** Translated text for an error from a passkey ceremony; falls back to `fallback` (usually userMessageOf). */
+export function passkeyErrorText(e: unknown, t: (id: UiMessageId) => string, fallback: (e: unknown) => string): string {
+  return e instanceof PasskeyError && e.messageId ? t(e.messageId) : fallback(e);
 }
 
 export function b64urlEncode(bytes: Uint8Array | ArrayBuffer): string {
@@ -72,12 +84,12 @@ function mapError(err: unknown): PasskeyError {
   if (err instanceof PasskeyError) return err;
   const name = err && typeof err === "object" && "name" in err ? String((err as { name: unknown }).name) : "";
   if (name === "NotAllowedError" || name === "AbortError") {
-    return new PasskeyError("Passkey request was cancelled. You can try again or use your password.", "cancelled");
+    return new PasskeyError("Passkey request was cancelled. You can try again or use your password.", "cancelled", "onboarding.passkeyError.cancelled");
   }
   if (name === "NotSupportedError" || name === "SecurityError") {
-    return new PasskeyError("This browser can't use a passkey here. Your password still works.", "unsupported");
+    return new PasskeyError("This browser can't use a passkey here. Your password still works.", "unsupported", "onboarding.passkeyError.unsupported");
   }
-  return new PasskeyError("The passkey didn't respond. Your password still works.", "failed");
+  return new PasskeyError("The passkey didn't respond. Your password still works.", "failed", "onboarding.passkeyError.failed");
 }
 
 export class WebAuthnPasskeyPrf implements PasskeyPrf {
@@ -86,7 +98,7 @@ export class WebAuthnPasskeyPrf implements PasskeyPrf {
   private get creds(): CredentialsContainer {
     const c = this.o.credentials ?? (typeof navigator !== "undefined" ? navigator.credentials : undefined);
     if (!c || typeof PublicKeyCredential === "undefined") {
-      throw new PasskeyError("This browser can't use a passkey here. Your password still works.", "unsupported");
+      throw new PasskeyError("This browser can't use a passkey here. Your password still works.", "unsupported", "onboarding.passkeyError.unsupported");
     }
     return c;
   }
@@ -113,7 +125,7 @@ export class WebAuthnPasskeyPrf implements PasskeyPrf {
     } catch (e) {
       throw mapError(e);
     }
-    if (!cred) throw new PasskeyError("Passkey request was cancelled.", "cancelled");
+    if (!cred) throw new PasskeyError("Passkey request was cancelled.", "cancelled", "onboarding.passkeyError.cancelledShort");
     const credentialId = new Uint8Array(cred.rawId);
     const ext = cred.getClientExtensionResults() as PrfResults;
     if (ext.prf?.results?.first) {
@@ -123,6 +135,7 @@ export class WebAuthnPasskeyPrf implements PasskeyPrf {
       throw new PasskeyError(
         "This passkey can't unlock a wallet (no PRF support). Your password still works.",
         "no-prf",
+        "onboarding.passkeyError.noPrf",
       );
     }
     // Many authenticators report prf.enabled at creation and only evaluate on get().
@@ -150,6 +163,7 @@ export class WebAuthnPasskeyPrf implements PasskeyPrf {
       throw new PasskeyError(
         "This passkey can't unlock a wallet (no PRF support). Your password still works.",
         "no-prf",
+        "onboarding.passkeyError.noPrf",
       );
     }
     return toBytes(first);
@@ -203,7 +217,7 @@ export async function runPasskeyCeremony(
       credentialId = b64urlEncode(r.credentialId);
       prfOutput = r.prfOutput;
     } else {
-      if (!c.credentialId) throw new PasskeyError("Passkey unlock isn't set up on this device. Use your password.", "unsupported");
+      if (!c.credentialId) throw new PasskeyError("Passkey unlock isn't set up on this device. Use your password.", "unsupported", "onboarding.passkeyError.notSetUp");
       credentialId = c.credentialId;
       prfOutput = await prf.evaluate(b64urlDecode(c.credentialId), b64urlDecode(c.prfInput));
     }

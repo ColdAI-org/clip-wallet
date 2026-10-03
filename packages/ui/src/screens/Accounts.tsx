@@ -4,6 +4,7 @@ import { userMessageOf } from "../client";
 import { useAsync, useUi } from "../context";
 import { Button, Card, ErrorNote, Field, Screen, Spinner } from "../components";
 import { FAMILY_LABEL, asPlatform, type AccountView, type ActiveAccounts } from "../platform/client";
+import { useUiT } from "../i18n";
 
 /**
  * Settings → Accounts. Several accounts per kind (all from the same recovery phrase), a name for each, and
@@ -15,6 +16,7 @@ function short(a: string): string {
 }
 
 function AccountRow(props: { account: AccountView; active: boolean; onRename: (label: string) => Promise<void>; onUse: () => Promise<void> }) {
+  const t = useUiT();
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(props.account.label);
   const a = props.account;
@@ -29,15 +31,15 @@ function AccountRow(props: { account: AccountView; active: boolean; onRename: (l
               setEditing(false);
             }}
           >
-            <Field label={`Name for ${a.label}`} value={label} maxLength={32} autoFocus onChange={(e) => setLabel(e.target.value)} />
+            <Field label={t("accounts.nameFor", { account: a.label })} value={label} maxLength={32} autoFocus onChange={(e) => setLabel(e.target.value)} />
             <Button type="submit" disabled={!label.trim()}>
-              Save
+              {t("common.save")}
             </Button>
           </form>
         ) : (
           <>
             <span className="clip-asset-row__name">
-              {a.label} {props.active && <span className="clip-chip clip-chip--accent">In use</span>}
+              {a.label} {props.active && <span className="clip-chip clip-chip--accent">{t("accounts.inUse")}</span>}
             </span>
             <span className="clip-asset-row__symbol clip-mono" title={a.displayAddress ?? a.address}>
               {short(a.displayAddress ?? a.address)}
@@ -47,12 +49,12 @@ function AccountRow(props: { account: AccountView; active: boolean; onRename: (l
       </div>
       {!editing && (
         <div className="clip-header__actions">
-          <Button variant="ghost" onClick={() => setEditing(true)} aria-label={`Rename ${a.label}`}>
-            Rename
+          <Button variant="ghost" onClick={() => setEditing(true)} aria-label={t("accounts.renameAccount", { account: a.label })}>
+            {t("accounts.rename")}
           </Button>
           {!props.active && (
-            <Button variant="secondary" onClick={() => void props.onUse()} aria-label={`Use ${a.label}`}>
-              Use
+            <Button variant="secondary" onClick={() => void props.onUse()} aria-label={t("accounts.useAccount", { account: a.label })}>
+              {t("accounts.use")}
             </Button>
           )}
         </div>
@@ -65,6 +67,7 @@ function AccountRow(props: { account: AccountView; active: boolean; onRename: (l
  * `origin` set: choose which account that one app sees (per kind). Otherwise: the wallet-wide default.
  */
 export function Accounts(props: { origin?: string }) {
+  const t = useUiT();
   const { client } = useUi();
   const p = asPlatform(client);
   const data = useAsync(async () => {
@@ -84,23 +87,25 @@ export function Accounts(props: { origin?: string }) {
     }
   };
 
-  if (data.loading && !data.data) return <Screen title="Accounts" back><Spinner /></Screen>;
-  if (!data.data) return <Screen title="Accounts" back><ErrorNote message={userMessageOf(data.error)} /></Screen>;
+  if (data.loading && !data.data) return <Screen title={t("accounts.title")} back><Spinner /></Screen>;
+  if (!data.data) return <Screen title={t("accounts.title")} back><ErrorNote message={userMessageOf(data.error)} /></Screen>;
   const { accounts, active } = data.data;
   const byFamily = new Map<Family, AccountView[]>();
   for (const a of accounts) byFamily.set(a.family, [...(byFamily.get(a.family) ?? []), a]);
   const activeId = (f: Family, a: ActiveAccounts) => a.forOrigin?.[f] ?? a.defaults[f] ?? byFamily.get(f)?.[0]?.id;
+  // "evm" is the only kind whose label is a description rather than a network name.
+  const familyLabel = (f: Family) => (f === "evm" ? t("accounts.family.evm") : FAMILY_LABEL[f] ?? f);
   const host = props.origin ? (() => { try { return new URL(props.origin).hostname; } catch { return props.origin; } })() : null;
 
   return (
-    <Screen title={host ? `Accounts for ${host}` : "Accounts"} back>
+    <Screen title={host ? t("accounts.titleFor", { host }) : t("accounts.title")} back>
       <div className="clip-stack">
-        {host && <p className="clip-lede">Choose which account {host} sees. Other apps keep their own choice.</p>}
+        {host && <p className="clip-lede">{t("accounts.chooseFor", { host })}</p>}
         <ErrorNote message={err} />
         {[...byFamily.entries()].map(([family, list]) => (
           <Card key={family}>
-            <h2 className="clip-h2">{FAMILY_LABEL[family] ?? family}</h2>
-            <ul className="clip-list" aria-label={FAMILY_LABEL[family] ?? family}>
+            <h2 className="clip-h2">{familyLabel(family)}</h2>
+            <ul className="clip-list" aria-label={familyLabel(family)}>
               {list.map((a) => (
                 <AccountRow
                   key={a.id}
@@ -126,12 +131,12 @@ export function Accounts(props: { origin?: string }) {
                   })
                 }
               >
-                {adding === family ? "Adding…" : "Add account"}
+                {adding === family ? t("accounts.adding") : t("accounts.add")}
               </Button>
             )}
             {host && active.forOrigin?.[family] && (
               <Button variant="ghost" onClick={() => act(() => p.setActiveAccount({ family, accountId: null, origin: props.origin! }))}>
-                Use my default account here
+                {t("accounts.useDefault")}
               </Button>
             )}
           </Card>

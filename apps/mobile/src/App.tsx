@@ -17,6 +17,10 @@ import { Scan } from "./screens/Scan";
 import { Browser } from "./screens/Browser";
 import { Explore } from "./screens/Explore";
 import { ApprovalScreen } from "./screens/Approval";
+import { Contacts } from "./screens/Contacts";
+import { ContactEdit } from "./screens/ContactEdit";
+import { Notifications } from "./screens/Notifications";
+import { useNotificationBridge } from "./ui/notifications";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
 
@@ -43,6 +47,12 @@ function Routes(props: { route: Route }) {
       return <Scan />;
     case "explore":
       return <Explore />;
+    case "contacts":
+      return <Contacts />;
+    case "contact":
+      return <ContactEdit key={r.id ?? "new"} id={r.id} address={r.address} family={r.family} />;
+    case "notifications":
+      return <Notifications />;
   }
 }
 
@@ -71,6 +81,7 @@ function ApprovalSheet() {
 
 function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
   const { state, refresh, route, navigate, client, theme } = useWallet();
+  useNotificationBridge(!!state && state.status !== "empty");
   useEffect(() => {
     if (state?.status !== "unlocked" || !props.pendingLink) return;
     const l = props.pendingLink;

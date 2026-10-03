@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "Stake",
+  "stake.lede": "Sahip olduğunuz coinlerle ödül kazanın. Kontrol her zaman sizde kalır.",
+  "stake.empty.title": "Henüz stake edilecek bir şey yok",
+  "stake.empty.body": "Stake edebileceğiniz coinler burada görünür.",
+  "stake.change": "Değiştir",
+  "stake.stakeSymbol": "{symbol} stake et",
+  "stake.stakeAmount": "{amount} {symbol} stake et",
+  "stake.stakeAll": "{symbol} bakiyemi stake et",
+  "stake.with": "Kiminle",
+  "stake.rewardsOnTheWay": "Ödüller yolda",
+  "stake.action.unstake": "Stake'ten çıkar",
+  "stake.action.withdraw": "Bakiyeye aktar",
+  "stake.action.claim": "Ödülleri topla",
+  "stake.action.change": "Değiştir",
+  "stake.amount": "Miktar",
+  "stake.amountBad": "2 veya 0.5 gibi bir miktar girin.",
+  "stake.amountMissing": "Ne kadar stake edeceğinizi girin.",
+  "stake.where": "Nerede",
+  "stake.whereLabel": "Nerede stake edilecek",
+  "stake.pickedForYou": "Sizin için seçildi",
+} satisfies Record<keyof typeof en, string>;

@@ -4,7 +4,8 @@
  * Requests still go through the zod schema: the UI is trusted code, but the check costs nothing and keeps
  * both hosts identical.
  */
-import type { FeaturesClient, WalletClient } from "@clip-wallet/ui";
+import type { FeaturesClient, SocialClient, WalletClient } from "@clip-wallet/ui";
+import { createSocialClient } from "@clip-wallet/ui";
 import { ClipError } from "@clip-wallet/core";
 import type { WalletEngine } from "./engine.js";
 
@@ -82,4 +83,9 @@ export function createEngineFeaturesClient(engine: WalletEngine, opts: { openExt
       await opts.openExternal(u.toString());
     },
   };
+}
+
+/** In-process SocialClient (contacts, handles, notifications, Discover) over the engine. */
+export function createEngineSocialClient(engine: WalletEngine, opts: { requestNotificationPermission?: () => Promise<boolean> } = {}): SocialClient {
+  return createSocialClient((msg) => engine.handleUntrusted(msg), opts);
 }

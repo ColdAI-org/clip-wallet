@@ -12,6 +12,7 @@ import type { Warning } from "@clip-wallet/core";
 import { hueFor } from "@clip-wallet/ui";
 import { TABS, useWallet, type Route } from "./context";
 import { IconAlert, IconBack, IconClock, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
+import { useMobileT, type MobileMessageId } from "../i18n";
 
 /* ------------------------------------------------------------------ text */
 
@@ -91,6 +92,7 @@ export function IconButton(props: { onPress: () => void; label: string; children
 
 export function Screen(props: { title?: ReactNode; back?: boolean | (() => void); actions?: ReactNode; children: ReactNode; nav?: boolean; scroll?: boolean; footer?: ReactNode }) {
   const { theme, back } = useWallet();
+  const t = useMobileT();
   const insets = useSafeAreaInsets();
   const onBack = typeof props.back === "function" ? props.back : back;
   const body = (
@@ -101,7 +103,7 @@ export function Screen(props: { title?: ReactNode; back?: boolean | (() => void)
       {(props.title || props.back || props.actions) && (
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: theme.s(3), height: 48, gap: 8 }}>
           {props.back ? (
-            <IconButton onPress={onBack} label="Back" testID="back">
+            <IconButton onPress={onBack} label={t("m.common.back")} testID="back">
               <IconBack color={theme.c.text} size={24} />
             </IconButton>
           ) : (
@@ -118,16 +120,17 @@ export function Screen(props: { title?: ReactNode; back?: boolean | (() => void)
   );
 }
 
-const TAB_META: Record<(typeof TABS)[number], { label: string; Icon: typeof IconHome }> = {
-  home: { label: "Home", Icon: IconHome },
-  collectibles: { label: "Collectibles", Icon: IconGrid },
-  activity: { label: "Activity", Icon: IconClock },
-  browser: { label: "Browse", Icon: IconGlobe },
-  settings: { label: "Settings", Icon: IconGear },
+const TAB_META: Record<(typeof TABS)[number], { label: MobileMessageId; Icon: typeof IconHome }> = {
+  home: { label: "m.common.tab.home", Icon: IconHome },
+  collectibles: { label: "m.common.tab.collectibles", Icon: IconGrid },
+  activity: { label: "m.common.tab.activity", Icon: IconClock },
+  browser: { label: "m.common.tab.browse", Icon: IconGlobe },
+  settings: { label: "m.common.tab.settings", Icon: IconGear },
 };
 
 export function TabBar() {
   const { theme, route, navigate } = useWallet();
+  const t = useMobileT();
   const insets = useSafeAreaInsets();
   return (
     <View accessibilityRole="tablist" style={{ flexDirection: "row", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.c.border, backgroundColor: theme.c.surface, paddingBottom: insets.bottom, paddingTop: 6 }}>
@@ -138,7 +141,7 @@ export function TabBar() {
         return (
           <Pressable key={name} testID={`tab-${name}`} accessibilityRole="tab" accessibilityState={{ selected: active }} onPress={() => navigate({ name } as Route)} style={{ flex: 1, alignItems: "center", gap: 2, paddingVertical: 4 }}>
             <Icon color={color} size={22} />
-            <Text style={{ fontSize: 11, color, fontWeight: active ? "600" : "400" }}>{label}</Text>
+            <Text style={{ fontSize: 11, color, fontWeight: active ? "600" : "400" }}>{t(label)}</Text>
           </Pressable>
         );
       })}
@@ -256,7 +259,8 @@ export function ErrorNote(props: { message: string | null | undefined }) {
 
 export function Spinner() {
   const { theme } = useWallet();
-  return <ActivityIndicator color={theme.c.accent} accessibilityLabel="Loading" style={{ padding: 16 }} />;
+  const t = useMobileT();
+  return <ActivityIndicator color={theme.c.accent} accessibilityLabel={t("m.kit.loading")} style={{ padding: 16 }} />;
 }
 
 export function Empty(props: { title: string; children?: ReactNode }) {
@@ -303,11 +307,12 @@ export function Qr(props: { value: string; label: string; size?: number }) {
 }
 
 export function CopyButton(props: { value: string; label?: string }) {
+  const t = useMobileT();
   const [done, setDone] = useState(false);
   useEffect(() => {
     if (!done) return;
-    const t = setTimeout(() => setDone(false), 1500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDone(false), 1500);
+    return () => clearTimeout(timer);
   }, [done]);
   return (
     <Button
@@ -318,7 +323,7 @@ export function CopyButton(props: { value: string; label?: string }) {
         setDone(true);
       }}
     >
-      {done ? "Copied" : props.label ?? "Copy"}
+      {done ? t("m.common.copied") : props.label ?? t("m.common.copy")}
     </Button>
   );
 }

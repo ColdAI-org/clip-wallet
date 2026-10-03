@@ -10,6 +10,7 @@ import config from "../../clip.config";
 import { CURRENCIES, MEDIA_PROXY_URL } from "../app-settings";
 import { createBusClient } from "../shared/bus";
 import { createFeaturesBusClient } from "../shared/features-bus";
+import { createSocialBusClient } from "../shared/social-bus";
 import { hardwareClient } from "../shared/hardware-client";
 import { createPasskeyFactory } from "../passkey/bridge";
 
@@ -27,7 +28,7 @@ export function mountWallet(variant: Exclude<Variant, "window">) {
   const client = createBusClient(undefined, __CLIP_MOCKS__);
   // The action popup can't host a WebAuthn ceremony (the OS sheet closes it); the tab can.
   const passkeys = createPasskeyFactory(variant === "tab");
-  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} hardware={hardwareClient} />);
+  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} hardware={hardwareClient} social={createSocialBusClient()} />);
 }
 
 export function mountApprovalWindow() {
@@ -41,6 +42,7 @@ export function mountApprovalWindow() {
       passkeys={createPasskeyFactory(true)}
       focusId={focusId}
       hardware={hardwareClient}
+      social={createSocialBusClient()}
       onEmpty={() => window.close()}
     />,
   );

@@ -1,8 +1,16 @@
+import type messages from "../i18n/en/onboarding";
+
+type StrengthId = keyof typeof messages & `onboarding.strength.${string}`;
+
 export interface Strength {
   /** 0 (empty) – 4 (strong). */
   score: 0 | 1 | 2 | 3 | 4;
+  /** English label, kept for callers without a translator (apps/mobile). Prefer `labelId`. */
   label: string;
   hint?: string;
+  /** Message ids for `label` / `hint` (translate with the UI catalog's `t`). */
+  labelId?: StrengthId;
+  hintId?: StrengthId;
   acceptable: boolean;
 }
 
@@ -13,7 +21,14 @@ export function passwordStrength(pw: string): Strength {
   if (!pw) return { score: 0, label: "", acceptable: false };
   const lower = pw.toLowerCase();
   if (COMMON.some((c) => lower.includes(c)) && pw.length < 16) {
-    return { score: 1, label: "Too common", hint: "Avoid well-known words and number runs.", acceptable: false };
+    return {
+      score: 1,
+      label: "Too common",
+      hint: "Avoid well-known words and number runs.",
+      labelId: "onboarding.strength.tooCommon",
+      hintId: "onboarding.strength.tooCommonHint",
+      acceptable: false,
+    };
   }
   let classes = 0;
   if (/[a-z]/.test(pw)) classes++;
@@ -23,8 +38,26 @@ export function passwordStrength(pw: string): Strength {
   const unique = new Set(pw).size;
   let bits = pw.length * Math.log2(Math.max(10, classes * 18));
   if (unique < pw.length / 2) bits *= 0.6;
-  if (pw.length < 8) return { score: 1, label: "Too short", hint: "Use at least 8 characters.", acceptable: false };
-  if (bits < 45) return { score: 2, label: "Okay", hint: "Longer is better — try a few unrelated words.", acceptable: true };
-  if (bits < 70) return { score: 3, label: "Good", acceptable: true };
-  return { score: 4, label: "Strong", acceptable: true };
+  if (pw.length < 8) {
+    return {
+      score: 1,
+      label: "Too short",
+      hint: "Use at least 8 characters.",
+      labelId: "onboarding.strength.tooShort",
+      hintId: "onboarding.strength.tooShortHint",
+      acceptable: false,
+    };
+  }
+  if (bits < 45) {
+    return {
+      score: 2,
+      label: "Okay",
+      hint: "Longer is better — try a few unrelated words.",
+      labelId: "onboarding.strength.okay",
+      hintId: "onboarding.strength.okayHint",
+      acceptable: true,
+    };
+  }
+  if (bits < 70) return { score: 3, label: "Good", labelId: "onboarding.strength.good", acceptable: true };
+  return { score: 4, label: "Strong", labelId: "onboarding.strength.strong", acceptable: true };
 }

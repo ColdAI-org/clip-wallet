@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "Staking",
+  "stake.lede": "Gagnez des récompenses sur les cryptos que vous détenez. Vous gardez le contrôle du début à la fin.",
+  "stake.empty.title": "Rien à staker pour l'instant",
+  "stake.empty.body": "Les cryptos que vous pouvez staker apparaissent ici.",
+  "stake.change": "Modifier",
+  "stake.stakeSymbol": "Staker {symbol}",
+  "stake.stakeAmount": "Staker {amount} {symbol}",
+  "stake.stakeAll": "Staker mes {symbol}",
+  "stake.with": "Avec",
+  "stake.rewardsOnTheWay": "Récompenses en route",
+  "stake.action.unstake": "Retirer du staking",
+  "stake.action.withdraw": "Transférer vers le solde",
+  "stake.action.claim": "Récupérer les récompenses",
+  "stake.action.change": "Modifier",
+  "stake.amount": "Montant",
+  "stake.amountBad": "Saisissez un montant comme 2 ou 0,5.",
+  "stake.amountMissing": "Indiquez le montant à staker.",
+  "stake.where": "Où",
+  "stake.whereLabel": "Où staker",
+  "stake.pickedForYou": "Choisi pour vous",
+} satisfies Record<keyof typeof en, string>;

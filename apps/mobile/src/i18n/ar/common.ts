@@ -1,0 +1,21 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "رجوع",
+  "m.common.continue": "متابعة",
+  "m.common.cancel": "إلغاء",
+  "m.common.copy": "نسخ",
+  "m.common.copied": "تم النسخ",
+  "m.common.max": "الحد الأقصى",
+  "m.common.send": "إرسال",
+  "m.common.receive": "استلام",
+  "m.common.somethingWentWrong": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
+  "m.common.tab.home": "الرئيسية",
+  "m.common.tab.collectibles": "المقتنيات",
+  "m.common.tab.activity": "النشاط",
+  "m.common.tab.browse": "التصفح",
+  "m.common.tab.settings": "الإعدادات",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "بعد لحظات",
+  "m.common.readyIn.seconds": "بعد نحو {n, plural, zero {# ثانية} one {ثانية واحدة} two {ثانيتين} few {# ثوانٍ} many {# ثانية} other {# ثانية}}",
+  "m.common.readyIn.minutes": "بعد نحو {n, plural, zero {# دقيقة} one {دقيقة واحدة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
+} satisfies Record<keyof typeof en, string>;

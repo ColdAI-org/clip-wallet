@@ -7,6 +7,7 @@
 import type { Family, NetworkId } from "@clip-wallet/core";
 import type { PasskeyCeremony } from "../lib/passkey";
 import type { WalletClient } from "../client";
+import type { UiMessageId } from "../i18n/en";
 
 /** Public metadata of one passkey-encrypted backup stored by services/backup. */
 export interface PasskeyBackupView {
@@ -94,7 +95,7 @@ export function asPlatform(client: WalletClient): FullClient {
   return client as FullClient;
 }
 
-/** Plain-words family names for account lists (the network itself stays invisible). */
+/** Plain-words family names for account lists (the network itself stays invisible). English; see familyLabel. */
 export const FAMILY_LABEL: Partial<Record<Family, string>> = {
   evm: "Ethereum-style (ETH, USDC, Base, Arbitrum…)",
   hedera: "Hedera (HBAR)",
@@ -111,3 +112,17 @@ export const FAMILY_LABEL: Partial<Record<Family, string>> = {
   tezos: "Tezos",
   algorand: "Algorand",
 };
+
+/** Catalog ids for the FAMILY_LABEL entries that carry words or a ticker list; the others are bare network names. */
+export const FAMILY_LABEL_ID: Partial<Record<Family, UiMessageId>> = {
+  evm: "backup.family.evm",
+  hedera: "backup.family.hedera",
+  solana: "backup.family.solana",
+  bitcoin: "backup.family.bitcoin",
+};
+
+/** The family's display name in the current locale (network names themselves are never translated). */
+export function familyLabel(family: Family, t: (id: UiMessageId) => string): string {
+  const id = FAMILY_LABEL_ID[family];
+  return id ? t(id) : (FAMILY_LABEL[family] ?? family);
+}

@@ -7,10 +7,13 @@ import { userMessageOf } from "../client";
 import { useUi } from "../context";
 import { Button, Chip, ErrorNote, Row, Toggle, Warnings } from "../components";
 import { IconChevron, IconShield, IconAlert } from "../components/icons";
-import { formatFiat, formatUnits, readyIn } from "../lib/format";
+import { formatFiat, formatLocale, formatUnits, readyInMessage } from "../lib/format";
+import { useUiT } from "../i18n";
+import { RecipientCheck } from "../social/RecipientCheck";
 import { hueFor } from "../lib/media";
 
 function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
+  const t = useUiT();
   const { dapp, network } = props.approval;
   const hue = hueFor(dapp.domain);
   return (
@@ -23,7 +26,7 @@ function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
         <div className={`clip-approval__domain ${dapp.verified ? "is-verified" : "is-unverified"}`}>
           {dapp.verified ? <IconShield width={14} height={14} /> : <IconAlert width={14} height={14} />}
           <span>{dapp.domain}</span>
-          <span className="clip-visually-hidden">{dapp.verified ? "(verified)" : "(not verified)"}</span>
+          <span className="clip-visually-hidden">{dapp.verified ? t("approval.verified") : t("approval.notVerified")}</span>
         </div>
       </div>
       <Chip tone="muted" className="clip-network-chip" title={props.advanced ? network.id : undefined}>
@@ -46,7 +49,8 @@ function ChangeLine(props: { change: BalanceChange }) {
 }
 
 export function TransactionApproval(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
-  const { client, state } = useUi();
+  const t = useUiT();
+  const { client, state, config } = useUi();
   const a = props.approval;
   const d = a.decoded!;
   const advanced = !!state?.prefs.advanced;
@@ -84,6 +88,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
     }
   };
 
+  const ready = readyInMessage(a.plan?.readyInSeconds ?? 10);
   const steps = a.plan?.steps ?? [
     { kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges },
   ];
@@ -94,15 +99,17 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 
       <div className="clip-approval__hero">
         <h1 id={`${detailsId}-t`} className="clip-approval__title">
-          {d.blind ? "Unreadable request" : d.title}
+          {d.blind ? t("approval.unreadable") : d.title}
         </h1>
         {a.fiatValue !== undefined && !d.blind && <p className="clip-approval__fiat">{formatFiat(a.fiatValue, currency)}</p>}
       </div>
 
+      {a.recipient && <RecipientCheck address={a.recipient.address} family={a.recipient.family} />}
+
       <div className="clip-rows">
-        {movesMoney && <Row label="From" value={a.plan?.source ?? "Your balance"} />}
-        {d.fee && <Row label="Fee" value={feeText} hint={a.plan?.sponsored ? "network fee covered" : undefined} />}
-        {(movesMoney || d.fee) && <Row label="Ready" value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
+        {movesMoney && <Row label={t("approval.from")} value={a.plan?.source ?? t("approval.yourBalance")} />}
+        {d.fee && <Row label={t("approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("approval.feeCovered") : undefined} />}
+        {(movesMoney || d.fee) && <Row label={t("approval.ready")} value={t(ready.id, ready)} />}
         {d.lines.map((l) => (
           <Row key={l.label} label={l.label} value={l.value} />
         ))}
@@ -115,7 +122,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
         aria-controls={detailsId}
         onClick={() => setOpen((o) => !o)}
       >
-        Details <IconChevron width={14} height={14} className={open ? "is-open" : ""} />
+        {t("approval.details")} <IconChevron width={14} height={14} className={open ? "is-open" : ""} />
       </button>
 
       {open && (
@@ -130,7 +137,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
                   <div className="clip-step__title">{s.title}</div>
                   {s.detail && <div className="clip-step__detail">{s.detail}</div>}
                   {s.balanceChanges && s.balanceChanges.length > 0 && (
-                    <ul className="clip-changes" aria-label={d.simulated ? "Simulated balance changes" : "Expected balance changes"}>
+                    <ul className="clip-changes" aria-label={d.simulated ? t("approval.simulatedChanges") : t("approval.expectedChanges")}>
                       {s.balanceChanges.map((c, j) => (
                         <ChangeLine key={j} change={c} />
                       ))}
@@ -141,13 +148,13 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
             ))}
           </ol>
           {a.plan?.settlement && <p className="clip-approval__settlement">{a.plan.settlement}</p>}
-          {!d.simulated && !d.blind && <p className="clip-approval__settlement">These changes are estimated; this network can't preview them.</p>}
+          {!d.simulated && !d.blind && <p className="clip-approval__settlement">{t("approval.estimated")}</p>}
           {advanced && (
             <div className="clip-advanced-block">
-              <Row label="Network" value={`${a.network.name} (${a.network.id})`} />
-              <Row label="Via" value={a.via} />
+              <Row label={t("approval.network")} value={t("approval.networkValue", { name: a.network.name, id: a.network.id })} />
+              <Row label={t("approval.via")} value={a.via} />
               {a.raw && (
-                <pre className="clip-raw" aria-label="Raw request">
+                <pre className="clip-raw" aria-label={t("approval.raw")}>
                   {a.raw}
                 </pre>
               )}
@@ -160,10 +167,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
         {d.blind && (
           <div className="clip-notice clip-notice--danger" role="alert">
             <IconAlert />
-            <span>
-              Clip Wallet can't read this request, so it's blocked. Signing something you can't read can empty your wallet.
-              {!advanced && " Only Advanced mode can override this."}
-            </span>
+            <span>{t(advanced ? "approval.blocked" : "approval.blockedNeedsAdvanced", { name: config.name })}</span>
           </div>
         )}
         {problem && (
@@ -175,8 +179,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
         <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
         {d.blind && advanced && (
           <Toggle
-            label="Sign this unreadable request anyway"
-            description="Only if you trust this site completely."
+            label={t("approval.blindToggle")}
+            description={t("approval.blindToggleHint")}
             checked={blindOk}
             onChange={setBlindOk}
           />
@@ -184,10 +188,10 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
         <ErrorNote message={err} />
         <div className="clip-actions">
           <Button variant="secondary" onClick={() => act(false)} disabled={busy}>
-            Reject
+            {t("approval.reject")}
           </Button>
           <Button onClick={() => act(true)} disabled={busy || blocked} aria-disabled={busy || blocked}>
-            Approve
+            {t("approval.approve")}
           </Button>
         </div>
       </div>
@@ -196,6 +200,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 }
 
 export function ConnectApproval(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
+  const t = useUiT();
   const { client, state, config } = useUi();
   const a = props.approval;
   const advanced = !!state?.prefs.advanced;
@@ -218,33 +223,30 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
     <div className="clip-approval">
       <DappHeader approval={a} advanced={advanced} />
       <div className="clip-approval__hero">
-        <h1 className="clip-approval__title">Connect to {a.dapp.name}?</h1>
-        <p className="clip-approval__fiat">
-          {a.dapp.name} will see your {a.connect?.accountLabel ?? "account"}. It can ask you to approve things, but can't move
-          anything without you.
-        </p>
+        <h1 className="clip-approval__title">{t("approval.connect.title", { app: a.dapp.name })}</h1>
+        <p className="clip-approval__fiat">{t("approval.connect.lede", { app: a.dapp.name, account: formatLocale() === "en" && a.connect?.accountLabel ? a.connect.accountLabel : t("approval.connect.account") })}</p>
       </div>
       <ul className="clip-bullets">
         {(a.connect?.permissions ?? []).map((p) => (
           <li key={p}>{p}</li>
         ))}
       </ul>
-      {advanced && a.connect && <Row label="Address" value={<code className="clip-mono">{a.connect.address}</code>} />}
+      {advanced && a.connect && <Row label={t("approval.connect.address")} value={<code className="clip-mono">{a.connect.address}</code>} />}
       <div className="clip-approval__bottom">
         {!a.dapp.verified && (
           <Warnings
             warnings={[
-              { level: "caution", code: "domain-mismatch", message: `${config.name} doesn't recognise ${a.dapp.domain}. Only connect if you opened it yourself.` },
+              { level: "caution", code: "domain-mismatch", message: t("approval.connect.unknown", { name: config.name, domain: a.dapp.domain }) },
             ]}
           />
         )}
         <ErrorNote message={err} />
         <div className="clip-actions">
           <Button variant="secondary" onClick={() => act(false)} disabled={busy}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={() => act(true)} disabled={busy}>
-            Connect
+            {t("approval.connect.connect")}
           </Button>
         </div>
       </div>

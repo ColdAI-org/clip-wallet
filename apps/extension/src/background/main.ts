@@ -13,6 +13,8 @@ import { createDependencies } from "./wiring";
 import { WalletService, type Env } from "./service";
 import { createFeatureHost, createFeatures } from "./features";
 import { withFixtureFeatures } from "./mocks/mock-features";
+import { startSocial } from "./social";
+import { COINGECKO_IDS } from "@clip-wallet/features";
 
 const AUTOLOCK_ALARM = "clip-autolock";
 
@@ -83,6 +85,26 @@ export function startBackground() {
   );
   // Fixture mode: sample staking, quotes and liquidity instead of live network calls.
   svc.attachFeatures(deps.mocks ? withFixtureFeatures(features) : features);
+
+  // Contacts, Clip handles, notifications and Discover (social stream).
+  svc.attachSocial(
+    startSocial({
+      networks: deps.networks,
+      assets: deps.assets,
+      chains: deps.chains,
+      loadChains: () => deps.loadChains(),
+      kv,
+      vault: deps.vault as never,
+      ctx: (id) => svc.featureCtx(id),
+      enqueue: async (request, appName) => ({ id: (await svc.enqueueWalletRequest(request, appName)).id }),
+      approvals: async () => svc.socialApprovals(),
+      prices: deps.prices,
+      walletName: config.name,
+      coingeckoIds: COINGECKO_IDS,
+      iconUrl: browser.runtime.getURL("/icon/128.png"),
+      ...(config.services.clipHandles ? { handles: config.services.clipHandles } : {}),
+    }),
+  );
 
   // 1Mask: content scripts connect a port per tab; the router cross-checks the browser-reported origin.
   browser.runtime.onConnect.addListener((port) => {

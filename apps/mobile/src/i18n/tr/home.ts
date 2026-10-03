@@ -1,0 +1,22 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "Cüzdanı kilitle",
+  "m.home.pending": "{n, plural, one {# istek sizi bekliyor} other {# istek sizi bekliyor}}",
+  "m.home.total": "Toplam bakiye",
+  "m.home.bridged": "köprülenmiş",
+  "m.home.empty.title": "Burada henüz bir şey yok",
+  "m.home.empty.body": "Başka bir cüzdandan veya borsadan para eklemek için Al'a dokunun.",
+  "m.home.hideSmall": "Küçük bakiyeleri gizle",
+  "m.home.spam.hide": "Şüpheli tokenları gizle",
+  "m.home.spam.hidden": "{n, plural, one {# şüpheli token gizlendi} other {# şüpheli token gizlendi}}",
+  "m.home.stale": "Bazı bakiyeler birkaç dakika eski olabilir.",
+
+  "m.home.asset.title": "Varlık",
+  "m.home.asset.gone": "Artık bu varlığa sahip değilsiniz",
+  "m.home.asset.pin": "Sabitle",
+  "m.home.asset.unpin": "Sabitlemeyi kaldır",
+  "m.home.asset.bridgedCopy": "köprülenmiş kopya — orijinal {symbol} değil",
+  "m.home.asset.where": "Nerede bulunuyor",
+  "m.home.asset.whereHint": "Bunu yönetmeniz gerekmez — {symbol}, bulunduğu yerden harcanır.",
+  "m.home.asset.contract": "Sözleşme ({network})",
+} satisfies Record<keyof typeof en, string>;

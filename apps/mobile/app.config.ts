@@ -41,6 +41,12 @@ const config: ExpoConfig = {
     ["expo-secure-store", { configureAndroidBackup: true, faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
     ["expo-local-authentication", { faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
     ["expo-camera", { cameraPermission: "Scan a connection QR code from an app.", microphonePermission: false, recordAudioAndroid: false }],
+    // Local notifications only (no push server): adds Android's POST_NOTIFICATIONS; iOS asks at runtime.
+    "expo-notifications",
+    // Background checks: UIBackgroundModes "processing" + BGTaskSchedulerPermittedIdentifiers on iOS, WorkManager on Android.
+    "expo-background-task",
+    // The phone's language list (Settings → Language: "Match device").
+    "expo-localization",
   ],
   experiments: { typedRoutes: false },
   extra: { mainnet: false },

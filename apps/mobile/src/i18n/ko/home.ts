@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "지갑 잠그기",
+  "m.home.pending": "{n, plural, other {요청 #개가 기다리고 있어요}}",
+  "m.home.total": "총 잔액",
+  "m.home.bridged": "브리지됨",
+  "m.home.empty.title": "아직 아무것도 없어요",
+  "m.home.empty.body": "받기를 눌러 다른 지갑이나 거래소에서 자금을 추가하세요.",
+  "m.home.hideSmall": "소액 잔액 숨기기",
+  "m.home.spam.hide": "의심스러운 토큰 숨기기",
+  "m.home.spam.hidden": "{n, plural, other {의심스러운 토큰 #개 숨김}}",
+  "m.home.stale": "일부 잔액은 몇 분 전 정보일 수 있어요.",
+  "m.home.asset.title": "자산",
+  "m.home.asset.gone": "더 이상 보유하고 있지 않아요",
+  "m.home.asset.pin": "고정",
+  "m.home.asset.unpin": "고정 해제",
+  "m.home.asset.bridgedCopy": "브리지된 사본 — 원본 {symbol} 아님",
+  "m.home.asset.where": "보관 위치",
+  "m.home.asset.whereHint": "따로 관리할 필요 없어요. {symbol}은(는) 있는 곳에서 바로 사용돼요.",
+  "m.home.asset.contract": "컨트랙트({network})",
+} satisfies Record<keyof typeof en, string>;

@@ -10,6 +10,8 @@ export const VaultErrors = {
   invalidPhrase: (why: string) =>
     new ClipError("That recovery phrase isn't valid. Check each word and the word order.", "vault/invalid-phrase", why),
   weakPassword: () => new ClipError("Choose a password with at least 8 characters.", "vault/weak-password"),
+  appDataUnreadable: (cause?: unknown) =>
+    new ClipError("Some saved wallet data (like your contacts) couldn't be opened on this device.", "vault/app-data-unreadable", cause),
   corrupt: (cause?: unknown) =>
     new ClipError("The wallet data on this device looks damaged. Restore from your recovery phrase.", "vault/corrupt", cause),
   noApproval: () =>

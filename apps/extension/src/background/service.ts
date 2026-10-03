@@ -33,6 +33,7 @@ import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/h
 import type { HardwareAccountView } from "@clip-wallet/ui";
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
+import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -127,6 +128,8 @@ export class WalletService implements DappHost {
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
   private features?: Pick<FeaturesService, "handle" | "refine">;
+  /** Contacts, Clip handles, notifications, Discover (social stream). */
+  private social?: Pick<SocialService, "handle" | "refine" | "onLock">;
   /** Accounts the user was just shown on "Connect a hardware wallet"; hwAddAccounts adds from here. */
   private hwSeen = new Map<string, HardwareAccount>();
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
@@ -167,6 +170,14 @@ export class WalletService implements DappHost {
   }
 
   /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
+
+  attachSocial(s: Pick<SocialService, "handle" | "refine" | "onLock">) {
+    this.social = s;
+  }
+  /** Public facts for the social host: approvals waiting now (for notifications). */
+  socialApprovals(): { id: string; app: string; title: string }[] {
+    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+  }
 
   attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
     this.features = f;
@@ -251,6 +262,12 @@ export class WalletService implements DappHost {
         return;
     }
 
+    if (isSocialRequest(m)) {
+      if (!this.social) throw new ClipError("This isn't available in this build.", "social/off");
+      // Notification settings and Discover work while locked; contacts and handles need the vault.
+      if (!SocialService.LOCKED_OK.has(m.type)) this.requireUnlocked(status);
+      return this.social.handle(m as SocialRequest);
+    }
     this.requireUnlocked(status);
     if (isFeatureRequest(m)) {
       if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
@@ -384,6 +401,7 @@ export class WalletService implements DappHost {
 
   async lock() {
     await this.deps.vault.lock();
+    this.social?.onLock();
     this.accounts.clear();
     this.deps.dapps.accountsChanged?.();
     this.deps.hardware.lock();
@@ -549,8 +567,8 @@ export class WalletService implements DappHost {
   async resolveRecipient(input: string, assetKey: string): Promise<RecipientResolution> {
     let address = input.trim();
     let displayName: string | undefined;
-    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream).
-    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream)$/i.test(address);
+    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream), Clip handles (@alex, alex.clip).
+    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address);
     let implied: string[] = [];
     let addressOn: Record<string, string> = {};
     if (looksLikeName) {
@@ -561,7 +579,10 @@ export class WalletService implements DappHost {
         return { kind: "invalid", message: `We couldn't look up ${address} right now. Try again, or paste their address.` };
       }
       if (!hit) return { kind: "invalid", message: `We couldn't find ${address}. Check the spelling, or paste their address.` };
-      address = hit.address;
+      // A Clip handle publishes one address per family: use the one for this asset's family.
+      const forAsset = hit.byFamily ? this.handleAddressFor(hit.byFamily, assetKey) : hit.address;
+      if (!forAsset) return { kind: "invalid", message: `${hit.displayName} hasn't published an address that can receive this.` };
+      address = forAsset;
       displayName = hit.displayName;
       implied = hit.networkIds ?? [];
       addressOn = hit.addressOn ?? {};
@@ -597,6 +618,12 @@ export class WalletService implements DappHost {
     };
   }
 
+  /** A Clip handle's address for the families that carry `assetKey` (first match). */
+  private handleAddressFor(byFamily: Partial<Record<Family, string>>, assetKey: string): string | undefined {
+    const fams = new Set(this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id)).map((n) => n.family));
+    return [...fams].map((f) => byFamily[f]).find((a): a is string => !!a);
+  }
+
   private async send(m: Extract<Request, { type: "send" }>): Promise<string> {
     const asset = this.deps.assets.find((a) => a.key === m.assetKey && a.networkId === m.networkId);
     if (!asset) throw new ClipError("That asset can't be sent there.", "send/asset");
@@ -608,7 +635,7 @@ export class WalletService implements DappHost {
     let to = m.to;
     if (!mod.isAddress(m.to)) {
       const hit = await this.deps.names.resolve(m.to).catch(() => null);
-      to = hit ? (hit.addressOn?.[m.networkId] ?? hit.address) : "";
+      to = hit ? (hit.addressOn?.[m.networkId] ?? hit.byFamily?.[network.family] ?? hit.address) : "";
     }
     if (!to || !mod.isAddress(to)) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
     const amount = parseUnits(m.amount, asset.decimals);
@@ -667,6 +694,7 @@ export class WalletService implements DappHost {
       };
     }
     decoded = this.features?.refine(request, decoded) ?? decoded;
+    decoded = this.social?.refine(request, decoded) ?? decoded;
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -694,6 +722,7 @@ export class WalletService implements DappHost {
       fiatValue,
       plan,
       raw: JSON.stringify({ method: request.method, params: request.params }, null, 2).slice(0, 4000),
+      ...(extra.recipient ? { recipient: { address: extra.recipient, family: network.family } } : {}),
     };
     let resolve!: (v: unknown) => void;
     let reject!: (e: unknown) => void;

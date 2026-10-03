@@ -5,6 +5,8 @@ import { useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync } from "../context";
 import { Button, Card, Chip, Empty, ErrorNote, Field, Screen, Spinner } from "../components";
+import { useUi } from "../context";
+import { useUiT } from "../i18n";
 import { FAMILY_WORDS, shortAddress, type HardwareAccountView, type HardwareClient } from "./types";
 
 interface Device {
@@ -34,6 +36,8 @@ function devices(accounts: HardwareAccountView[]): Device[] {
 }
 
 export function HardwareSettings(props: { hardware: HardwareClient; onAdd: () => void }) {
+  const t = useUiT();
+  const { config } = useUi();
   const { data, error, reload } = useAsync(() => props.hardware.listAccounts(), [props.hardware]);
   const [editing, setEditing] = useState<string | null>(null);
   const [label, setLabel] = useState("");
@@ -50,17 +54,17 @@ export function HardwareSettings(props: { hardware: HardwareClient; onAdd: () =>
   };
 
   return (
-    <Screen back title="Hardware wallets">
+    <Screen back title={t("hardware.settings.title")}>
       <ErrorNote message={error ? userMessageOf(error) : err} />
       {!data ? (
         <Spinner />
       ) : data.length === 0 ? (
-        <Empty title="No hardware wallet yet">Connect a Ledger or Keystone to keep your keys off this computer.</Empty>
+        <Empty title={t("hardware.settings.none.title")}>{t("hardware.settings.none.body")}</Empty>
       ) : (
         devices(data).map((d) => (
           <Card key={d.key}>
             <h2 className="clip-h">{d.name}</h2>
-            <ul className="clip-list" aria-label={`Accounts on ${d.name}`}>
+            <ul className="clip-list" aria-label={t("hardware.settings.accountsOn", { device: d.name })}>
               {d.accounts.map((a) => (
                 <li key={a.id} className="clip-row">
                   {editing === a.id ? (
@@ -71,21 +75,21 @@ export function HardwareSettings(props: { hardware: HardwareClient; onAdd: () =>
                         void run(() => props.hardware.renameAccount(a.id, label.trim()));
                       }}
                     >
-                      <Field label="Account name" value={label} onChange={(e) => setLabel(e.target.value)} autoFocus />
+                      <Field label={t("hardware.settings.accountName")} value={label} onChange={(e) => setLabel(e.target.value)} autoFocus />
                     </form>
                   ) : (
                     <>
                       <span className="clip-row__label">
-                        {a.label ?? `${FAMILY_WORDS[a.family].title} · Account ${a.index + 1}`}
-                        {a.hardware.pathStyle !== "standard" && <span className="clip-row__hint"> (Ledger Live)</span>}
+                        {a.label ?? t("hardware.settings.familyAccount", { family: t(FAMILY_WORDS[a.family].title), n: a.index + 1 })}
+                        {a.hardware.pathStyle !== "standard" && <span className="clip-row__hint">{t("hardware.settings.ledgerLive")}</span>}
                       </span>
                       <span className="clip-row__value">
-                        <code className="clip-mono">{a.address ? shortAddress(a.address) : "No account id yet"}</code>
+                        <code className="clip-mono">{a.address ? shortAddress(a.address) : t("hardware.settings.noId")}</code>
                         {a.active ? (
-                          <Chip tone="accent">In use</Chip>
+                          <Chip tone="accent">{t("hardware.settings.inUse")}</Chip>
                         ) : (
                           <Button variant="secondary" onClick={() => void run(() => props.hardware.setActive(a.family, a.id))}>
-                            Use this account
+                            {t("hardware.settings.use")}
                           </Button>
                         )}
                         <Button
@@ -95,7 +99,7 @@ export function HardwareSettings(props: { hardware: HardwareClient; onAdd: () =>
                             setLabel(a.label ?? "");
                           }}
                         >
-                          Rename
+                          {t("hardware.settings.rename")}
                         </Button>
                       </span>
                     </>
@@ -106,19 +110,19 @@ export function HardwareSettings(props: { hardware: HardwareClient; onAdd: () =>
             <Button
               variant="danger"
               onClick={() => {
-                if (globalThis.confirm?.(`Remove ${d.name} from Clip Wallet? Your funds stay on the device; you can connect it again any time.`) === false) return;
+                if (globalThis.confirm?.(t("hardware.settings.removeConfirm", { device: d.name, name: config.name })) === false) return;
                 void run(async () => {
                   for (const fp of new Set(d.accounts.map((a) => a.hardware.fingerprint))) await props.hardware.forgetDevice(d.kind, fp);
                 });
               }}
             >
-              Remove {d.name}
+              {t("hardware.settings.remove", { device: d.name })}
             </Button>
           </Card>
         ))
       )}
       <Button block onClick={props.onAdd}>
-        Connect a hardware wallet
+        {t("hardware.connect.title")}
       </Button>
     </Screen>
   );

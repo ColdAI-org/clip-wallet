@@ -26,3 +26,13 @@ jest.mock("react-native-webview", () => {
 jest.mock("react-native-passkey", () => ({ Passkey: { isSupported: () => false } }));
 jest.mock("expo-linking", () => ({ getInitialURL: async () => null, addEventListener: () => ({ remove() {} }) }));
 jest.mock("expo-status-bar", () => ({ StatusBar: () => null }));
+jest.mock("expo-notifications", () => ({
+  AndroidImportance: { DEFAULT: 3 },
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(async () => null),
+  getPermissionsAsync: jest.fn(async () => ({ granted: true, canAskAgain: true })),
+  requestPermissionsAsync: jest.fn(async () => ({ granted: true, canAskAgain: true })),
+  scheduleNotificationAsync: jest.fn(async () => "id"),
+  getLastNotificationResponseAsync: jest.fn(async () => null),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove() {} })),
+}));

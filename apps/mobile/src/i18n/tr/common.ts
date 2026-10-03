@@ -1,0 +1,21 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "Geri",
+  "m.common.continue": "Devam",
+  "m.common.cancel": "İptal",
+  "m.common.copy": "Kopyala",
+  "m.common.copied": "Kopyalandı",
+  "m.common.max": "Maks.",
+  "m.common.send": "Gönder",
+  "m.common.receive": "Al",
+  "m.common.somethingWentWrong": "Bir sorun oluştu. Lütfen tekrar deneyin.",
+  "m.common.tab.home": "Ana sayfa",
+  "m.common.tab.collectibles": "Koleksiyon",
+  "m.common.tab.activity": "Etkinlik",
+  "m.common.tab.browse": "Göz at",
+  "m.common.tab.settings": "Ayarlar",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "birazdan",
+  "m.common.readyIn.seconds": "yaklaşık {n, plural, one {# saniye} other {# saniye}} içinde",
+  "m.common.readyIn.minutes": "yaklaşık {n, plural, one {# dakika} other {# dakika}} içinde",
+} satisfies Record<keyof typeof en, string>;

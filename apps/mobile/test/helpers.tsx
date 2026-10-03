@@ -4,7 +4,9 @@
  */
 import { render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
-import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient } from "@clip-wallet/engine";
+import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSocialClient } from "@clip-wallet/engine";
+import { createSocial } from "@clip-wallet/engine/social";
+import type { Notice } from "@clip-wallet/social";
 import type { MobileWallet } from "../src/background/host";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
@@ -19,13 +21,33 @@ class PhraseVault extends FakeVault {
   }
 }
 
-export function testWallet(): MobileWallet & { vault: FakeVault } {
+export function testWallet(): MobileWallet & { vault: FakeVault; notices: Notice[] } {
   const events = new Events();
   const vault = new PhraseVault();
   const env = makeEnv((id) => events.emit({ type: "approval", id }));
   env.broadcast = () => events.emit({ type: "change" });
-  const engine = new WalletEngine(makeDeps(vault), new MemoryKV(), env);
+  const deps = makeDeps(vault);
+  const kv = new MemoryKV();
+  const engine = new WalletEngine(deps, kv, env);
   engine.start();
+  // Social services with no network: Discover fails plainly, notices are collected.
+  const notices: Notice[] = [];
+  engine.attachSocial(
+    createSocial({
+      networks: deps.networks,
+      assets: deps.assets,
+      chains: deps.chains,
+      kv,
+      ctx: (id) => engine.featureCtx(id),
+      enqueue: async (r, app) => ({ id: (await engine.enqueueWalletRequest(r, app)).id }),
+      approvals: async () => engine.socialApprovals(),
+      prices: deps.prices,
+      notifier: { show: async (n) => void notices.push(n) },
+      deviceLanguages: () => ["en-US"],
+      walletName: "Clip Wallet",
+      fetch: (async () => new Response("{}", { status: 503 })) as typeof fetch,
+    }),
+  );
   const client = createEngineClient(engine, { subscribe: (cb) => events.on((e) => e.type !== "approval" && cb()) });
   // Feature services with sample answers (the real ones call partner APIs).
   engine.attachFeatures({
@@ -38,11 +60,15 @@ export function testWallet(): MobileWallet & { vault: FakeVault } {
     }) as never,
   });
   const features = createEngineFeaturesClient(engine, { openExternal: async () => undefined });
+  const social = createEngineSocialClient(engine, { requestNotificationPermission: async () => true });
   return {
     vault,
     engine,
     client,
     features,
+    social,
+    notices,
+    pollNotifications: async () => undefined,
     events,
     argon2: { kind: "native", fn: async () => new Uint8Array(32), selfTest: Promise.resolve(true) },
     walletConnectEnabled: false,

@@ -1,0 +1,23 @@
+import type en from "../en/swap";
+export default {
+  "swap.title": "स्वैप",
+  "swap.youPayWith": "आप इससे भुगतान करेंगे",
+  "swap.sellAsset": "स्वैप करने के लिए एसेट",
+  "swap.amount": "राशि",
+  "swap.youHave": "आपके पास {amount} {symbol} है",
+  "swap.youGet": "आपको मिलेगा",
+  "swap.buyAsset": "पाने के लिए एसेट",
+  "swap.slippage": "कीमत इतनी बदल सकती है",
+  "swap.slippageHint": "अगर स्वैप होने से पहले कीमत इससे ज़्यादा बदल जाती है, तो स्वैप रुक जाता है और कुछ भी स्वैप नहीं होता।",
+  "swap.youPay": "आप भुगतान करेंगे",
+  "swap.route": "रूट",
+  "swap.priceImpact": "कीमत पर असर",
+  "swap.network": "नेटवर्क",
+  "swap.steps": "आप क्या मंज़ूर करेंगे",
+  "swap.reviewAndSwap": "देखें और स्वैप करें",
+  "swap.swap": "स्वैप करें",
+  "swap.gettingPrice": "सबसे अच्छी कीमत ढूंढी जा रही है…",
+  "swap.getPrice": "कीमत देखें",
+  "swap.amountBad": "25 या 0.5 जैसी राशि डालें।",
+  "swap.expired": "इस कीमत की समय-सीमा खत्म हो गई। नई कीमत लें।",
+} satisfies Record<keyof typeof en, string>;

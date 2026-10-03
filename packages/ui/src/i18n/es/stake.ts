@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "Staking",
+  "stake.lede": "Gana recompensas con las monedas que tienes. Mantienes el control en todo momento.",
+  "stake.empty.title": "Aún no hay nada para hacer staking",
+  "stake.empty.body": "Aquí aparecen las monedas con las que puedes hacer staking.",
+  "stake.change": "Cambiar",
+  "stake.stakeSymbol": "Staking de {symbol}",
+  "stake.stakeAmount": "Hacer staking de {amount} {symbol}",
+  "stake.stakeAll": "Hacer staking de mis {symbol}",
+  "stake.with": "Con",
+  "stake.rewardsOnTheWay": "Recompensas en camino",
+  "stake.action.unstake": "Retirar del staking",
+  "stake.action.withdraw": "Pasar al saldo",
+  "stake.action.claim": "Cobrar recompensas",
+  "stake.action.change": "Cambiar",
+  "stake.amount": "Cantidad",
+  "stake.amountBad": "Escribe una cantidad como 2 o 0.5.",
+  "stake.amountMissing": "Escribe cuánto quieres poner en staking.",
+  "stake.where": "Dónde",
+  "stake.whereLabel": "Dónde hacer staking",
+  "stake.pickedForYou": "Elegido para ti",
+} satisfies Record<keyof typeof en, string>;

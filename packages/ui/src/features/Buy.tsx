@@ -2,11 +2,14 @@ import { useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useUi } from "../context";
 import { AssetIcon, Button, Card, Empty, ErrorNote, Field, Screen, Spinner } from "../components";
+import { canonicalAmount } from "../lib/format";
+import { useUiT } from "../i18n";
 import type { OnRampView } from "./client";
 import { useFeatures } from "./context";
 
 /** Buy crypto: asks only what and how much. The wallet picks where it lands. */
 export function Buy(props: { assetKey?: string }) {
+  const t = useUiT();
   const features = useFeatures();
   const { state } = useUi();
   const currency = state?.prefs.displayCurrency ?? "USD";
@@ -17,12 +20,12 @@ export function Buy(props: { assetKey?: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (assets.error) return <Screen back title="Buy"><ErrorNote message={userMessageOf(assets.error)} /></Screen>;
-  if (!assets.data) return <Screen back title="Buy"><Spinner /></Screen>;
+  if (assets.error) return <Screen back title={t("buy.title")}><ErrorNote message={userMessageOf(assets.error)} /></Screen>;
+  if (!assets.data) return <Screen back title={t("buy.title")}><Spinner /></Screen>;
   if (!assets.data.length) {
     return (
-      <Screen back title="Buy">
-        <Empty title="Buying isn't switched on in this build">You can still receive crypto from someone else.</Empty>
+      <Screen back title={t("buy.title")}>
+        <Empty title={t("buy.off.title")}>{t("buy.off.body")}</Empty>
       </Screen>
     );
   }
@@ -30,9 +33,9 @@ export function Buy(props: { assetKey?: string }) {
   const picked = assets.data.find((a) => a.assetKey === assetKey);
   if (!picked) {
     return (
-      <Screen back title="Buy">
-        <p className="clip-lede">What would you like to buy?</p>
-        <ul className="clip-list" aria-label="What you can buy">
+      <Screen back title={t("buy.title")}>
+        <p className="clip-lede">{t("buy.what")}</p>
+        <ul className="clip-list" aria-label={t("buy.whatLabel")}>
           {assets.data.map((a) => (
             <li key={a.assetKey}>
               <button type="button" className="clip-asset-row" onClick={() => setAssetKey(a.assetKey)}>
@@ -52,8 +55,9 @@ export function Buy(props: { assetKey?: string }) {
   async function seeOptions() {
     setErr(null);
     setView(null);
-    const n = Number(amount);
-    if (!Number.isFinite(n) || n <= 0) return setErr(`Enter how much you want to spend in ${currency}.`);
+    const canonical = canonicalAmount(amount);
+    const n = canonical === null ? NaN : Number(canonical);
+    if (!Number.isFinite(n) || n <= 0) return setErr(t("buy.amountBad", { currency }));
     setBusy(true);
     try {
       setView(await features.buyOptions({ assetKey: picked!.assetKey, fiatAmount: n, fiatCurrency: currency }));
@@ -65,12 +69,12 @@ export function Buy(props: { assetKey?: string }) {
   }
 
   return (
-    <Screen back={() => { setAssetKey(""); setView(null); }} title={`Buy ${picked.symbol}`}>
-      <Field label={`How much (${currency})`} inputMode="decimal" placeholder="50" autoComplete="off" value={amount} onChange={(e) => { setAmount(e.target.value); setView(null); }} />
+    <Screen back={() => { setAssetKey(""); setView(null); }} title={t("buy.titleAsset", { symbol: picked.symbol })}>
+      <Field label={t("buy.howMuch", { currency })} inputMode="decimal" placeholder="50" autoComplete="off" value={amount} onChange={(e) => { setAmount(e.target.value); setView(null); }} />
       <ErrorNote message={err} />
       {!view && (
         <Button block disabled={busy} onClick={() => void seeOptions()}>
-          See ways to pay
+          {t("buy.seeWays")}
         </Button>
       )}
       {view && (
@@ -86,7 +90,7 @@ export function Buy(props: { assetKey?: string }) {
                 <span className="clip-row__value">
                   {o.url ? (
                     <Button variant="secondary" onClick={() => void features.openExternal(o.url!)}>
-                      Continue with {o.name}
+                      {t("buy.continueWith", { provider: o.name })}
                     </Button>
                   ) : (
                     <span className="clip-hint">{o.unavailable?.message}</span>
@@ -95,7 +99,7 @@ export function Buy(props: { assetKey?: string }) {
               </div>
             </Card>
           ))}
-          <p className="clip-hint">You finish the purchase on the provider's site. They may ask to verify who you are.</p>
+          <p className="clip-hint">{t("buy.finishOnProvider")}</p>
         </>
       )}
     </Screen>

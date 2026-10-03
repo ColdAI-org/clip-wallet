@@ -1,6 +1,6 @@
 import type { Family, NetworkId } from "@clip-wallet/core";
 
-export type NameService = "ens" | "sns" | "hns";
+export type NameService = "ens" | "sns" | "hns" | "clip";
 
 export interface ResolvedName {
   /** The name as typed, normalised ("alice.eth"). */
@@ -21,6 +21,13 @@ export interface ResolvedName {
   addressOn?: Record<NetworkId, string>;
   /** Shown next to the address ("alice.eth"). */
   displayName: string;
+  /**
+   * Clip handles (additive): the handle's published address per family. Send uses the one for the asset's
+   * family (`byFamily[family] ?? address`); `address`/`family` are the first published (EVM first).
+   */
+  byFamily?: Partial<Record<Family, string>>;
+  /** Clip handles: who owns it and since when. `recentlyRegistered` → Send shows a caution. */
+  handle?: { owner: string; registeredAt: number; updatedAt: number; recentlyRegistered: boolean };
 }
 
 /**

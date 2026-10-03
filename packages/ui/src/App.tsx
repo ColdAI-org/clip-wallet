@@ -18,6 +18,7 @@ import { Accounts } from "./screens/Accounts";
 import { BackupHub } from "./screens/Backup";
 import { ConnectHardware, HardwareProvider, HardwareSettings, useHardwareOptional, type FullHardwareClient } from "./hardware";
 import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClient } from "./features";
+import { SocialProvider, socialRoute, useSocialOptional, type SocialClient } from "./social";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
   const [p, q] = path.split("?");
@@ -44,6 +45,7 @@ function Routes() {
   const { state, refresh, variant } = useUi();
   const { path, navigate } = useRouter();
   const features = useFeaturesOptional();
+  const social = useSocialOptional();
   const hardware = useHardwareOptional();
   const { pathname, query } = parsePath(path);
   // Once onboarding starts it stays on screen until it finishes: the vault turns "unlocked" as soon as
@@ -90,6 +92,10 @@ function Routes() {
   }
 
   const seg = pathname.split("/").filter(Boolean);
+  if (social) {
+    const screen = socialRoute(seg, query);
+    if (screen) return screen;
+  }
   if (features) {
     const feature = featureRoute(seg, query, typeof location !== "undefined" ? location.hash : "");
     if (feature) return feature;
@@ -150,6 +156,12 @@ export interface WalletAppProps {
   features?: FeaturesClient;
   /** Ledger and Keystone. Without it the hardware entry points are hidden. */
   hardware?: FullHardwareClient;
+  /** Contacts, Clip handles, notifications and Discover. Without it those screens and entries are hidden. */
+  social?: SocialClient;
+}
+
+function WithSocial(props: { social?: SocialClient; children: ReactNode }) {
+  return props.social ? <SocialProvider client={props.social}>{props.children}</SocialProvider> : <>{props.children}</>;
 }
 
 function WithHardware(props: { hardware?: FullHardwareClient; children: ReactNode }) {
@@ -168,13 +180,15 @@ export function WalletApp(props: WalletAppProps) {
       <Router initial={props.initialRoute} memory={props.memoryRouter}>
         <Frame>
           <WithHardware hardware={props.hardware}>
-            {props.features ? (
-              <FeaturesProvider client={props.features}>
+            <WithSocial social={props.social}>
+              {props.features ? (
+                <FeaturesProvider client={props.features}>
+                  <Routes />
+                </FeaturesProvider>
+              ) : (
                 <Routes />
-              </FeaturesProvider>
-            ) : (
-              <Routes />
-            )}
+              )}
+            </WithSocial>
           </WithHardware>
         </Frame>
       </Router>
@@ -202,7 +216,9 @@ export function ApprovalWindowApp(props: Omit<WalletAppProps, "variant" | "initi
       <Router memory initial="/">
         <Frame>
           <WithHardware hardware={props.hardware}>
-            <ApprovalWindowRoutes focusId={props.focusId} onEmpty={props.onEmpty} />
+            <WithSocial social={props.social}>
+              <ApprovalWindowRoutes focusId={props.focusId} onEmpty={props.onEmpty} />
+            </WithSocial>
           </WithHardware>
         </Frame>
       </Router>

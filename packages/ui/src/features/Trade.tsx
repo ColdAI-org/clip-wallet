@@ -2,7 +2,8 @@ import { useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { Button, Card, Chip, CopyButton, Empty, ErrorNote, Field, Qr, Row, Screen, Spinner, Warnings } from "../components";
-import { formatUnits, relativeTime } from "../lib/format";
+import { canonicalAmount, formatUnits, relativeTime } from "../lib/format";
+import { useLocale, useUiT } from "../i18n";
 import type { TradeLegInput, TradeOfferView, TradeReviewView } from "./client";
 import { useFeatures } from "./context";
 
@@ -20,32 +21,33 @@ const STATUS_TONE: Record<TradeOfferView["status"], "accent" | "neutral" | "mute
 
 /** Secure Trade: swap directly with one person. Both sides happen together, or not at all. */
 export function TradeHome() {
+  const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
   const { data, error } = useAsync(() => features.tradeList(), [features]);
   return (
-    <Screen back title="Secure Trade">
-      <p className="clip-lede">Trade directly with someone you know. Both sides move together, or nothing moves.</p>
+    <Screen back title={t("trade.title")}>
+      <p className="clip-lede">{t("trade.lede")}</p>
       <div className="clip-actions">
-        <Button onClick={() => navigate("/trade/new")}>New trade</Button>
+        <Button onClick={() => navigate("/trade/new")}>{t("trade.new")}</Button>
         <Button variant="secondary" onClick={() => navigate("/trade/open")}>
-          Open a trade link
+          {t("trade.openLink")}
         </Button>
       </div>
       <ErrorNote message={error ? userMessageOf(error) : null} />
       {!data && !error && <Spinner />}
-      {data?.length === 0 && <Empty title="No trades yet" />}
-      <ul className="clip-list" aria-label="Your trades">
-        {data?.map((t) => (
-          <li key={t.id}>
-            <button type="button" className="clip-asset-row" onClick={() => navigate(`/trade/${encodeURIComponent(t.id)}`)}>
+      {data?.length === 0 && <Empty title={t("trade.none")} />}
+      <ul className="clip-list" aria-label={t("trade.yours")}>
+        {data?.map((o) => (
+          <li key={o.id}>
+            <button type="button" className="clip-asset-row" onClick={() => navigate(`/trade/${encodeURIComponent(o.id)}`)}>
               <span className="clip-asset-row__main">
-                <span className="clip-asset-row__symbol">{t.title}</span>
+                <span className="clip-asset-row__symbol">{o.title}</span>
                 <span className="clip-asset-row__name">
-                  {t.statusText} · {relativeTime(t.createdAt)}
+                  {o.statusText} · {relativeTime(o.createdAt)}
                 </span>
               </span>
-              <Chip tone={STATUS_TONE[t.status]}>{t.status === "done" ? "Done" : t.status === "waiting" ? "Waiting" : "Closed"}</Chip>
+              <Chip tone={STATUS_TONE[o.status]}>{o.status === "done" ? t("trade.status.done") : o.status === "waiting" ? t("trade.status.waiting") : t("trade.status.closed")}</Chip>
             </button>
           </li>
         ))}
@@ -56,21 +58,23 @@ export function TradeHome() {
 
 /** One trade: status, and the link/QR to share while it's waiting. */
 export function TradeDetail(props: { id: string }) {
+  const tr = useUiT();
+  const { locale } = useLocale();
   const features = useFeatures();
   const { data, error } = useAsync(() => features.tradeList(), [features]);
   const t = data?.find((x) => x.id === props.id);
-  if (error) return <Screen back title="Secure Trade"><ErrorNote message={userMessageOf(error)} /></Screen>;
-  if (!data) return <Screen back title="Secure Trade"><Spinner /></Screen>;
-  if (!t) return <Screen back title="Secure Trade"><Empty title="This trade isn't here any more" /></Screen>;
+  if (error) return <Screen back title={tr("trade.title")}><ErrorNote message={userMessageOf(error)} /></Screen>;
+  if (!data) return <Screen back title={tr("trade.title")}><Spinner /></Screen>;
+  if (!t) return <Screen back title={tr("trade.title")}><Empty title={tr("trade.gone")} /></Screen>;
   return (
-    <Screen back title="Secure Trade">
+    <Screen back title={tr("trade.title")}>
       <p className="clip-h2">{t.title}</p>
       <div className="clip-rows">
-        <Row label="You give" value={t.give.display} />
-        <Row label="You get" value={t.get.display} />
-        <Row label="With" value={t.counterparty} />
-        <Row label="Status" value={t.statusText} />
-        {t.expiresAt && t.status === "waiting" && <Row label="Open until" value={new Date(t.expiresAt).toLocaleString()} />}
+        <Row label={tr("trade.youGive")} value={t.give.display} />
+        <Row label={tr("trade.youGet")} value={t.get.display} />
+        <Row label={tr("trade.with")} value={t.counterparty} />
+        <Row label={tr("trade.status")} value={t.statusText} />
+        {t.expiresAt && t.status === "waiting" && <Row label={tr("trade.openUntil")} value={new Date(t.expiresAt).toLocaleString(locale)} />}
       </div>
       {t.notes.map((n) => (
         <p key={n} className="clip-notice clip-notice--info">
@@ -80,13 +84,13 @@ export function TradeDetail(props: { id: string }) {
       {t.link && t.status === "waiting" && t.role === "maker" && (
         <Card>
           <p className="clip-hint">
-            {t.mode === "direct" ? "Send this to them now: it works for about 3 minutes." : "Send this to them. They can accept any time before it expires."}
+            {t.mode === "direct" ? tr("trade.shareDirect") : tr("trade.shareScheduled")}
           </p>
-          {t.link.length <= QR_MAX ? <Qr value={t.link} label="QR code for the trade link" /> : <p className="clip-hint">This link is too long for a QR code. Share the link instead.</p>}
+          {t.link.length <= QR_MAX ? <Qr value={t.link} label={tr("trade.qrLabel")} /> : <p className="clip-hint">{tr("trade.tooLongForQr")}</p>}
           <code className="clip-address" data-testid="trade-link">
             {t.link.length > 80 ? `${t.link.slice(0, 60)}…` : t.link}
           </code>
-          <CopyButton value={t.link} label="Copy link" />
+          <CopyButton value={t.link} label={tr("trade.copyLink")} />
         </Card>
       )}
     </Screen>
@@ -95,38 +99,42 @@ export function TradeDetail(props: { id: string }) {
 
 type LegForm = { kind: "asset"; assetKey: string; amount: string } | { kind: "nft"; tokenId: string; serial: string };
 
-function toInput(l: LegForm): TradeLegInput {
-  return l.kind === "nft" ? { nft: { tokenId: l.tokenId.trim(), serial: l.serial.trim() } } : { assetKey: l.assetKey.trim(), amount: l.amount.trim() };
+/** Null when an asset leg's amount isn't a valid number (in the user's locale). */
+function toInput(l: LegForm): TradeLegInput | null {
+  if (l.kind === "nft") return { nft: { tokenId: l.tokenId.trim(), serial: l.serial.trim() } };
+  const amount = canonicalAmount(l.amount);
+  return amount === null ? null : { assetKey: l.assetKey.trim(), amount };
 }
 
 function LegFields(props: { label: string; value: LegForm; onChange: (v: LegForm) => void; assets: { key: string; symbol: string }[] }) {
+  const t = useUiT();
   const v = props.value;
   return (
     <fieldset className="clip-stack">
       <legend className="clip-field__label">{props.label}</legend>
-      <div className="clip-segmented" role="radiogroup" aria-label={`${props.label}: kind`}>
+      <div className="clip-segmented" role="radiogroup" aria-label={t("trade.legKind", { label: props.label })}>
         <button type="button" role="radio" aria-checked={v.kind === "asset"} className={v.kind === "asset" ? "is-active" : ""} onClick={() => props.onChange({ kind: "asset", assetKey: props.assets[0]?.key ?? "hbar", amount: "" })}>
-          Coins or tokens
+          {t("trade.kind.asset")}
         </button>
         <button type="button" role="radio" aria-checked={v.kind === "nft"} className={v.kind === "nft" ? "is-active" : ""} onClick={() => props.onChange({ kind: "nft", tokenId: "", serial: "" })}>
-          A collectible
+          {t("trade.kind.nft")}
         </button>
       </div>
       {v.kind === "asset" ? (
         <>
-          <select className="clip-select" aria-label={`${props.label}: asset`} value={v.assetKey} onChange={(e) => props.onChange({ ...v, assetKey: e.target.value })}>
+          <select className="clip-select" aria-label={t("trade.legAsset", { label: props.label })} value={v.assetKey} onChange={(e) => props.onChange({ ...v, assetKey: e.target.value })}>
             {props.assets.map((a) => (
               <option key={a.key} value={a.key}>
                 {a.symbol}
               </option>
             ))}
           </select>
-          <Field label="Amount" inputMode="decimal" placeholder="0" autoComplete="off" value={v.amount} onChange={(e) => props.onChange({ ...v, amount: e.target.value })} />
+          <Field label={t("trade.amount")} inputMode="decimal" placeholder="0" autoComplete="off" value={v.amount} onChange={(e) => props.onChange({ ...v, amount: e.target.value })} />
         </>
       ) : (
         <>
-          <Field label="Collection" placeholder="0.0.1234" autoComplete="off" value={v.tokenId} onChange={(e) => props.onChange({ ...v, tokenId: e.target.value })} />
-          <Field label="Item number" inputMode="numeric" placeholder="1" autoComplete="off" value={v.serial} onChange={(e) => props.onChange({ ...v, serial: e.target.value })} />
+          <Field label={t("trade.collection")} placeholder="0.0.1234" autoComplete="off" value={v.tokenId} onChange={(e) => props.onChange({ ...v, tokenId: e.target.value })} />
+          <Field label={t("trade.itemNumber")} inputMode="numeric" placeholder="1" autoComplete="off" value={v.serial} onChange={(e) => props.onChange({ ...v, serial: e.target.value })} />
         </>
       )}
     </fieldset>
@@ -135,6 +143,7 @@ function LegFields(props: { label: string; value: LegForm; onChange: (v: LegForm
 
 /** Create an offer: what you give, what you get, who with, and whether they're online now. */
 export function TradeCreate() {
+  const t = useUiT();
   const features = useFeatures();
   const { client } = useUi();
   const { navigate } = useRouter();
@@ -159,10 +168,13 @@ export function TradeCreate() {
 
   async function create() {
     setErr(null);
-    if (!/^0\.0\.\d+(-[a-z]{5})?$|^0x[0-9a-fA-F]{40}$/.test(counterparty.trim())) return setErr("Enter their account, like 0.0.1234.");
+    if (!/^0\.0\.\d+(-[a-z]{5})?$|^0x[0-9a-fA-F]{40}$/.test(counterparty.trim())) return setErr(t("trade.counterpartyBad"));
+    const giveInput = toInput(give);
+    const getInput = toInput(get);
+    if (!giveInput || !getInput) return setErr(t("trade.amountBad"));
     setBusy(true);
     try {
-      const r = await features.tradeCreate({ give: toInput(give), get: toInput(get), counterparty: counterparty.trim(), mode, expiresInHours: mode === "scheduled" ? hours : undefined });
+      const r = await features.tradeCreate({ give: giveInput, get: getInput, counterparty: counterparty.trim(), mode, expiresInHours: mode === "scheduled" ? hours : undefined });
       navigate(`/approval/${encodeURIComponent(r.queued.approvalId)}`);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -171,36 +183,36 @@ export function TradeCreate() {
     }
   }
 
-  if (!data) return <Screen back title="New trade"><Spinner /></Screen>;
+  if (!data) return <Screen back title={t("trade.new")}><Spinner /></Screen>;
   return (
-    <Screen back title="New trade">
-      <LegFields label="You give" value={give} onChange={setGive} assets={assets} />
-      <LegFields label="You get" value={get} onChange={setGet} assets={assets} />
-      <Field label="Trade with" placeholder="0.0.1234" autoComplete="off" spellCheck={false} value={counterparty} onChange={(e) => setCounterparty(e.target.value)} />
-      <div className="clip-segmented" role="radiogroup" aria-label="When they accept">
+    <Screen back title={t("trade.new")}>
+      <LegFields label={t("trade.youGive")} value={give} onChange={setGive} assets={assets} />
+      <LegFields label={t("trade.youGet")} value={get} onChange={setGet} assets={assets} />
+      <Field label={t("trade.tradeWith")} placeholder="0.0.1234" autoComplete="off" spellCheck={false} value={counterparty} onChange={(e) => setCounterparty(e.target.value)} />
+      <div className="clip-segmented" role="radiogroup" aria-label={t("trade.whenAccept")}>
         <button type="button" role="radio" aria-checked={mode === "direct"} className={mode === "direct" ? "is-active" : ""} onClick={() => setMode("direct")}>
-          They're here now
+          {t("trade.mode.direct")}
         </button>
         <button type="button" role="radio" aria-checked={mode === "scheduled"} className={mode === "scheduled" ? "is-active" : ""} onClick={() => setMode("scheduled")}>
-          They'll accept later
+          {t("trade.mode.scheduled")}
         </button>
       </div>
       <p className="clip-hint">
-        {mode === "direct" ? "They get about 3 minutes to accept after you approve." : "They can accept until it expires. Nothing moves until both of you have approved."}
+        {mode === "direct" ? t("trade.mode.directHint") : t("trade.mode.scheduledHint")}
       </p>
       {mode === "scheduled" && (
         <label className="clip-field">
-          <span className="clip-field__label">Open for</span>
+          <span className="clip-field__label">{t("trade.openFor")}</span>
           <select className="clip-select" value={hours} onChange={(e) => setHours(Number(e.target.value))}>
-            <option value={1}>1 hour</option>
-            <option value={24}>1 day</option>
-            <option value={168}>1 week</option>
+            <option value={1}>{t("trade.hours", { n: 1 })}</option>
+            <option value={24}>{t("trade.days", { n: 1 })}</option>
+            <option value={168}>{t("trade.weeks", { n: 1 })}</option>
           </select>
         </label>
       )}
       <ErrorNote message={err} />
       <Button block disabled={busy} onClick={() => void create()}>
-        Review trade
+        {t("trade.review")}
       </Button>
     </Screen>
   );
@@ -208,6 +220,7 @@ export function TradeCreate() {
 
 /** Counterparty: paste or open a link, see what the actual transaction does, accept. */
 export function TradeReview(props: { link?: string }) {
+  const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
   const [link, setLink] = useState(props.link ?? "");
@@ -242,16 +255,16 @@ export function TradeReview(props: { link?: string }) {
   }
 
   return (
-    <Screen back title="Trade offer">
+    <Screen back title={t("trade.offer")}>
       {!review && (
         <>
           <label className="clip-field">
-            <span className="clip-field__label">Trade link</span>
-            <textarea className="clip-textarea" rows={4} value={link} onChange={(e) => setLink(e.target.value)} placeholder="Paste the link you were sent" />
+            <span className="clip-field__label">{t("trade.link")}</span>
+            <textarea className="clip-textarea" rows={4} value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("trade.linkPlaceholder")} />
           </label>
           <ErrorNote message={err} />
           <Button block disabled={busy || !link.trim()} onClick={() => void check()}>
-            Check offer
+            {t("trade.check")}
           </Button>
         </>
       )}
@@ -259,15 +272,15 @@ export function TradeReview(props: { link?: string }) {
         <>
           <p className="clip-h2" data-testid="trade-review-title">{review.offer.title}</p>
           <div className="clip-rows">
-            <Row label="You get" value={review.offer.give.display} />
-            <Row label="You give" value={review.offer.get.display} />
-            <Row label="From" value={review.offer.counterparty} />
+            <Row label={t("trade.youGet")} value={review.offer.give.display} />
+            <Row label={t("trade.youGive")} value={review.offer.get.display} />
+            <Row label={t("trade.from")} value={review.offer.counterparty} />
             {review.lines.map((l) => (
               <Row key={l.label + l.value} label={l.label} value={l.value} />
             ))}
           </div>
           {review.balanceChanges.length > 0 && (
-            <ul className="clip-list" aria-label="What changes in your balance">
+            <ul className="clip-list" aria-label={t("trade.balanceChanges")}>
               {review.balanceChanges.map((c) => (
                 <li key={c.asset.key + c.delta}>
                   {c.delta.startsWith("-") ? "−" : "+"}
@@ -282,7 +295,7 @@ export function TradeReview(props: { link?: string }) {
           ) : (
             <>
               {review.steps.length > 1 && (
-                <ol className="clip-steps" aria-label="What you'll approve">
+                <ol className="clip-steps" aria-label={t("trade.steps")}>
                   {review.steps.map((s) => (
                     <li key={s}>{s}</li>
                   ))}
@@ -290,7 +303,7 @@ export function TradeReview(props: { link?: string }) {
               )}
               <ErrorNote message={err} />
               <Button block disabled={busy} onClick={() => void accept()}>
-                Accept trade
+                {t("trade.accept")}
               </Button>
             </>
           )}

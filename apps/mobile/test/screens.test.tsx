@@ -3,6 +3,7 @@ import { App } from "../src/App";
 import { Onboarding } from "../src/screens/Onboarding";
 import { Send } from "../src/screens/Send";
 import { Explore } from "../src/screens/Explore";
+import { ApprovalScreen } from "../src/screens/Approval";
 import { renderWith, testWallet, WORDS } from "./helpers";
 import { EVM_ADDRESS, fakePort } from "../../../packages/engine/test/fixtures";
 
@@ -109,5 +110,97 @@ describe("Explore", () => {
     renderWith(wallet, <Explore />, { name: "explore" });
     await waitFor(() => expect(screen.getByText("SaucerSwap")).toBeTruthy());
     expect(screen.getByText("Staking ADA is coming soon.")).toBeTruthy();
+  });
+});
+
+const ALEX = "0x000000000000000000000000000000000000dEaD";
+
+async function walletWithAlex() {
+  const wallet = testWallet();
+  await wallet.client.createWallet(PW);
+  const alex = await wallet.social.saveContact({ input: { name: "Alex", addresses: [{ family: "evm", address: ALEX }] } });
+  return { wallet, alex };
+}
+
+describe("Contacts", () => {
+  it("adds a contact (kind of address detected) and lists it", async () => {
+    const wallet = testWallet();
+    await wallet.client.createWallet(PW);
+    render(<App wallet={wallet} initialRoute={{ name: "contacts" }} />);
+    expect(await screen.findByText("No contacts yet")).toBeTruthy();
+    fireEvent.press(screen.getByTestId("contact-add"));
+    fireEvent.changeText(await screen.findByTestId("contact-name"), "Sam");
+    fireEvent.changeText(screen.getByTestId("contact-address-0"), ALEX);
+    await act(async () => fireEvent(screen.getByTestId("contact-address-0"), "blur"));
+    // The kind of address is worked out from the address (only EVM networks in the test wallet: no picker).
+    expect(await screen.findByText("Ethereum-style (ETH, USDC, Base, Arbitrum…)")).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByTestId("contact-save")));
+    expect(await screen.findByText("Sam")).toBeTruthy();
+    expect((await wallet.social.contacts()).contacts.map((c) => c.name)).toEqual(["Sam"]);
+  });
+});
+
+describe("Send with contacts", () => {
+  it("suggests a contact under To and fills the address", async () => {
+    const { wallet, alex } = await walletWithAlex();
+    renderWith(wallet, <Send />, { name: "send" });
+    fireEvent.changeText(await screen.findByTestId("to"), "Al");
+    fireEvent.press(await screen.findByTestId(`suggest-${alex.id}`));
+    expect(screen.getByTestId("to").props.value).toBe(ALEX);
+    expect(screen.getByText("Alex (from your contacts)")).toBeTruthy();
+    expect(screen.queryByTestId(`suggest-${alex.id}`)).toBeNull();
+  });
+});
+
+describe("Approval recipient check", () => {
+  async function sendApproval(wallet: ReturnType<typeof testWallet>, to: string) {
+    const p = await wallet.client.getPortfolio();
+    const eth = p.balances.find((b) => b.asset.symbol === "ETH" && BigInt(b.amount) > 0n)!;
+    const id = await wallet.client.send({ assetKey: eth.asset.key, networkId: eth.asset.networkId, to, amount: "0.01" });
+    return (await wallet.client.getApproval(id))!;
+  }
+
+  it("says who the money goes to when the recipient is a saved contact", async () => {
+    const { wallet } = await walletWithAlex();
+    const view = await sendApproval(wallet, ALEX);
+    expect(view.recipient?.address.toLowerCase()).toBe(ALEX.toLowerCase());
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText("Sending to Alex")).toBeTruthy();
+  });
+
+  it("warns about a look-alike of a saved address", async () => {
+    const { wallet } = await walletWithAlex();
+    const fake = "0x0000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadEaD";
+    const view = await sendApproval(wallet, fake);
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByTestId("recipient-lookalike")).toBeTruthy();
+    expect(screen.getByText("Look-alike address")).toBeTruthy();
+    expect(screen.getByText(`Saved: ${ALEX}`)).toBeTruthy();
+  });
+});
+
+describe("Settings language", () => {
+  it("saves the chosen language and formats numbers for it", async () => {
+    const wallet = testWallet();
+    await wallet.client.createWallet(PW);
+    render(<App wallet={wallet} initialRoute={{ name: "settings" }} />);
+    expect(await screen.findByText("Match device (English)")).toBeTruthy();
+    expect(screen.getByText("Deutsch")).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByTestId("locale-de")));
+    await waitFor(async () => expect((await wallet.client.getState()).prefs.locale).toBe("de"));
+    fireEvent.press(screen.getByTestId("tab-home"));
+    // German: "." groups thousands, "," marks decimals.
+    await waitFor(() => expect(String(screen.getByTestId("total").props.children)).toMatch(/1\.500,00/));
+  });
+});
+
+describe("Explore Discover", () => {
+  it("shows Discover first with the risk note, even when market data can't load", async () => {
+    const wallet = testWallet();
+    await wallet.client.createWallet(PW);
+    renderWith(wallet, <Explore />, { name: "explore" });
+    expect(await screen.findByTestId("discover")).toBeTruthy();
+    expect(screen.getByText(/New and trending tokens are risky/)).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("SaucerSwap")).toBeTruthy());
   });
 });

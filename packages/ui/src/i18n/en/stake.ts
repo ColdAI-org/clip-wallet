@@ -1,0 +1,23 @@
+/** Staking: overview and "Stake SOL". Namespace "stake". */
+export default {
+  "stake.title": "Stake",
+  "stake.lede": "Earn rewards on coins you hold. You stay in control the whole time.",
+  "stake.empty.title": "Nothing to stake yet",
+  "stake.empty.body": "Coins you can stake show up here.",
+  "stake.change": "Change",
+  "stake.stakeSymbol": "Stake {symbol}",
+  "stake.stakeAmount": "Stake {amount} {symbol}",
+  "stake.stakeAll": "Stake my {symbol}",
+  "stake.with": "With",
+  "stake.rewardsOnTheWay": "Rewards on the way",
+  "stake.action.unstake": "Unstake",
+  "stake.action.withdraw": "Move to balance",
+  "stake.action.claim": "Collect rewards",
+  "stake.action.change": "Change",
+  "stake.amount": "Amount",
+  "stake.amountBad": "Enter an amount like 2 or 0.5.",
+  "stake.amountMissing": "Enter how much to stake.",
+  "stake.where": "Where",
+  "stake.whereLabel": "Where to stake",
+  "stake.pickedForYou": "Picked for you",
+} satisfies Record<`stake.${string}`, string>;

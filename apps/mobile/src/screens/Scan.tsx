@@ -5,23 +5,25 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { isWalletConnectUri, userMessageOf } from "@clip-wallet/ui";
 import { useWallet } from "../ui/context";
 import { Button, ErrorNote, Notice, Screen, T } from "../ui/kit";
+import { useMobileT } from "../i18n";
 
 export function Scan() {
   const { client, back } = useWallet();
+  const t = useMobileT();
   const [permission, request] = useCameraPermissions();
-  const [status, setStatus] = useState("Point your camera at the app's QR code.");
+  const [status, setStatus] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  if (!permission) return <Screen back title="Scan to connect">{null}</Screen>;
+  if (!permission) return <Screen back title={t("m.scan.title")}>{null}</Screen>;
   if (!permission.granted) {
     return (
-      <Screen back title="Scan to connect" footer={<Button block onPress={request}>Allow camera</Button>}>
-        <T v="lede">The camera is only used to read the connection code. Or paste the code in Settings instead.</T>
+      <Screen back title={t("m.scan.title")} footer={<Button block onPress={request}>{t("m.scan.allowCamera")}</Button>}>
+        <T v="lede">{t("m.scan.cameraWhy")}</T>
       </Screen>
     );
   }
   return (
-    <Screen back title="Scan to connect">
+    <Screen back title={t("m.scan.title")}>
       <View style={{ height: 360, borderRadius: 20, overflow: "hidden" }}>
         <CameraView
           style={{ flex: 1 }}
@@ -32,15 +34,15 @@ export function Scan() {
               ? undefined
               : async ({ data }) => {
                   if (!isWalletConnectUri(data)) {
-                    setErr("That QR code isn't a WalletConnect code.");
+                    setErr(t("m.scan.notWalletConnect", { wc: "WalletConnect" }));
                     return;
                   }
                   setBusy(true);
                   setErr(null);
-                  setStatus("Found it. Connecting…");
+                  setStatus(t("m.scan.found"));
                   try {
                     await client.pairWalletConnect(data);
-                    setStatus("Pairing started. The app will ask you to connect.");
+                    setStatus(t("m.scan.pairing"));
                     setTimeout(back, 800);
                   } catch (e) {
                     setErr(userMessageOf(e));
@@ -50,7 +52,7 @@ export function Scan() {
           }
         />
       </View>
-      <Notice level="info">{status}</Notice>
+      <Notice level="info">{status ?? t("m.scan.point")}</Notice>
       <ErrorNote message={err} />
     </Screen>
   );

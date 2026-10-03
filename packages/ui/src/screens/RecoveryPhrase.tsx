@@ -4,6 +4,7 @@ import { useUi } from "../context";
 import { Button, ErrorNote, Field, Screen, Toggle } from "../components";
 import { IconShield } from "../components/icons";
 import { asPlatform } from "../platform/client";
+import { useUiT } from "../i18n";
 
 /**
  * Settings → "Recovery phrase". Rules:
@@ -26,6 +27,7 @@ export function quizPositions(count: number, n = 3, rand: () => number = Math.ra
 }
 
 function PhraseGrid(props: { words: string[] | null; count: number; allowCopy: boolean }) {
+  const t = useUiT();
   const block = (e: ClipboardEvent) => {
     if (!props.allowCopy) e.preventDefault();
   };
@@ -38,7 +40,7 @@ function PhraseGrid(props: { words: string[] | null; count: number; allowCopy: b
       onContextMenu={(e) => !props.allowCopy && e.preventDefault()}
       style={props.allowCopy ? undefined : { userSelect: "none", WebkitUserSelect: "none" }}
     >
-      <ol aria-label="Recovery phrase" aria-hidden={!props.words}>
+      <ol aria-label={t("backup.phrase.listLabel")} aria-hidden={!props.words}>
         {Array.from({ length: props.count }, (_, i) => (
           <li key={i}>
             <span className="clip-phrase__n">{i + 1}</span>
@@ -52,22 +54,23 @@ function PhraseGrid(props: { words: string[] | null; count: number; allowCopy: b
 }
 
 function Quiz(props: { words: string[]; positions?: number[]; onPass: () => void; onBack: () => void }) {
+  const t = useUiT();
   const positions = useMemo(() => props.positions ?? quizPositions(props.words.length), [props.positions, props.words.length]);
   const [answers, setAnswers] = useState<string[]>(() => positions.map(() => ""));
   const [err, setErr] = useState<string | null>(null);
   const check = () => {
     const ok = positions.every((p, i) => answers[i]!.trim().toLowerCase() === props.words[p]);
     if (ok) props.onPass();
-    else setErr("That doesn't match. Check what you wrote down, or look at the phrase again.");
+    else setErr(t("backup.phrase.quizMismatch"));
   };
   return (
     <div className="clip-stack">
-      <h2 className="clip-h2">Check your copy</h2>
-      <p className="clip-lede">Type these words from what you wrote down.</p>
+      <h2 className="clip-h2">{t("backup.phrase.quizTitle")}</h2>
+      <p className="clip-lede">{t("backup.phrase.quizLede")}</p>
       {positions.map((p, i) => (
         <Field
           key={p}
-          label={`Word ${p + 1}`}
+          label={t("backup.phrase.quizWord", { n: p + 1 })}
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
@@ -77,16 +80,17 @@ function Quiz(props: { words: string[]; positions?: number[]; onPass: () => void
       ))}
       <ErrorNote message={err} />
       <Button block onClick={check} disabled={answers.some((a) => !a.trim())}>
-        Check
+        {t("backup.phrase.quizCheck")}
       </Button>
       <Button block variant="ghost" onClick={props.onBack}>
-        Show phrase again
+        {t("backup.phrase.showAgain")}
       </Button>
     </div>
   );
 }
 
 export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions?: number[] }) {
+  const t = useUiT();
   const { client, state } = useUi();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -151,18 +155,15 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
 
   if (step === "password") {
     return (
-      <Screen title="Recovery phrase" back>
+      <Screen title={t("backup.phrase.screen")} back>
         <div className="clip-onboard">
           <span className="clip-done-badge" aria-hidden>
             <IconShield width={28} height={28} />
           </span>
-          <h1 className="clip-h1">Back up your recovery phrase</h1>
-          <p className="clip-lede">
-            These words are the only way to get your wallet back if you lose this device. Anyone who sees them can take
-            everything. Write them on paper. Don't screenshot, photograph or paste them anywhere.
-          </p>
+          <h1 className="clip-h1">{t("backup.phrase.introTitle")}</h1>
+          <p className="clip-lede">{t("backup.phrase.introLede")}</p>
           <Field
-            label="Your wallet password"
+            label={t("backup.passwordLabel")}
             type="password"
             autoComplete="current-password"
             value={password}
@@ -171,7 +172,7 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
           />
           <ErrorNote message={err} />
           <Button block onClick={unlock} disabled={busy || !password || state?.status !== "unlocked"}>
-            {busy ? "Checking…" : "Continue"}
+            {busy ? t("backup.phrase.checking") : t("common.continue")}
           </Button>
         </div>
       </Screen>
@@ -180,7 +181,7 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
 
   if (step === "quiz" && phrase.current) {
     return (
-      <Screen title="Recovery phrase" back={() => setStep("phrase")}>
+      <Screen title={t("backup.phrase.screen")} back={() => setStep("phrase")}>
         <div className="clip-onboard">
           <Quiz
             words={phrase.current}
@@ -199,12 +200,12 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
 
   if (step === "done") {
     return (
-      <Screen title="Recovery phrase" back>
+      <Screen title={t("backup.phrase.screen")} back>
         <div className="clip-onboard clip-onboard--welcome">
-          <h1 className="clip-h1">You're backed up</h1>
-          <p className="clip-lede">Keep the paper somewhere safe and private. We'll never ask you for these words.</p>
+          <h1 className="clip-h1">{t("backup.phrase.doneTitle")}</h1>
+          <p className="clip-lede">{t("backup.phrase.doneLede")}</p>
           <Button block onClick={() => props.onDone?.()}>
-            Done
+            {t("common.done")}
           </Button>
         </div>
       </Screen>
@@ -212,10 +213,10 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
   }
 
   return (
-    <Screen title="Recovery phrase" back>
+    <Screen title={t("backup.phrase.screen")} back>
       <div className="clip-onboard">
-        <h1 className="clip-h1">Your recovery phrase</h1>
-        <p className="clip-lede">Make sure nobody can see your screen. Hold the button to show the words, or click it to keep them shown.</p>
+        <h1 className="clip-h1">{t("backup.phrase.title")}</h1>
+        <p className="clip-lede">{t("backup.phrase.lede")}</p>
         <PhraseGrid words={visible} count={count} allowCopy={allowCopy} />
         <Button
           variant="secondary"
@@ -235,11 +236,11 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
           }}
           onKeyDown={onKey}
         >
-          {shown ? "Hide words" : "Hold or click to show"}
+          {shown ? t("backup.phrase.hide") : t("backup.phrase.reveal")}
         </Button>
         <Toggle
-          label="Allow copying"
-          description="Off by default. Anything you copy can be read by other apps and extensions."
+          label={t("backup.phrase.allowCopy")}
+          description={t("backup.phrase.allowCopyHint")}
           checked={allowCopy}
           onChange={setAllowCopy}
         />
@@ -250,7 +251,7 @@ export function RecoveryPhraseBackup(props: { onDone?: () => void; quizPositions
             setStep("quiz");
           }}
         >
-          I've written it down
+          {t("backup.phrase.writtenDown")}
         </Button>
       </div>
     </Screen>

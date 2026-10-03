@@ -1,0 +1,214 @@
+{
+ "coins": [
+  {
+   "item": {
+    "id": "messier",
+    "coin_id": 25957,
+    "name": "MESSIER",
+    "symbol": "M87",
+    "market_cap_rank": 916,
+    "thumb": "https://coin-images.coingecko.com/coins/images/25957/standard/MESSIERlogonew_%281%29.png?1696525036",
+    "small": "https://coin-images.coingecko.com/coins/images/25957/small/MESSIERlogonew_%281%29.png?1696525036",
+    "large": "https://coin-images.coingecko.com/coins/images/25957/large/MESSIERlogonew_%281%29.png?1696525036",
+    "slug": "messier",
+    "price_btc": 2.5424478125656706e-10,
+    "score": 0,
+    "data": {
+     "price": 2.1525262600129516e-05,
+     "price_btc": "0.000000000254244781256567",
+     "price_change_percentage_24h": {
+      "usd": 3.4224423856649437
+     },
+     "market_cap": "$19,045,660",
+     "market_cap_btc": "224.9570562309979",
+     "total_volume": "$166,169",
+     "total_volume_btc": "1.962696293313203"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "the-sandbox",
+    "coin_id": 12129,
+    "name": "The Sandbox",
+    "symbol": "SAND",
+    "market_cap_rank": 184,
+    "thumb": "https://coin-images.coingecko.com/coins/images/12129/standard/sandbox_logo.jpg?1696511971",
+    "small": "https://coin-images.coingecko.com/coins/images/12129/small/sandbox_logo.jpg?1696511971",
+    "large": "https://coin-images.coingecko.com/coins/images/12129/large/sandbox_logo.jpg?1696511971",
+    "slug": "the-sandbox",
+    "price_btc": 8.696351954209398e-07,
+    "score": 1,
+    "data": {
+     "price": 0.07375323345579034,
+     "price_btc": "0.0000008696351954209398",
+     "price_change_percentage_24h": {
+      "usd": 8.294706743269822
+     },
+     "market_cap": "$216,746,564",
+     "market_cap_btc": "2555.670569305996",
+     "total_volume": "$451,949,516",
+     "total_volume_btc": "5328.998670397656"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "quant-network",
+    "coin_id": 3370,
+    "name": "Quant",
+    "symbol": "QNT",
+    "market_cap_rank": 34,
+    "thumb": "https://coin-images.coingecko.com/coins/images/3370/standard/5ZOu7brX_400x400.jpg?1696504070",
+    "small": "https://coin-images.coingecko.com/coins/images/3370/small/5ZOu7brX_400x400.jpg?1696504070",
+    "large": "https://coin-images.coingecko.com/coins/images/3370/large/5ZOu7brX_400x400.jpg?1696504070",
+    "slug": "quant",
+    "price_btc": 0.003036666444246946,
+    "score": 2,
+    "data": {
+     "price": 256.7053168767325,
+     "price_btc": "0.003036666444246946",
+     "price_change_percentage_24h": {
+      "usd": 4.929920469668103
+     },
+     "market_cap": "$3,732,742,186",
+     "market_cap_btc": "44156.06549403789",
+     "total_volume": "$386,974,412",
+     "total_volume_btc": "4577.664839040375"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "pons",
+    "coin_id": 102174571,
+    "name": "Pons",
+    "symbol": "PONS",
+    "market_cap_rank": 156,
+    "thumb": "https://coin-images.coingecko.com/coins/images/102174571/standard/jhitvkisdq8fhxvimdkpcw7y3dx5.?1784093932",
+    "small": "https://coin-images.coingecko.com/coins/images/102174571/small/jhitvkisdq8fhxvimdkpcw7y3dx5.?1784093932",
+    "large": "https://coin-images.coingecko.com/coins/images/102174571/large/jhitvkisdq8fhxvimdkpcw7y3dx5.?1784093932",
+    "slug": "pons",
+    "price_btc": 5.053776084703377e-06,
+    "score": 3,
+    "data": {
+     "price": 0.4279807729212627,
+     "price_btc": "0.000005053776084703377",
+     "price_change_percentage_24h": {
+      "usd": -19.017534443306694
+     },
+     "market_cap": "$291,657,286",
+     "market_cap_btc": "3444.009297796205",
+     "total_volume": "$48,125,486",
+     "total_volume_btc": "568.285433840287"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "layerzero",
+    "coin_id": 28206,
+    "name": "LayerZero",
+    "symbol": "ZRO",
+    "market_cap_rank": 97,
+    "thumb": "https://coin-images.coingecko.com/coins/images/28206/standard/ftxG9_TJ_400x400.jpeg?1696527208",
+    "small": "https://coin-images.coingecko.com/coins/images/28206/small/ftxG9_TJ_400x400.jpeg?1696527208",
+    "large": "https://coin-images.coingecko.com/coins/images/28206/large/ftxG9_TJ_400x400.jpeg?1696527208",
+    "slug": "layerzero",
+    "price_btc": 2.3224086223937736e-05,
+    "score": 4,
+    "data": {
+     "price": 1.9614330986604582,
+     "price_btc": "0.00002322408622393773",
+     "price_change_percentage_24h": {
+      "usd": 5.952804804809716
+     },
+     "market_cap": "$693,501,287",
+     "market_cap_btc": "8211.826052868171",
+     "total_volume": "$204,099,399",
+     "total_volume_btc": "2416.610592623201"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "pudgy-penguins",
+    "coin_id": 52622,
+    "name": "Pudgy Penguins",
+    "symbol": "PENGU",
+    "market_cap_rank": 109,
+    "thumb": "https://coin-images.coingecko.com/coins/images/52622/standard/PUDGY_PENGUINS_PENGU_PFP.png?1733809110",
+    "small": "https://coin-images.coingecko.com/coins/images/52622/small/PUDGY_PENGUINS_PENGU_PFP.png?1733809110",
+    "large": "https://coin-images.coingecko.com/coins/images/52622/large/PUDGY_PENGUINS_PENGU_PFP.png?1733809110",
+    "slug": "pudgy-penguins",
+    "price_btc": 1.069450630846981e-07,
+    "score": 5,
+    "data": {
+     "price": 0.009053170951754877,
+     "price_btc": "0.0000001069450630846981",
+     "price_change_percentage_24h": {
+      "usd": -8.524196457166363
+     },
+     "market_cap": "$569,091,000",
+     "market_cap_btc": "6722.668402999153",
+     "total_volume": "$194,415,146",
+     "total_volume_btc": "2296.624553862987"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "worldcoin-wld",
+    "coin_id": 31069,
+    "name": "Worldcoin",
+    "symbol": "WLD",
+    "market_cap_rank": 50,
+    "thumb": "https://coin-images.coingecko.com/coins/images/31069/standard/worldcoin.jpeg?1696529903",
+    "small": "https://coin-images.coingecko.com/coins/images/31069/small/worldcoin.jpeg?1696529903",
+    "large": "https://coin-images.coingecko.com/coins/images/31069/large/worldcoin.jpeg?1696529903",
+    "slug": "worldcoin",
+    "price_btc": 7.103936383692755e-06,
+    "score": 6,
+    "data": {
+     "price": 0.6008497631174465,
+     "price_btc": "0.000007103936383692755",
+     "price_change_percentage_24h": {
+      "usd": 10.547980773941527
+     },
+     "market_cap": "$2,279,745,664",
+     "market_cap_btc": "26953.7687530657",
+     "total_volume": "$659,348,834",
+     "total_volume_btc": "7795.577645913107"
+    }
+   }
+  },
+  {
+   "item": {
+    "id": "backpack",
+    "coin_id": 102171961,
+    "name": "Backpack",
+    "symbol": "BP",
+    "market_cap_rank": 144,
+    "thumb": "https://coin-images.coingecko.com/coins/images/102171961/standard/image_%285%29.png?1774269858",
+    "small": "https://coin-images.coingecko.com/coins/images/102171961/small/image_%285%29.png?1774269858",
+    "large": "https://coin-images.coingecko.com/coins/images/102171961/large/image_%285%29.png?1774269858",
+    "slug": "backpack",
+    "price_btc": 1.5323628411170037e-05,
+    "score": 7,
+    "data": {
+     "price": 1.2971315659758929,
+     "price_btc": "0.00001532362841117003",
+     "price_change_percentage_24h": {
+      "usd": -5.919714459716673
+     },
+     "market_cap": "$324,278,625",
+     "market_cap_btc": "3830.856748778367",
+     "total_volume": "$15,306,085",
+     "total_volume_btc": "180.8181370714701"
+    }
+   }
+  }
+ ],
+ "nfts": [],
+ "categories": []
+}

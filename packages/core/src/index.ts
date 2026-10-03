@@ -281,7 +281,10 @@ export interface Warning {
     /** Closes the account and sends everything left to someone (Algorand close-to, NEAR DeleteAccount, Stellar accountMerge). */
     | "account-closure"
     /** The recipient (an exchange, usually) needs a memo, or the funds may be lost (Stellar SEP-29). */
-    | "memo-required";
+    | "memo-required"
+    // Phase 2.5 (social)
+    /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
+    | "public-record";
   message: string;
 }
 

@@ -16,7 +16,7 @@ export async function runCeremony(client: Pick<CeremonyClient, "passkeyFinish">,
       credentialId = b64urlEncode(r.credentialId);
       prfOutput = r.prfOutput;
     } else {
-      if (!c.credentialId) throw new PasskeyError("We couldn't tell which passkey made this backup.", "unsupported");
+      if (!c.credentialId) throw new PasskeyError("We couldn't tell which passkey made this backup.", "unsupported", "backup.ceremony.unknownPasskey");
       credentialId = c.credentialId;
       prfOutput = await prf.evaluate(b64urlDecode(c.credentialId), b64urlDecode(c.prfInput));
     }

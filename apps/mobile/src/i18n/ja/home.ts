@@ -1,0 +1,22 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "ウォレットをロック",
+  "m.home.pending": "{n, plural, other {#件のリクエストがあなたを待っています}}",
+  "m.home.total": "合計残高",
+  "m.home.bridged": "ブリッジ済み",
+  "m.home.empty.title": "まだ何もありません",
+  "m.home.empty.body": "「受け取る」をタップして、別のウォレットや取引所から入金してください。",
+  "m.home.hideSmall": "少額の残高を隠す",
+  "m.home.spam.hide": "不審なトークンを隠す",
+  "m.home.spam.hidden": "{n, plural, other {#件の不審なトークンを非表示にしています}}",
+  "m.home.stale": "一部の残高は数分前の情報の可能性があります。",
+
+  "m.home.asset.title": "資産",
+  "m.home.asset.gone": "この資産はもう保有していません",
+  "m.home.asset.pin": "ピン留め",
+  "m.home.asset.unpin": "ピン留めを外す",
+  "m.home.asset.bridgedCopy": "ブリッジされたコピー — 本来の{symbol}ではありません",
+  "m.home.asset.where": "保管場所",
+  "m.home.asset.whereHint": "管理する必要はありません。{symbol}はどこにあっても使えます。",
+  "m.home.asset.contract": "コントラクト（{network}）",
+} satisfies Record<keyof typeof en, string>;

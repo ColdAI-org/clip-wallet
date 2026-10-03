@@ -1,0 +1,69 @@
+{
+ "layerzero": {
+  "id": "layerzero",
+  "symbol": "zro",
+  "name": "LayerZero",
+  "asset_platform_id": "ethereum",
+  "platforms": {
+   "ethereum": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "base": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "polygon-pos": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "binance-smart-chain": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "arbitrum-one": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "optimistic-ethereum": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+   "avalanche": "0x6985884c4392d348587b19cb9eaaf157f13271cd"
+  },
+  "detail_platforms": {
+   "ethereum": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/eth/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "base": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/base/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "polygon-pos": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/polygon_pos/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "binance-smart-chain": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/bsc/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "arbitrum-one": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/arbitrum/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "optimistic-ethereum": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/optimism/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   },
+   "avalanche": {
+    "decimal_place": 18,
+    "contract_address": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "geckoterminal_url": "https://www.geckoterminal.com/avax/tokens/0x6985884c4392d348587b19cb9eaaf157f13271cd"
+   }
+  }
+ },
+ "bitcoin": {
+  "id": "bitcoin",
+  "symbol": "btc",
+  "name": "Bitcoin",
+  "asset_platform_id": null,
+  "platforms": {
+   "": ""
+  },
+  "detail_platforms": {
+   "": {
+    "decimal_place": null,
+    "contract_address": ""
+   }
+  }
+ }
+}

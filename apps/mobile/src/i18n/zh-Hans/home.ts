@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "锁定钱包",
+  "m.home.pending": "{n, plural, other {有 # 个请求正在等你处理}}",
+  "m.home.total": "总余额",
+  "m.home.bridged": "跨链桥接",
+  "m.home.empty.title": "这里还没有内容",
+  "m.home.empty.body": "点按“接收”，从其他钱包或交易所转入资金。",
+  "m.home.hideSmall": "隐藏小额余额",
+  "m.home.spam.hide": "隐藏可疑代币",
+  "m.home.spam.hidden": "{n, plural, other {已隐藏 # 个可疑代币}}",
+  "m.home.stale": "部分余额可能是几分钟前的数据。",
+  "m.home.asset.title": "资产",
+  "m.home.asset.gone": "你已不再持有此资产",
+  "m.home.asset.pin": "置顶",
+  "m.home.asset.unpin": "取消置顶",
+  "m.home.asset.bridgedCopy": "跨链桥接副本，并非原生 {symbol}",
+  "m.home.asset.where": "所在位置",
+  "m.home.asset.whereHint": "你无需管理这些：无论 {symbol} 在哪里，都可以直接花费。",
+  "m.home.asset.contract": "合约（{network}）",
+} satisfies Record<keyof typeof en, string>;

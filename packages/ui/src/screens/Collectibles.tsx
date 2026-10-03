@@ -4,6 +4,7 @@ import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { CopyButton, Empty, ErrorNote, NftMedia, Row, Screen, Spinner } from "../components";
 import { looksLikeLink } from "../lib/media";
+import { useUiT } from "../i18n";
 
 export interface CollectionGroup {
   key: string;
@@ -29,6 +30,7 @@ export function groupCollectibles(nfts: Nft[], opts: { network?: string; showSpa
 }
 
 export function Collectibles() {
+  const t = useUiT();
   const { client, state } = useUi();
   const { navigate } = useRouter();
   const { data, error, loading } = useAsync(() => client.getCollectibles(), [client]);
@@ -41,17 +43,17 @@ export function Collectibles() {
   const name = (id: string) => portfolio?.networks.find((n) => n.id === id)?.name ?? id;
 
   return (
-    <Screen nav title="Collectibles">
+    <Screen nav title={t("collectibles.title")}>
       {networksPresent.length > 1 && (
         <div className="clip-filter">
           <label className="clip-filter__label" htmlFor="nft-network-filter">
-            Show
+            {t("collectibles.filter.show")}
           </label>
           <select id="nft-network-filter" className="clip-select" value={network} onChange={(e) => setNetwork(e.target.value)}>
-            <option value="">Everything</option>
+            <option value="">{t("collectibles.filter.everything")}</option>
             {networksPresent.map((id) => (
               <option key={id} value={id}>
-                Only {name(id)}
+                {t("collectibles.filter.only", { network: name(id) })}
               </option>
             ))}
           </select>
@@ -59,7 +61,7 @@ export function Collectibles() {
       )}
       <ErrorNote message={error ? userMessageOf(error) : null} />
       {loading && !data && <Spinner />}
-      {data && groups.length === 0 && <Empty title="No collectibles yet">Things you collect in apps show up here.</Empty>}
+      {data && groups.length === 0 && <Empty title={t("collectibles.emptyTitle")}>{t("collectibles.emptyBody")}</Empty>}
       {groups.map((g) => (
         <section key={g.key} className="clip-collection" aria-labelledby={`c-${g.key}`}>
           <h2 id={`c-${g.key}`} className="clip-h2">
@@ -70,7 +72,7 @@ export function Collectibles() {
               <li key={nftId(n)}>
                 <button type="button" className="clip-nft-tile" onClick={() => navigate(`/collectible/${encodeURIComponent(nftId(n))}`)}>
                   <NftMedia nft={n} />
-                  <span className="clip-nft-tile__name">{n.name ?? `#${n.tokenId}`}</span>
+                  <span className="clip-nft-tile__name">{n.name ?? t("collectibles.tokenNumber", { tokenId: n.tokenId })}</span>
                 </button>
               </li>
             ))}
@@ -82,23 +84,24 @@ export function Collectibles() {
 }
 
 export function CollectibleDetail(props: { id: string }) {
+  const t = useUiT();
   const { client, state } = useUi();
   const { data } = useAsync(() => client.getCollectibles(), [client]);
   const { data: portfolio } = useAsync(() => client.getPortfolio(), [client]);
   const nft = data?.find((n) => nftId(n) === props.id);
-  if (!data) return <Screen back title="Collectible"><Spinner /></Screen>;
-  if (!nft) return <Screen back title="Collectible"><Empty title="This item is no longer in your wallet" /></Screen>;
+  if (!data) return <Screen back title={t("collectibles.detail.title")}><Spinner /></Screen>;
+  if (!nft) return <Screen back title={t("collectibles.detail.title")}><Empty title={t("collectibles.detail.gone")} /></Screen>;
   const advanced = !!state?.prefs.advanced;
   return (
     <Screen back title={nft.collection.name}>
       <NftMedia nft={nft} size="full" />
-      <h1 className="clip-h1">{nft.name ?? `#${nft.tokenId}`}</h1>
+      <h1 className="clip-h1">{nft.name ?? t("collectibles.tokenNumber", { tokenId: nft.tokenId })}</h1>
       {nft.attributes && nft.attributes.length > 0 && (
         <div className="clip-rows">
           {nft.attributes.map((a) =>
             looksLikeLink(a.value) ? (
               // Links in metadata are shown as inert text, never opened automatically.
-              <Row key={a.trait} label={a.trait} value={<span className="clip-inert-link">{a.value}</span>} hint={<CopyButton value={a.value} label="Copy link" />} />
+              <Row key={a.trait} label={a.trait} value={<span className="clip-inert-link">{a.value}</span>} hint={<CopyButton value={a.value} label={t("collectibles.detail.copyLink")} />} />
             ) : (
               <Row key={a.trait} label={a.trait} value={a.value} />
             ),
@@ -107,10 +110,10 @@ export function CollectibleDetail(props: { id: string }) {
       )}
       {advanced && (
         <div className="clip-rows clip-advanced-block">
-          <Row label="Network" value={portfolio?.networks.find((n) => n.id === nft.networkId)?.name ?? nft.networkId} />
-          <Row label="Standard" value={nft.standard} />
-          <Row label="Token id" value={<code className="clip-mono">{nft.tokenId}</code>} />
-          <Row label="Collection" value={<code className="clip-mono">{nft.collection.address}</code>} />
+          <Row label={t("collectibles.detail.network")} value={portfolio?.networks.find((n) => n.id === nft.networkId)?.name ?? nft.networkId} />
+          <Row label={t("collectibles.detail.standard")} value={nft.standard} />
+          <Row label={t("collectibles.detail.tokenId")} value={<code className="clip-mono">{nft.tokenId}</code>} />
+          <Row label={t("collectibles.detail.collection")} value={<code className="clip-mono">{nft.collection.address}</code>} />
         </div>
       )}
     </Screen>
