@@ -178,6 +178,9 @@ importers:
       '@clip-wallet/1mask':
         specifier: workspace:*
         version: link:../../packages/1mask
+      '@clip-wallet/chains-aptos':
+        specifier: workspace:*
+        version: link:../../packages/chains-aptos
       '@clip-wallet/chains-bitcoin':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoin
@@ -190,6 +193,9 @@ importers:
       '@clip-wallet/chains-solana':
         specifier: workspace:*
         version: link:../../packages/chains-solana
+      '@clip-wallet/chains-sui':
+        specifier: workspace:*
+        version: link:../../packages/chains-sui
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../../packages/config

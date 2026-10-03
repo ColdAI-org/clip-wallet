@@ -80,7 +80,7 @@ describe("validation errors in plain words", () => {
 
   it("explains network patterns", () => {
     expect(problems({ ...base, networks: ["ethereum"] })).toEqual([
-      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana" or "bitcoin"',
+      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "sui" or "aptos"',
     ]);
     expect(problems({ ...base, networks: [] })).toEqual(["networks: turn on at least one network"]);
     expect(problems({ ...base, networks: ["hedera", "hedera"] })).toEqual(["networks: each network is listed once"]);

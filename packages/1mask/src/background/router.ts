@@ -20,6 +20,7 @@ import {
   type PortResponse,
 } from "../shared/protocol.js";
 import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
+import { METHOD_APTOS_NETWORK } from "../inpage/aptos.js";
 import type { PermissionStore } from "./permissions.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
@@ -239,7 +240,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   };
 
   const sameAddress = (family: Family, a: string, b: string) =>
-    family === "evm" ? a.toLowerCase() === b.toLowerCase() : a === b;
+    family === "evm" || family === "sui" || family === "aptos" ? a.toLowerCase() === b.toLowerCase() : a === b;
 
   const requireOwnAddresses = async (origin: string, family: Family, addresses: unknown[]) => {
     const list = await accounts(origin, family);
@@ -391,7 +392,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
   const dispatchStandard = async (
     origin: string,
-    family: "solana" | "bitcoin",
+    family: "solana" | "bitcoin" | "sui" | "aptos",
     method: string,
     params: unknown,
     chain: string | undefined,
@@ -401,10 +402,14 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
         return (await permitted(origin, family)) ? accounts(origin, family) : [];
       case "standard:disconnect":
       case "bitcoin:disconnect":
+      case "aptos:disconnect":
         await revoke(origin, family);
         return null;
+      case METHOD_APTOS_NETWORK:
+        return { networkId: requireNetwork(family, origin, chain).id };
       case "standard:connect":
-      case "bitcoin:connect": {
+      case "bitcoin:connect":
+      case "aptos:connect": {
         if (await permitted(origin, family)) return accounts(origin, family);
         return connect(origin, family, requireNetwork(family, origin, chain), method, params ?? {});
       }
@@ -422,7 +427,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
     await requirePermission(origin, family);
     const inputs = method === "bitcoin:sendTransfer" ? [] : inputsOf(params);
-    if (family === "solana") {
+    if (family === "solana" || family === "sui" || family === "aptos") {
       await requireOwnAddresses(origin, family, inputs.map((i) => i.account));
       if (method === "solana:signAndSendTransaction" && inputs.some((i) => typeof i.chain !== "string")) {
         throw rpcError.invalidParams("solana:signAndSendTransaction needs a chain.");
@@ -455,7 +460,9 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     }
     if (!injectedAllowlist(family).has(method)) throw rpcError.unsupportedMethod(method);
     if (family === "evm") return dispatchEvm(origin, method, params);
-    if (family === "solana" || family === "bitcoin") return dispatchStandard(origin, family, method, params, chain);
+    if (family === "solana" || family === "bitcoin" || family === "sui" || family === "aptos") {
+      return dispatchStandard(origin, family, method, params, chain);
+    }
     throw rpcError.unsupportedMethod(method);
   };
 

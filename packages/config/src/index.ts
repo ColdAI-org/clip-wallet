@@ -15,13 +15,13 @@ export const MAINNET_ACKNOWLEDGEMENT =
 
 export const WALLETCONNECT_ENV = "CLIP_WALLETCONNECT_PROJECT_ID";
 
-export const NETWORK_FAMILIES = ["evm", "hedera", "solana", "bitcoin"] as const;
+export const NETWORK_FAMILIES = ["evm", "hedera", "solana", "bitcoin", "sui", "aptos"] as const;
 export const ROUTE_MODES = ["balanced", "cheapest", "fastest", "reliable", "greenest"] as const;
 export const TRUST_TIERS = ["attested", "committee", "light-client", "validity-proof"] as const;
 export const HARDWARE = ["ledger", "keystone"] as const;
 
 /** "evm:*", "evm:8453", "evm:base-sepolia", "hedera", "solana", "bitcoin". */
-const NETWORK_PATTERN = /^(?:evm:(?:\*|[1-9]\d*|[a-z][a-z0-9-]*)|hedera|solana|bitcoin)$/;
+const NETWORK_PATTERN = /^(?:evm:(?:\*|[1-9]\d*|[a-z][a-z0-9-]*)|hedera|solana|bitcoin|sui|aptos)$/;
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const RDNS = /^[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)+$/;
 
@@ -115,7 +115,7 @@ export const clipConfigSchema = z
     rdns: z.string("set rdns to a reverse domain you own, like com.example.wallet").regex(RDNS, "use a reverse domain you own, like com.example.wallet (lowercase)"),
     theme: theme.default({ accent: "#4F46E5", accentText: "#FFFFFF", font: "Inter", radius: 12 }),
     networks: z
-      .array(z.string().regex(NETWORK_PATTERN, 'use "evm:*", "evm:<chain id>", "hedera", "solana" or "bitcoin"'))
+      .array(z.string().regex(NETWORK_PATTERN, 'use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "sui" or "aptos"'))
       .min(1, "turn on at least one network")
       .refine((n) => new Set(n).size === n.length, "each network is listed once")
       .default(["evm:*", "hedera", "solana", "bitcoin"]),

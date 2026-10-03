@@ -11,6 +11,8 @@ import { resolveChannel, resolveIdentity, type InpageConfig, type WalletIdentity
 import { ClipBitcoinWallet } from "./bitcoin.js";
 import { ClipEthereumProvider, announceEip6963, claimWindowEthereum, type EIP6963ProviderDetail } from "./evm.js";
 import { ClipSolanaWallet } from "./solana.js";
+import { ClipSuiWallet } from "./sui.js";
+import { ClipAptosWallet } from "./aptos.js";
 import { createInpageTransport, type InpageTransport } from "./transport.js";
 
 export interface InstalledOneMask {
@@ -19,6 +21,8 @@ export interface InstalledOneMask {
   evm?: { provider: ClipEthereumProvider; detail: EIP6963ProviderDetail; claimedWindowEthereum: boolean };
   solana?: ClipSolanaWallet;
   bitcoin?: ClipBitcoinWallet;
+  sui?: ClipSuiWallet;
+  aptos?: ClipAptosWallet;
   destroy(): void;
 }
 
@@ -30,7 +34,7 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
     win,
     ...(config.requestTimeoutMs !== undefined ? { timeoutMs: config.requestTimeoutMs } : {}),
   });
-  const want = { evm: true, solana: true, bitcoin: true, ...config.providers };
+  const want = { evm: true, solana: true, bitcoin: true, sui: true, aptos: true, ...config.providers };
   const stops: (() => void)[] = [() => transport.destroy()];
   const out: InstalledOneMask = { identity, transport, destroy: () => stops.forEach((s) => s()) };
 
@@ -49,6 +53,16 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
     out.bitcoin = new ClipBitcoinWallet(identity, config.networks, transport);
     registerWallet(out.bitcoin);
   }
+  if (want.sui && config.networks.some((n) => n.family === "sui")) {
+    out.sui = new ClipSuiWallet(identity, config.networks, transport);
+    registerWallet(out.sui);
+  }
+  if (want.aptos && config.networks.some((n) => n.family === "aptos")) {
+    const aptos = new ClipAptosWallet(identity, config.networks, transport);
+    out.aptos = aptos;
+    stops.push(() => aptos.destroy());
+    registerWallet(aptos);
+  }
   return out;
 }
 
@@ -56,5 +70,7 @@ export { ClipEthereumProvider, announceEip6963, claimWindowEthereum } from "./ev
 export type { EIP6963ProviderDetail, EIP6963ProviderInfo, RequestArguments } from "./evm.js";
 export { ClipSolanaWallet, SOLANA_FEATURES } from "./solana.js";
 export { ClipBitcoinWallet, BITCOIN_FEATURES, BITCOIN_METHODS } from "./bitcoin.js";
+export { ClipSuiWallet, SUI_FEATURES, SUI_SIGNING_METHODS, suiChain } from "./sui.js";
+export { ClipAptosWallet, APTOS_FEATURES, METHOD_APTOS_NETWORK, aptosChain, toWireArg } from "./aptos.js";
 export * from "./bitcoin-features.js";
 export { createInpageTransport, type InpageTransport } from "./transport.js";

@@ -1,5 +1,7 @@
 import type { Family } from "@clip-wallet/core";
 import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
+import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS } from "../inpage/aptos.js";
+import { SUI_SIGNING_METHODS } from "../inpage/sui.js";
 
 /**
  * Method allowlists per family. Anything not listed is answered with 4200 (unsupported method)
@@ -60,6 +62,18 @@ export const BITCOIN_METHODS_ALLOWED = {
   signing: ["bitcoin:signTransaction", "bitcoin:signAndSendTransaction", "bitcoin:signMessage", "bitcoin:sendTransfer"],
 } as const;
 
+export const SUI_METHODS_ALLOWED = {
+  local: [METHOD_WS_STATE, "standard:disconnect"],
+  connect: ["standard:connect"],
+  signing: SUI_SIGNING_METHODS,
+} as const;
+
+export const APTOS_METHODS_ALLOWED = {
+  local: APTOS_LOCAL_METHODS,
+  connect: APTOS_CONNECT_METHODS,
+  signing: APTOS_SIGNING_METHODS,
+} as const;
+
 /**
  * Hedera native methods (hashgraph/hedera-wallet-connect `HederaJsonRpcMethod`). Reached only over
  * WalletConnect (namespace "hedera"); there is no injected Hedera provider in v1.
@@ -86,6 +100,10 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
       return new Set<string>([...SOLANA_METHODS.local, ...SOLANA_METHODS.connect, ...SOLANA_METHODS.signIn, ...SOLANA_METHODS.signing]);
     case "bitcoin":
       return new Set<string>([...BITCOIN_METHODS_ALLOWED.local, ...BITCOIN_METHODS_ALLOWED.connect, ...BITCOIN_METHODS_ALLOWED.signing]);
+    case "sui":
+      return new Set<string>([...SUI_METHODS_ALLOWED.local, ...SUI_METHODS_ALLOWED.connect, ...SUI_METHODS_ALLOWED.signing]);
+    case "aptos":
+      return new Set<string>([...APTOS_METHODS_ALLOWED.local, ...APTOS_METHODS_ALLOWED.connect, ...APTOS_METHODS_ALLOWED.signing]);
     case "hedera":
       return new Set<string>();
     default:

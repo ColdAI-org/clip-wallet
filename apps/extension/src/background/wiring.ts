@@ -25,6 +25,8 @@ import { createEvmModule } from "@clip-wallet/chains-evm";
 import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
+import { createSuiModule } from "@clip-wallet/chains-sui";
+import { createAptosModule } from "@clip-wallet/chains-aptos";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
@@ -207,7 +209,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   return {
     mocks: false,
     vault,
-    chains: { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() },
+    chains: { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule(), sui: createSuiModule(), aptos: createAptosModule() },
     networks,
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency),

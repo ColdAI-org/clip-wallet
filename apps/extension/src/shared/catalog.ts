@@ -10,6 +10,8 @@ type CuratedToken = (typeof CURATED_TOKENS)[number];
 import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
 import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
 import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
+import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui";
+import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
 function curatedAsset(t: CuratedToken): AssetRef {
@@ -28,6 +30,10 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     SOLANA_DEVNET,
     SOLANA_MAINNET,
     ...BITCOIN_NETWORKS.filter((n) => n.name !== "Bitcoin Signet"),
+    SUI_TESTNET,
+    SUI_MAINNET,
+    APTOS_TESTNET,
+    APTOS_MAINNET,
   ];
   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
 }
@@ -53,6 +59,14 @@ export function walletAssets(networks: Network[]): AssetRef[] {
     if (n.family === "solana") {
       const mint = USDC_MINTS[n.testnet ? "devnet" : "mainnet"];
       if (mint) out.push({ key: splKey(n.id, mint), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: mint });
+    }
+    if (n.family === "sui") {
+      const type = USDC_COIN_TYPES[n.testnet ? "testnet" : "mainnet"];
+      if (type) out.push({ key: suiKey(n.id, type), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: type });
+    }
+    if (n.family === "aptos") {
+      const fa = USDC_METADATA[n.testnet ? "testnet" : "mainnet"];
+      if (fa) out.push({ key: aptosKey(n.id, fa), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: fa });
     }
   }
   return out;

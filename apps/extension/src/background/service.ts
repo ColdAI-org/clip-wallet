@@ -83,7 +83,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 }
 const APPROVAL_TTL_MS = 2 * 60_000;
-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin"];
+const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin", "sui", "aptos"];
 
 function parseUnits(value: string, decimals: number): bigint {
   const [w = "0", f = ""] = value.split(".");
@@ -404,7 +404,7 @@ export class WalletService implements DappHost {
       displayName = hit.displayName;
     }
     const carrying = this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id));
-    const recognised = FAMILIES.filter((f) => this.module(f).isAddress(address));
+    const recognised = FAMILIES.filter((f) => !!this.deps.chains[f]?.isAddress(address));
     if (recognised.length === 0) return { kind: "invalid", message: "That doesn't look like an address. Check it and try again." };
     const candidates = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
     const symbol = this.deps.assets.find((a) => a.key === assetKey)?.symbol ?? "this";

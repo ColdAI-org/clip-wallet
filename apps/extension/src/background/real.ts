@@ -9,7 +9,7 @@ import { createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort }
 import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
 
-const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect"]);
+const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect", "aptos:connect"]);
 const READ_ONLY = new Set<string>(EVM_METHODS.readOnly);
 
 /* ------------------------------------------------------------------ 1Mask */
@@ -145,7 +145,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
 
 /* ------------------------------------------------------------------ route */
 
-const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
+const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600, sui: 1, aptos: 1 };
 
 /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
 export class RoutePlannerAdapter implements RoutePlanner {
