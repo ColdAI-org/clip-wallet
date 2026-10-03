@@ -64,7 +64,7 @@ function errorResponse(status: number, code: string, extra: Record<string, strin
 
 /** ipfs:// / ar:// → a gateway URL; http(s) unchanged. */
 export function upstreamUrl(src: MediaSource, env: Env): string {
-  const ipfs = (env.IPFS_GATEWAY ?? "https://ipfs.io").replace(/\/+$/, "");
+  const ipfs = (env.IPFS_GATEWAY ?? "https://ipfs.filebase.io").replace(/\/+$/, "");
   const ar = (env.ARWEAVE_GATEWAY ?? "https://arweave.net").replace(/\/+$/, "");
   if (src.scheme === "ipfs") return `${ipfs}/ipfs/${src.url.slice("ipfs://".length)}`;
   if (src.scheme === "ar") return `${ar}/${src.url.slice("ar://".length)}`;

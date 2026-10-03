@@ -1,7 +1,7 @@
 /**
- * Pluggable email delivery. No provider is wired: the deployed default refuses to send (503), so nobody can
- * sign in until an operator plugs in a real sender (Cloudflare Email Service, SES, Postmark, …) by passing it
- * to createApp(). The message carries only the sign-in link.
+ * Pluggable email delivery. The deployed default refuses to send (503), so nobody can sign in until an
+ * operator sets RESEND_API_KEY + EMAIL_FROM (src/index.ts picks ResendEmailSender) or passes another sender to
+ * createApp(). The message carries only the sign-in link.
  */
 export interface EmailMessage {
   to: string;
@@ -19,6 +19,28 @@ export class EmailUnavailableError extends Error {}
 export class UnconfiguredEmailSender implements EmailSender {
   async send(): Promise<void> {
     throw new EmailUnavailableError("No email provider is configured for this deployment.");
+  }
+}
+
+/**
+ * Resend (https://resend.com/docs/api-reference/emails/send-email): POST https://api.resend.com/emails with
+ * `Authorization: Bearer <key>` and { from, to, subject, text }; 200 { id } on success. `from` must be on a domain
+ * verified in Resend. Any non-2xx is reported as a send failure (502) without echoing the provider's body.
+ */
+export class ResendEmailSender implements EmailSender {
+  constructor(
+    private readonly apiKey: string,
+    private readonly from: string,
+    private readonly fetchFn: typeof fetch = (...a) => fetch(...a),
+  ) {}
+
+  async send(msg: EmailMessage): Promise<void> {
+    const res = await this.fetchFn("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { authorization: `Bearer ${this.apiKey}`, "content-type": "application/json" },
+      body: JSON.stringify({ from: this.from, to: [msg.to], subject: msg.subject, text: msg.text }),
+    });
+    if (!res.ok) throw new Error(`Resend answered ${res.status}`);
   }
 }
 

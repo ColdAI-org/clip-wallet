@@ -1,8 +1,9 @@
 # services/backup — passkey backup storage with email sign-in
 
 A Cloudflare Worker (D1 + R2) that stores the opaque blobs produced by `vault.createPasskeyBackup` so a
-user can restore their wallet on a new device with the passkey that synced there. **Not deployed**; the
-D1/R2 ids in `wrangler.jsonc` are placeholders, no account was created, and no email provider is wired.
+user can restore their wallet on a new device with the passkey that synced there. Deployed for testnet builds
+at `https://clip-backup.doyoka-platform.workers.dev` with email sign-in **off** (no provider key set); see
+[docs/phase25/deploy.md](../../docs/phase25/deploy.md) for resources, rotation, teardown and how to switch sign-in on.
 
 Client: [`@clip-wallet/backup-client`](../../packages/backup-client) (wire protocol in its `src/protocol.ts`).
 UI: `packages/ui/src/screens/Backup*.tsx`; integration lines in `docs/phase2/integration/platform.md`.
@@ -56,17 +57,22 @@ controls both the passkey-sync account and the email inbox (they can restore —
 
 ## Email
 
-`EmailSender` (`src/email.ts`) is an interface. The deployed default (`UnconfiguredEmailSender`) refuses,
-so `auth/start` returns 503 and nothing is stored. To go live, construct the app with a real sender
-(Cloudflare Email Service, SES, Postmark…) in `src/index.ts`. `MemoryEmailSender` is for tests only.
+`EmailSender` (`src/email.ts`) is an interface. With no `RESEND_API_KEY` secret or no `EMAIL_FROM` var, the
+deployed entry point uses `UnconfiguredEmailSender`: `auth/start` returns 503 before touching D1 (no link, no
+rate-limit row) and `/v1/health` reports `"emailSignIn": false`. With both set, `src/index.ts` sends through
+`ResendEmailSender` (Resend `POST /emails`). Other providers: pass a sender to `createApp()`.
+`MemoryEmailSender` is for tests only.
 
-## Operating (when someone decides to deploy)
+## Operating
+
+Done once for the current deployment (commands and ids in `docs/phase25/deploy.md`):
 
 ```
-wrangler d1 create clip-wallet-backup            # paste the id into wrangler.jsonc
-wrangler r2 bucket create clip-wallet-backup-blobs
-wrangler d1 migrations apply clip-wallet-backup --remote
-wrangler secret put EMAIL_PEPPER                 # ≥ 32 random bytes
+wrangler d1 create clip-backup-db                # id is in wrangler.jsonc
+wrangler r2 bucket create clip-backup-blobs
+wrangler d1 migrations apply clip-backup-db --remote
+openssl rand -base64 32 | wrangler secret put EMAIL_PEPPER
+wrangler deploy
 ```
 
 Set `APP_URL` (where the link lands; the wallet reads `#/backup/sign-in?token=…`) and `ALLOWED_ORIGINS`
@@ -75,7 +81,7 @@ Set `APP_URL` (where the link lands; the wallet reads `#/backup/sign-in?token=�
 ## Tests
 
 `pnpm --filter @clip-wallet/service-backup test` runs inside workerd via `@cloudflare/vitest-pool-workers`
-0.22 (Vitest 4, local Miniflare D1/R2; nothing remote). 21 tests, including the real
+0.22 (Vitest 4, local Miniflare D1/R2; nothing remote). 24 tests, including the real
 `@clip-wallet/backup-client` driving the Worker end to end.
 
 Sources: Workers Vitest integration <https://developers.cloudflare.com/workers/testing/vitest-integration/>;

@@ -1,27 +1,30 @@
-// services/backup — passkey-encrypted backup blobs + email sign-in. NOT DEPLOYED.
-// The ids below are placeholders: create the D1 database and R2 bucket in the account that will host this,
-// paste their ids, and set the secret with `wrangler secret put EMAIL_PEPPER` (32+ random bytes, base64).
+// services/backup — passkey-encrypted backup blobs + email sign-in.
+// Deployed (testnet builds) to https://clip-backup.<subdomain>.workers.dev; see docs/phase25/deploy.md.
+// Secrets (never in this file): EMAIL_PEPPER (set), RESEND_API_KEY (unset = email sign-in off, 503).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "clip-wallet-backup",
+  "name": "clip-backup",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
-  "workers_dev": false,
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": false },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "clip-wallet-backup",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_name": "clip-backup-db",
+      "database_id": "713055ac-b7e8-4eab-ba73-86ec4538ae6b",
       "migrations_dir": "migrations"
     }
   ],
-  "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "clip-wallet-backup-blobs" }],
+  "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "clip-backup-blobs" }],
   "vars": {
     // Where the sign-in link points; the wallet reads `token` from the fragment (never sent to a server).
     "APP_URL": "https://wallet.example/backup",
     // Browser origins allowed to call the API (comma-separated), e.g. chrome-extension://<id>.
-    "ALLOWED_ORIGINS": ""
+    "ALLOWED_ORIGINS": "",
+    // Sender for sign-in links (domain verified in Resend). Email stays off until RESEND_API_KEY is also set.
+    "EMAIL_FROM": ""
   },
   // Hourly cleanup of expired links, sessions and rate-limit windows.
   "triggers": { "crons": ["17 * * * *"] }

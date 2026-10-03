@@ -1,5 +1,15 @@
 import { defineConfig } from "@clip-wallet/config";
 
+/**
+ * Testnet-only service deployments (docs/phase25/deploy.md). A mainnet build gets none of these by default:
+ * point it at production deployments explicitly.
+ */
+const MAINNET = false;
+const TESTNET_SERVICES = {
+  backupUrl: "https://clip-backup.doyoka-platform.workers.dev",
+  mediaProxyUrl: "https://clip-media-proxy.doyoka-platform.workers.dev",
+};
+
 // Clip Wallet's own brand. Every setting is documented in @clip-wallet/config.
 export default defineConfig({
   name: "Clip Wallet",
@@ -12,5 +22,6 @@ export default defineConfig({
   // rpOrigin unset: the extension's own origin is the WebAuthn RP (Chrome 122+). Set an https origin you
   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
   passkeys: { enabled: true },
-  mainnet: false,
+  services: MAINNET ? {} : TESTNET_SERVICES,
+  mainnet: MAINNET,
 });
