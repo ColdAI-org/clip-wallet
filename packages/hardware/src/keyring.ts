@@ -1,14 +1,22 @@
 /**
  * HardwareKeyring: the background's single entry point for hardware accounts. It is to hardware
  * accounts what ClipVault is to phrase accounts: it holds the (public-only) account list, enforces
- * approval binding, routes sign() to the right device, and checks every returned signature.
+ * approval binding and checks every returned signature.
+ *
+ * Two ways to get a signature:
+ *  - sign(): the keyring drives the device itself (a host that holds the device signers).
+ *  - acceptSignature(): the device ran elsewhere (the extension's approval window, which has WebHID and
+ *    the camera) and the background only checks what came back. The background keeps its own copy of the
+ *    approved payload, so whatever the other side signed, only a signature over those exact bytes by the
+ *    account's key is accepted, once.
  */
 import type { DappRequest, DecodedRequest, Signature, SignablePayload, SignatureScheme } from "@clip-wallet/core";
 import { HardwareApprovals } from "./approvals.js";
 import { HardwareErrors } from "./errors.js";
 import type { HardwareAccount, HardwareKind, HardwareSigner } from "./types.js";
-import { isHardwareAccountId } from "./types.js";
-import { assertVerifies } from "./verify.js";
+import { isHardwareAccountId, parseHardwareAccountId } from "./types.js";
+import { HARDWARE_CURVE } from "./paths.js";
+import { verifiedSignature } from "./verify.js";
 
 /** Same shape as the vault's VaultStorage (chrome.storage.local in the extension). Public data only. */
 export interface HardwareStorage {
@@ -18,7 +26,8 @@ export interface HardwareStorage {
 }
 
 export interface HardwareKeyringOptions {
-  signers: Partial<Record<HardwareKind, HardwareSigner>>;
+  /** Device signers for sign(). Optional: a host that only verifies (acceptSignature) passes none. */
+  signers?: Partial<Record<HardwareKind, HardwareSigner>>;
   storage: HardwareStorage;
   now?: () => number;
   storageKey?: string;
@@ -29,6 +38,29 @@ const SCHEME_CURVE: Partial<Record<SignatureScheme, string>> = {
   "schnorr-secp256k1": "secp256k1",
   ed25519: "ed25519",
 };
+
+const PUBLIC_KEY_HEX: Record<string, number[]> = { secp256k1: [66, 130], ed25519: [64] };
+
+/**
+ * An account record agrees with its id (kind, seed fingerprint, family, index, path style) and has the
+ * family's curve and a well-formed public key. Records can come from a page that ran the device, so the
+ * keyring checks them before storing.
+ */
+function consistentAccount(a: HardwareAccount): boolean {
+  const id = parseHardwareAccountId(a.id);
+  if (!id || !a.hardware) return false;
+  return (
+    id.family === a.family &&
+    id.index === a.index &&
+    id.kind === a.hardware.kind &&
+    id.fingerprint === a.hardware.fingerprint &&
+    id.pathStyle === a.hardware.pathStyle &&
+    a.curve === HARDWARE_CURVE[id.family] &&
+    typeof a.publicKey === "string" &&
+    !!PUBLIC_KEY_HEX[a.curve]?.includes(a.publicKey.length) &&
+    /^[0-9a-f]+$/.test(a.publicKey)
+  );
+}
 
 interface Stored {
   v: 1;
@@ -42,7 +74,7 @@ export class HardwareKeyring {
   private readonly approvals: HardwareApprovals;
 
   constructor(opts: HardwareKeyringOptions) {
-    this.signers = opts.signers;
+    this.signers = opts.signers ?? {};
     this.storage = opts.storage;
     this.storageKey = opts.storageKey ?? "clip-wallet/hardware/v1";
     this.approvals = new HardwareApprovals(opts.now ?? Date.now);
@@ -72,6 +104,7 @@ export class HardwareKeyring {
     const rec = await this.load();
     for (const a of accounts) {
       if (!this.owns(a.id)) throw new Error(`not a hardware account id: ${a.id}`);
+      if (!consistentAccount(a)) throw HardwareErrors.unknownAccount();
       const i = rec.accounts.findIndex((x) => x.id === a.id);
       if (i >= 0) rec.accounts[i] = { ...a, label: rec.accounts[i]!.label ?? a.label, hederaAccountId: rec.accounts[i]!.hederaAccountId ?? a.hederaAccountId };
       else rec.accounts.push(a);
@@ -114,15 +147,37 @@ export class HardwareKeyring {
     this.approvals.clear();
   }
 
+  /** True while `payload` is approved and unused: a host checks this before asking a device to sign it. */
+  isApproved(payload: SignablePayload): boolean {
+    return this.approvals.has(payload);
+  }
+
+  /**
+   * A signature produced outside this keyring (see the class comment). `payload` must be the caller's own
+   * copy of what it registered, never one handed back by the signing side. Checks, in order: the account,
+   * that the signature verifies over `payload.bytes` with the account's public key, then consumes the
+   * approval (single use). Returns the signature as rebuilt by the verification.
+   */
+  async acceptSignature(payload: SignablePayload, sig: Signature): Promise<Signature> {
+    const account = await this.checked(payload);
+    const verified = verifiedSignature(sig, payload, account.publicKey);
+    if (!this.approvals.consume(payload)) throw HardwareErrors.noApproval();
+    return verified;
+  }
+
   async sign(payload: SignablePayload, ctx: { request: DappRequest; decoded: DecodedRequest }): Promise<Signature> {
+    const account = await this.checked(payload);
+    if (!this.approvals.consume(payload)) throw HardwareErrors.noApproval();
+    const sig = await this.signer(account.hardware.kind).sign(payload, { ...ctx, account });
+    return verifiedSignature(sig, payload, account.publicKey);
+  }
+
+  private async checked(payload: SignablePayload): Promise<HardwareAccount> {
     const account = await this.account(payload.accountId);
     if (!account) throw HardwareErrors.unknownAccount();
     if (SCHEME_CURVE[payload.scheme] !== account.curve) throw HardwareErrors.unsupported("this kind of signature for this account");
     if (!(payload.bytes instanceof Uint8Array) || payload.bytes.length === 0) throw HardwareErrors.badSignature("empty payload");
-    if (!this.approvals.consume(payload)) throw HardwareErrors.noApproval();
-    const sig = await this.signer(account.hardware.kind).sign(payload, { ...ctx, account });
-    assertVerifies(sig, payload, account.publicKey);
-    return sig;
+    return account;
   }
 
   private async load(): Promise<Stored> {

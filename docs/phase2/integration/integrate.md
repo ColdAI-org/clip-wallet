@@ -86,6 +86,7 @@ the move recipe in `mobile.md` is done.
 | + features, platform | 7.25 MB | 3.39 MB | |
 | + hardware | 9.91 MB | | |
 | final | 10.00 MB | 0.84 MB | 250 KB |
+| Phase 2.5: hardware signing in the approval window (docs/phase25/integration/size-hw.md) | 7.34 MB | 0.85 MB (+2.5 MB lazy, hardware only) | 250 KB |
 
 MV3 service workers can't fetch code chunks: `import()` is forbidden in service workers, and WXT inlines it.
 WXT does emit `import()` as a lazy initialiser inside the one file, though, so code behind it is parsed but not

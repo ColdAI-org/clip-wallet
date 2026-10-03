@@ -47,14 +47,7 @@ import {
 } from "./real";
 import { createPriceFeed } from "./features";
 import { BackupClient } from "@clip-wallet/backup-client";
-import {
-  HardwareKeyring,
-  KeystoneBridge,
-  type HardwareSigner,
-  type HardwareStorage,
-  type KeystoneSigner,
-  type LedgerSigner,
-} from "@clip-wallet/hardware/core";
+import { HardwareKeyring, type HardwareStorage } from "@clip-wallet/hardware/core";
 import { MultiNameResolver } from "@clip-wallet/names";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 
@@ -183,10 +176,11 @@ export interface Dependencies {
   prices: PriceFeed;
   names: NameResolver;
   registry: DappRegistry;
-  /** Hardware accounts (Ledger, Keystone): public data, approval binding, device routing. */
+  /**
+   * Hardware accounts (Ledger, Keystone): public data, approval binding and signature checks. The devices
+   * are driven from the approval window (see hardware-host.ts); no device code is in the service worker.
+   */
   hardware: HardwareKeyring;
-  ledger: LazyLedger;
-  keystone: { signer: LazyKeystone; bridge: KeystoneBridge };
   /** services/backup client factory; null when no backup service is configured (clip.config services.backupUrl). */
   backup: ((session: { token: string; expiresAt: number } | null) => BackupClient) | null;
   /** Hedera "0.0.x" for the account's EVM alias, if it exists yet. */
@@ -233,40 +227,6 @@ export function lazyChain<M extends ChainModule>(family: Family, curve: ChainMod
   };
 }
 
-/** The device signers as the background uses them; their libraries load on first use (see lazyHardware). */
-export type LazyLedger = HardwareSigner & Pick<LedgerSigner, "close">;
-export type LazyKeystone = HardwareSigner & Pick<KeystoneSigner, "importSync" | "forget">;
-
-/**
- * Ledger and Keystone code (ledger-bitcoin's miniscript, the Keystone SDK, UR, …) is about 1.5 MB that most
- * wallets never run. Bundled into the service worker but evaluated only on first use: WXT emits `import()`
- * as a lazy initialiser in the same file (MV3 service workers can't fetch chunks with import()).
- */
-type HwBitcoinNetwork = NonNullable<ConstructorParameters<typeof LedgerSigner>[0]>["bitcoinNetwork"];
-function lazyHardware(bitcoinNetwork: HwBitcoinNetwork, bridge: KeystoneBridge, storage: HardwareStorage) {
-  let mod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
-  const load = () => (mod ??= import("@clip-wallet/hardware"));
-  let ledgerP: Promise<LedgerSigner> | undefined;
-  let keystoneP: Promise<KeystoneSigner> | undefined;
-  const led = () => (ledgerP ??= load().then((m) => new m.LedgerSigner({ bitcoinNetwork })));
-  const key = () => (keystoneP ??= load().then((m) => new m.KeystoneSigner({ channel: bridge, storage, bitcoinNetwork })));
-  const ledger: LazyLedger = {
-    kind: "ledger",
-    listAccounts: async (...a) => (await led()).listAccounts(...a),
-    sign: async (...a) => (await led()).sign(...a),
-    // Nothing to close if the Ledger code never loaded.
-    close: async () => (ledgerP ? (await ledgerP).close() : undefined),
-  };
-  const keystone: LazyKeystone = {
-    kind: "keystone",
-    listAccounts: async (...a) => (await key()).listAccounts(...a),
-    sign: async (...a) => (await key()).sign(...a),
-    importSync: async (...a) => (await key()).importSync(...a),
-    forget: async (...a) => (await key()).forget(...a),
-  };
-  return { ledger, keystone };
-}
-
 export interface WiringOptions {
   kv: KV;
   mocks: boolean;
@@ -275,8 +235,6 @@ export interface WiringOptions {
   currency: () => Promise<string>;
   /** Bundled icon URL for WalletConnect metadata. */
   iconUrl: string;
-  /** Called when a Keystone exchange opens or closes, so the approval window re-fetches. */
-  onHardwareChange?: () => void;
   /** Partner keys for features (from build env; never committed). */
   features?: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** Tests pass cheap Argon2 params; production uses the vault's defaults. */
@@ -293,12 +251,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const vault = new ClipVault({ storage: vaultStorageOf(opts.kv), autoLockMs: VAULT_MAX_IDLE_MS, ...opts.vaultOptions });
   const registry = new KnownDappRegistry();
   const hwStorage: HardwareStorage = { get: (k) => opts.kv.get<string>(k), set: (k, v) => opts.kv.set(k, v) };
-  // Same network as the vault (testnet unless the vault is configured otherwise).
-  const bitcoinNetwork = opts.vaultOptions?.bitcoinNetwork ?? "testnet";
-  const keystoneBridge = new KeystoneBridge(() => opts.onHardwareChange?.());
-  const { ledger, keystone } = lazyHardware(bitcoinNetwork, keystoneBridge, hwStorage);
-  const hardware = new HardwareKeyring({ signers: { ledger, keystone }, storage: hwStorage });
-  const hw = { hardware, ledger, keystone: { signer: keystone, bridge: keystoneBridge } };
+  const hw = { hardware: new HardwareKeyring({ storage: hwStorage }) };
 
   if (opts.mocks) {
     return {

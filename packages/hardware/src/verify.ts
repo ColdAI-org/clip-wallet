@@ -41,17 +41,24 @@ export function ed25519Signature(sig: Uint8Array, message: Uint8Array, publicKey
   return { scheme: "ed25519", bytes: sig, publicKey: publicKeyHex.toLowerCase() };
 }
 
-/** Final gate used by the keyring for every hardware signature, whatever the device. */
-export function assertVerifies(sig: Signature, payload: SignablePayload, publicKeyHex: string): void {
+/**
+ * Final gate for every hardware signature, whatever the device and wherever it ran. Returns the signature
+ * rebuilt from the verification (canonical low-S r||s, recovery bit and public key computed here), so
+ * nothing the signer added beyond the verified bytes is passed on.
+ */
+export function verifiedSignature(sig: Signature, payload: SignablePayload, publicKeyHex: string): Signature {
   if (sig.scheme !== payload.scheme) throw HardwareErrors.badSignature("scheme");
+  if (!(sig.bytes instanceof Uint8Array)) throw HardwareErrors.badSignature("bytes");
   if (sig.scheme === "ecdsa-secp256k1") {
     const again = ecdsaSignature(sig.bytes, payload.bytes, publicKeyHex);
     if (again.recovery !== sig.recovery) throw HardwareErrors.badSignature("recovery");
-    return;
+    return again;
   }
-  if (sig.scheme === "ed25519") {
-    ed25519Signature(sig.bytes, payload.bytes, publicKeyHex);
-    return;
-  }
+  if (sig.scheme === "ed25519") return ed25519Signature(sig.bytes, payload.bytes, publicKeyHex);
   throw HardwareErrors.unsupported("this kind of signature");
+}
+
+/** Throws unless `sig` verifies over `payload.bytes` with `publicKeyHex` (see verifiedSignature). */
+export function assertVerifies(sig: Signature, payload: SignablePayload, publicKeyHex: string): void {
+  verifiedSignature(sig, payload, publicKeyHex);
 }

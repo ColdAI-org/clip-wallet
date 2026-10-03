@@ -81,6 +81,12 @@ export class HardwareApprovals {
     return true;
   }
 
+  /** True while `payload` is approved and not yet used. Does not consume. */
+  has(payload: SignablePayload): boolean {
+    const e = this.live(payload.approvalId);
+    return !!e && (e.remaining.get(toHex(hashHardwarePayload(payload))) ?? 0) > 0;
+  }
+
   revoke(approvalId: string): void {
     this.entries.delete(approvalId);
   }

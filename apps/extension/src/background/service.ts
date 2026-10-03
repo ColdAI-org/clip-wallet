@@ -29,8 +29,9 @@ import type { LazyChainModule } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 import { PlatformService, type PlatformRequest } from "./platform";
 import type { Signature, SignablePayload } from "@clip-wallet/core";
-import { HardwareErrors, urFromJson, type HardwareAccount } from "@clip-wallet/hardware/core";
-import type { HardwareAccountView } from "@clip-wallet/ui";
+import { HardwareErrors, MAX_APPROVAL_TTL_MS, type HardwareAccount } from "@clip-wallet/hardware/core";
+import { hardwareAccountView } from "../shared/hardware-job";
+import { HardwareSignHost, inProgress } from "./hardware-host";
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
 
@@ -127,8 +128,8 @@ export class WalletService implements DappHost {
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
   private features?: Pick<FeaturesService, "handle" | "refine">;
-  /** Accounts the user was just shown on "Connect a hardware wallet"; hwAddAccounts adds from here. */
-  private hwSeen = new Map<string, HardwareAccount>();
+  /** Hardware signing: the approval window drives the device, this checks what comes back. */
+  private readonly hw: HardwareSignHost;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
   readonly platform: PlatformService;
 
@@ -138,6 +139,7 @@ export class WalletService implements DappHost {
     private readonly env: Env,
   ) {
     this.ceremonies = new PasskeyCeremonies(() => env.passkey());
+    this.hw = new HardwareSignHost(() => this.deps.hardware, () => env.broadcast());
     const names = deps.names;
     this.platform = new PlatformService({
       vault: deps.vault,
@@ -276,11 +278,9 @@ export class WalletService implements DappHost {
       case "getReceiveTargets":
         return this.receiveTargets(m.assetKey);
       case "listApprovals":
-        return [...this.approvals.values()].map((p) => this.withKeystone(p.view)).sort((a, b) => a.createdAt - b.createdAt);
-      case "getApproval": {
-        const v = this.approvals.get(m.id)?.view;
-        return v ? this.withKeystone(v) : null;
-      }
+        return [...this.approvals.values()].map((p) => p.view).sort((a, b) => a.createdAt - b.createdAt);
+      case "getApproval":
+        return this.approvals.get(m.id)?.view ?? null;
       case "approve":
         return this.approve(m.id, !!m.allowBlind);
       case "reject":
@@ -291,22 +291,9 @@ export class WalletService implements DappHost {
         return this.disconnect(m.id);
       case "pairWalletConnect":
         return this.deps.walletConnect.pair(m.uri);
-      case "hwLedgerAccounts":
-      case "hwKeystoneAccounts": {
-        const signer = m.type === "hwLedgerAccounts" ? this.deps.ledger : this.deps.keystone.signer;
-        const list = await signer.listAccounts(m.family, m.start, m.count, { pathStyle: m.pathStyle });
-        for (const a of list) this.hwSeen.set(a.id, a);
-        return list.map((a) => this.hwView(a));
-      }
-      case "hwKeystoneImport": {
-        const sync = await this.deps.keystone.signer.importSync(urFromJson(m.ur));
-        const prefix = { evm: "m/44'/60'", solana: "m/44'/501'", bitcoin: "m/84'" } as const;
-        const families = (["evm", "solana", "bitcoin"] as const).filter((f) => sync.keys.some((k) => k.path.startsWith(prefix[f])));
-        return { fingerprint: sync.fingerprint, families };
-      }
       case "hwAddAccounts": {
-        const picked = m.ids.map((x) => this.hwSeen.get(x)).filter((a): a is HardwareAccount => !!a);
-        if (picked.length !== m.ids.length) throw HardwareErrors.unknownAccount();
+        // Found by the page that ran the device; the keyring checks each record against its id.
+        const picked = m.accounts as HardwareAccount[];
         await this.deps.hardware.addAccounts(picked);
         // The first account added for a family becomes the one the wallet uses for it.
         const active = await this.activeHw();
@@ -317,15 +304,15 @@ export class WalletService implements DappHost {
       }
       case "hwListAccounts": {
         const active = await this.activeHw();
-        return (await this.deps.hardware.accounts()).map((a) => ({ ...this.hwView(a), active: active[a.family] === a.id }));
+        return (await this.deps.hardware.accounts()).map((a) => ({ ...hardwareAccountView(a), active: active[a.family] === a.id }));
       }
       case "hwRenameAccount":
         await this.deps.hardware.updateAccount(m.id, { label: m.label || undefined });
         this.env.broadcast();
         return;
       case "hwForgetDevice": {
+        // The page forgets a Keystone's synced keys (its own storage); this removes the accounts.
         await this.deps.hardware.removeDevice(m.kind, m.fingerprint);
-        if (m.kind === "keystone") await this.deps.keystone.signer.forget(m.fingerprint);
         const active = await this.activeHw();
         for (const [f, hwId] of Object.entries(active)) if (hwId && !(await this.deps.hardware.account(hwId))) delete active[f as Family];
         await this.kv.set(K.activeHw, active);
@@ -343,13 +330,15 @@ export class WalletService implements DappHost {
         await this.afterUnlock();
         return;
       }
-      case "hwKeystoneAnswer":
-        this.deps.keystone.bridge.answer(m.id, m.ur);
-        return;
       case "hwCancel":
-        this.deps.keystone.bridge.cancel(m.id);
-        await this.deps.ledger.close(); // aborts a pending Ledger exchange: sign() rejects, approve() throws
+        this.hw.cancel(m.id); // approve() throws "Cancelled"; the window drops the device step when the job goes
         return;
+      case "hwSignJobs":
+        return this.hw.jobs();
+      case "hwSignResult":
+        return this.hw.result(m.id, m.jobId, m.signature);
+      case "hwSignFailed":
+        return this.hw.failed(m.id, m.jobId, m.code, m.message);
       case "devSimulateRequest":
         if (!this.deps.mocks) throw new ClipError("Not available in this build.", "dev/disabled");
         return this.simulate(m.kind);
@@ -387,7 +376,7 @@ export class WalletService implements DappHost {
     this.accounts.clear();
     this.deps.dapps.accountsChanged?.();
     this.deps.hardware.lock();
-    this.deps.keystone.bridge.cancelAll();
+    this.hw.cancelAll();
     this.env.broadcast();
   }
 
@@ -773,9 +762,12 @@ export class WalletService implements DappHost {
     const ctx = await this.ctx(network.id, req.origin);
     let result: unknown;
     const hw = this.deps.hardware.owns(ctx.account.id);
+    // A second Approve while the device is busy must not revoke the approval the device is signing.
+    if (hw && this.hw.isRunning(id)) throw inProgress();
     try {
       const payloads = await mod.prepare(req, ctx, id);
-      if (hw) this.deps.hardware.registerApproval(id, payloads, APPROVAL_TTL_MS);
+      // A device step (finding the Ledger, scanning QR codes) can take longer than a vault signature.
+      if (hw) this.deps.hardware.registerApproval(id, payloads, MAX_APPROVAL_TTL_MS);
       else this.deps.vault.registerApproval(id, payloads.map((x) => hashSignablePayload(x)), APPROVAL_TTL_MS);
       const sigs = [];
       for (const payload of payloads) sigs.push(hw ? await this.signOnDevice(p, payload) : await this.deps.vault.sign(payload));
@@ -792,36 +784,20 @@ export class WalletService implements DappHost {
     this.env.broadcast();
   }
 
-  /** Hardware sign: tell the approval window which device step to show, then wait for the device. */
+  /** Hardware sign: the approval window runs the device (it shows the step), the host verifies the answer. */
   private async signOnDevice(p: Pending, payload: SignablePayload): Promise<Signature> {
     const acct = await this.deps.hardware.account(payload.accountId);
     if (!acct) throw HardwareErrors.unknownAccount();
     if (acct.hardware.kind === "ledger") p.view.hardware = { kind: "ledger", stage: "confirm", app: LEDGER_APP[acct.family] ?? "right" };
     this.env.broadcast();
+    // The window does the device I/O; make sure one is open (approve can come from the popup).
+    void this.env.openApprovalWindow(payload.approvalId).catch(() => undefined);
     try {
-      return await this.deps.hardware.sign(payload, { request: p.request!, decoded: p.view.decoded! });
+      return await this.hw.sign(payload, { request: p.request!, decoded: p.view.decoded! });
     } finally {
       p.view.hardware = undefined;
       this.env.broadcast();
     }
-  }
-
-  /** A Keystone exchange in progress for this approval is shown as its QR step. */
-  private withKeystone(v: ApprovalView): ApprovalView {
-    const x = this.deps.keystone.bridge.current(v.id);
-    return x ? { ...v, hardware: { kind: "keystone", stage: "exchange", request: { type: x.type, cborHex: x.cborHex, expect: x.expect } } } : v;
-  }
-
-  private hwView(a: HardwareAccount): HardwareAccountView {
-    return {
-      id: a.id,
-      family: a.family as HardwareAccountView["family"],
-      index: a.index,
-      address: a.hederaAccountId ?? a.address,
-      derivationPath: a.derivationPath,
-      label: a.label,
-      hardware: { kind: a.hardware.kind, fingerprint: a.hardware.fingerprint, pathStyle: a.hardware.pathStyle, deviceName: a.hardware.deviceName },
-    };
   }
 
   private activityFor(view: ApprovalView, result: unknown): ActivityEntry {
