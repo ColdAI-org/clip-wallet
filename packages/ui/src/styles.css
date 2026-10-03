@@ -128,7 +128,9 @@ code {
 
 .clip-tabbar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 4 tabs, or 5 with Explore (features on) */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   border-top: 1px solid var(--clip-border);
   background: var(--clip-surface);
 }
@@ -1272,6 +1274,7 @@ svg.is-open {
 }
 .clip-menu__item::after {
   content: "›";
+  content: "›" / ""; /* decorative: not part of the button's accessible name */
   color: var(--clip-text-3, var(--clip-text-2));
   font-size: 18px;
 }

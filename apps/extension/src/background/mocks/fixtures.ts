@@ -36,6 +36,17 @@ export const MOCK_BALANCES: Record<string, TokenBalance[]> = {
   [NET.hedera]: [{ asset: nativeOf(NET.hedera), amount: "125000000000" }],
   [NET.solana]: [{ asset: nativeOf(NET.solana), amount: "1500000000" }],
   [NET.bitcoin]: [{ asset: nativeOf(NET.bitcoin), amount: "120000" }],
+  // A few Phase 2 balances so Home shows every kind of account in one list (no network names).
+  [NET.sui]: [{ asset: nativeOf(NET.sui), amount: "42500000000" }],
+  [NET.cardano]: [{ asset: nativeOf(NET.cardano), amount: "310000000" }],
+  [NET.substrate]: [{ asset: nativeOf(NET.substrate), amount: "125000000000" }],
+  [NET.ton]: [{ asset: nativeOf(NET.ton), amount: "18000000000" }],
+  [NET.near]: [{ asset: nativeOf(NET.near), amount: "7500000000000000000000000" }],
+  [NET.tezos]: [{ asset: nativeOf(NET.tezos), amount: "64000000" }],
+  [NET.aptos]: [],
+  [NET.starknet]: [],
+  [NET.stellar]: [],
+  [NET.algorand]: [],
 };
 
 const nft = (n: Omit<Nft, "standard"> & { standard?: Nft["standard"] }): Nft => ({ standard: "erc721", ...n });
@@ -56,6 +67,15 @@ export const MOCK_NFTS: Record<string, Nft[]> = {
   ],
   [NET.bitcoin]: [
     nft({ networkId: NET.bitcoin, standard: "ordinal", collection: { address: "ord-pixels", name: "Pixel Ordinals" }, tokenId: "i0", name: "Pixel 0" }),
+  ],
+  [NET.sui]: [
+    nft({ networkId: NET.sui, standard: "sui-object", collection: { address: `0x${"5e".repeat(32)}::capy::Capy`, name: "Capys" }, tokenId: `0x${"c4".repeat(32)}`, name: "Capy #812" }),
+  ],
+  [NET.ton]: [
+    nft({ networkId: NET.ton, standard: "tep62", collection: { address: "kQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N", name: "TON Diamonds" }, tokenId: "77", name: "Diamond #77" }),
+  ],
+  [NET.cardano]: [
+    nft({ networkId: NET.cardano, standard: "cip25", collection: { address: "d5e6bf0500378d4f0da4e8dde6becec7621cd8cbf5cbb9b87013d4cc", name: "SpaceBudz" }, tokenId: "SpaceBud4012", name: "SpaceBud #4012" }),
   ],
 };
 
@@ -105,7 +125,25 @@ export const MOCK_ACTIVITY: ActivityEntry[] = [
 ];
 
 /** MOCK prices (USD per whole unit). */
-const PRICES: Record<string, number> = { usdc: 1, "usdc.e": 1, eth: 3000, hbar: 0.07, sol: 150, btc: 62000, "clip-points": 0.6 };
+const PRICES: Record<string, number> = {
+  usdc: 1,
+  "usdc.e": 1,
+  eth: 3000,
+  hbar: 0.07,
+  sol: 150,
+  btc: 62000,
+  "clip-points": 0.6,
+  sui: 3.1,
+  apt: 8,
+  ada: 0.45,
+  pas: 6,
+  strk: 0.4,
+  gram: 5.2,
+  near: 4.5,
+  xlm: 0.11,
+  xtz: 0.9,
+  algo: 0.18,
+};
 const FX: Record<string, number> = { USD: 1, EUR: 0.92, GBP: 0.79 };
 
 export class MockPriceFeed implements PriceFeed {

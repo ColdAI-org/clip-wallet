@@ -125,7 +125,7 @@ export class WalletService implements DappHost {
   private approvals = new Map<string, Pending>();
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
-  private features?: FeaturesService;
+  private features?: Pick<FeaturesService, "handle" | "refine">;
   /** Accounts the user was just shown on "Connect a hardware wallet"; hwAddAccounts adds from here. */
   private hwSeen = new Map<string, HardwareAccount>();
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
@@ -167,7 +167,7 @@ export class WalletService implements DappHost {
 
   /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
 
-  attachFeatures(f: FeaturesService) {
+  attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
     this.features = f;
   }
   featureCtx(networkId: string): Promise<ChainContext> {
