@@ -33,7 +33,7 @@ describe("defaults", () => {
       icon: "./icon.svg",
       theme: { accent: "#4F46E5", accentText: "#FFFFFF", font: "Inter", radius: 12 },
       networks: ["evm:*", "hedera", "solana", "bitcoin"],
-      route: { mode: "balanced", filters: {} },
+      route: { mode: "balanced", filters: {}, settleOnHedera: false },
       compatibilityMode: false,
       hardware: ["ledger", "keystone"],
       walletConnect: {},
