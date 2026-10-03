@@ -191,6 +191,22 @@ importers:
 
   packages/core: {}
 
+  packages/create-clip-wallet:
+    dependencies:
+      '@clip-wallet/config':
+        specifier: workspace:*
+        version: link:../config
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.5
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.20.5)(lightningcss@1.33.0)
+
   packages/route:
     dependencies:
       '@clip-wallet/core':

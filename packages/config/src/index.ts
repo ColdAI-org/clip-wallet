@@ -162,8 +162,11 @@ export type ClipConfig = z.output<typeof clipConfigSchema>;
 export type NetworkPattern = string;
 
 export class ConfigError extends Error {
-  constructor(public readonly problems: string[]) {
+  readonly problems: string[];
+  // No parameter properties: this file must run under Node's type stripping (create-clip-wallet imports it).
+  constructor(problems: string[]) {
     super(`clip.config.ts has ${problems.length} problem${problems.length === 1 ? "" : "s"}:\n${problems.map((p) => `  - ${p}`).join("\n")}`);
+    this.problems = problems;
     this.name = "ConfigError";
   }
 }

@@ -427,7 +427,7 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
 
   // The vault's known-answer tests must exist.
   if (!existsSync(join(root, "packages/vault"))) {
-    warn("vault-kat-missing", "packages/vault", 0, "packages/vault is not on this branch, so its test vectors were not checked.");
+    warn("vault-kat-missing", "packages/vault", 0, "packages/vault is not in this checkout, so its test vectors were not checked.");
   } else {
     const tests = files.filter((f) => f.startsWith("packages/vault/") && /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(f));
     const withKat = tests.filter((f) => readFileSync(join(root, f), "utf8").includes(KAT_PHRASE));
