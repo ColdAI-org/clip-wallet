@@ -3,6 +3,8 @@
  */
 import { secp256k1, schnorr } from "@noble/curves/secp256k1.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import * as sr25519 from "@scure/sr25519";
+import * as stark from "@scure/starknet";
 import { bytesToBigInt } from "./address.js";
 import { wipe } from "./bytes.js";
 
@@ -51,4 +53,35 @@ export function signSchnorr(
 
 export function signEd25519(message: Uint8Array, privateKey: Uint8Array): Uint8Array {
   return ed25519.sign(message, privateKey);
+}
+
+/** Cardano: Ed25519 signature with the BIP32-Ed25519 extended key (kL ‖ kR). Verifies as plain Ed25519. */
+export { signExtended as signBip32Ed25519 } from "./bip32ed25519.js";
+
+/** sr25519 (Schnorrkel) with the "substrate" signing context, fresh nonce randomness. 64 bytes. */
+export function signSr25519(message: Uint8Array, secretKey: Uint8Array): Uint8Array {
+  return sr25519.sign(secretKey, message);
+}
+
+/** Largest Stark message hash accepted: Starknet signs field elements below 2^251. */
+const STARK_MAX_MESSAGE = 1n << 251n;
+
+/**
+ * Stark-curve ECDSA over a message hash the chain module computed (Pedersen/Poseidon transaction hash),
+ * given as up to 32 big-endian bytes with value < 2^251. RFC 6979 deterministic. Returns r ‖ s (32 bytes each).
+ */
+export function signStark(messageHash: Uint8Array, privateKey: Uint8Array): { bytes: Uint8Array; recovery?: number } {
+  if (messageHash.length === 0 || messageHash.length > 32) throw new Error("stark-ecdsa signs a hash of at most 32 bytes");
+  if (bytesToBigInt(messageHash) >= STARK_MAX_MESSAGE) throw new Error("stark message hash must be below 2^251");
+  const sig = stark.sign(messageHash, privateKey);
+  const bytes = new Uint8Array(64);
+  bytes.set(numTo32(sig.r), 0);
+  bytes.set(numTo32(sig.s), 32);
+  return { bytes, recovery: sig.recovery };
+}
+
+function numTo32(n: bigint): Uint8Array {
+  const out = new Uint8Array(32);
+  for (let i = 31; i >= 0; i--, n >>= 8n) out[i] = Number(n & 0xffn);
+  return out;
 }

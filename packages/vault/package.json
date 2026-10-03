@@ -13,8 +13,25 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@algorandfoundation/xhd-wallet-api": "^1.0.3",
+    "@aptos-labs/ts-sdk": "^7.3.0",
+    "@emurgo/cardano-serialization-lib-nodejs": "^17.0.0",
+    "@mysten/sui": "^2.33.2",
+    "@polkadot/keyring": "^14.0.3",
+    "@polkadot/util": "^14.0.3",
+    "@polkadot/util-crypto": "^14.0.3",
+    "@stellar/stellar-base": "^15.0.0",
+    "@taquito/signer": "^25.0.0",
+    "@taquito/utils": "^25.0.0",
+    "@ton/core": "^0.63.1",
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^16.3.0",
+    "algosdk": "^3.8.0",
     "ed25519-hd-key": "^2.0.0",
-    "micro-key-producer": "^0.10.2"
+    "ethers": "^6.16.0",
+    "micro-key-producer": "^0.10.2",
+    "near-seed-phrase": "^0.2.1",
+    "starknet": "^10.8.0"
   },
   "dependencies": {
     "@clip-wallet/core": "workspace:*",
@@ -24,6 +41,8 @@
     "@scure/base": "^2.4.0",
     "@scure/bip32": "^2.4.0",
     "@scure/bip39": "^2.4.0",
+    "@scure/sr25519": "^2.4.0",
+    "@scure/starknet": "^2.4.0",
     "hash-wasm": "^4.12.0"
   }
 }
