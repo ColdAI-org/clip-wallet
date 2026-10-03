@@ -356,6 +356,18 @@ export interface ChainModule {
 
 /* ------------------------------------------------------------------ errors in plain words */
 
+/**
+ * `DappRequest.origin` of every request the wallet builds itself (sends, staking, swaps, trades). Chain
+ * modules and the background compare against this, so a wallet-built request is never treated as a site's.
+ * Dapp origins are URLs (`https://…`), so this can't collide with one.
+ */
+export const WALLET_ORIGIN = "clip-wallet";
+
+/** True for wallet-built requests. Also accepts the shell's older `"wallet"` spelling. */
+export function isWalletOrigin(origin: string | undefined): boolean {
+  return origin === WALLET_ORIGIN || origin === "wallet";
+}
+
 export class ClipError extends Error {
   constructor(
     /** Shown to the user. Plain words and a next step, never a raw RPC error. */

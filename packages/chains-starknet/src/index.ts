@@ -7,3 +7,4 @@ export { CURATED_TOKENS, clearTokenCache, curatedToken, decodeStringResult, toke
 
 import { createStarknetModule } from "./module.js";
 export const starknetModule = createStarknetModule();
+export { AVNU_EXCHANGE, approveCall, parseApprove, parseMultiRouteSwap, sameStarknetAddress, type MultiRouteSwap } from "./avnu.js";

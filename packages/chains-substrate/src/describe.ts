@@ -5,6 +5,7 @@
  */
 import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings";
+import { locationAsset } from "./defi.js";
 import { assetKey } from "./networks.js";
 import { equal, formatUnits, hex, joinWords, short, textOf } from "./util.js";
 
@@ -208,6 +209,39 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       out.title = "Change who can claim your pool rewards";
       out.lines.push({ label: "Permission", value: show(a.permission) });
       return out;
+    case "AssetConversion.swap_exact_tokens_for_tokens":
+    case "AssetConversion.swap_tokens_for_exact_tokens": {
+      const path = Array.isArray(a.path) ? a.path : [];
+      const ends = [path[0], path[path.length - 1]].map(locationAsset);
+      const refs: (AssetRef | null)[] = await Promise.all(
+        ends.map(async (x) => {
+          if (x === "native") return c.native;
+          if (x === null) return null;
+          const info = await c.asset(x);
+          return info ? { key: assetKey(c.networkId, x), symbol: info.symbol, name: info.name, decimals: info.decimals, networkId: c.networkId, address: String(x) } : null;
+        }),
+      );
+      const [from, to] = refs;
+      if (path.length < 2 || !from || !to) break; // unknown or foreign asset: shown raw, with a caution
+      const exactIn = name === "swap_exact_tokens_for_tokens";
+      const sell = big(exactIn ? a.amount_in : a.amount_in_max);
+      const buy = big(exactIn ? a.amount_out_min : a.amount_out);
+      const fmt = (v: bigint, r: AssetRef) => `${formatUnits(v, r.decimals)} ${r.symbol}`;
+      out.title = exactIn ? `Swap ${fmt(sell, from)} for at least ${fmt(buy, to)}` : `Swap at most ${fmt(sell, from)} for ${fmt(buy, to)}`;
+      out.lines.push(
+        { label: exactIn ? "You pay" : "You pay at most", value: fmt(sell, from) },
+        { label: exactIn ? "You get at least" : "You get", value: fmt(buy, to) },
+        { label: "Route", value: path.length > 2 ? `Asset Hub pools (via ${sym})` : "Asset Hub pool" },
+      );
+      const to_ = addressOf(a.send_to);
+      if (!isMe(to_, c.me)) {
+        out.lines.push({ label: "Sent to", value: to_ });
+        out.warnings.push({ level: "caution", code: "new-recipient", message: `The tokens you buy go to ${short(to_)}, not to you.` });
+      } else out.balanceChanges.push({ asset: to, delta: buy.toString() });
+      out.balanceChanges.push({ asset: from, delta: (-sell).toString() });
+      if (from.key === c.native.key && a.keep_alive === false) out.lines.push({ label: "Note", value: "May close your account if the rest falls below the minimum" });
+      return out;
+    }
     case "System.remark":
     case "System.remark_with_event": {
       const bytes = a.remark instanceof Uint8Array ? a.remark : new Uint8Array();

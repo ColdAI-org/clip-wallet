@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
 import { SolanaRpc, clusterOf } from "@clip-wallet/chains-solana";
 import {
   type Address,
@@ -327,7 +327,7 @@ export class SolanaStaking implements StakingProvider {
     const cluster = clusterOf(ctx.network.id);
     return {
       id: randomId(),
-      origin: "wallet",
+      origin: WALLET_ORIGIN,
       via: "injected",
       family: "solana",
       networkId: ctx.network.id,

@@ -114,6 +114,34 @@ Cardano namespace uses the same `cardano_*` names.
 - `buildDelegate({ poolId })`: stake registration (with the `stakeAddressDeposit` taken from change) if needed, plus
   a delegation certificate. It needs both payment and stake signatures.
 
+## Rewards, vote delegation, deregistration (stake-swap)
+
+Added for the wallet's staking flow. All three return a `cardano_signAndSubmitTx` request signed with the payment
+and stake keys (`STAKE_SUBPATH`), built by the same `buildTx` (coin selection, min-UTxO, fee fixed point); `buildTx`
+now takes `withdrawals` (body key 5, counted as an input) and always selects at least one input.
+
+- `buildVoteDelegate({ drep })`: certificate 9 `vote_deleg_cert = (9, stake_credential, drep)` with
+  `drep = [2]` (always abstain), `[3]` (always no confidence) or a key/script hash. Needs a registered stake key.
+- `buildWithdrawRewards(ctx)`: withdraws exactly Koios `rewards_available` (the ledger requires the full balance).
+- `buildDeregister(ctx)`: certificate 8 `unreg_cert = (8, stake_credential, coin)` refunding the deposit Koios
+  reports for the account (`account_info.deposit`, else `stakeAddressDeposit`), plus a withdrawal of any rewards in
+  the same transaction (an account must be empty to unregister).
+- DRep rule: since protocol version 10 (Plomin), withdrawals from a key-hash stake credential fail with
+  `ConwayWdrlNotDelegatedToDRep` unless it is already DRep-delegated. The check (`validateWithdrawalsDelegated`) runs
+  on the ledger state *before* the transaction's certificates, so a vote delegation in the same transaction does not
+  count; zero-amount withdrawals are checked too. The builders refuse with `cardano/needs-vote-delegation`, and the
+  wallet sends the vote delegation as an earlier transaction.
+- `getStaking` also returns `deposit` and `totalBalance` when Koios has them. `Koios.poolList(maxMargin)` (GET
+  `/pool_list` with PostgREST filters, max 1,000 rows) and `Koios.epochRewards()` (GET `/epoch_info`,
+  `total_rewards`/`active_stake`) feed pool ranking and the reward-rate estimate.
+- `src/plutus.ts`: Plutus data reading (`constrOf`, `plutusAddress`, `addressesIn`, `witnessDatums`, `outputDatum`)
+  and `TxOutput.datumHash` / `inlineDatum`, used to verify DEX order datums.
+
+Sources (2026-10-03): cardano-ledger `eras/conway/impl/cddl/data/conway.cddl` (certificates 1, 7–13, `drep`,
+`withdrawals`); `eras/conway/impl/src/Cardano/Ledger/Conway/Rules/Ledger.hs` (withdrawals validated and drained
+before CERTS; `validateWithdrawalsDelegated`); Koios `/account_info` (`delegated_drep`, `deposit`), `/pool_info`
+(`live_saturation`, `live_pledge`), `/pool_list`, `/epoch_info`, checked live on preprod and mainnet.
+
 ## buildTransfer
 
 CIP-2 largest-first coin selection. UTxOs holding the requested asset come first, and UTxOs with reference scripts
@@ -125,13 +153,13 @@ certificates are tag-258 sets, and the TTL is tip + 7200 slots. The result is a 
 
 ## Tests
 
-`pnpm test` (23 tests). Koios is mocked by path. Signatures are fixtures computed once offline with throwaway keys
+`pnpm test` (33 tests). Koios is mocked by path. Signatures are fixtures computed once offline with throwaway keys
 (`test/signatures.ts`), because tests may only verify.
 
 ## Gaps
 
-- Reward withdrawal and DRep delegation aren't built yet (both decode). Since the Plomin hard fork, withdrawing
-  rewards needs a DRep delegation, so a "claim rewards" flow must add one.
+- `buildDeregister` uses Koios `rewards_available`; if an epoch boundary pays new rewards between building and
+  submitting, the ledger rejects the transaction (incomplete withdrawal) and the user retries.
 - Change outputs aren't split, so a wallet with very many tokens could exceed `maxValueSize`. Multi-address
   wallets (CIP-1852 change chain `1/n`) aren't scanned: the module uses the account's single base address.
 - No Plutus evaluation: script transactions are described from their body, not simulated.

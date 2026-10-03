@@ -43,6 +43,12 @@ export interface FeaturesConfig {
     zeroExApiKey?: string;
     /** Optional Jupiter portal key (x-api-key). Keyless works at a lower rate. */
     jupiterApiKey?: string;
+    /** Minswap aggregator partner code (optional; Minswap needs no key). */
+    minswapPartner?: string;
+    /** DexHunter partner key (X-Partner-Id). Absent → DexHunter is off; it stays off even with one (see README). */
+    dexhunterApiKey?: string;
+    /** Use AVNU's Sepolia API on Starknet testnet (off by default: it had no liquidity on 2026-10-03). */
+    avnuSepolia?: boolean;
     /** Default slippage in basis points (default 50 = 0.5%). */
     defaultSlippageBps?: number;
   };
@@ -59,6 +65,8 @@ export interface FeaturesConfig {
   };
   /** Base for Secure Trade share links (default "https://clipwallet.example/trade"). */
   tradeLinkBase?: string;
+  /** Optional extra NEAR staking pools per network id (e.g. "near:testnet" → ["aurora.pool.f863973.m0"]). */
+  nearStakingPools?: Record<string, string[]>;
   /** Optional curated Solana validator vote accounts per network id; otherwise the wallet picks by commission and uptime. */
   solanaValidators?: Record<string, string[]>;
 }

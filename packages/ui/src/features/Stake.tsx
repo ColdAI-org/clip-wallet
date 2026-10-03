@@ -20,13 +20,29 @@ export function StakeHome() {
   const { data, error, reload } = useAsync(() => features.stakingOverview(), [features]);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  /** A position waiting for a claim choice (Cardano vote delegation) or a partial unstake amount. */
+  const [pending, setPending] = useState<{ positionId: string; action: "claim" | "unstake" } | null>(null);
+  const [choice, setChoice] = useState<string>();
+  const [unstakeAmount, setUnstakeAmount] = useState("");
 
-  async function act(a: StakeAssetView, p: StakePositionView, action: StakePositionView["actions"][number]) {
+  async function act(a: StakeAssetView, p: StakePositionView, action: StakePositionView["actions"][number], extra: { choice?: string; amount?: string } = {}) {
     if (action === "change") return navigate(`/stake?asset=${encodeURIComponent(a.assetKey)}`);
+    const needsChoice = action === "claim" && !!p.claimChoices?.length && !extra.choice;
+    const offersAmount = action === "unstake" && p.partialUnstake && extra.amount === undefined;
+    if (needsChoice || offersAmount) {
+      setPending({ positionId: p.id, action });
+      setChoice(p.claimChoices?.[0]?.id);
+      setUnstakeAmount("");
+      return;
+    }
     setBusy(p.id + action);
     setErr(null);
     try {
-      const q = await features.stakeAction({ assetKey: a.assetKey, positionId: p.id, action });
+      const params: { assetKey: string; positionId: string; action: typeof action; amount?: string; choice?: string } = { assetKey: a.assetKey, positionId: p.id, action };
+      if (extra.choice) params.choice = extra.choice;
+      if (extra.amount) params.amount = extra.amount;
+      const q = await features.stakeAction(params);
+      setPending(null);
       navigate(`/approval/${encodeURIComponent(q.approvalId)}`);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -71,6 +87,35 @@ export function StakeHome() {
                 <div className="clip-row">
                   <span className="clip-row__label">Rewards on the way</span>
                   <span className="clip-row__value">{p.pendingReward.display}</span>
+                </div>
+              )}
+              {pending?.positionId === p.id && pending.action === "claim" && p.claimChoices && (
+                <fieldset className="clip-rows">
+                  <legend className="clip-hint">To collect rewards, choose how your stake counts in community votes first.</legend>
+                  <ul className="clip-list">
+                    {p.claimChoices.map((c) => (
+                      <li key={c.id}>
+                        <label className="clip-select-row">
+                          <input type="radio" name={`claim-${p.id}`} checked={choice === c.id} onChange={() => setChoice(c.id)} />
+                          <span className="clip-asset-row__main">
+                            <span className="clip-asset-row__symbol">{c.title}</span>
+                            <span className="clip-asset-row__name">{c.detail}</span>
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button disabled={busy !== null || !choice} onClick={() => void act(a, p, "claim", { choice })}>
+                    Collect rewards
+                  </Button>
+                </fieldset>
+              )}
+              {pending?.positionId === p.id && pending.action === "unstake" && (
+                <div className="clip-rows">
+                  <Field label="How much to unstake (leave empty for all)" inputMode="decimal" placeholder="All" autoComplete="off" value={unstakeAmount} onChange={(e) => setUnstakeAmount(e.target.value)} />
+                  <Button variant="ghost" disabled={busy !== null} onClick={() => void act(a, p, "unstake", { amount: unstakeAmount.trim() })}>
+                    {unstakeAmount.trim() ? `Unstake ${unstakeAmount.trim()} ${a.symbol}` : `Unstake all ${a.symbol}`}
+                  </Button>
                 </div>
               )}
               {p.actions.length > 0 && (
@@ -124,10 +169,10 @@ export function StakeAsset(props: { assetKey: string }) {
 
   async function submit() {
     setErr(null);
-    if (!asset!.wholeBalance && (!amount || amountBad)) return setErr("Enter how much to stake.");
+    if (!asset!.wholeBalance && ((!amount && !asset!.amountOptional) || amountBad)) return setErr("Enter how much to stake.");
     setBusy(true);
     try {
-      const q = await features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance ? undefined : amount });
+      const q = await features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance || !amount ? undefined : amount });
       navigate(`/approval/${encodeURIComponent(q.approvalId)}`);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -140,7 +185,7 @@ export function StakeAsset(props: { assetKey: string }) {
     <Screen back title={`Stake ${asset.symbol}`}>
       <p className="clip-lede">{asset.howItWorks}</p>
       {!asset.wholeBalance && (
-        <Field label="Amount" inputMode="decimal" placeholder="0" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} error={amountBad ? "Enter an amount like 2 or 0.5." : null} />
+        <Field label={asset.amountOptional ? "Amount to stake (optional)" : "Amount"} inputMode="decimal" placeholder="0" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} error={amountBad ? "Enter an amount like 2 or 0.5." : null} />
       )}
       <h2 className="clip-h2">Where</h2>
       <ul className="clip-list" aria-label="Where to stake">
@@ -160,7 +205,7 @@ export function StakeAsset(props: { assetKey: string }) {
       </ul>
       <ErrorNote message={err} />
       <Button block disabled={busy} onClick={() => void submit()}>
-        {asset.wholeBalance ? `Stake my ${asset.symbol}` : `Stake ${amount || ""} ${asset.symbol}`.replace(/\s+/g, " ")}
+        {asset.wholeBalance || (asset.amountOptional && !amount) ? `Stake my ${asset.symbol}` : `Stake ${amount || ""} ${asset.symbol}`.replace(/\s+/g, " ")}
       </Button>
     </Screen>
   );

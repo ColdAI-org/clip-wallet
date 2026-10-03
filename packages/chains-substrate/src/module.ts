@@ -11,6 +11,7 @@ import {
   type SignablePayload,
   type TokenBalance,
   type Warning,
+  WALLET_ORIGIN,
 } from "@clip-wallet/core";
 import { Enum, fromBufferToBase58, getSs58AddressInfo, u32 } from "@polkadot-api/substrate-bindings";
 import { verify as sr25519Verify } from "@scure/sr25519";
@@ -64,10 +65,23 @@ export interface PoolStaking {
   currentEra: number | null;
 }
 
+/** Any call in this network's metadata, e.g. `{ pallet: "AssetConversion", call: "swap_exact_tokens_for_tokens", args: {…} }`. */
+export interface CallSpec {
+  pallet: string;
+  call: string;
+  /** Call arguments in polkadot-api dynamic-codec form (struct of named fields; `undefined` for no-arg calls). */
+  args: unknown;
+}
+
 export interface SubstrateModule extends ChainModule {
   /** Nomination-pool membership on this network (null when the network has no pools or you're not in one). */
   getStaking(ctx: ChainContext): Promise<PoolStaking | null>;
   buildStake(p: StakeAction, ctx: ChainContext): Promise<DappRequest>;
+  /**
+   * A wallet-built `substrate_signAndSubmit` request for any call the runtime has, encoded through live metadata
+   * (finalized head, mortal era, next nonce, mode 0). decode() describes it like any other payload.
+   */
+  buildCall(p: CallSpec, ctx: ChainContext): Promise<DappRequest>;
 }
 
 type Normalized =
@@ -260,7 +274,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     if (stale) {
       warnings.push({ level: "caution", code: "simulation-failed", message: "The app built this for an older version of the network. It may be rejected." });
     }
-    if (!n.submit && request.origin !== "clip-wallet") lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
+    if (!n.submit && request.origin !== WALLET_ORIGIN) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     return {
       ...base,
       title: d.title,
@@ -408,7 +422,9 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     const me = ss58(myKey(ctx), rt.ss58);
     const member = await readStorage<{ pool_id: number; points: bigint; unbonding_eras: [number, bigint][] }>(rpc, rt, "NominationPools", "PoolMembers", me);
     if (!member) return null;
-    const currentEra = await readStorage<number>(rpc, rt, "Staking", "CurrentEra").catch(() => null);
+    // staking-async counts pool unbonding from the active era (current_era() returns ActiveEra); CurrentEra can be one ahead.
+    const active = await readStorage<{ index: number } | null>(rpc, rt, "Staking", "ActiveEra").catch(() => null);
+    const currentEra = active && typeof active.index === "number" ? active.index : await readStorage<number>(rpc, rt, "Staking", "CurrentEra").catch(() => null);
     const bonded = rt.hasApi("NominationPoolsApi", "points_to_balance")
       ? await runtimeCall<bigint>(rpc, rt, "NominationPoolsApi", "points_to_balance", [member.pool_id, member.points]).catch(() => member.points)
       : member.points;
@@ -455,7 +471,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     };
     return {
       id: randomId(),
-      origin: "clip-wallet",
+      origin: WALLET_ORIGIN,
       via: "injected",
       family: "substrate",
       networkId: ctx.network.id,
@@ -513,6 +529,11 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     }
   }
 
+  async function buildCall(p: CallSpec, ctx: ChainContext): Promise<DappRequest> {
+    const { rt } = await runtimeFor(ctx);
+    return payloadFor(ctx, rt, p.pallet, p.call, p.args);
+  }
+
   return {
     family: "substrate",
     curve: "sr25519",
@@ -549,6 +570,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     buildTransfer,
     getStaking,
     buildStake,
+    buildCall,
   };
 }
 

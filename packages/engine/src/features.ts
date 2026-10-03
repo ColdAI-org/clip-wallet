@@ -2,7 +2,7 @@
  * Feature services (staking, swaps, buy, Secure Trade, explore, prices) for any host. Holds no keys: every
  * action ends in `enqueue`, the host's normal approval path.
  */
-import type { AssetRef, ChainContext, DappRequest, DecodedRequest, Network, TokenBalance } from "@clip-wallet/core";
+import { WALLET_ORIGIN, type AssetRef, type ChainContext, type DappRequest, type DecodedRequest, type Network, type TokenBalance } from "@clip-wallet/core";
 import { CoinGeckoPriceFeed, FeaturesService, type FeatureHost, type FeaturesConfig } from "@clip-wallet/features";
 import { createRouteClient } from "@clip-wallet/route";
 import type { KV } from "./kv.js";
@@ -29,7 +29,7 @@ export function createFeatureHost(d: FeatureHostDeps): FeatureHost {
     balances: () => d.balances(),
     async enqueue(request, meta) {
       // Wallet-built: the approval shows the wallet as the app, never "unrecognised site".
-      request.origin = "wallet";
+      request.origin = WALLET_ORIGIN;
       const { id, promise } = await d.enqueue(request, meta.appName);
       return { id, result: promise };
     },

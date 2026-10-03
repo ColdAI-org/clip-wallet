@@ -4,7 +4,7 @@ import { queueSteps } from "../steps.js";
 import { parseUnits } from "../util.js";
 import type { QueuedApprovals, StakeAssetView, StakeOptionView } from "../views.js";
 import { PENDING_STAKING } from "./stubs.js";
-import type { StakingProvider } from "./types.js";
+import type { StakeActionParams, StakingProvider } from "./types.js";
 
 /** Staking by asset ("Stake SOL"): the service picks the network you hold the most of that coin on. */
 export class StakingService {
@@ -38,6 +38,7 @@ export class StakingService {
         symbol: native?.symbol ?? provider.assetKey.toUpperCase(),
         name: native?.name ?? provider.assetKey.toUpperCase(),
         wholeBalance: provider.wholeBalance,
+        ...(provider.amountOptional ? { amountOptional: true } : {}),
         howItWorks: provider.howItWorks,
         positions: [],
       };
@@ -77,17 +78,21 @@ export class StakingService {
   async stake(p: { assetKey: string; amount?: string; optionId?: string }): Promise<QueuedApprovals> {
     const { provider, network } = await this.pick(p.assetKey);
     const ctx = await this.host.ctx(network.id);
-    const amount = provider.wholeBalance ? undefined : parseUnits(p.amount ?? "", network.nativeAsset.decimals).toString();
+    const raw = provider.amountOptional && !p.amount?.trim() ? "0" : (p.amount ?? "");
+    const amount = provider.wholeBalance ? undefined : parseUnits(raw, network.nativeAsset.decimals).toString();
     const build = await provider.buildStake({ amount, optionId: p.optionId }, ctx);
     return queueSteps(this.host, build.steps, "Staking");
   }
 
-  async act(p: { assetKey: string; positionId: string; action: "unstake" | "withdraw" | "claim" }): Promise<QueuedApprovals> {
+  async act(p: { assetKey: string; positionId: string; action: "unstake" | "withdraw" | "claim"; amount?: string; choice?: string }): Promise<QueuedApprovals> {
     const { provider, network } = await this.pick(p.assetKey);
     const ctx = await this.host.ctx(network.id);
     const fn = p.action === "unstake" ? provider.buildUnstake : p.action === "withdraw" ? provider.buildWithdraw : provider.buildClaim;
     if (!fn) throw new ClipError(p.action === "claim" ? "Rewards arrive automatically; there's nothing to claim." : "That isn't needed here.", "staking/not-applicable");
-    const build = await fn.call(provider, { positionId: p.positionId }, ctx);
+    const params: StakeActionParams = { positionId: p.positionId };
+    if (p.amount !== undefined) params.amount = parseUnits(p.amount, network.nativeAsset.decimals).toString();
+    if (p.choice !== undefined) params.choice = p.choice;
+    const build = await fn.call(provider, params, ctx);
     return queueSteps(this.host, build.steps, "Staking");
   }
 }

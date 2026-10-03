@@ -268,6 +268,7 @@ describe("staking", () => {
       pool: { id: FIX.pool, ticker: "CLIP", name: "Clip Pool" },
       rewardsAvailable: "4200000",
       drep: "drep_always_abstain",
+      totalBalance: "1",
     });
   });
 

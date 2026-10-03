@@ -17,7 +17,7 @@ import type {
   TokenBalance,
   Warning,
 } from "@clip-wallet/core";
-import { ClipError, FAMILIES } from "@clip-wallet/core";
+import { ClipError, FAMILIES, WALLET_ORIGIN, isWalletOrigin } from "@clip-wallet/core";
 import { MOCK_BALANCES, MOCK_NFTS } from "./fixtures";
 import { knownAssets, MOCK_NETWORKS } from "./networks";
 
@@ -182,7 +182,7 @@ export class MockChainModule {
           const human = Number(amount) / 10 ** token.decimals;
           return {
             ...base,
-            title: `${request.origin.startsWith("chrome-extension:") || request.origin === "wallet" ? "Send" : "Pay"} ${human} ${token.symbol}`,
+            title: `${request.origin.startsWith("chrome-extension:") || isWalletOrigin(request.origin) ? "Send" : "Pay"} ${human} ${token.symbol}`,
             balanceChanges: [{ asset: token, delta: `-${amount}` }],
             fee,
             simulated: true,
@@ -208,7 +208,7 @@ export class MockChainModule {
         const human = Number(amount) / 1e18;
         return {
           ...base,
-          title: `${request.origin === "wallet" ? "Send" : "Pay"} ${human} ETH`,
+          title: `${isWalletOrigin(request.origin) ? "Send" : "Pay"} ${human} ETH`,
           balanceChanges: [{ asset: ctx.network.nativeAsset, delta: `-${amount}` }],
           fee,
           simulated: true,
@@ -269,7 +269,7 @@ export class MockChainModule {
       const amt = BigInt(p.amount).toString(16).padStart(64, "0");
       return {
         id,
-        origin: "wallet",
+        origin: WALLET_ORIGIN,
         via: "injected",
         family: "evm",
         networkId: ctx.network.id,
@@ -281,7 +281,7 @@ export class MockChainModule {
         ],
       };
     }
-    return { id, origin: "wallet", via: "injected", family: this.family, networkId: ctx.network.id, method: "clip_transfer", params: { ...p } };
+    return { id, origin: WALLET_ORIGIN, via: "injected", family: this.family, networkId: ctx.network.id, method: "clip_transfer", params: { ...p } };
   }
 }
 

@@ -296,8 +296,10 @@ interface Prepared {
 export interface NearStaking {
   getPositions(ctx: ChainContext): Promise<StakePosition[]>;
   buildStake(p: { validator: string; amount: string }, ctx: ChainContext): Promise<DappRequest>;
-  buildUnstake(p: { validator: string; amount: string }, ctx: ChainContext): Promise<DappRequest>;
-  buildWithdraw(p: { validator: string }, ctx: ChainContext): Promise<DappRequest>;
+  /** `amount` in yoctoNEAR → `unstake {amount}`; absent → `unstake_all`. */
+  buildUnstake(p: { validator: string; amount?: string }, ctx: ChainContext): Promise<DappRequest>;
+  /** `amount` in yoctoNEAR → `withdraw {amount}`; absent → `withdraw_all`. */
+  buildWithdraw(p: { validator: string; amount?: string }, ctx: ChainContext): Promise<DappRequest>;
 }
 
 export type NearModule = ChainModule & {
@@ -683,14 +685,17 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
       if (bal.available < amount) throw new ClipError("You don't have enough NEAR to stake that much (keep a little for fees).", "near/insufficient-funds");
       return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "deposit_and_stake", args: {}, gas: STAKING_GAS.toString(), deposit: amount.toString() } }]);
     },
-    async buildUnstake(p: { validator: string; amount: string }, ctx: ChainContext): Promise<DappRequest> {
+    async buildUnstake(p: { validator: string; amount?: string }, ctx: ChainContext): Promise<DappRequest> {
       checkValidator(p.validator, ctx);
+      if (p.amount === undefined) return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "unstake_all", args: {}, gas: STAKING_GAS.toString(), deposit: "0" } }]);
       const amount = checkAmount(p.amount);
       return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "unstake", args: { amount: amount.toString() }, gas: STAKING_GAS.toString(), deposit: "0" } }]);
     },
-    async buildWithdraw(p: { validator: string }, ctx: ChainContext): Promise<DappRequest> {
+    async buildWithdraw(p: { validator: string; amount?: string }, ctx: ChainContext): Promise<DappRequest> {
       checkValidator(p.validator, ctx);
-      return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "withdraw_all", args: {}, gas: STAKING_GAS.toString(), deposit: "0" } }]);
+      if (p.amount === undefined) return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "withdraw_all", args: {}, gas: STAKING_GAS.toString(), deposit: "0" } }]);
+      const amount = checkAmount(p.amount);
+      return request(ctx, p.validator, [{ type: "FunctionCall", params: { methodName: "withdraw", args: { amount: amount.toString() }, gas: STAKING_GAS.toString(), deposit: "0" } }]);
     },
   };
 

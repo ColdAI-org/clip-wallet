@@ -50,6 +50,18 @@ interface TzktDelegate {
 
 const big = (v: number | string | undefined) => BigInt(v ?? 0);
 
+export type StakingEntrypoint = "stake" | "unstake" | "finalize_unstake";
+
+/** Staking pseudo-operation: a transaction to yourself with entrypoint stake / unstake / finalize_unstake and Unit. */
+export function stakingOp(me: string, entrypoint: StakingEntrypoint, amount: string): PartialTezosOperation {
+  return { kind: "transaction", amount, destination: me, parameters: { entrypoint, value: { prim: "Unit" } } };
+}
+
+/** Delegation operation; `null` stops delegating. */
+export function delegationOp(baker: string | null): PartialTezosOperation {
+  return baker ? { kind: "delegation", delegate: baker } : { kind: "delegation" };
+}
+
 export function createStaking(h: {
   sendRequest: (ctx: ChainContext, ops: PartialTezosOperation[], notes?: string[]) => DappRequest;
   tzktFor: (ctx: ChainContext) => Tzkt;
@@ -100,12 +112,7 @@ export function createStaking(h: {
     }));
   }
 
-  const self = (ctx: ChainContext, entrypoint: string, amount: string): PartialTezosOperation => ({
-    kind: "transaction",
-    amount,
-    destination: h.meOf(ctx),
-    parameters: { entrypoint, value: { prim: "Unit" } },
-  });
+  const self = (ctx: ChainContext, entrypoint: StakingEntrypoint, amount: string): PartialTezosOperation => stakingOp(h.meOf(ctx), entrypoint, amount);
 
   function checkAmount(amount: string, allowZero = false): void {
     if (!/^\d+$/.test(amount) || (!allowZero && BigInt(amount) <= 0n)) throw new ClipError("Enter an amount greater than zero.", "tezos/bad-amount");
@@ -126,7 +133,7 @@ export function createStaking(h: {
     const ops: PartialTezosOperation[] = [];
     const notes: string[] = [];
     if (acct.delegate?.address !== p.validator) {
-      ops.push({ kind: "delegation", delegate: p.validator });
+      ops.push(delegationOp(p.validator));
       if (acct.delegate && big(acct.stakedBalance) > 0n) {
         notes.push(`Changing baker also starts unstaking your ${formatUnits(big(acct.stakedBalance), 6)} XTZ staked with ${acct.delegate.alias ?? short(acct.delegate.address)}.`);
       }
@@ -159,5 +166,18 @@ export function createStaking(h: {
     return h.sendRequest(ctx, [self(ctx, "finalize_unstake", "0")]);
   }
 
-  return { getPositions, buildStake, buildUnstake, buildWithdraw };
+  /**
+   * Delegation with no delegate. Refused while XTZ is staked: unstake first (the protocol would otherwise start
+   * unstaking everything implicitly, which the user should choose explicitly).
+   */
+  async function buildStopDelegating(ctx: ChainContext): Promise<DappRequest> {
+    const acct = await account(ctx);
+    if (!acct.delegate) throw new ClipError("You aren't delegating to a baker.", "tezos/not-delegating");
+    if (big(acct.stakedBalance) > 0n) {
+      throw new ClipError("Unstake your staked XTZ first, then stop delegating.", "tezos/still-staked");
+    }
+    return h.sendRequest(ctx, [delegationOp(null)]);
+  }
+
+  return { getPositions, buildStake, buildUnstake, buildWithdraw, buildStopDelegating };
 }

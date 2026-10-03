@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { WalletEngine } from "../src/engine.js";
 import { MemoryKV, JsonKV } from "../src/kv.js";
 import { createEngineClient } from "../src/client.js";
+import { createFeatureHost } from "../src/features.js";
+import { WALLET_ORIGIN, isWalletOrigin, type DappRequest } from "@clip-wallet/core";
 import { BASE_SEPOLIA, EVM_ADDRESS, FakeVault, SEPOLIA, fakePort, makeDeps, makeEnv, tick } from "./fixtures.js";
 
 const ORIGIN = "https://dapp.test";
@@ -84,6 +86,9 @@ describe("WalletEngine: portfolio, send, receive", () => {
     const view = await engine.handle({ type: "getApproval", id });
     expect(view?.decoded?.title).toBe("Send 0.1 ETH");
     expect(view?.decoded?.lines[0]).toEqual({ label: "To", value: "0x0000…dEaD" });
+    // Chain modules build sends with WALLET_ORIGIN: shown as the wallet's own, never as an unrecognised site.
+    expect(view?.via).toBe("wallet");
+    expect(view?.decoded?.warnings.some((w) => w.code === "domain-mismatch")).toBe(false);
     expect(vault.signed).toHaveLength(0);
     await engine.handle({ type: "approve", id });
     expect(vault.signed).toHaveLength(1);
@@ -97,6 +102,30 @@ describe("WalletEngine: portfolio, send, receive", () => {
     const t = await engine.handle({ type: "getReceiveTargets", assetKey: "eth" });
     expect(t).toHaveLength(1);
     expect(t[0]!.networks).toHaveLength(2);
+  });
+});
+
+describe("wallet-built origin", () => {
+  it("one constant for every wallet-built request; the feature host stamps it", async () => {
+    expect(WALLET_ORIGIN).toBe("clip-wallet");
+    expect(isWalletOrigin(WALLET_ORIGIN)).toBe(true);
+    expect(isWalletOrigin("wallet")).toBe(true);
+    expect(isWalletOrigin(ORIGIN)).toBe(false);
+    expect(isWalletOrigin(undefined)).toBe(false);
+    const seen: string[] = [];
+    const host = createFeatureHost({
+      networks: [],
+      assets: [],
+      ctx: async () => { throw new Error("unused"); },
+      balances: async () => [],
+      enqueue: async (r: DappRequest) => { seen.push(r.origin); return { id: "a1", promise: Promise.resolve(null) }; },
+      decode: async () => { throw new Error("unused"); },
+      kv: new MemoryKV(),
+      usd: () => undefined,
+      fetch: (async () => new Response("{}")) as typeof fetch,
+    } as unknown as Parameters<typeof createFeatureHost>[0]);
+    await host.enqueue({ id: "x", origin: "wallet", via: "injected", family: "evm", networkId: SEPOLIA.id, method: "eth_sendTransaction", params: [] }, { appName: "Staking" });
+    expect(seen).toEqual([WALLET_ORIGIN]);
   });
 });
 

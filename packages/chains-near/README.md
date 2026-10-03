@@ -161,7 +161,8 @@ Titles and lines are in plain language. The fee is `estimated gas × gas_price`,
     is read with the pool's `get_account` (staked, unstaked, can_withdraw). Unstaked NEAR goes in `withdrawable` if
     it can be withdrawn and in `unstaking` otherwise. Positions with only rounding dust are skipped.
   - `buildStake` → `deposit_and_stake` with deposit = amount. `buildUnstake` → `unstake {amount}`.
-    `buildWithdraw` → `withdraw_all`. All three use 125 Tgas (MyNearWallet's 5 × `STAKING_GAS_BASE` of 25 Tgas) and
+    `buildWithdraw` → `withdraw_all`; with an `amount`, `buildWithdraw` → `withdraw {amount}`, and without one
+    `buildUnstake` → `unstake_all`. All of them use 125 Tgas (MyNearWallet's 5 × `STAKING_GAS_BASE` of 25 Tgas) and
     return a `near_signAndSendTransaction` DappRequest (`origin: "clip-wallet"`, `via: "injected"`) to the pool.
   - The validator must look like a pool (factory suffix) or be listed in `options.stakingPools`.
 - `buildTransfer({ asset, to, amount, signerId? })`:
@@ -171,6 +172,31 @@ Titles and lines are in plain language. The fee is `estimated gas × gas_price`,
     goes first in the same transaction.
   - Plain errors: bad address, self-transfer, amount, wrong network (`.testnet` on mainnet and vice versa),
     a named account that doesn't exist, not enough NEAR or tokens.
+
+## Ref Finance swaps (`src/ref.ts`)
+
+Helpers for wallet-built swaps on Ref Finance (now branded Rhea), used by `@clip-wallet/features` (`RefFinanceSwap`):
+
+- `REF_CONTRACTS`: mainnet `v2.ref-finance.near`, testnet `ref-finance-101.testnet` (ref-sdk `src/constant.ts`; the
+  exchange's `metadata` view on 2026-10-03: version 1.9.20 / 1.9.19, state `Running`, `wnear_id` `wrap.near` /
+  `wrap.testnet`).
+- `refSwapTransactions(plan, signerId)` builds, in order: `storage_deposit {account_id, registration_only: true}`
+  with the output token when the account isn't registered, then one transaction to the input token:
+  [`storage_deposit` with wrap.near if needed, `near_deposit` (10 Tgas, the amount) when selling NEAR], then
+  `ft_transfer_call {receiver_id: <exchange>, amount, msg}` (1 yocto, 300 Tgas). `msg` is
+  `{force: 0, actions: [{pool_id, token_in, token_out, amount_in?, min_amount_out}]}`, plus `skip_unwrap_near: false`
+  when the output is native NEAR (the exchange unwraps and sends NEAR) or `true` when the output is the wNEAR token.
+  This is the "instant swap" of ref-ui `src/services/swap.ts` (`swapFromServer`) and ref-sdk
+  `src/v1-swap/instantSwap.ts`; the account doesn't need to be registered with the exchange.
+- `checkRefRoute(actions, tokenIn, tokenOut, amountIn)` refuses a route unless every route starts with `tokenIn` and an
+  `amount_in`, hops connect, every route ends in `tokenOut` with a positive `min_amount_out`, and the inputs add up to
+  the amount. It returns the guaranteed output (sum of the routes' minimums). `refSwapTransactions` runs it too.
+- decode(): an `ft_transfer_call` to this network's exchange whose message parses (`parseRefSwapMsg`) and passes
+  `checkRefRoute` is described as "Swap 1 USDC for at least 1.194 NEAR" with lines "You get at least", "Exchange" and
+  "Route", and balance changes −input / +minimum output (NEAR when it's unwrapped). Any other receiver keeps the
+  plain "Send … to …" description. Wrapping NEAR next to another action now goes in "Also", like registration.
+- Max prepaid gas per transaction is 1 PGas on both networks (`EXPERIMENTAL_protocol_config`
+  `limit_config.max_total_prepaid_gas`, 2026-10-03), so wrap + swap (≤ 340 Tgas) fit in one transaction.
 
 ## Known gaps
 
@@ -203,6 +229,7 @@ Titles and lines are in plain language. The fee is `estimated gas × gas_price`,
 - RPC providers: https://docs.near.org/api/rpc/providers
 - FastNEAR API: https://github.com/fastnear/fastnear-api-server-rs
 - Staking pool contract (methods, NUM_EPOCHS_TO_UNLOCK): https://github.com/near/core-contracts/blob/master/staking-pool/src/lib.rs
+- Ref Finance contracts and instant swap: https://github.com/ref-finance/ref-sdk (src/constant.ts, src/v1-swap/instantSwap.ts) and https://github.com/ref-finance/ref-ui (src/services/swap.ts, smartRouterFromServer.ts)
 - MyNearWallet staking gas and access-key allowance: https://github.com/mynearwallet/my-near-wallet/blob/master/packages/frontend/src/config/environmentDefaults/mainnet.ts
 - near-seed-phrase derivation path: https://www.npmjs.com/package/near-seed-phrase
 - Circle USDC addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses

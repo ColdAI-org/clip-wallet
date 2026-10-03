@@ -117,8 +117,10 @@ export function functionId(ef: EntryFunction): string {
 }
 
 function argBytes(ef: EntryFunction, i: number): Uint8Array | null {
-  const a = ef.args[i] as unknown as { value?: { value?: Uint8Array } } | undefined;
-  return a?.value?.value instanceof Uint8Array ? a.value.value : null;
+  const a = ef.args[i] as unknown as { value?: { value?: Uint8Array }; bcsToBytes?: () => Uint8Array } | undefined;
+  if (a?.value?.value instanceof Uint8Array) return a.value.value; // deserialized: EntryFunctionBytes
+  // Built in this module from a payload (typed U64 / AccountAddress …): their BCS is the same argument bytes.
+  return typeof a?.bcsToBytes === "function" ? a.bcsToBytes() : null;
 }
 
 function argAddress(ef: EntryFunction, i: number): string | null {

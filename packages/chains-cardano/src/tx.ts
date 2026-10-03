@@ -18,6 +18,10 @@ export interface TxOutput {
   address: Uint8Array;
   value: Value;
   datum?: "hash" | "inline";
+  /** Datum hash (blake2b-256 of the datum's CBOR) when `datum` is "hash". */
+  datumHash?: Uint8Array;
+  /** CBOR bytes of the inline datum when `datum` is "inline". */
+  inlineDatum?: Uint8Array;
   scriptRef?: boolean;
 }
 
@@ -86,14 +90,23 @@ export function parseOutput(v: CborValue): TxOutput {
   if (Array.isArray(v)) {
     const address = asBytes(v[0]!) ?? fail("bad output address");
     const out: TxOutput = { address, value: parseValue(v[1]!) };
-    if (v.length > 2) out.datum = "hash";
+    if (v.length > 2) {
+      out.datum = "hash";
+      const h = asBytes(v[2]!);
+      if (h) out.datumHash = h;
+    }
     return out;
   }
   if (v instanceof CborMap) {
     const address = asBytes(v.get(0)!) ?? fail("bad output address");
     const out: TxOutput = { address, value: parseValue(v.get(1)!) };
     const d = v.get(2);
-    if (Array.isArray(d)) out.datum = asInt(d[0]!) === 1n ? "inline" : "hash";
+    if (Array.isArray(d)) {
+      const inline = asInt(d[0]!) === 1n;
+      out.datum = inline ? "inline" : "hash";
+      if (inline && d[1] instanceof CborTag && d[1].tag === 24 && d[1].value instanceof Uint8Array) out.inlineDatum = d[1].value;
+      else if (!inline && d[1] instanceof Uint8Array) out.datumHash = d[1];
+    }
     if (v.has(3)) out.scriptRef = true;
     return out;
   }

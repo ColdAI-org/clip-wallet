@@ -58,6 +58,15 @@ export default defineConfig({
         "https://api.coingecko.com/*",
         "https://api.jup.ag/*",
         "https://api.0x.org/*",
+        // Phase 2.5 swap APIs (docs/phase25/integration/stake-swap.md).
+        "https://agg-api.minswap.org/*",
+        "https://aftermath.finance/*",
+        "https://api.hyperion.xyz/*",
+        "https://api-testnet.hyperion.xyz/*",
+        "https://starknet.api.avnu.fi/*",
+        "https://sepolia.api.avnu.fi/*",
+        "https://api.ston.fi/*",
+        "https://smartrouter.ref.finance/*",
         // Optional hosted services from clip.config (unset by default).
         ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],

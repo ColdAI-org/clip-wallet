@@ -308,4 +308,16 @@ function pickLimits(op: PartialTezosOperation): Partial<PartialTezosOperation> {
   return out;
 }
 
+/**
+ * Parses forged operation bytes back to JSON with @taquito/local-forging (the same codec that forged them). Used to
+ * check wallet-built operations field by field. Throws a plain ClipError if the bytes don't parse.
+ */
+export async function parseForged(forgedHex: string, protocol: ProtocolsHash = ProtocolsHash.PsUshuai9): Promise<{ branch: string; contents: TezosOperation[] }> {
+  try {
+    return (await new LocalForger(protocol).parse(forgedHex)) as unknown as { branch: string; contents: TezosOperation[] };
+  } catch (cause) {
+    throw new ClipError("Clip Wallet couldn't read this Tezos operation.", "tezos/parse-failed", cause);
+  }
+}
+
 export { ProtocolsHash };

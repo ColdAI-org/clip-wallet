@@ -113,6 +113,24 @@ isn't parsed against its TL-B schema yet.
   the address, as proof verifiers check.
 - `features`: the `DeviceInfo.features` value.
 
+## DeFi message bodies (`src/defi.ts`)
+
+Builders and parsers for wallet-built DeFi messages, so `@clip-wallet/features` never imports @ton/core and its
+tests parse the real BoCs back. Sources read 2026-10-03:
+
+| helper | op | source |
+|---|---|---|
+| `stonfiSwapPayload` / `parseStonfiSwapPayload` | `0x6664de2a` | ston-fi/sdk `contracts/dex/v2_1/router/BaseRouterV2_1.ts` `createSwapBody` (v2.2 routers inherit it) |
+| `ptonTransferBody` / `parsePtonTransfer` | `0x01f3835d` | ston-fi/sdk `contracts/pTON/v2_1/PtonV2_1.ts` |
+| `tonstakersDepositBody` / `parseTonstakersDeposit` | `0x47d54391` | ton-blockchain/liquid-staking-contract `contracts/op-codes.func`, `pool.func` |
+| `jettonBurnBody` / `parseJettonBurn` | `0x595f07bc` | TEP-74 burn; Tonstakers custom payload bits from tonstakers/tonstakers-sdk `src/tonstakers.ts` |
+| `parseJettonTransferFull` | `0x0f8a7ea5` | TEP-74, with the forward payload as a cell |
+
+Also: `sameTonAddress`, `rawTonAddress`, `friendlyTonAddress`, `addressCellHex` / `addressFromCellHex` (tonapi
+get-method cells), `cellToB64` / `cellFromBase64`, `opOf`. A test checks the STON.fi payload hash against the SDK's
+layout. The module itself is unchanged: pTON and Tonstakers deposits still decode as blind ("Operation 0x…"); the
+features layer lifts that only through `Step.verify` plus a clean emulation.
+
 ## Gaps
 
 - `signMessage` (gasless relays) isn't supported yet; it needs v5r1 `authType: "internal"`.

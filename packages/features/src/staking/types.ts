@@ -14,6 +14,11 @@ export interface StakingProvider {
   supports(network: Network): boolean;
   /** Hedera stakes the whole balance in place; Solana stakes an amount into a stake account. */
   wholeBalance: boolean;
+  /**
+   * Amount may be left empty (Tezos: empty or 0 = delegate only, the whole balance counts and nothing is
+   * locked; an amount = also stake that much).
+   */
+  amountOptional?: boolean;
   /** One-paragraph explanation in plain words. */
   howItWorks: string;
 
@@ -25,9 +30,21 @@ export interface StakingProvider {
 
   /** `amount` in base units (ignored when wholeBalance). `optionId` defaults to the recommended option. */
   buildStake(p: { amount?: string; optionId?: string }, ctx: ChainContext): Promise<StakeBuild>;
-  buildUnstake(p: { positionId: string }, ctx: ChainContext): Promise<StakeBuild>;
-  buildWithdraw?(p: { positionId: string }, ctx: ChainContext): Promise<StakeBuild>;
-  buildClaim?(p: { positionId: string }, ctx: ChainContext): Promise<StakeBuild>;
+  /**
+   * `amount` (base units) is optional: partial unstake where the network allows it (Polkadot pools, NEAR);
+   * absent means everything in that position.
+   */
+  buildUnstake(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild>;
+  buildWithdraw?(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild>;
+  /** `choice` is one of the position's `claimChoices` ids when it offers any (Cardano's vote delegation). */
+  buildClaim?(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild>;
+}
+
+export interface StakeActionParams {
+  positionId: string;
+  /** Base units, decimal string. */
+  amount?: string;
+  choice?: string;
 }
 
 /** Requests to approve in order, each with the plain title the approval screen leads with. */

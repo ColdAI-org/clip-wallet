@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
 import { encodeFunctionData, erc20Abi, getAddress, isAddressEqual, toHex } from "viem";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -117,7 +117,7 @@ export class ZeroExSwap implements SwapProvider {
     const holder = ZEROX_CHAINS[ctx.network.chainId!]!;
     const mk = (params: Record<string, string>): DappRequest => ({
       id: randomId(),
-      origin: "wallet",
+      origin: WALLET_ORIGIN,
       via: "injected",
       family: "evm",
       networkId: ctx.network.id,

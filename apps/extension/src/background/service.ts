@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -181,7 +181,7 @@ export class WalletService implements DappHost {
   }
   /** Wallet-built request (staking, swap, trade) → the normal approval queue. */
   enqueueWalletRequest(request: DappRequest, appName: string) {
-    return this.enqueueTransaction(request, { name: appName, origin: "wallet", domain: appName, verified: true });
+    return this.enqueueTransaction(request, { name: appName, origin: WALLET_ORIGIN, domain: appName, verified: true });
   }
   async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
     const network = this.network(request.networkId);
@@ -449,7 +449,7 @@ export class WalletService implements DappHost {
   private async ctx(networkId: string, origin?: string): Promise<ChainContext> {
     const network = this.network(networkId);
     const override = (await this.prefs()).rpcOverrides[networkId];
-    const account = origin && origin !== "wallet" ? await this.siteAccount(network.family, origin) : await this.account(network.family);
+    const account = origin && !isWalletOrigin(origin) ? await this.siteAccount(network.family, origin) : await this.account(network.family);
     const base: ChainContext = {
       network: override ? { ...network, rpcUrls: [override, ...network.rpcUrls] } : network,
       account,
@@ -606,7 +606,7 @@ export class WalletService implements DappHost {
     const request = await mod.buildTransfer({ asset, to, amount: amount.toString() }, ctx);
     const { id, promise } = await this.enqueueTransaction(request, {
       name: this.env.walletName,
-      origin: "wallet",
+      origin: WALLET_ORIGIN,
       domain: `to ${short(to)}`,
       verified: true,
     }, { recipient: to });
@@ -664,7 +664,7 @@ export class WalletService implements DappHost {
       if (v !== undefined) fiatValue = (fiatValue ?? 0) + v;
     }
     if (extra.warnings?.length) decoded.warnings = [...decoded.warnings, ...extra.warnings];
-    if (!this.deps.registry.lookup(request.origin).verified && request.origin !== "wallet" && !decoded.warnings.some((w) => w.code === "domain-mismatch")) {
+    if (!this.deps.registry.lookup(request.origin).verified && !isWalletOrigin(request.origin) && !decoded.warnings.some((w) => w.code === "domain-mismatch")) {
       decoded.warnings.push({ level: "caution", code: "domain-mismatch", message: `${domainOf(request.origin)} isn't a site ${this.env.walletName} recognises. Only continue if you opened it yourself.` });
     }
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
@@ -678,7 +678,7 @@ export class WalletService implements DappHost {
       createdAt: Date.now(),
       dapp,
       network: this.networkView(network),
-      via: request.origin === "wallet" ? "wallet" : request.via,
+      via: isWalletOrigin(request.origin) ? "wallet" : request.via,
       decoded,
       fiatValue,
       plan,

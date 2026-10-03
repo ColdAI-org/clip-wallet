@@ -106,6 +106,16 @@ RPC" reference. 1Mask answers connect, chain and permission methods itself.
 `getNfts` returns `[]` by default. There's no public, keyless Starknet NFT indexer: NFTScan and Voyager need API
 keys, and Starkscan is gone. Plug one in with the `nfts` option.
 
+## AVNU helpers (`src/avnu.ts`)
+
+For wallet-built AVNU swaps in `@clip-wallet/features`:
+- `AVNU_EXCHANGE`: Exchange contract per network, from the avnu-labs/avnu-contracts-v2 README (mainnet
+  `0x0427…3b0f`, Sepolia `0x02c5…e7c2`), read 2026-10-03.
+- `parseMultiRouteSwap(calldata)`: reads the fixed head of `multi_route_swap` (`src/exchange.cairo`): sell token and
+  amount, buy token and amount, minimum out, beneficiary, integrator fee, route count. A test checks it against
+  calldata starknet.js compiles from the ABI.
+- `approveCall(token, spender, amount)` / `parseApprove`: exact-amount ERC-20 approve (u256 split as starknet.js does).
+
 ## Gaps
 
 - No paymaster flow yet. AVNU's SNIP-29 paymaster (`sepolia.paymaster.avnu.fi`) is gasless only with an API key.

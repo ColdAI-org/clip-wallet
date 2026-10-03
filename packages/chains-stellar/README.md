@@ -150,6 +150,17 @@ More checks:
   `0`. `asset` is an `AssetRef` or `{ code, issuer }`.
   - Add needs 0.5 XLM free (`stellar/low-reserve`). Adding an asset that's already added → `stellar/already-added`.
   - Remove needs a zero balance (`stellar/trustline-not-empty`).
+- `buildPathSwap({ sell, buy, sendAmount, destMin, path }, ctx)` (`src/swap.ts`, used by the features package's
+  Stellar DEX swap) → `stellar_signAndSubmitXDR` with ONE transaction: `changeTrust(buy)` first when the account has
+  no trustline for the bought asset, then `pathPaymentStrictSend(sendAsset, sendAmount, destination = you, destAsset,
+  destMin, path)`. Both go through together or not at all, and `destMin` is enforced by the network
+  (`op_under_dest_min`). `checkPathSwap` runs the same read-only checks at quote time: balance of the sold asset
+  (minus selling liabilities), XLM spendable above the minimum balance for the amount, fees and the 0.5 XLM reserve a
+  new trustline sets aside, and an issuer that hasn't authorized the account. SEP-41 tokens are refused
+  (`stellar/swap-unsupported-asset`), and paths longer than 5 assets (`stellar/path-too-long`). decode describes it
+  as "Add USDC to your account and swap 10 XLM for at least 9.4184622 USDC" (not blind).
+  `parseStellarTransaction(xdr, networkId)` parses an envelope back. Source:
+  https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations (path payments, path ≤ 5).
 - `spendable(ctx)` → XLM you can spend, in stroops: balance − selling liabilities − (2 + subentries + sponsoring −
   sponsored) × base reserve. The base reserve is read from Horizon's latest ledger.
 

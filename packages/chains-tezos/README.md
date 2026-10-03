@@ -159,12 +159,30 @@ transaction to yourself with entrypoint `stake`, `unstake` or `finalize_unstake`
 | `buildStake({ validator, amount })` | Adds a delegation if you aren't delegated to `validator`. If amount > 0 and the baker accepts staking, adds a `stake` op. If the baker refuses staking, it only delegates and says so in a note. If changing baker unstakes existing stake, a note says so. Refuses non-bakers, and amount 0 when already delegated there. |
 | `buildUnstake({ validator, amount })` | `unstake` op. The validator must be your current baker. |
 | `buildWithdraw({ validator })` | `finalize_unstake` op (amount 0). |
+| `buildStopDelegating(ctx)` | `delegation` without a delegate. Refused while XTZ is staked ("Unstake your staked XTZ first"). |
 
 All of them return `DappRequest`s with origin `"clip-wallet"`, via `"injected"`, method `tezos_send`. Notes
 (`params.notes`) are shown only for `origin === "clip-wallet"`, never from a dapp.
 
 `buildTransfer({ asset, to, amount })` sends XTZ, or an FA2/FA1.2 `transfer` (standard looked up on TzKT). It
 validates the address, the amount, and rejects transfers to yourself.
+
+## Wallet-built operations (added for staking and swaps, Oct 2026)
+
+- `tezosSendRequest(ctx, operations, notes?)`: the `tezos_send` request the builders above return (origin `clip-wallet`).
+- `stakingOp(me, "stake" | "unstake" | "finalize_unstake", mutez)` and `delegationOp(baker | null)`.
+- `fa12ApproveOp(token, spender, amount)`, `fa2OperatorOp(token, owner, operator, tokenId, add)`, and
+  `spendPermissionOps({ standard, token, tokenId?, owner, spender, amount })` → `{ before, after }`: FA1.2 is
+  `approve 0` then `approve amount` (TZIP-7 tokens such as tzBTC refuse changing a nonzero allowance); FA2 is
+  `add_operator` before and `remove_operator` after, in the same batch.
+- Sirius DEX (the protocol's Liquidity Baking CPMM, XTZ ↔ tzBTC): `LIQUIDITY_BAKING` allow-list per network,
+  `readCpmm(rpc)` (address from `GET …/context/liquidity_baking/cpmm_address`, pools from its storage),
+  `parseCpmmStorage`, `cpmmXtzToToken` / `cpmmTokenToXtz` (the contract's integer maths: 0.1 % XTZ burn and a
+  999/1000 fee), `cpmmXtzToTokenOp` / `cpmmTokenToXtzOp` (min output and deadline enforced by the contract).
+  Mainnet and shadownet share the CPMM address `KT1TxqZ8QtKvLu3V3JH7Gx58n7Co8pgtpQU5`; shadownet's pool holds 1 token
+  unit, so swaps there are useless.
+- `parseForged(hex)`: local-forging parse of forged bytes, for field-by-field checks. `ProtocolsHash`, `rpcFor` and
+  `tzktFor` are re-exported.
 
 ## Exports
 
@@ -200,6 +218,8 @@ Options: `simulate` (default true), `ipfsGateway`, `protocol` (a `ProtocolsHash`
 - Octez key management (0x03 operation watermark): https://octez.tezos.com/docs/user/key-management.html
 - Octez minimal fees / mempool filter: https://octez.tezos.com/docs/active/plugins.html, https://octez.tezos.com/docs/CHANGES.html
 - TzKT API: https://api.tzkt.io (accounts, delegates, tokens, tokens/balances, staking/unstake_requests)
+- Liquidity Baking CPMM source (entrypoints, fee and burn maths): https://gitlab.com/tezos/tezos/-/blob/master/src/proto_alpha/lib_protocol/contracts/cpmm.mligo
+- Node RPC `…/context/liquidity_baking/cpmm_address`, `…/contracts/<KT1>/storage` and `/entrypoints` (mainnet and shadownet, 2026-10-03)
 - TZIP-7 (FA1.2), TZIP-12 (FA2), TZIP-21 (metadata): https://gitlab.com/tezos/tzip
 - Circle USDC addresses (no Tezos L1): https://developers.circle.com/stablecoins/usdc-contract-addresses
 - Temple derivation path: https://github.com/madfish-solutions/templewallet-extension/blob/development/src/lib/temple/helpers.ts

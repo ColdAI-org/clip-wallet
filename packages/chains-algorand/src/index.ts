@@ -22,3 +22,4 @@ import { createAlgorandModule } from "./module.js";
 
 /** Default instance. */
 export const algorandModule = createAlgorandModule();
+export { type GroupTxnSpec, buildGroup, decodeTxn, encodeUint64, logicSigAddress, readAccount, readLocalState } from "./build.js";

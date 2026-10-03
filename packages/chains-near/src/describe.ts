@@ -3,12 +3,14 @@
  *
  * Recognised function calls: NEP-141 ft_transfer / ft_transfer_call / storage_deposit (NEP-145), NEP-171
  * nft_transfer / nft_transfer_call, staking-pool calls (near/core-contracts staking-pool: deposit_and_stake,
- * deposit, stake, stake_all, unstake, unstake_all, withdraw, withdraw_all) and wNEAR near_deposit / near_withdraw.
+ * deposit, stake, stake_all, unstake, unstake_all, withdraw, withdraw_all), wNEAR near_deposit / near_withdraw and
+ * Ref Finance swaps (ft_transfer_call to the exchange with a swap message, see ref.ts).
  * Anything else is shown as "Call <method> on <contract>" with its JSON arguments; binary arguments are blind.
  */
 import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
 import { type Action, type PublicKey, publicKeyToString, samePublicKey } from "./borsh.js";
 import { WRAP_CONTRACTS, isPool, nearAsset, networkName, poolName } from "./networks.js";
+import { checkRefRoute, isRefContract, parseRefSwapMsg } from "./ref.js";
 import type { NearRpc } from "./rpc.js";
 import { assetFor, ftMetadata } from "./tokens.js";
 import { formatUnits, hex, short } from "./util.js";
@@ -116,6 +118,32 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         const contract = tx.receiverId;
         if (a.deposit > 0n) acc.add(NEAR, -a.deposit);
 
+        // Ref Finance swap: ft_transfer_call to the exchange with a swap message whose route checks out.
+        const refMsg = m === "ft_transfer_call" && isUint(A.amount) && s(A.receiver_id) && isRefContract(networkId, s(A.receiver_id)!) ? parseRefSwapMsg(A.msg) : null;
+        const refOut = refMsg?.actions[refMsg.actions.length - 1]!.token_out;
+        const refRoute = refMsg && refOut ? checkRefRoute(refMsg.actions, contract, refOut, BigInt(A.amount as string)) : null;
+        if (refMsg && refOut && refRoute && "minOut" in refRoute) {
+          const amt = BigInt(A.amount as string);
+          const [inMeta, outMeta] = [await ftMetadata(env.rpc, contract), await ftMetadata(env.rpc, refOut)];
+          const inAsset = assetFor(networkId, contract, inMeta);
+          const unwraps = !!net && refOut === WRAP_CONTRACTS[net] && refMsg.skip_unwrap_near === false;
+          const outAsset = unwraps ? NEAR : assetFor(networkId, refOut, outMeta);
+          const inText = inMeta ? `${formatUnits(amt, inMeta.decimals, 6)} ${inMeta.symbol}` : `${amt} units of ${contract}`;
+          const outText = unwraps ? near(refRoute.minOut) : outMeta ? `${formatUnits(refRoute.minOut, outMeta.decimals, 6)} ${outMeta.symbol}` : `${refRoute.minOut} units of ${refOut}`;
+          titles.push(`Swap ${inText} for at least ${outText}`);
+          lines.push(
+            { label: "You get at least", value: `${outText}, or the swap is undone and your tokens come back` },
+            { label: "Exchange", value: `Ref Finance (${s(A.receiver_id)!})` },
+            { label: "Route", value: refMsg.actions.map((x) => `pool ${x.pool_id}`).join(" → ") },
+          );
+          acc.add(inAsset, -amt);
+          acc.add(outAsset, refRoute.minOut);
+          for (const [c, meta, asset] of [[contract, inMeta, inAsset], [refOut, outMeta, outAsset]] as const) {
+            if (asset.spam) warn({ level: "danger", code: "known-scam", message: `This token (${c}) looks like a copy of a well-known token. It isn't the real one.` });
+            if (!meta && !(c === refOut && unwraps)) blindWarn("This token's details couldn't be read.");
+          }
+          break;
+        }
         if ((m === "ft_transfer" || m === "ft_transfer_call") && isUint(A.amount) && s(A.receiver_id)) {
           const meta = await ftMetadata(env.rpc, contract);
           const asset = assetFor(networkId, contract, meta);
@@ -291,8 +319,8 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
   }
 
   if (!tx.actions.length) titles.push(`Empty transaction to ${short(tx.receiverId)}`);
-  // Registration is a side effect: lead with the main action.
-  const main = titles.findIndex((t) => !t.startsWith("Register "));
+  // Registration and wrapping NEAR are side effects: lead with the main action.
+  const main = titles.findIndex((t) => !t.startsWith("Register ") && !t.startsWith("Wrap "));
   const title = titles.length <= 1 ? (titles[0] ?? "") : main > 0 ? titles[main]! : titles[0]!;
   const others = titles.filter((t) => t !== title);
   if (others.length) lines.unshift({ label: others.length === 1 ? "Also" : "Also does", value: others.join("; ") });

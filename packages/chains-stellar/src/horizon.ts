@@ -9,6 +9,7 @@ export interface HorizonBalance {
   limit?: string;
   selling_liabilities?: string;
   buying_liabilities?: string;
+  is_authorized?: boolean;
 }
 
 export interface HorizonAccount {

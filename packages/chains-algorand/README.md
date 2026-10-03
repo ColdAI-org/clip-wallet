@@ -123,6 +123,12 @@ authorization. Anything else becomes a generic sentence, never the node's raw te
 - `buildOptOut({ asset })` → 0-amount axfer with `close-to` = the token's issuer. A close-to sends **everything left**
   to that account, so this is refused while you still hold any (`algorand/opt-out-nonzero`) and for tokens you
   created. It decodes as "Remove USDC from your account" with a caution.
+- `buildGroup(specs, ctx)` (`src/build.ts`, used by the features package's Tinyman swap) → one atomic group as
+  `algo_signAndPostTxn`. Specs are `pay`, `axfer` or NoOp `appl` (args, accounts, foreign assets/apps, fee = N × min
+  fee for inner transactions). The sender is always this account; rekey-to and close-to can't be expressed. Fresh
+  params, 1000-round validity and `assignGroupID`. Also `readLocalState(ctx, address, appId)` (algod
+  `/v2/accounts/{a}/applications/{id}`, keys decoded), `readAccount(ctx, assetIds)` (balance, min-balance, rekeyed,
+  holdings), `logicSigAddress(program)`, `encodeUint64` and `decodeTxn(b64)` (algosdk, so features needs no algosdk).
 - `spendable(ctx)` → `{ balance, locked, spendable }` (µALGO strings). `locked` is algod's `min-balance`: 0.1 ALGO base
   + 0.1 per token added or created + app opt-ins / boxes.
 
