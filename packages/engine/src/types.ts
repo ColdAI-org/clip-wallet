@@ -61,7 +61,8 @@ export interface WalletVault {
 
 /** CLPRouter: how a request gets paid for ("From: Your balance", funding moves, sponsored gas, ETA). */
 export interface RoutePlanner {
-  plan(p: { request: DappRequest; decoded: DecodedRequest; balances: TokenBalance[]; networks: Network[] }): Promise<ApprovalPlan>;
+  /** `account`: the paying account's address (Phase 3 Connector quotes deliver to it). */
+  plan(p: { request: DappRequest; decoded: DecodedRequest; balances: TokenBalance[]; networks: Network[]; account?: string }): Promise<ApprovalPlan>;
 }
 
 /** 1Mask's PermissionStore shape (per-origin, per-family). */
@@ -93,6 +94,8 @@ export interface DappHost {
   chainRead(req: DappRequest): Promise<unknown>;
   isUnlocked(): Promise<boolean>;
   cancel(requestId: string): void;
+  /** A site on a loaded phishing list (security stream). Sync: WalletConnect's Verify check calls it. */
+  isKnownScam?(origin: string): boolean;
 }
 
 /** 1Mask background router (injected providers: extension content scripts, mobile WebView bridge). */
@@ -148,6 +151,11 @@ export interface Dependencies {
   seedActivity?: ActivityEntry[];
   /** services/backup client factory (clip.config services.backupUrl); null = passkey backup hidden. */
   backup?: import("./platform.js").PlatformDeps["backup"];
+  /**
+   * Networks the wallet signs and decodes requests on but never lists or scans: Hedera's EVM (eip155:296/295) for
+   * the settle-on-Hedera client's claim / withdraw, only when route.settleOnHedera is on.
+   */
+  requestNetworks?: Network[];
 }
 
 /** Side effects the engine needs from its host. */
@@ -167,4 +175,10 @@ export interface EngineEnv {
   randomUUID(): string;
   /** Defaults to Date.now. */
   now?(): number;
+  /**
+   * Google / Apple sign-in for backups: a browser auth session that resolves with the URL it ended on
+   * (extension: chrome.identity.launchWebAuthFlow; mobile: expo-web-browser openAuthSessionAsync) and the
+   * return URL listed in the backup service's OIDC_RETURN_URLS. Absent = the buttons stay hidden.
+   */
+  identity?: { launchWebAuthFlow(url: string): Promise<string | undefined>; returnUrl: string };
 }

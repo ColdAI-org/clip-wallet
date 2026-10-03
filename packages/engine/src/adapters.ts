@@ -11,7 +11,7 @@ import { P2_CONNECT_METHODS } from "@clip-wallet/1mask/background/p2";
 import type { createStarknetModule } from "@clip-wallet/chains-starknet";
 import type { createTonModule } from "@clip-wallet/chains-ton";
 import type { WalletConnectWalletOptions } from "@clip-wallet/1mask/walletconnect";
-import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
+import { createRouteClient, findShortfall, settleFundingOption, type RouteClient, type SettleOnHederaClient } from "@clip-wallet/route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./types.js";
 
 /** Connect methods of every family's connector (same set as the extension's). */
@@ -145,6 +145,8 @@ export class WalletConnectAdapter implements WalletConnectBridge {
           });
         },
         handle: (req, ctx) => this.host!.request(req, { name: ctx.peer.name, iconUrl: ctx.peer.icons?.[0], warnings: ctx.warnings }),
+        // Phishing lists (security stream): a listed site shows "known-scam" on the proposal and every request.
+        isKnownScam: (origin) => this.host?.isKnownScam?.(origin) ?? false,
         cancel: (id) => this.host!.cancel(id),
       }),
     );
@@ -219,11 +221,13 @@ export class RoutePlannerAdapter implements RoutePlanner {
     private readonly config: ClipConfig,
     private readonly prices: PriceFeed,
     private readonly currency: () => Promise<string>,
+    /** Phase 3 "settle on Hedera" (config route.settleOnHedera + a known deployment); null = off. */
+    private readonly settle: SettleOnHederaClient | null = null,
   ) {
     this.client = createRouteClient({ network: "testnet" });
   }
 
-  async plan({ decoded, balances, networks }: Parameters<RoutePlanner["plan"]>[0]): Promise<ApprovalPlan> {
+  async plan({ decoded, balances, networks, account }: Parameters<RoutePlanner["plan"]>[0]): Promise<ApprovalPlan> {
     const net = networks.find((n) => n.id === decoded.networkId);
     const steps: PlanStep[] = [];
     let readyInSeconds = PLAIN_ETA[net?.family ?? "evm"] ?? 30;
@@ -249,6 +253,9 @@ export class RoutePlannerAdapter implements RoutePlanner {
       } catch (e) {
         problem = e instanceof ClipError ? e.userMessage : `You don't have enough ${s.asset.symbol} for this.`;
       }
+      // A bonded Connector's offer, shown beside the route in Details (Phase 3; display only, never blocks).
+      const alt = this.settle ? await settleFundingOption(this.settle, s, account, networks) : null;
+      if (alt) steps.push({ kind: "funding", title: alt.title, detail: alt.detail });
     }
     const sponsored = !!decoded.fee?.sponsored;
     if (decoded.fee) steps.push({ kind: "gas", title: sponsored ? "Network fee paid for you" : "Network fee" });

@@ -23,8 +23,10 @@ import { ClipError } from "@clip-wallet/core";
 import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
 import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
-import { createEvmModule } from "@clip-wallet/chains-evm";
-import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
+import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
+import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
+import { settleClientFor } from "@clip-wallet/route";
+import { isMainnetEnabled } from "@clip-wallet/config";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
 import type { CardanoModule } from "@clip-wallet/chains-cardano";
@@ -48,7 +50,8 @@ import {
 import { createPriceFeed } from "./features";
 import { BackupClient } from "@clip-wallet/backup-client";
 import { HardwareKeyring, type HardwareStorage } from "@clip-wallet/hardware/core";
-import { MultiNameResolver } from "@clip-wallet/names";
+import { MultiNameResolver, PluginBackend } from "@clip-wallet/names";
+import type { PluginNameResult } from "@clip-wallet/plugins";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 
 /** The vault surface the background uses: core's Vault plus ClipVault's extras. */
@@ -80,7 +83,8 @@ export interface WalletVault {
 
 /** CLPRouter: how a request gets paid for ("From: Your balance", funding moves, sponsored gas, ETA). */
 export interface RoutePlanner {
-  plan(p: { request: DappRequest; decoded: DecodedRequest; balances: TokenBalance[]; networks: Network[] }): Promise<ApprovalPlan>;
+  /** `account`: the paying account's address (Phase 3 Connector quotes deliver to it). */
+  plan(p: { request: DappRequest; decoded: DecodedRequest; balances: TokenBalance[]; networks: Network[]; account?: string }): Promise<ApprovalPlan>;
 }
 
 /** 1Mask's PermissionStore shape (per-origin, per-family). */
@@ -119,6 +123,8 @@ export interface DappHost {
   isUnlocked(): Promise<boolean>;
   /** The connector gave up on a request (timeout / relay expiry): drop its approval. */
   cancel(requestId: string): void;
+  /** A site on a loaded phishing list (security stream). Sync: WalletConnect's Verify check calls it. */
+  isKnownScam?(origin: string): boolean;
 }
 
 /** 1Mask background router (inpage/content ports). */
@@ -153,6 +159,8 @@ export interface NameResolver {
   resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string>; byFamily?: Partial<Record<Family, string>> } | null>;
   /** Primary name for an address, for display. */
   reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
+  /** Which service would answer this name ("ens", "plugin", …), or null. No network. */
+  serviceFor?(name: string): string | null;
 }
 
 export interface DappRegistry {
@@ -187,6 +195,26 @@ export interface Dependencies {
   hederaAccountId(ctx: ChainContext): Promise<string | undefined>;
   /** Seed activity (fixture mode only). */
   seedActivity: ActivityEntry[];
+  /**
+   * Networks the wallet signs and decodes requests on but never lists or scans: Hedera's EVM (eip155:296/295) for
+   * the settle-on-Hedera client's claim / withdraw, only when route.settleOnHedera is on.
+   */
+  requestNetworks?: Network[];
+  /**
+   * Names answered by Clip Plugins: the name resolver asks this last (built-ins always win). The service binds it to
+   * the running plugins (background/plugins.ts); unbound, plugin names resolve to nothing.
+   */
+  pluginNames: PluginNameHook;
+}
+
+/** Late-bound link between the name resolver (built here) and the plugins (built by the service). */
+export interface PluginNameHook {
+  lookup: (name: string) => Promise<PluginNameResult | null>;
+  suffixes: () => string[];
+}
+
+export function pluginNameHook(): PluginNameHook {
+  return { lookup: async () => null, suffixes: () => [] };
 }
 
 export type StarknetModule = ReturnType<typeof createStarknetModule>;
@@ -271,6 +299,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       backup: null,
       hederaAccountId: async () => "0.0.4815162",
       seedActivity: MOCK_ACTIVITY,
+      pluginNames: pluginNameHook(),
     };
   }
 
@@ -294,27 +323,40 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     ton,
   };
   const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);
+  const eager = { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() };
+  // Clip-handle records are checked with each family's own address rules; lazy families join once loaded.
+  const clipValidators: Partial<Record<Family, (a: string) => boolean>> = {};
+  for (const [f, m] of Object.entries(eager)) clipValidators[f as Family] = (a) => m.isAddress(a);
+  const pluginNames = pluginNameHook();
+  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (none yet).
+  const mainnetOn = isMainnetEnabled(opts.config);
+  const settle = settleClientFor({ enabled: opts.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
   return {
     mocks: false,
     vault,
     chains: {
-      evm: createEvmModule(),
-      hedera,
-      solana: createSolanaModule(),
-      bitcoin: createBitcoinModule(),
+      ...eager,
       ...lazy,
     },
     loadChains: async () => {
       await Promise.all(Object.values(lazy).map((m) => m.load()));
+      for (const [f, m] of Object.entries(lazy)) clipValidators[f as Family] ??= (a) => m.isAddress(a);
     },
     networks,
     assets: walletAssets(networks),
-    route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
+    route: new RoutePlannerAdapter(opts.config, prices, opts.currency, settle),
+    ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
     dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
-    // ENS (.eth), SNS (.sol) and Hedera names (.hbar …), limited to the networks this wallet has.
-    names: new MultiNameResolver({ networks }),
+    // ENS (.eth), SNS (.sol), Hedera names (.hbar …) and Clip handles, limited to the networks this wallet has;
+    // then names from Clip Plugins (only suffixes no built-in handles; labelled "from <plugin>").
+    names: new MultiNameResolver({
+      networks,
+      clip: { isAddress: clipValidators, ...(opts.config.services.clipHandles ?? {}) },
+      extra: [new PluginBackend((n) => pluginNames.lookup(n), () => pluginNames.suffixes())],
+    }),
+    pluginNames,
     registry,
     ...hw,
     backup: BACKUP_SERVICE_URL ? (session) => new BackupClient({ baseUrl: BACKUP_SERVICE_URL!, session }) : null,

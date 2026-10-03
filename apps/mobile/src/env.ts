@@ -26,4 +26,9 @@ export const APP = {
   scheme: "clipwallet",
   /** Secure Trade share links: https://<associated domain>/trade#offer=… (universal link) or clipwallet://trade#offer=…. */
   tradeLinkBase: process.env.CLIP_ASSOCIATED_DOMAIN ? `https://${process.env.CLIP_ASSOCIATED_DOMAIN}/trade` : "clipwallet://trade",
+  /**
+   * Google / Apple sign-in for passkey backups returns here (an https universal link on the associated domain,
+   * listed in the backup service's OIDC_RETURN_URLS). Unset = the buttons stay hidden; email sign-in still works.
+   */
+  backupReturnUrl: process.env.CLIP_ASSOCIATED_DOMAIN ? `https://${process.env.CLIP_ASSOCIATED_DOMAIN}/backup` : undefined,
 } as const;

@@ -9,6 +9,8 @@ import { LOCALE_CODES } from "@clip-wallet/i18n";
 import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
 import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
+import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
+import { PluginsRequestSchema, type PendingInstallView, type PluginView, type PluginsStatusView } from "@clip-wallet/plugins";
 import type {
   AccountView,
   ActiveAccounts,
@@ -135,6 +137,12 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
   ...FEATURE_REQUESTS,
   ...SOCIAL_REQUESTS,
+  ...SECURITY_REQUESTS,
+  // Clip Plugins (Advanced mode; @clip-wallet/plugins validates again in PluginsService)
+  ...PluginsRequestSchema.options,
+  // Google / Apple sign-in for passkey backups (engine/social-signin)
+  z.object({ type: z.literal("backupProviders") }),
+  z.object({ type: z.literal("backupSocialSignIn"), provider: z.enum(["google", "apple"]) }),
   // hardware wallets (Ledger, Keystone)
   // Device I/O (Ledger WebHID, Keystone QR) runs in the pages; the background stores accounts and verifies signatures.
   z.object({ type: z.literal("hwAddAccounts"), accounts: z.array(hwAccount).min(1).max(50) }),
@@ -167,7 +175,16 @@ export type Request = z.infer<typeof Request>;
 export type RequestType = Request["type"];
 
 /** What each request returns. Kept beside the schema so client and service can't drift. */
-export interface ResponseMap extends FeatureResponseMap, SocialResponseMap {
+export interface ResponseMap extends FeatureResponseMap, SocialResponseMap, SecurityResponseMap {
+  pluginsStatus: PluginsStatusView;
+  pluginsSetEnabled: void;
+  pluginsPrepareInstall: PendingInstallView;
+  pluginsConfirmInstall: PluginView;
+  pluginsCancelInstall: void;
+  pluginsRemove: void;
+  pluginsSetPluginEnabled: void;
+  backupProviders: { email: boolean; google: boolean; apple: boolean };
+  backupSocialSignIn: void;
   getState: WalletState;
   setPrefs: Prefs;
   createWallet: void;

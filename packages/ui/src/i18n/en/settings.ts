@@ -29,6 +29,7 @@ export default {
   "settings.backup": "Backup",
   "settings.accounts": "Accounts",
   "settings.hardware": "Hardware wallets",
+  "settings.plugins": "Plugins",
   "settings.hardware.hint": "Ledger or Keystone: keys stay on the device",
   "settings.lockNow": "Lock now",
   "settings.sessions.title": "Connected apps",

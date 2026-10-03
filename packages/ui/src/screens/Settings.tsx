@@ -8,6 +8,7 @@ import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
 import { useFeaturesOptional } from "../features/context";
 import { useHardwareOptional } from "../hardware/context";
+import { useSecurityOptional } from "../security/context";
 import { useSocialOptional } from "../social/context";
 import { useUiT } from "../i18n";
 import { LOCALES, localeInfo, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
@@ -163,6 +164,7 @@ export function Settings() {
   const { navigate } = useRouter();
   const features = useFeaturesOptional();
   const hardware = useHardwareOptional();
+  const security = useSecurityOptional();
   const social = useSocialOptional();
   if (!state) return null;
   const prefs = state.prefs;
@@ -277,6 +279,11 @@ export function Settings() {
               {t("settings.hardware")}
             </button>
           )}
+          {security && (
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/security")}>
+              {t("settings.security")}
+            </button>
+          )}
         </nav>
         <Button
           variant="secondary"
@@ -304,7 +311,7 @@ export function Settings() {
       {prefs.advanced && <AdvancedNetworks prefs={prefs} setPrefs={setPrefs} />}
       {prefs.advanced && asPlugins(client) && (
         <Button variant="secondary" block onClick={() => navigate("/settings/plugins")}>
-          Plugins
+          {t("settings.plugins")}
         </Button>
       )}
 

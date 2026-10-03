@@ -35,6 +35,10 @@ import { HardwareSignHost, inProgress } from "./hardware-host";
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
 import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
+import { hideKey, isSecurityRequest, type RecipientLog, type SecurityRequest, type SecurityService } from "@clip-wallet/security";
+import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
+import { SocialSignInService, type SocialSignInRequest } from "@clip-wallet/engine/social-signin";
+import { chromeOffscreen, createPlugins, type BackgroundPlugins, type OffscreenApi } from "./plugins";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -58,6 +62,13 @@ export interface Env {
   armAutoLock(minutes: number): void;
   passkey(): CeremonyMeta;
   walletName: string;
+  /**
+   * Google / Apple sign-in for backups: chrome.identity.launchWebAuthFlow and its redirect URL
+   * (https://<extension id>.chromiumapp.org/backup). Absent = the buttons stay hidden.
+   */
+  identity?: { launchWebAuthFlow(url: string): Promise<string | undefined>; returnUrl: string };
+  /** The offscreen document that runs plugins. Default: chrome.offscreen; null = no plugins (tests, Firefox). */
+  pluginHost?: OffscreenApi | null;
 }
 
 interface Permission {
@@ -133,6 +144,13 @@ export class WalletService implements DappHost {
   private readonly hw: HardwareSignHost;
   /** Contacts, Clip handles, notifications, Discover (social stream). */
   private social?: Pick<SocialService, "handle" | "refine" | "onLock">;
+  /** Settings → Security plus the scam/poisoning checks on every approval (security stream). */
+  private security?: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">;
+  private recipients?: RecipientLog;
+  /** Clip Plugins (Advanced mode + the Plugins switch); see ./plugins.ts. */
+  readonly plugins: BackgroundPlugins;
+  /** "Continue with Google" / "Sign in with Apple" for passkey backups. */
+  private readonly socialSignIn: SocialSignInService;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
   readonly platform: PlatformService;
 
@@ -143,6 +161,15 @@ export class WalletService implements DappHost {
   ) {
     this.ceremonies = new PasskeyCeremonies(() => env.passkey());
     this.hw = new HardwareSignHost(() => this.deps.hardware, () => env.broadcast());
+    this.plugins = createPlugins(kv, () => this.prefs(), env.pluginHost === undefined ? chromeOffscreen() : env.pluginHost);
+    deps.pluginNames.lookup = (n) => this.plugins.resolveName(n);
+    deps.pluginNames.suffixes = () => this.plugins.suffixes();
+    this.socialSignIn = new SocialSignInService({
+      backup: deps.backup ? (session) => deps.backup!(session) : null,
+      kv,
+      ...(env.identity ? { launchWebAuthFlow: env.identity.launchWebAuthFlow, returnUrl: env.identity.returnUrl } : {}),
+      changed: () => env.broadcast(),
+    });
     const names = deps.names;
     this.platform = new PlatformService({
       vault: deps.vault,
@@ -169,6 +196,7 @@ export class WalletService implements DappHost {
   start() {
     this.deps.dapps.start(this);
     this.deps.walletConnect.start(this);
+    void this.plugins.sync().catch(() => undefined);
   }
 
   /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
@@ -179,6 +207,19 @@ export class WalletService implements DappHost {
   /** Public facts for the social host: approvals waiting now (for notifications). */
   socialApprovals(): { id: string; app: string; title: string }[] {
     return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+  }
+
+  attachSecurity(s: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">, recipients?: RecipientLog) {
+    this.security = s;
+    this.recipients = recipients;
+  }
+  /** Collectibles for the security service's spam cleanup. */
+  securityNfts(): Promise<Nft[]> {
+    return this.collectibles();
+  }
+  /** WalletConnect: a site on a loaded phishing list (sync; uses only the lists already in memory). */
+  isKnownScam(origin: string): boolean {
+    return this.security?.threat.isKnownScam(origin) ?? false;
   }
 
   attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
@@ -216,6 +257,8 @@ export class WalletService implements DappHost {
   private async dispatch(m: Request, status: "empty" | "locked" | "unlocked"): Promise<unknown> {
     // Platform messages check their own lock state (restore runs while the vault is empty).
     if (this.platform.handles(m.type)) return this.platform.handle(m as PlatformRequest);
+    // Backup sign-in identifies whose backups these are (restore also runs while the vault is empty).
+    if (this.socialSignIn.handles(m.type)) return this.socialSignIn.handle(m as SocialSignInRequest);
     switch (m.type) {
       case "getState":
         return this.state(status);
@@ -275,6 +318,11 @@ export class WalletService implements DappHost {
       if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
       return this.features.handle(m as FeatureRequest);
     }
+    if (isSecurityRequest(m)) {
+      if (!this.security) throw new ClipError("This isn't available in this build.", "security/off");
+      return this.security.handle(m as SecurityRequest);
+    }
+    if (this.plugins.service.handles(m.type)) return this.plugins.service.handle(m);
     switch (m.type) {
       case "getPortfolio":
         return this.portfolio(!!m.refresh);
@@ -373,6 +421,8 @@ export class WalletService implements DappHost {
     await this.kv.set(K.prefs, next);
     if (patch.displayCurrency || patch.rpcOverrides) this.cache.clear();
     if (patch.autoLockMinutes) this.env.armAutoLock(next.autoLockMinutes);
+    // Advanced mode gates plugins: turning it off stops them all.
+    if (patch.advanced !== undefined) void this.plugins.sync().catch(() => undefined);
     this.env.broadcast();
     return next;
   }
@@ -458,7 +508,8 @@ export class WalletService implements DappHost {
   }
 
   private network(id: string): Network {
-    const n = this.deps.networks.find((x) => x.id === id);
+    // Request-only networks (Hedera's EVM for settle claims) sign and decode but are never listed or scanned.
+    const n = this.deps.networks.find((x) => x.id === id) ?? this.deps.requestNetworks?.find((x) => x.id === id);
     if (!n) throw new ClipError("That network isn't available in this wallet.", "network/unknown");
     return n;
   }
@@ -516,8 +567,11 @@ export class WalletService implements DappHost {
         }
       }),
     );
+    // Settings → Security → Clean up: tokens the user hid stay out of the portfolio.
+    const hidden = (await this.security?.cleanup.hidden().catch(() => undefined)) ?? new Set<string>();
+    const balances = hidden.size ? out.filter((b) => !b.asset.address || !hidden.has(hideKey(b.asset.networkId, b.asset.address))) : out;
     return {
-      balances: out,
+      balances,
       assets: this.deps.assets,
       networks: this.deps.networks.map((n) => this.networkView(n)),
       currency: (await this.prefs()).displayCurrency,
@@ -536,7 +590,12 @@ export class WalletService implements DappHost {
         }
       }),
     );
-    return all.flat();
+    // Hidden NFTs: by collection + token id, or by mint alone (Solana).
+    const hidden = (await this.security?.cleanup.hidden().catch(() => undefined)) ?? new Set<string>();
+    const nfts = all.flat();
+    return hidden.size
+      ? nfts.filter((n) => !hidden.has(hideKey(n.networkId, n.collection.address, n.tokenId)) && !hidden.has(hideKey(n.networkId, n.tokenId)))
+      : nfts;
   }
 
   private async activity(): Promise<ActivityEntry[]> {
@@ -557,7 +616,8 @@ export class WalletService implements DappHost {
     let address = input.trim();
     let displayName: string | undefined;
     // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream), Clip handles (@alex, alex.clip).
-    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address);
+    const looksLikeName =
+      /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address) || this.deps.names.serviceFor?.(address) === "plugin";
     let implied: string[] = [];
     let addressOn: Record<string, string> = {};
     if (looksLikeName) {
@@ -684,6 +744,12 @@ export class WalletService implements DappHost {
     }
     decoded = this.features?.refine(request, decoded) ?? decoded;
     decoded = this.social?.refine(request, decoded) ?? decoded;
+    // Scam lists, address poisoning, new contracts, Blockaid when on. Never throws, never drops the module's warnings.
+    if (this.security) {
+      decoded = await this.security.refine(request, decoded, network, ctx.account.hederaAccountId ?? ctx.account.address, {
+        recipients: extra.recipient ? [extra.recipient] : [],
+      });
+    }
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -695,9 +761,12 @@ export class WalletService implements DappHost {
     if (!this.deps.registry.lookup(request.origin).verified && !isWalletOrigin(request.origin) && !decoded.warnings.some((w) => w.code === "domain-mismatch")) {
       decoded.warnings.push({ level: "caution", code: "domain-mismatch", message: `${domainOf(request.origin)} isn't a site ${this.env.walletName} recognises. Only continue if you opened it yourself.` });
     }
+    // Plugin notes ("from <plugin>") ride beside the wallet's own analysis, never inside it; never for blind requests.
+    const insights = decoded.blind ? [] : await this.plugins.insights(toInsightInput(decoded, request.origin, ctx.account.address)).catch(() => []);
+    decoded = withPluginInsights(decoded, insights);
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
     const { balances } = await this.portfolio();
-    const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks });
+    const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 
     const id = crypto.randomUUID();
     const view: ApprovalView = {
@@ -720,6 +789,14 @@ export class WalletService implements DappHost {
       reject = rej;
     });
     this.approvals.set(id, { view, request, resolve, reject });
+    // Real sends feed the look-alike check (security's RecipientLog), once they go through.
+    if (extra.recipient && this.recipients) {
+      const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
+      const recipients = this.recipients;
+      promise
+        .then(() => recipients.record({ family: network.family, networkId: network.id, counterparty: extra.recipient!, amount: out ? out.delta.slice(1) : "1", assetKey: out?.asset.key, timestamp: Date.now() }))
+        .catch(() => undefined);
+    }
     this.env.broadcast();
     return { id, promise };
   }
@@ -728,6 +805,8 @@ export class WalletService implements DappHost {
     const account = await this.siteAccount(p.family, p.origin);
     const id = crypto.randomUUID();
     const network = this.network(p.networkId);
+    // WalletConnect Verify's warnings plus the phishing lists (and Blockaid's site scan when on).
+    const siteWarnings = [...(p.warnings ?? []), ...((await this.security?.assessSite(p.origin).catch(() => [])) ?? [])];
     const view: ApprovalView = {
       id,
       kind: "connect",
@@ -739,6 +818,7 @@ export class WalletService implements DappHost {
         accountLabel: "wallet address",
         address: account.hederaAccountId ?? account.address,
         permissions: ["See your address and what you hold", "Ask you to approve payments and signatures"],
+        warnings: siteWarnings,
       },
     };
     let resolve!: (v: unknown) => void;

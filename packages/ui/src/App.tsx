@@ -20,6 +20,7 @@ import { ConnectHardware, HardwareProvider, HardwareSettings, useHardwareOptiona
 import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClient } from "./features";
 import { PluginSettings } from "./plugins";
 import { SocialProvider, socialRoute, useSocialOptional, type SocialClient } from "./social";
+import { SecurityProvider, securityRoute, useSecurityOptional, type SecurityClient } from "./security";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
   const [p, q] = path.split("?");
@@ -47,6 +48,7 @@ function Routes() {
   const { path, navigate } = useRouter();
   const features = useFeaturesOptional();
   const social = useSocialOptional();
+  const security = useSecurityOptional();
   const hardware = useHardwareOptional();
   const { pathname, query } = parsePath(path);
   // Once onboarding starts it stays on screen until it finishes: the vault turns "unlocked" as soon as
@@ -115,6 +117,7 @@ function Routes() {
     case "settings":
       if (seg[1] === "hardware" && hardware) return <HardwareSettings hardware={hardware} onAdd={() => navigate("/hardware/connect")} />;
       if (seg[1] === "plugins") return <PluginSettings />;
+      if (seg[1] === "security" && security) return securityRoute(seg) ?? <Settings />;
       return <Settings />;
     case "hardware":
       if (!hardware || seg[1] !== "connect") return <Home />;
@@ -160,10 +163,16 @@ export interface WalletAppProps {
   hardware?: FullHardwareClient;
   /** Contacts, Clip handles, notifications and Discover. Without it those screens and entries are hidden. */
   social?: SocialClient;
+  /** Settings → Security (permissions, spam cleanup, scam protection). Without it the entry is hidden. */
+  security?: SecurityClient;
 }
 
 function WithSocial(props: { social?: SocialClient; children: ReactNode }) {
   return props.social ? <SocialProvider client={props.social}>{props.children}</SocialProvider> : <>{props.children}</>;
+}
+
+function WithSecurity(props: { security?: SecurityClient; children: ReactNode }) {
+  return props.security ? <SecurityProvider client={props.security}>{props.children}</SecurityProvider> : <>{props.children}</>;
 }
 
 function WithHardware(props: { hardware?: FullHardwareClient; children: ReactNode }) {
@@ -183,13 +192,15 @@ export function WalletApp(props: WalletAppProps) {
         <Frame>
           <WithHardware hardware={props.hardware}>
             <WithSocial social={props.social}>
-              {props.features ? (
-                <FeaturesProvider client={props.features}>
+              <WithSecurity security={props.security}>
+                {props.features ? (
+                  <FeaturesProvider client={props.features}>
+                    <Routes />
+                  </FeaturesProvider>
+                ) : (
                   <Routes />
-                </FeaturesProvider>
-              ) : (
-                <Routes />
-              )}
+                )}
+              </WithSecurity>
             </WithSocial>
           </WithHardware>
         </Frame>

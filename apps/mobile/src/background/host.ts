@@ -23,6 +23,7 @@ import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, SocialClien
 import * as WebBrowser from "expo-web-browser";
 import * as LocalAuthentication from "expo-local-authentication";
 import { createSocial } from "@clip-wallet/engine/social";
+import { RecipientLog, SecurityService } from "@clip-wallet/security";
 import { COINGECKO_IDS } from "@clip-wallet/features";
 import { createEngineSocialClient } from "@clip-wallet/engine";
 import { expoNotifier, requestNotificationPermission } from "./notifications";
@@ -140,6 +141,18 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     randomUUID: () => randomUUID(),
     // Passkey backup/restore ceremonies run here with react-native-passkey (needs a webcredentials domain).
     passkey: () => ({ rpId: APP.passkeyRpId ?? null, rpName: APP.config.name, mode: "native", bridgeUrl: "" }),
+    // Google / Apple sign-in for backups: ASWebAuthenticationSession / Custom Tabs, back to a universal link.
+    ...(APP.backupReturnUrl
+      ? {
+          identity: {
+            returnUrl: APP.backupReturnUrl,
+            async launchWebAuthFlow(url: string) {
+              const r = await WebBrowser.openAuthSessionAsync(url, APP.backupReturnUrl!);
+              return r.type === "success" ? r.url : undefined;
+            },
+          },
+        }
+      : {}),
   });
   engine.start();
   engine.attachFeatures(
@@ -211,6 +224,31 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     ...(APP.config.services.clipHandles ? { handles: APP.config.services.clipHandles } : {}),
   });
   engine.attachSocial(social);
+
+  // Scam lists, address poisoning (contacts + your own sends), new contracts on every approval; the same checks as
+  // the extension. Open phishing lists are downloads only; Blockaid isn't used on mobile builds (no key).
+  const recipients = new RecipientLog(kv);
+  const security = new SecurityService(
+    {
+      ...createFeatureHost({
+        networks: deps.networks,
+        assets: deps.assets,
+        kv,
+        ctx: (id) => engine.featureCtx(id),
+        balances: () => engine.featureBalances(),
+        enqueue: (request, appName) => engine.enqueueWalletRequest(request, appName),
+        decode: (request) => engine.decodeForFeatures(request),
+        usd: (key) => deps.prices.usd(key),
+      }),
+      nfts: () => engine.securityNfts(),
+      history: () => recipients.list(),
+      addressBook: async () =>
+        (await social.contacts.list()).flatMap((c) => c.addresses.map((a) => ({ address: a.address, name: c.name, family: a.family }))),
+    },
+    { testnet: !APP.config.mainnet, threat: { openLists: true, refreshHours: 24 } },
+  );
+  engine.attachSecurity(security, recipients);
+  void security.start().catch(() => undefined);
   const pollNotifications = () => social.poll();
   setBackgroundPoll(pollNotifications);
   void social.notifications.settings().then((st) => syncBackgroundTask(st.enabled), () => undefined);

@@ -8,6 +8,7 @@ import { LOCALE_CODES } from "@clip-wallet/i18n";
 import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
 import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
+import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
 import type {
   AccountView,
   ActiveAccounts,
@@ -89,6 +90,10 @@ export const EngineRequest = z.discriminatedUnion("type", [
   // features: staking, swaps, buy, Secure Trade, explore
   ...FEATURE_REQUESTS,
   ...SOCIAL_REQUESTS,
+  ...SECURITY_REQUESTS,
+  // Google / Apple sign-in for passkey backups (social-signin.ts)
+  z.object({ type: z.literal("backupProviders") }),
+  z.object({ type: z.literal("backupSocialSignIn"), provider: z.enum(["google", "apple"]) }),
   // platform: passkey backup, phrase backup flag, multiple accounts, names
   z.object({ type: z.literal("backupStatus") }),
   z.object({ type: z.literal("backupStartSignIn"), email: z.string().min(3).max(254) }),
@@ -110,7 +115,9 @@ export type EngineRequest = z.infer<typeof EngineRequest>;
 export type EngineRequestType = EngineRequest["type"];
 
 /** What each request returns. */
-export interface EngineResponseMap extends FeatureResponseMap, SocialResponseMap {
+export interface EngineResponseMap extends FeatureResponseMap, SocialResponseMap, SecurityResponseMap {
+  backupProviders: { email: boolean; google: boolean; apple: boolean };
+  backupSocialSignIn: void;
   getState: WalletState;
   setPrefs: Prefs;
   createWallet: void;

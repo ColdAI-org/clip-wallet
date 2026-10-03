@@ -31,6 +31,8 @@ import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-carda
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
 import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
+import { hideKey, isSecurityRequest, type RecipientLog, type SecurityRequest, type SecurityService } from "@clip-wallet/security";
+import { SocialSignInService, type SocialSignInRequest } from "./social-signin.js";
 import { PlatformService, type PlatformRequest } from "./platform.js";
 import type { KV } from "./kv.js";
 import { EngineRequest, type EngineResponseMap } from "./messages.js";
@@ -119,6 +121,11 @@ export class WalletEngine implements DappHost {
   private hardware?: EngineHardware;
   /** Contacts, Clip handles, notifications, Discover (social stream). */
   private social?: Pick<SocialService, "handle" | "refine" | "onLock">;
+  /** Scam lists, address poisoning, permissions, spam cleanup (security stream). */
+  private security?: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">;
+  private recipients?: RecipientLog;
+  /** "Continue with Google" / "Sign in with Apple" for passkey backups. */
+  private readonly socialSignIn: SocialSignInService;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
   readonly platform: PlatformService;
 
@@ -128,6 +135,12 @@ export class WalletEngine implements DappHost {
     private readonly env: EngineEnv,
   ) {
     this.now = env.now ?? (() => Date.now());
+    this.socialSignIn = new SocialSignInService({
+      backup: deps.backup ? (session) => deps.backup!(session) as never : null,
+      kv,
+      ...(env.identity ? { launchWebAuthFlow: env.identity.launchWebAuthFlow, returnUrl: env.identity.returnUrl } : {}),
+      changed: () => env.broadcast(),
+    });
     this.ceremonies = new PasskeyCeremonies(
       () => env.passkey?.() ?? { rpId: null, rpName: env.walletName, mode: "native", bridgeUrl: "" },
       () => env.randomUUID(),
@@ -165,6 +178,19 @@ export class WalletEngine implements DappHost {
   /** Public facts for the social host: approvals waiting now (for notifications). */
   socialApprovals(): { id: string; app: string; title: string }[] {
     return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+  }
+
+  attachSecurity(s: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">, recipients?: RecipientLog) {
+    this.security = s;
+    this.recipients = recipients;
+  }
+  /** Collectibles for the security service's spam cleanup. */
+  securityNfts(): Promise<Nft[]> {
+    return this.collectibles();
+  }
+  /** WalletConnect: a site on a loaded phishing list (sync; only the lists already in memory). */
+  isKnownScam(origin: string): boolean {
+    return this.security?.threat.isKnownScam(origin) ?? false;
   }
 
   attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
@@ -237,6 +263,8 @@ export class WalletEngine implements DappHost {
   private async dispatch(m: EngineRequest, status: "empty" | "locked" | "unlocked"): Promise<unknown> {
     // Platform messages check their own lock state (restore runs while the vault is empty).
     if (this.platform.handles(m.type)) return this.platform.handle(m as PlatformRequest);
+    // Backup sign-in identifies whose backups these are (restore also runs while the vault is empty).
+    if (this.socialSignIn.handles(m.type)) return this.socialSignIn.handle(m as SocialSignInRequest);
     switch (m.type) {
       case "getState":
         return this.state(status);
@@ -293,6 +321,10 @@ export class WalletEngine implements DappHost {
     if (isFeatureRequest(m)) {
       if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
       return this.features.handle(m as FeatureRequest);
+    }
+    if (isSecurityRequest(m)) {
+      if (!this.security) throw new ClipError("This isn't available in this build.", "security/off");
+      return this.security.handle(m as SecurityRequest);
     }
     switch (m.type) {
       case "getPortfolio":
@@ -447,7 +479,8 @@ export class WalletEngine implements DappHost {
   }
 
   private network(id: string): Network {
-    const n = this.deps.networks.find((x) => x.id === id);
+    // Request-only networks (Hedera's EVM for settle claims) sign and decode but are never listed or scanned.
+    const n = this.deps.networks.find((x) => x.id === id) ?? this.deps.requestNetworks?.find((x) => x.id === id);
     if (!n) throw new ClipError("That network isn't available in this wallet.", "network/unknown");
     return n;
   }
@@ -505,8 +538,11 @@ export class WalletEngine implements DappHost {
         }
       }),
     );
+    // Tokens hidden with Security → Clean up stay out of the portfolio.
+    const hidden = (await this.security?.cleanup.hidden().catch(() => undefined)) ?? new Set<string>();
+    const balances = hidden.size ? out.filter((b) => !b.asset.address || !hidden.has(hideKey(b.asset.networkId, b.asset.address))) : out;
     return {
-      balances: out,
+      balances,
       assets: this.deps.assets,
       networks: this.deps.networks.map((n) => this.networkView(n)),
       currency: (await this.prefs()).displayCurrency,
@@ -525,7 +561,12 @@ export class WalletEngine implements DappHost {
         }
       }),
     );
-    return all.flat();
+    // Hidden NFTs: by collection + token id, or by mint alone (Solana).
+    const hidden = (await this.security?.cleanup.hidden().catch(() => undefined)) ?? new Set<string>();
+    const nfts = all.flat();
+    return hidden.size
+      ? nfts.filter((n) => !hidden.has(hideKey(n.networkId, n.collection.address, n.tokenId)) && !hidden.has(hideKey(n.networkId, n.tokenId)))
+      : nfts;
   }
 
   private async activity(): Promise<ActivityEntry[]> {
@@ -682,6 +723,12 @@ export class WalletEngine implements DappHost {
     }
     decoded = this.features?.refine(request, decoded) ?? decoded;
     decoded = this.social?.refine(request, decoded) ?? decoded;
+    // Scam lists, address poisoning, new contracts, Blockaid when on. Never throws, never drops the module's warnings.
+    if (this.security) {
+      decoded = await this.security.refine(request, decoded, network, ctx.account.hederaAccountId ?? ctx.account.address, {
+        recipients: extra.recipient ? [extra.recipient] : [],
+      });
+    }
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -695,7 +742,7 @@ export class WalletEngine implements DappHost {
     }
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
     const { balances } = await this.portfolio();
-    const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks });
+    const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 
     const id = this.env.randomUUID();
     const view: ApprovalView = {
@@ -713,6 +760,14 @@ export class WalletEngine implements DappHost {
     };
     const d = this.deferred<unknown>();
     this.approvals.set(id, { view, request, resolve: d.resolve, reject: d.reject });
+    // Real sends feed the look-alike check (security's RecipientLog), once they go through.
+    if (extra.recipient && this.recipients) {
+      const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
+      const recipients = this.recipients;
+      d.promise
+        .then(() => recipients.record({ family: network.family, networkId: network.id, counterparty: extra.recipient!, amount: out ? out.delta.slice(1) : "1", assetKey: out?.asset.key, timestamp: this.now() }))
+        .catch(() => undefined);
+    }
     this.env.broadcast();
     return { id, promise: d.promise };
   }
@@ -721,6 +776,8 @@ export class WalletEngine implements DappHost {
     const account = await this.siteAccount(p.family, p.origin);
     const id = this.env.randomUUID();
     const network = this.network(p.networkId);
+    // WalletConnect Verify's warnings plus the phishing lists (and Blockaid's site scan when on).
+    const siteWarnings = [...(p.warnings ?? []), ...((await this.security?.assessSite(p.origin).catch(() => [])) ?? [])];
     const view: ApprovalView = {
       id,
       kind: "connect",
@@ -732,6 +789,7 @@ export class WalletEngine implements DappHost {
         accountLabel: "wallet address",
         address: account.hederaAccountId ?? account.address,
         permissions: ["See your address and what you hold", "Ask you to approve payments and signatures"],
+        warnings: siteWarnings,
       },
     };
     const d = this.deferred<unknown>();

@@ -51,6 +51,8 @@ export function createEngineClient(engine: WalletEngine, opts: { subscribe(cb: (
     getActiveAccounts: (p) => call({ type: "getActiveAccounts", ...(p?.origin ? { origin: p.origin } : {}) }),
     setActiveAccount: (p) => call({ type: "setActiveAccount", ...p }),
     lookupName: (p) => call({ type: "lookupName", ...p }),
+    backupProviders: () => call({ type: "backupProviders" }),
+    backupSocialSignIn: (p) => call({ type: "backupSocialSignIn", ...p }),
     onChange: (cb) => opts.subscribe(cb),
   };
 }

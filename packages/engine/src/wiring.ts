@@ -4,8 +4,10 @@
  */
 import type { ChainModule, Family, SignablePayload } from "@clip-wallet/core";
 import type { ClipConfig } from "@clip-wallet/config";
-import { createEvmModule } from "@clip-wallet/chains-evm";
-import { createHederaModule } from "@clip-wallet/chains-hedera";
+import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
+import { MIRROR_NODE_URLS, createHederaModule } from "@clip-wallet/chains-hedera";
+import { settleClientFor } from "@clip-wallet/route";
+import { isMainnetEnabled } from "@clip-wallet/config";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
 import { createSuiModule } from "@clip-wallet/chains-sui";
@@ -71,6 +73,9 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   for (const f of families) chains[f] = all[f]();
   const prices = o.kv ? createPriceFeed(o.kv, o.coingeckoDemoKey) : new ReferencePriceFeed();
   const backupUrl = o.config.services.backupUrl;
+  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (none yet).
+  const mainnetOn = isMainnetEnabled(o.config);
+  const settle = settleClientFor({ enabled: o.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
   return {
     mocks: false,
     vault: o.vault,
@@ -78,12 +83,20 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     chains,
     networks,
     assets: walletAssets(networks),
-    route: new RoutePlannerAdapter(o.config, prices, o.currency),
+    route: new RoutePlannerAdapter(o.config, prices, o.currency, settle),
+    ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
     dapps: new OneMaskConnector(networks, { starknet: families.has("starknet") ? starknet : undefined, ton: families.has("ton") ? ton : undefined }),
     walletConnect: new WalletConnectAdapter({ ...o.walletConnect, name: o.config.name, networks }),
     prices,
-    // ENS (.eth), SNS (.sol) and Hedera names, limited to the networks this wallet has.
-    names: new MultiNameResolver({ networks }),
+    // ENS (.eth), SNS (.sol), Hedera names and Clip handles, limited to the networks this wallet has. Handle records
+    // are checked with each family's own address rules; handles stay off until config.services.clipHandles is set.
+    names: new MultiNameResolver({
+      networks,
+      clip: {
+        isAddress: Object.fromEntries(Object.entries(chains).map(([f, m]) => [f, (a: string) => m!.isAddress(a)])),
+        ...(o.config.services.clipHandles ?? {}),
+      },
+    }),
     backup: backupUrl ? (session) => new BackupClient({ baseUrl: backupUrl, session }) : null,
     registry: new KnownDappRegistry(o.knownDapps),
     hederaAccountId: async (ctx) => (await hedera.getAccountState(ctx)).accountId ?? undefined,

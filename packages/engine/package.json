@@ -43,6 +43,7 @@
     "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",
+    "@clip-wallet/security": "workspace:*",
     "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@noble/hashes": "^2.4.0",

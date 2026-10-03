@@ -10,6 +10,7 @@ declare global {
   /** EIP-6963 / Wallet Standard identity from clip.config. */
   const __CLIP_IDENTITY__: { name: string; icon: `data:image/svg+xml;base64,${string}`; rdns: string };
   /** Feature partner keys and switches (wxt.config.ts FEATURES). */
+  const __CLIP_SECURITY__: import("@clip-wallet/security").SecurityConfig;
   const __CLIP_FEATURES__: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** TON Connect JS bridge settings for 1Mask (wxt.config.ts TON_CONNECT). */
   const __CLIP_TON_CONNECT__: NonNullable<import("@clip-wallet/1mask/inpage").InpageConfig["tonConnect"]>;

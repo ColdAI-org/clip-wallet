@@ -6,6 +6,8 @@ import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
 import { walletNetworks } from "./src/shared/catalog";
 import { createTonModule } from "@clip-wallet/chains-ton";
+import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
+import type { SecurityConfig } from "@clip-wallet/security";
 import pkg from "./package.json" with { type: "json" };
 
 /** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
@@ -34,6 +36,18 @@ const FEATURES = {
   coingeckoDemoKey: process.env.CLIP_COINGECKO_DEMO_KEY || undefined,
 };
 
+/**
+ * Settings → Security and the approval checks (docs/phase25/integration/security.md). Open phishing lists are
+ * downloads only. Blockaid stays OFF unless CLIP_BLOCKAID_API_KEY is set at build time; when on, Blockaid gets the
+ * site, the transaction and the user's address. A key compiled into an extension can be read by anyone with the
+ * bundle: for production, point blockaid.baseUrl at a proxy that adds the key.
+ */
+const BLOCKAID_KEY = process.env.CLIP_BLOCKAID_API_KEY || undefined;
+const SECURITY: SecurityConfig = {
+  testnet: !clipConfig.mainnet,
+  threat: { openLists: true, refreshHours: 24, ...(BLOCKAID_KEY ? { blockaid: { apiKey: BLOCKAID_KEY } } : {}) },
+};
+
 export default defineConfig({
   srcDir: "src",
   outDir: MOCKS ? ".output-fixtures" : ".output",
@@ -46,11 +60,15 @@ export default defineConfig({
     const bridgeOrigin = new URL(PASSKEY_BRIDGE_URL).origin;
     const rp = clipConfig.passkeys.rpOrigin;
     const rpHost = rp?.startsWith("https://") ? [`${rp}/*`] : [];
-    const csp = "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src 'none'";
+    // frame-src 'self': the plugin host (offscreen document) frames the sandbox page; extension origin only.
+    const csp = "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src 'self'";
+    // Clip Plugins need a manifest sandbox page and chrome.offscreen; Firefox has neither, so its build leaves them out.
+    const plugins = browser !== "firefox";
     return {
       name: clipConfig.name,
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
-      permissions: ["storage", "alarms"],
+      // offscreen: the plugin host document; identity: Google / Apple sign-in for backups (launchWebAuthFlow).
+      permissions: ["storage", "alarms", "identity", ...(plugins ? ["offscreen"] : [])],
       // Asked for when the user turns notifications on (Settings → Notifications), never at install.
       optional_permissions: ["notifications"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
@@ -72,13 +90,20 @@ export default defineConfig({
         // Discover (social stream): DEX Screener market data; Clip handles read through the Hedera JSON-RPC relay.
         "https://api.dexscreener.com/*",
         "https://testnet.hashio.io/*",
+        // Clip Plugins are installed from npm (Advanced mode only; integrity-checked).
+        ...(plugins ? ["https://registry.npmjs.org/*"] : []),
+        // Blockaid scanning, only in builds that set a key.
+        ...(BLOCKAID_KEY ? ["https://api.blockaid.io/*"] : []),
         // Optional hosted services from clip.config (unset by default).
         ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
-      // Argon2id (hash-wasm) needs WebAssembly; nothing else is relaxed. No remote code, no frames.
-      content_security_policy: manifestVersion === 3 ? { extension_pages: csp } : (csp as unknown as never),
+      // Argon2id (hash-wasm) needs WebAssembly. No remote code; frames only from the extension itself. The plugin
+      // sandbox page gets its own CSP (allow-scripts only, unique origin, no extension APIs).
+      content_security_policy:
+        manifestVersion === 3 ? { extension_pages: csp, ...(plugins ? { sandbox: SANDBOX_CSP } : {}) } : (csp as unknown as never),
+      ...(plugins ? { sandbox: { pages: [SANDBOX_PAGE] } } : {}),
       // Lets the passkey web-bridge page hand back a PRF result (Chromium; Firefox lacks externally_connectable).
       ...(browser !== "firefox" ? { externally_connectable: { matches: [`${bridgeOrigin}/*`] } } : {}),
       ...(browser === "firefox" ? { browser_specific_settings: { gecko: { id: `wallet@${clipConfig.rdns.split(".").reverse().join(".")}`, strict_min_version: "128.0" } } } : {}),
@@ -95,6 +120,7 @@ export default defineConfig({
       __CLIP_IDENTITY__: JSON.stringify({ name: clipConfig.name, icon: ICON, rdns: clipConfig.rdns }),
       __CLIP_TON_CONNECT__: JSON.stringify(TON_CONNECT),
       __CLIP_FEATURES__: JSON.stringify(FEATURES),
+      __CLIP_SECURITY__: JSON.stringify(SECURITY),
     },
     resolve: {
       alias: {

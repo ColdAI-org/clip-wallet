@@ -247,9 +247,15 @@ importers:
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../../packages/names
+      '@clip-wallet/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
       '@clip-wallet/route':
         specifier: workspace:*
         version: link:../../packages/route
+      '@clip-wallet/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@clip-wallet/social':
         specifier: workspace:*
         version: link:../../packages/social
@@ -326,6 +332,9 @@ importers:
       '@clip-wallet/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@clip-wallet/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@clip-wallet/social':
         specifier: workspace:*
         version: link:../../packages/social
@@ -893,6 +902,9 @@ importers:
       '@clip-wallet/route':
         specifier: workspace:*
         version: link:../route
+      '@clip-wallet/security':
+        specifier: workspace:*
+        version: link:../security
       '@clip-wallet/social':
         specifier: workspace:*
         version: link:../social

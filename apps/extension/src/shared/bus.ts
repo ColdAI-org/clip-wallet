@@ -1,5 +1,5 @@
 /** Page-side WalletClient over the message bus. */
-import type { WalletClient } from "@clip-wallet/ui";
+import type { PluginsClient, WalletClient } from "@clip-wallet/ui";
 import { browser } from "wxt/browser";
 import { CHANGE_EVENT, Envelope, type Request, type RequestType, type ResponseMap } from "./messages";
 
@@ -16,7 +16,7 @@ export class BusError extends Error {
   }
 }
 
-export function createBusClient(transport: Transport = runtimeTransport, mocks = false): WalletClient {
+export function createBusClient(transport: Transport = runtimeTransport, mocks = false, withPlugins = import.meta.env.BROWSER !== "firefox"): WalletClient {
   async function call<T extends RequestType>(msg: Extract<Request, { type: T }>): Promise<ResponseMap[T]> {
     let raw: unknown;
     try {
@@ -70,6 +70,8 @@ export function createBusClient(transport: Transport = runtimeTransport, mocks =
     getActiveAccounts: (p) => call({ type: "getActiveAccounts", ...(p?.origin ? { origin: p.origin } : {}) }),
     setActiveAccount: (p) => call({ type: "setActiveAccount", ...p }),
     lookupName: (p) => call({ type: "lookupName", ...p }),
+    backupProviders: () => call({ type: "backupProviders" }),
+    backupSocialSignIn: (p) => call({ type: "backupSocialSignIn", ...p }),
     onChange: (cb) => {
       const on = (m: unknown) => {
         if (m && typeof m === "object" && (m as { event?: string }).event === CHANGE_EVENT) cb();
@@ -79,5 +81,18 @@ export function createBusClient(transport: Transport = runtimeTransport, mocks =
     },
   };
   if (mocks) client.devSimulateRequest = (kind) => call({ type: "devSimulateRequest", kind });
+  // Clip Plugins need chrome.offscreen and manifest sandbox pages (not in Firefox): without these methods the
+  // UI hides the Plugins entry (asPlugins(client) is null).
+  if (withPlugins) {
+    Object.assign(client, {
+      pluginsStatus: () => call({ type: "pluginsStatus" }),
+      pluginsSetEnabled: (p: { enabled: boolean }) => call({ type: "pluginsSetEnabled", ...p }),
+      pluginsPrepareInstall: (p: { name: string }) => call({ type: "pluginsPrepareInstall", ...p }),
+      pluginsConfirmInstall: (p: { id: string; version: string }) => call({ type: "pluginsConfirmInstall", ...p }),
+      pluginsCancelInstall: () => call({ type: "pluginsCancelInstall" }),
+      pluginsRemove: (p: { id: string }) => call({ type: "pluginsRemove", ...p }),
+      pluginsSetPluginEnabled: (p: { id: string; enabled: boolean }) => call({ type: "pluginsSetPluginEnabled", ...p }),
+    } satisfies PluginsClient);
+  }
   return client;
 }
