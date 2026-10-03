@@ -44,6 +44,7 @@ const ALLOW: Record<P2Family, { local: readonly string[]; connect: readonly stri
 };
 
 export const P2_METHODS_ALLOWED = ALLOW;
+export { P2_CONNECT_METHODS } from "../shared/p2-methods.js";
 
 /** For methods.ts `injectedAllowlist`. */
 export function p2InjectedAllowlist(family: Family): ReadonlySet<string> {
