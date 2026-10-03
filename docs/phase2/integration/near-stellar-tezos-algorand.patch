@@ -1,0 +1,559 @@
+diff --git a/apps/extension/clip.config.ts b/apps/extension/clip.config.ts
+index aa72589..c927112 100644
+--- a/apps/extension/clip.config.ts
++++ b/apps/extension/clip.config.ts
+@@ -7,7 +7,7 @@ export default defineConfig({
+   icon: "./icon.svg",
+   // ColdAI orange; white text on orange buttons is the owner's preference (contrast 3.6:1 ≥ the schema's 3:1).
+   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },
+-  networks: ["evm:*", "hedera", "solana", "bitcoin"],
++  networks: ["evm:*", "hedera", "solana", "bitcoin", "near", "stellar", "tezos", "algorand"],
+   // rpOrigin unset: the extension's own origin is the WebAuthn RP (Chrome 122+). Set an https origin you
+   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
+   passkeys: { enabled: true },
+diff --git a/apps/extension/package.json b/apps/extension/package.json
+index ff51076..68fc138 100644
+--- a/apps/extension/package.json
++++ b/apps/extension/package.json
+@@ -17,16 +17,22 @@
+   },
+   "dependencies": {
+     "@clip-wallet/1mask": "workspace:*",
++    "@clip-wallet/chains-algorand": "workspace:*",
+     "@clip-wallet/chains-bitcoin": "workspace:*",
+     "@clip-wallet/chains-evm": "workspace:*",
+     "@clip-wallet/chains-hedera": "workspace:*",
++    "@clip-wallet/chains-near": "workspace:*",
+     "@clip-wallet/chains-solana": "workspace:*",
++    "@clip-wallet/chains-stellar": "workspace:*",
++    "@clip-wallet/chains-tezos": "workspace:*",
+     "@clip-wallet/config": "workspace:*",
+     "@clip-wallet/core": "workspace:*",
++    "@clip-wallet/kit-modules": "workspace:*",
+     "@clip-wallet/route": "workspace:*",
+     "@clip-wallet/ui": "workspace:*",
+     "@clip-wallet/vault": "workspace:*",
+     "@fontsource-variable/inter": "^5.3.0",
++    "buffer": "^6.0.3",
+     "react": "^19.3.0",
+     "react-dom": "^19.3.0",
+     "zod": "^4.6.5"
+diff --git a/apps/extension/src/background/real.ts b/apps/extension/src/background/real.ts
+index e363218..84cb5c7 100644
+--- a/apps/extension/src/background/real.ts
++++ b/apps/extension/src/background/real.ts
+@@ -6,17 +6,50 @@ import { ClipError } from "@clip-wallet/core";
+ import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
+ import type { ClipConfig } from "@clip-wallet/config";
+ import { createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
++import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/background/p2";
++import type { KV } from "../shared/storage";
+ import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
+ import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
+ 
+-const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect"]);
++const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect", ...P2_CONNECT_METHODS]);
+ const READ_ONLY = new Set<string>(EVM_METHODS.readOnly);
+ 
+ /* ------------------------------------------------------------------ 1Mask */
+ 
++/**
++ * Tezos Beacon extension peer (kit-modules/tezos), loaded on first Beacon message. Beacon's packages
++ * expect a global Buffer, so the polyfill is installed before they load.
++ */
++function lazyBeacon(kv: KV, name: string, iconUrl: string, router: () => OneMaskRouter | undefined): BeaconRelay {
++  let peer: Promise<BeaconRelay> | undefined;
++  const load = () =>
++    (peer ??= (async () => {
++      const { Buffer } = await import("buffer");
++      (globalThis as { Buffer?: unknown }).Buffer ??= Buffer;
++      const { createBeaconExtensionPeer } = await import("@clip-wallet/kit-modules/tezos");
++      return createBeaconExtensionPeer({
++        name,
++        iconUrl,
++        storage: { get: (k) => kv.get<string>(`beacon:${k}`), set: (k, v) => kv.set(`beacon:${k}`, v) },
++        dispatch: (origin, input) => {
++          const r = router();
++          if (!r) return Promise.reject(new ClipError("Clip Wallet is starting. Try again.", "not-ready"));
++          return r.dispatch(origin, input);
++        },
++      });
++    })());
++  return {
++    receive: async (origin, message) => (await load()).receive(origin, message),
++    result: async (origin, id) => (await load()).result(origin, id),
++  };
++}
++
+ export class OneMaskConnector implements DappConnector {
+   private router?: OneMaskRouter;
+-  constructor(private readonly networks: Network[]) {}
++  constructor(
++    private readonly networks: Network[],
++    private readonly beacon?: { kv: KV; name: string; iconUrl: string },
++  ) {}
+ 
+   start(host: DappHost) {
+     this.router = createOneMaskRouter({
+@@ -26,6 +59,7 @@ export class OneMaskConnector implements DappConnector {
+       isUnlocked: () => host.isUnlocked(),
+       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
+       cancel: (requestId) => host.cancel(requestId),
++      ...(this.beacon ? { tezosBeacon: lazyBeacon(this.beacon.kv, this.beacon.name, this.beacon.iconUrl, () => this.router) } : {}),
+       handle: async (req) => {
+         if (CONNECT_METHODS.has(req.method)) {
+           const ok = await host.approveConnect({ origin: req.origin, family: req.family, networkId: req.networkId, via: "injected" });
+@@ -145,7 +179,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
+ 
+ /* ------------------------------------------------------------------ route */
+ 
+-const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
++const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600, near: 2, stellar: 6, tezos: 10, algorand: 4 };
+ 
+ /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
+ export class RoutePlannerAdapter implements RoutePlanner {
+diff --git a/apps/extension/src/background/service.ts b/apps/extension/src/background/service.ts
+index 3a37a67..502240f 100644
+--- a/apps/extension/src/background/service.ts
++++ b/apps/extension/src/background/service.ts
+@@ -83,7 +83,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+ }
+ const APPROVAL_TTL_MS = 2 * 60_000;
+-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin"];
++const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin", "near", "stellar", "tezos", "algorand"];
+ 
+ function parseUnits(value: string, decimals: number): bigint {
+   const [w = "0", f = ""] = value.split(".");
+@@ -396,7 +396,8 @@ export class WalletService implements DappHost {
+       displayName = hit.displayName;
+     }
+     const carrying = this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id));
+-    const recognised = FAMILIES.filter((f) => this.module(f).isAddress(address));
++    // Families this build ships a module for (fixture mode has none for the Phase 2 families).
++    const recognised = FAMILIES.filter((f) => !!this.deps.chains[f]?.isAddress(address));
+     if (recognised.length === 0) return { kind: "invalid", message: "That doesn't look like an address. Check it and try again." };
+     const candidates = recognised.flatMap((f) => this.module(f).networksForAddress(address, carrying.filter((n) => n.family === f)));
+     const symbol = this.deps.assets.find((a) => a.key === assetKey)?.symbol ?? "this";
+diff --git a/apps/extension/src/background/wiring.ts b/apps/extension/src/background/wiring.ts
+index 9c6e13d..5b1ed55 100644
+--- a/apps/extension/src/background/wiring.ts
++++ b/apps/extension/src/background/wiring.ts
+@@ -25,6 +25,10 @@ import { createEvmModule } from "@clip-wallet/chains-evm";
+ import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
+ import { createSolanaModule } from "@clip-wallet/chains-solana";
+ import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
++import { createNearModule } from "@clip-wallet/chains-near";
++import { createStellarModule } from "@clip-wallet/chains-stellar";
++import { createTezosModule } from "@clip-wallet/chains-tezos";
++import { createAlgorandModule } from "@clip-wallet/chains-algorand";
+ import type { RouterPort } from "@clip-wallet/1mask/background";
+ import type { KV } from "../shared/storage";
+ import { vaultStorageOf } from "../shared/storage";
+@@ -199,11 +203,21 @@ export function createDependencies(opts: WiringOptions): Dependencies {
+   return {
+     mocks: false,
+     vault,
+-    chains: { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() },
++    chains: {
++      evm: createEvmModule(),
++      hedera,
++      solana: createSolanaModule(),
++      bitcoin: createBitcoinModule(),
++      near: createNearModule(),
++      stellar: createStellarModule(),
++      tezos: createTezosModule(),
++      // Must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
++      algorand: createAlgorandModule(),
++    },
+     networks,
+     assets: walletAssets(networks),
+     route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
+-    dapps: new OneMaskConnector(networks),
++    dapps: new OneMaskConnector(networks, { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }),
+     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
+     prices,
+     names: new NoNameResolver(),
+diff --git a/apps/extension/src/shared/catalog.ts b/apps/extension/src/shared/catalog.ts
+index 44c230c..3c80b03 100644
+--- a/apps/extension/src/shared/catalog.ts
++++ b/apps/extension/src/shared/catalog.ts
+@@ -10,6 +10,10 @@ type CuratedToken = (typeof CURATED_TOKENS)[number];
+ import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
+ import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
+ import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
++import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near";
++import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar";
++import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos";
++import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand";
+ 
+ /** Same mapping as chains-evm's (unexported) curatedAsset(). */
+ function curatedAsset(t: CuratedToken): AssetRef {
+@@ -28,6 +32,10 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
+     SOLANA_DEVNET,
+     SOLANA_MAINNET,
+     ...BITCOIN_NETWORKS.filter((n) => n.name !== "Bitcoin Signet"),
++    ...NEAR_NETWORKS,
++    ...STELLAR_NETWORKS,
++    ...TEZOS_NETWORKS,
++    ...ALGORAND_NETWORKS,
+   ];
+   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
+ }
+@@ -54,6 +62,20 @@ export function walletAssets(networks: Network[]): AssetRef[] {
+       const mint = USDC_MINTS[n.testnet ? "devnet" : "mainnet"];
+       if (mint) out.push({ key: splKey(n.id, mint), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: mint });
+     }
++    if (n.family === "near") {
++      const contract = USDC_CONTRACTS[n.testnet ? "testnet" : "mainnet"];
++      out.push({ key: nep141Key(n.id, contract), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: contract });
++    }
++    if (n.family === "stellar") out.push(classicAsset(n.id, "USDC", USDC_ISSUERS[n.testnet ? "testnet" : "pubnet"]));
++    if (n.family === "algorand") {
++      const id = ALGORAND_NETS[n.testnet ? "testnet" : "mainnet"].usdc;
++      out.push({ key: asaAssetKey(n.id, id), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: id });
++    }
++    if (n.family === "tezos") {
++      for (const t of TEZOS_TOKENS.filter((t) => t.networkId === n.id && t.key === "usdt")) {
++        out.push({ key: t.key, symbol: t.symbol, name: t.name, decimals: t.decimals, networkId: n.id, address: `${t.contract}:${t.tokenId}` });
++      }
++    }
+   }
+   return out;
+ }
+diff --git a/apps/extension/test/catalog.test.ts b/apps/extension/test/catalog.test.ts
+index 6feeb66..493a8e7 100644
+--- a/apps/extension/test/catalog.test.ts
++++ b/apps/extension/test/catalog.test.ts
+@@ -9,7 +9,7 @@ describe("catalog (real chain packages)", () => {
+     const nets = walletNetworks(config);
+     expect(nets.length).toBeGreaterThan(4);
+     expect(nets.every((n) => n.testnet)).toBe(true);
+-    expect(new Set(nets.map((n) => n.family))).toEqual(new Set(["evm", "hedera", "solana", "bitcoin"]));
++    expect(new Set(nets.map((n) => n.family))).toEqual(new Set(["evm", "hedera", "solana", "bitcoin", "near", "stellar", "tezos", "algorand"]));
+     const onlyBase = walletNetworks(defineConfig({ name: "X", rdns: "com.x.wallet", networks: ["evm:84532", "hedera"] }));
+     expect(onlyBase.map((n) => n.id)).toEqual(["eip155:84532", "hedera:testnet"]);
+   });
+@@ -18,6 +18,10 @@ describe("catalog (real chain packages)", () => {
+     const assets = walletAssets(walletNetworks(config));
+     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "eip155:84532")).toBe(true);
+     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "hedera:testnet")).toBe(true);
++    for (const id of ["near:testnet", "stellar:testnet", "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe"]) {
++      expect(assets.find((a) => a.symbol === "USDC" && a.networkId === id)?.key).toBe("usdc");
++    }
++    expect(assets.some((a) => a.networkId === "tezos:NetXsqzbfFenSTS" && a.key === "xtz")).toBe(true);
+   });
+ });
+ 
+diff --git a/packages/1mask/src/background/methods.ts b/packages/1mask/src/background/methods.ts
+index 39ea071..5b6d726 100644
+--- a/packages/1mask/src/background/methods.ts
++++ b/packages/1mask/src/background/methods.ts
+@@ -1,5 +1,6 @@
+ import type { Family } from "@clip-wallet/core";
+ import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
++import { p2InjectedAllowlist } from "./p2-families.js";
+ 
+ /**
+  * Method allowlists per family. Anything not listed is answered with 4200 (unsupported method)
+@@ -88,6 +89,11 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
+       return new Set<string>([...BITCOIN_METHODS_ALLOWED.local, ...BITCOIN_METHODS_ALLOWED.connect, ...BITCOIN_METHODS_ALLOWED.signing]);
+     case "hedera":
+       return new Set<string>();
++    case "near":
++    case "stellar":
++    case "tezos":
++    case "algorand":
++      return p2InjectedAllowlist(family);
+     default:
+       // Phase 2 families register their injected methods here as their connectors land.
+       return new Set<string>();
+diff --git a/packages/1mask/src/background/router.ts b/packages/1mask/src/background/router.ts
+index cf266cf..a2101b6 100644
+--- a/packages/1mask/src/background/router.ts
++++ b/packages/1mask/src/background/router.ts
+@@ -20,6 +20,7 @@ import {
+   type PortResponse,
+ } from "../shared/protocol.js";
+ import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
++import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
+ import type { PermissionStore } from "./permissions.js";
+ 
+ /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
+@@ -66,6 +67,8 @@ export interface OneMaskRouterOptions {
+   /** Told when the router gives up on a request (timeout) so the approval window can close. */
+   cancel?(requestId: string, reason: "timeout"): void;
+   timeouts?: { approvalMs?: number; readMs?: number };
++  /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
++  tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
+   rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
+   newId?(): string;
+   now?(): number;
+@@ -439,6 +442,22 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
+     return approve(makeReq(origin, family, net, method, params));
+   };
+ 
++  /* ------------------------------------------------------------ NEAR, Stellar, Tezos, Algorand */
++
++  const p2 = createP2Dispatcher(
++    {
++      permitted,
++      requirePermission,
++      accounts,
++      connect,
++      approve,
++      makeReq,
++      requireNetwork,
++      revoke: (origin, family) => revoke(origin, family),
++    },
++    opts.tezosBeacon ? { beacon: opts.tezosBeacon } : {},
++  );
++
+   /* ------------------------------------------------------------ public */
+ 
+   /** Errors leave the router as ProviderRpcError {code,message} only: no stacks, no causes. */
+@@ -456,6 +475,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
+     if (!injectedAllowlist(family).has(method)) throw rpcError.unsupportedMethod(method);
+     if (family === "evm") return dispatchEvm(origin, method, params);
+     if (family === "solana" || family === "bitcoin") return dispatchStandard(origin, family, method, params, chain);
++    if (P2_FAMILIES.has(family)) return p2.dispatch(origin, family, method, params, chain);
+     throw rpcError.unsupportedMethod(method);
+   };
+ 
+diff --git a/packages/1mask/src/inpage/index.ts b/packages/1mask/src/inpage/index.ts
+index ff4a9b7..c417551 100644
+--- a/packages/1mask/src/inpage/index.ts
++++ b/packages/1mask/src/inpage/index.ts
+@@ -10,6 +10,7 @@ import { assertCompatibilityModeOff } from "../shared/compat.js";
+ import { resolveChannel, resolveIdentity, type InpageConfig, type WalletIdentity } from "../shared/config.js";
+ import { ClipBitcoinWallet } from "./bitcoin.js";
+ import { ClipEthereumProvider, announceEip6963, claimWindowEthereum, type EIP6963ProviderDetail } from "./evm.js";
++import { installP2Providers, type InstalledP2 } from "./p2.js";
+ import { ClipSolanaWallet } from "./solana.js";
+ import { createInpageTransport, type InpageTransport } from "./transport.js";
+ 
+@@ -19,6 +20,8 @@ export interface InstalledOneMask {
+   evm?: { provider: ClipEthereumProvider; detail: EIP6963ProviderDetail; claimedWindowEthereum: boolean };
+   solana?: ClipSolanaWallet;
+   bitcoin?: ClipBitcoinWallet;
++  /** NEAR (window.clipwallet.near + NEAR Connect), Stellar (SEP-43), Algorand, Tezos (Beacon relay). */
++  p2?: InstalledP2;
+   destroy(): void;
+ }
+ 
+@@ -49,6 +52,13 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
+     out.bitcoin = new ClipBitcoinWallet(identity, config.networks, transport);
+     registerWallet(out.bitcoin);
+   }
++  const p2 = installP2Providers(win, identity, config.networks, transport, {
++    want: { near: want.near ?? true, stellar: want.stellar ?? true, tezos: want.tezos ?? true, algorand: want.algorand ?? true },
++    ...(config.globalKey ? { globalKey: config.globalKey } : {}),
++    ...(config.beaconExtensionId ? { beaconExtensionId: config.beaconExtensionId } : {}),
++  });
++  stops.push(p2.stop);
++  out.p2 = p2;
+   return out;
+ }
+ 
+@@ -58,3 +68,4 @@ export { ClipSolanaWallet, SOLANA_FEATURES } from "./solana.js";
+ export { ClipBitcoinWallet, BITCOIN_FEATURES, BITCOIN_METHODS } from "./bitcoin.js";
+ export * from "./bitcoin-features.js";
+ export { createInpageTransport, type InpageTransport } from "./transport.js";
++export * from "./p2.js";
+diff --git a/packages/1mask/src/shared/config.ts b/packages/1mask/src/shared/config.ts
+index dca4175..86b6736 100644
+--- a/packages/1mask/src/shared/config.ts
++++ b/packages/1mask/src/shared/config.ts
+@@ -36,7 +36,11 @@ export interface InpageConfig {
+   /** Also set window.ethereum (only if nothing else owns it). Default false: EIP-6963 only. */
+   claimWindowEthereum?: boolean;
+   /** Which providers to install. Default: all. */
+-  providers?: { evm?: boolean; solana?: boolean; bitcoin?: boolean };
++  providers?: { evm?: boolean; solana?: boolean; bitcoin?: boolean; near?: boolean; stellar?: boolean; tezos?: boolean; algorand?: boolean };
++  /** Global the NEAR/Stellar/Algorand providers hang off (window[globalKey].<family>). Default "clipwallet". */
++  globalKey?: string;
++  /** Beacon extension id (Beacon's wallet list matches the browser extension id). Default: identity.rdns. */
++  beaconExtensionId?: string;
+   /** Per-site compatibility mode. Typed stub, NOT implemented in v1. */
+   compatibility?: CompatibilityModeConfig;
+   /** Per-request timeout in the page, ms. Default 10 minutes (approvals can take a while). */
+diff --git a/packages/1mask/src/walletconnect/namespaces.ts b/packages/1mask/src/walletconnect/namespaces.ts
+index fb6b7fd..dd197bf 100644
+--- a/packages/1mask/src/walletconnect/namespaces.ts
++++ b/packages/1mask/src/walletconnect/namespaces.ts
+@@ -1,5 +1,6 @@
+ import type { Family, Network } from "@clip-wallet/core";
+ import { HEDERA_METHODS } from "../background/methods.js";
++import { P2_WC_NAMESPACE_FAMILY, P2_WC_SUPPORTED_EVENTS, P2_WC_SUPPORTED_METHODS, type P2WcNamespaceKey } from "./p2-namespaces.js";
+ 
+ /**
+  * CAIP-25 session proposal → approved session namespaces. Pure; no network, no WalletKit.
+@@ -13,13 +14,14 @@ import { HEDERA_METHODS } from "../background/methods.js";
+  *  - Optional methods/events: intersection with what we support.
+  */
+ 
+-export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera";
++export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera" | P2WcNamespaceKey;
+ 
+ export const WC_NAMESPACE_FAMILY: Record<WcNamespaceKey, Family> = {
+   eip155: "evm",
+   solana: "solana",
+   bip122: "bitcoin",
+   hedera: "hedera",
++  ...P2_WC_NAMESPACE_FAMILY,
+ };
+ 
+ /** Methods Clip serves per WalletConnect namespace. */
+@@ -47,6 +49,7 @@ export const WC_SUPPORTED_METHODS: Record<WcNamespaceKey, readonly string[]> = {
+   bip122: ["getAccountAddresses", "signMessage", "signPsbt", "sendTransfer"],
+   // hashgraph/hedera-wallet-connect HederaJsonRpcMethod
+   hedera: HEDERA_METHODS,
++  ...P2_WC_SUPPORTED_METHODS,
+ };
+ 
+ export const WC_SUPPORTED_EVENTS: Record<WcNamespaceKey, readonly string[]> = {
+@@ -55,6 +58,7 @@ export const WC_SUPPORTED_EVENTS: Record<WcNamespaceKey, readonly string[]> = {
+   bip122: ["bip122_addressesChanged"],
+   // hashgraph/hedera-wallet-connect HederaSessionEvent
+   hedera: ["accountsChanged", "chainChanged"],
++  ...P2_WC_SUPPORTED_EVENTS,
+ };
+ 
+ export interface ProposalNamespace {
+diff --git a/packages/1mask/src/walletconnect/wallet.ts b/packages/1mask/src/walletconnect/wallet.ts
+index 879fbe6..630aa57 100644
+--- a/packages/1mask/src/walletconnect/wallet.ts
++++ b/packages/1mask/src/walletconnect/wallet.ts
+@@ -292,6 +292,9 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
+     if (namespaceOf(chainId) === "solana" && (method === "solana_getAccounts" || method === "solana_requestAccounts")) {
+       return { result: sessionAccounts(session, chainId).map((pubkey) => ({ pubkey })) };
+     }
++    if (namespaceOf(chainId) === "near" && method === "near_getAccounts") {
++      return { result: sessionAccounts(session, chainId).map((accountId) => ({ accountId })) };
++    }
+     return undefined;
+   };
+ 
+diff --git a/packages/1mask/test/p2-router.test.ts b/packages/1mask/test/p2-router.test.ts
+new file mode 100644
+index 0000000..bd8d486
+--- /dev/null
++++ b/packages/1mask/test/p2-router.test.ts
+@@ -0,0 +1,75 @@
++import type { Family, Network } from "@clip-wallet/core";
++import { describe, expect, it } from "vitest";
++import { installOneMask } from "../src/inpage/index.js";
++import { NETWORKS, makeHarness, tick } from "./helpers.js";
++
++/** End to end after integration: inpage providers → content bridge → real router → handle(). */
++
++const asset = (key: string, networkId: string) => ({ key, symbol: key, name: key, decimals: 6, networkId });
++const net = (id: string, family: Family): Network => ({ id, family, name: id, nativeAsset: asset(family, id), testnet: true, rpcUrls: [], explorerUrl: "" });
++const P2_NETS: Network[] = [
++  ...NETWORKS,
++  net("near:testnet", "near"),
++  net("stellar:testnet", "stellar"),
++  net("tezos:NetXsqzbfFenSTS", "tezos"),
++  net("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe", "algorand"),
++];
++const PUB = "3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29";
++const P2_ACCOUNTS: Partial<Record<Family, { address: string; publicKey?: string }[]>> = {
++  near: [{ address: PUB, publicKey: PUB }],
++  stellar: [{ address: "GA6SXIZIKLJHCZI2KEOBEUUOFMM4JUPPM2UTWX6STAWT25JWIEUFIMFF", publicKey: PUB }],
++  tezos: [{ address: "tz1XvkuUNDk8j2tG3RJaRUo4Xppcjc6FvK39", publicKey: PUB }],
++  algorand: [{ address: "HNVCPPGOW2SC2YVDVDICU3YNONSTEFLXDXREHJR2YBEKDC2Z3IUZSC6YGI", publicKey: PUB }],
++};
++
++describe("NEAR, Stellar, Algorand through the router", () => {
++  it("connects, signs, and refuses before connect", async () => {
++    const h = makeHarness({
++      networks: P2_NETS,
++      accountsFor: (_o, f) => P2_ACCOUNTS[f] ?? [],
++      handleImpl: (r) => {
++        if (r.method === "near_signAndSendTransaction") return { transaction: { hash: "h" } };
++        if (r.method === "stellar_signXDR") return { signedXDR: "SIGNED" };
++        if (r.method === "algo_signTxn") return ["c2ln"];
++        return true;
++      },
++    });
++    const om = installOneMask({ networks: P2_NETS, channel: h.channel }, h.win);
++    const { near, stellar, algorand } = om.p2!;
++
++    await expect(near!.signAndSendTransaction({ receiverId: "x.testnet", actions: [] })).rejects.toMatchObject({ code: 4100 });
++    expect((await near!.signIn({ networkId: "testnet" }))[0]!.accountId).toBe(PUB);
++    await near!.signAndSendTransaction({ receiverId: "x.testnet", actions: [{ type: "Transfer", params: { deposit: "1" } }] });
++    expect(h.handled.at(-1)).toMatchObject({ family: "near", networkId: "near:testnet", method: "near_signAndSendTransaction" });
++
++    expect(await stellar!.getAddress()).toEqual({ address: P2_ACCOUNTS.stellar![0]!.address });
++    expect(await stellar!.getNetwork()).toEqual({ network: "TESTNET", networkPassphrase: "Test SDF Network ; September 2015" });
++    expect((await stellar!.signTransaction("AAAA")).signedTxXdr).toBe("SIGNED");
++
++    await algorand!.enable({ genesisID: "testnet-v1.0" });
++    expect(await algorand!.signTxns([{ txn: "AA" }])).toEqual(["c2ln"]);
++    expect(h.handled.at(-1)).toMatchObject({ family: "algorand", networkId: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe", method: "algo_signTxn" });
++
++    expect(h.handled.map((r) => r.method)).toEqual([
++      "near:connect",
++      "near_signAndSendTransaction",
++      "stellar:connect",
++      "stellar_signXDR",
++      "algorand:connect",
++      "algo_signTxn",
++    ]);
++    om.destroy();
++    await tick();
++  });
++
++  it("routes Beacon relay messages to the configured peer", async () => {
++    const seen: unknown[] = [];
++    const h = makeHarness({
++      networks: P2_NETS,
++      tezosBeacon: { receive: async (origin, message) => (seen.push({ origin, message }), { replies: [] }), result: async () => [] },
++    });
++    await h.router.dispatch("https://dapp.example", { family: "tezos", method: "tezos:beacon", params: { message: { payload: "x" } } });
++    expect(seen).toEqual([{ origin: "https://dapp.example", message: { payload: "x" } }]);
++    await expect(h.router.dispatch("https://dapp.example", { family: "tezos", method: "tezos_send", params: { operations: [] } })).rejects.toMatchObject({ code: 4100 });
++  });
++});
+diff --git a/packages/config/src/index.ts b/packages/config/src/index.ts
+index 9941b23..79c7f01 100644
+--- a/packages/config/src/index.ts
++++ b/packages/config/src/index.ts
+@@ -15,13 +15,13 @@ export const MAINNET_ACKNOWLEDGEMENT =
+ 
+ export const WALLETCONNECT_ENV = "CLIP_WALLETCONNECT_PROJECT_ID";
+ 
+-export const NETWORK_FAMILIES = ["evm", "hedera", "solana", "bitcoin"] as const;
++export const NETWORK_FAMILIES = ["evm", "hedera", "solana", "bitcoin", "near", "stellar", "tezos", "algorand"] as const;
+ export const ROUTE_MODES = ["balanced", "cheapest", "fastest", "reliable", "greenest"] as const;
+ export const TRUST_TIERS = ["attested", "committee", "light-client", "validity-proof"] as const;
+ export const HARDWARE = ["ledger", "keystone"] as const;
+ 
+ /** "evm:*", "evm:8453", "evm:base-sepolia", "hedera", "solana", "bitcoin". */
+-const NETWORK_PATTERN = /^(?:evm:(?:\*|[1-9]\d*|[a-z][a-z0-9-]*)|hedera|solana|bitcoin)$/;
++const NETWORK_PATTERN = /^(?:evm:(?:\*|[1-9]\d*|[a-z][a-z0-9-]*)|hedera|solana|bitcoin|near|stellar|tezos|algorand)$/;
+ const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+ const RDNS = /^[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)+$/;
+ 
+@@ -115,7 +115,7 @@ export const clipConfigSchema = z
+     rdns: z.string("set rdns to a reverse domain you own, like com.example.wallet").regex(RDNS, "use a reverse domain you own, like com.example.wallet (lowercase)"),
+     theme: theme.default({ accent: "#4F46E5", accentText: "#FFFFFF", font: "Inter", radius: 12 }),
+     networks: z
+-      .array(z.string().regex(NETWORK_PATTERN, 'use "evm:*", "evm:<chain id>", "hedera", "solana" or "bitcoin"'))
++      .array(z.string().regex(NETWORK_PATTERN, 'use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "near", "stellar", "tezos" or "algorand"'))
+       .min(1, "turn on at least one network")
+       .refine((n) => new Set(n).size === n.length, "each network is listed once")
+       .default(["evm:*", "hedera", "solana", "bitcoin"]),
+diff --git a/packages/config/test/config.test.ts b/packages/config/test/config.test.ts
+index 60675f2..180c262 100644
+--- a/packages/config/test/config.test.ts
++++ b/packages/config/test/config.test.ts
+@@ -80,7 +80,7 @@ describe("validation errors in plain words", () => {
+ 
+   it("explains network patterns", () => {
+     expect(problems({ ...base, networks: ["ethereum"] })).toEqual([
+-      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana" or "bitcoin"',
++      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "near", "stellar", "tezos" or "algorand"',
+     ]);
+     expect(problems({ ...base, networks: [] })).toEqual(["networks: turn on at least one network"]);
+     expect(problems({ ...base, networks: ["hedera", "hedera"] })).toEqual(["networks: each network is listed once"]);
