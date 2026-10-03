@@ -265,6 +265,9 @@ just doesn't show Cardano or Polkadot until mocks are added.
 
 ## Checks after applying
 
+Steps 1–11 were applied as written to a throwaway worktree of this branch: `pnpm typecheck`, `pnpm test` (all
+packages) and `pnpm harness` passed. Step 12 depends on the current `rpHost` shape.
+
 `pnpm install && pnpm typecheck && pnpm test && pnpm harness`. The 1Mask connector tests
 (`packages/1mask/test/cardano-substrate.test.ts`) use a mini router built from the same helpers, so after step 2 a
 router-level test can call `createOneMaskRouter` directly with `family: "cardano" | "substrate"`.
