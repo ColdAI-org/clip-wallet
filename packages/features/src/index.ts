@@ -12,7 +12,7 @@ export * from "./staking/index.js";
 export * from "./swap/index.js";
 export * from "./onramp/index.js";
 export * from "./trade/index.js";
-export { FEATURED_DAPPS, featuredFor, isFeaturedOrigin } from "./dapps/featured.js";
+export { FEATURED_DAPPS, TRADE_DISCLAIMER, featuredFor, isFeaturedOrigin, tradeAndEarnFor } from "./dapps/featured.js";
 export { saucerSwapPositions, uniswapPositions, UNISWAP_V3_NPM, decodeSlot0 } from "./lp/readers.js";
 export { amountsForLiquidity, sqrtRatioAtTick, MIN_TICK, MAX_TICK } from "./lp/math.js";
 export { CoinGeckoPriceFeed, type CoinGeckoOptions, type SyncPriceFeed } from "./prices/coingecko.js";

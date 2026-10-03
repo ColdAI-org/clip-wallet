@@ -27,3 +27,27 @@ describe("featured apps", () => {
     expect(isFeaturedOrigin("https://app-uniswap.org")).toBeUndefined();
   });
 });
+
+describe("Trade & earn (regulated products, through the apps only)", () => {
+  it("each entry is a verified https domain with a kind and a short plain note", async () => {
+    const { tradeAndEarnFor, TRADE_DISCLAIMER } = await import("../src/dapps/featured.js");
+    const list = tradeAndEarnFor(FAMILIES);
+    expect(list.map((d) => d.name)).toEqual(["Hyperliquid", "dYdX", "GMX", "Polymarket", "Ondo", "Sky", "Ethena", "Pendle"]);
+    for (const d of list) {
+      expect(hostOf(d.url)).toBe(d.domain);
+      expect(d.kind).toBeTruthy();
+      expect(d.note && d.note.length > 10 && d.note.length <= 140).toBe(true);
+    }
+    for (const d of list.filter((x) => x.kind === "perps")) expect(d.note).toMatch(/Leveraged trading can lose/);
+    expect(TRADE_DISCLAIMER).toMatch(/depends on where you live/);
+    expect(TRADE_DISCLAIMER).toMatch(/only connects your wallet/);
+  });
+
+  it("is hidden when the build has no Ethereum-style networks, and look-alikes aren't verified", async () => {
+    const { tradeAndEarnFor } = await import("../src/dapps/featured.js");
+    expect(tradeAndEarnFor(["hedera", "solana"])).toEqual([]);
+    expect(isFeaturedOrigin("https://app.hyperliquid.xyz")?.name).toBe("Hyperliquid");
+    expect(isFeaturedOrigin("https://app-hyperliquid.xyz")).toBeUndefined();
+    expect(isFeaturedOrigin("https://polymarket.com.claim.example")).toBeUndefined();
+  });
+});

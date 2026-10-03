@@ -1,5 +1,6 @@
 import type { Family } from "@clip-wallet/core";
 import type { FeaturedDappView } from "../views.js";
+export { TRADE_DISCLAIMER } from "../views.js";
 import data from "./featured.json" with { type: "json" };
 
 export const FEATURED_DAPPS: readonly FeaturedDappView[] = (data.dapps as FeaturedDappView[]).map((d) => Object.freeze({ ...d }));
@@ -23,4 +24,9 @@ export function featuredFor(families: Iterable<Family>): FeaturedDappView[] {
 export function isFeaturedOrigin(origin: string): FeaturedDappView | undefined {
   const h = hostOf(origin);
   return FEATURED_DAPPS.find((d) => d.domain === h);
+}
+
+/** The curated "Trade & earn" apps for the families this build has switched on. */
+export function tradeAndEarnFor(families: Iterable<Family>): FeaturedDappView[] {
+  return featuredFor(families).filter((d) => d.category === "trade");
 }

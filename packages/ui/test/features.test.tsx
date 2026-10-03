@@ -211,6 +211,31 @@ describe("feature screens", () => {
     expect(f.openExternal).toHaveBeenCalledWith("https://www.saucerswap.finance/");
   });
 
+  it("Explore: Trade & earn lists curated apps with plain notes and the regulatory disclaimer", async () => {
+    const user = userEvent.setup();
+    const f = features({
+      featured: vi.fn(async () => [
+        { name: "SaucerSwap", url: "https://www.saucerswap.finance/", domain: "saucerswap.finance", category: "swap" as const, description: "Swap tokens and earn from liquidity.", family: "hedera" as const },
+        { name: "Hyperliquid", url: "https://app.hyperliquid.xyz/trade", domain: "app.hyperliquid.xyz", category: "trade" as const, kind: "perps" as const, description: "Trade perpetual futures.", note: "Leveraged trading can lose everything you put in, fast. Not available in the US, Ontario or sanctioned countries.", family: "evm" as const },
+      ]),
+    });
+    const { container } = renderFeature(<Explore />, f);
+    const section = await screen.findByTestId("trade-and-earn");
+    expect(within(section).getByText(/aren't available in your country/)).toBeInTheDocument();
+    expect(within(section).getByText(/Leveraged trading can lose everything/)).toBeInTheDocument();
+    expect(within(section).getByText("Futures")).toBeInTheDocument();
+    expect(within(section).queryByText("SaucerSwap")).not.toBeInTheDocument();
+    await user.click(within(section).getByRole("button", { name: /Trade perpetual futures/ }));
+    expect(f.openExternal).toHaveBeenCalledWith("https://app.hyperliquid.xyz/trade");
+    expectNoNetworkNames(container);
+  });
+
+  it("Explore: no Trade & earn section when no such apps apply", async () => {
+    renderFeature(<Explore />);
+    await screen.findByText("HBAR / SAUCE");
+    expect(screen.queryByTestId("trade-and-earn")).not.toBeInTheDocument();
+  });
+
   it("featureRoute maps paths and ignores the rest", () => {
     expect(featureRoute(["stake"], new URLSearchParams())).not.toBeNull();
     expect(featureRoute(["trade", "open"], new URLSearchParams("link=x"))).not.toBeNull();

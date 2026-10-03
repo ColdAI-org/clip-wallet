@@ -1,5 +1,5 @@
 {
-  "$comment": "Curated featured apps per family. Every domain was checked over HTTPS on 2026-10-03 (status 200, or a redirect to the listed domain). Apps on a family whose module hasn't landed are hidden by the service until that family is switched on.",
+  "$comment": "Curated featured apps per family. Every domain was checked over HTTPS on 2026-10-03 (status 200, or a redirect to the listed domain). Apps on a family whose module hasn't landed are hidden by the service until that family is switched on. Trade & earn entries (category \"trade\"): regulated products Clip Wallet never offers itself; each domain was checked over HTTPS on 2026-10-03 except polymarket.com, which is DNS-blocked from the checking network (Philippines), so it is listed from Polymarket's own docs and press; every one connects through an injected EIP-6963 wallet or WalletConnect (sources: docs/phase25/integration/extensibility.md).",
   "checkedAt": "2026-10-03",
   "dapps": [
     { "family": "hedera", "name": "SaucerSwap", "url": "https://www.saucerswap.finance/", "domain": "saucerswap.finance", "category": "swap", "description": "Swap tokens and earn from liquidity." },
@@ -31,6 +31,14 @@
     { "family": "stellar", "name": "LOBSTR", "url": "https://lobstr.co/", "domain": "lobstr.co", "category": "swap", "description": "Trade Stellar assets." },
     { "family": "tezos", "name": "objkt", "url": "https://objkt.com/", "domain": "objkt.com", "category": "nft", "description": "Buy and sell collectibles." },
     { "family": "algorand", "name": "Tinyman", "url": "https://app.tinyman.org/", "domain": "app.tinyman.org", "category": "swap", "description": "Swap tokens." },
-    { "family": "algorand", "name": "Folks Finance", "url": "https://app.folks.finance/", "domain": "app.folks.finance", "category": "lend", "description": "Lend and borrow." }
+    { "family": "algorand", "name": "Folks Finance", "url": "https://app.folks.finance/", "domain": "app.folks.finance", "category": "lend", "description": "Lend and borrow." },
+    { "family": "evm", "name": "Hyperliquid", "url": "https://app.hyperliquid.xyz/trade", "domain": "app.hyperliquid.xyz", "category": "trade", "kind": "perps", "description": "Trade perpetual futures.", "note": "Leveraged trading can lose everything you put in, fast. Not available in the US, Ontario or sanctioned countries." },
+    { "family": "evm", "name": "dYdX", "url": "https://dydx.trade/", "domain": "dydx.trade", "category": "trade", "kind": "perps", "description": "Trade perpetual futures.", "note": "Leveraged trading can lose everything you put in, fast. Not available in the US, Canada, the UK or sanctioned countries." },
+    { "family": "evm", "name": "GMX", "url": "https://app.gmx.io/", "domain": "app.gmx.io", "category": "trade", "kind": "perps", "description": "Trade perpetual futures.", "note": "Leveraged trading can lose everything you put in, fast. Not available in some countries." },
+    { "family": "evm", "name": "Polymarket", "url": "https://polymarket.com/", "domain": "polymarket.com", "category": "trade", "kind": "predictions", "description": "Bet on the outcome of real-world events.", "note": "You can lose your whole stake. Not available in many countries." },
+    { "family": "evm", "name": "Ondo", "url": "https://app.ondo.finance/", "domain": "app.ondo.finance", "category": "trade", "kind": "stocks", "description": "Tokenized US stocks, ETFs and Treasury funds.", "note": "A token that tracks a stock isn't the same as owning the share. Not available in the US; identity checks apply." },
+    { "family": "evm", "name": "Sky", "url": "https://app.sky.money/", "domain": "app.sky.money", "category": "trade", "kind": "yield", "description": "Earn the Sky Savings Rate on stablecoins.", "note": "The rate changes and isn't guaranteed." },
+    { "family": "evm", "name": "Ethena", "url": "https://app.ethena.fi/", "domain": "app.ethena.fi", "category": "trade", "kind": "yield", "description": "Earn yield on a synthetic dollar.", "note": "Yield isn't guaranteed and can fall to zero; the dollar can lose its peg. Not available in some countries." },
+    { "family": "evm", "name": "Pendle", "url": "https://app.pendle.finance/", "domain": "app.pendle.finance", "category": "trade", "kind": "yield", "description": "Lock in or trade future yield.", "note": "Fixed rates hold only if you keep the position to maturity." }
   ]
 }
