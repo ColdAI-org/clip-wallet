@@ -1,0 +1,89 @@
+/**
+ * Service-worker bootstrap: builds dependencies (wiring.ts), the WalletService, and connects it to the
+ * browser: the page message bus, the auto-lock alarm, the approval window and the passkey web bridge.
+ */
+import { browser } from "wxt/browser";
+import { ClipError } from "@clip-wallet/core";
+import { enabledFamilies, includesEvmChain } from "@clip-wallet/config";
+import config from "../../clip.config";
+import { PASSKEY_BRIDGE_URL, passkeyRpId } from "../app-settings";
+import { CHANGE_EVENT, Request, type Envelope } from "../shared/messages";
+import { AreaKV } from "../shared/storage";
+import { createDependencies } from "./wiring";
+import { WalletService, type Env } from "./service";
+
+const AUTOLOCK_ALARM = "clip-autolock";
+
+export function toEnvelope(e: unknown): Envelope {
+  if (e instanceof ClipError) return { ok: false, error: { userMessage: e.userMessage, code: e.code } };
+  return { ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "internal" } };
+}
+
+export function startBackground() {
+  const kv = new AreaKV(browser.storage.local);
+  const deps = createDependencies({ kv, mocks: __CLIP_MOCKS__ });
+  // clip.config `networks` decides which families/chains are on.
+  const families = enabledFamilies(config);
+  deps.networks = deps.networks.filter((n) => families.includes(n.family) && (n.family !== "evm" || (n.chainId !== undefined && includesEvmChain(config, n.chainId))));
+
+  let approvalWindowId: number | undefined;
+  const extOrigin = new URL(browser.runtime.getURL("/")).origin;
+
+  const env: Env = {
+    walletName: config.name,
+    async openApprovalWindow(id) {
+      const url = browser.runtime.getURL(`/approval.html#${encodeURIComponent(id)}`);
+      if (approvalWindowId !== undefined) {
+        try {
+          await browser.windows.update(approvalWindowId, { focused: true });
+          return;
+        } catch {
+          approvalWindowId = undefined;
+        }
+      }
+      const w = await browser.windows.create({ url, type: "popup", width: 376, height: 640, focused: true });
+      approvalWindowId = w?.id;
+    },
+    async openTab(route) {
+      await browser.tabs.create({ url: browser.runtime.getURL(`/tab.html#${route}`) });
+    },
+    broadcast() {
+      browser.runtime.sendMessage({ event: CHANGE_EVENT }).catch(() => undefined);
+    },
+    armAutoLock(minutes) {
+      void browser.alarms.create(AUTOLOCK_ALARM, { delayInMinutes: minutes });
+    },
+    passkey: () => ({ rpId: passkeyRpId(), rpName: config.name, mode: "extension", bridgeUrl: PASSKEY_BRIDGE_URL }),
+  };
+
+  const service = new WalletService(deps, kv, env);
+  service.start();
+
+  browser.windows?.onRemoved.addListener((id) => {
+    if (id === approvalWindowId) approvalWindowId = undefined;
+  });
+
+  browser.alarms.onAlarm.addListener((a) => {
+    if (a.name === AUTOLOCK_ALARM) void service.lock();
+  });
+
+  browser.runtime.onInstalled.addListener((d) => {
+    if (d.reason === "install") void env.openTab("/");
+  });
+
+  browser.runtime.onMessage.addListener((msg: unknown, sender) => {
+    // Only our own extension pages may use the wallet bus; content scripts (1Mask) use their port.
+    if (sender.id !== browser.runtime.id || !sender.url?.startsWith(extOrigin)) return undefined;
+    if (msg && typeof msg === "object" && "event" in msg) return undefined;
+    const parsed = Request.safeParse(msg);
+    if (!parsed.success) {
+      return Promise.resolve<Envelope>({ ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "bus/invalid" } });
+    }
+    return service.handle(parsed.data).then(
+      (data): Envelope => ({ ok: true, data }),
+      (e): Envelope => toEnvelope(e),
+    );
+  });
+
+  return service;
+}

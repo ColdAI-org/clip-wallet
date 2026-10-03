@@ -1,0 +1,23 @@
+<!doctype html>
+<!--
+  Passkey web bridge (fallback). Host this page at the URL in apps/extension/src/app-settings.ts
+  (PASSKEY_BRIDGE_URL, placeholder today). It runs the WebAuthn PRF ceremony with rp.id = this page's
+  host and hands the result back to the extension through externally_connectable. It never stores
+  anything and makes no network requests. Build: bundle bridge.ts with esbuild (single file, no deps).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Passkey</title>
+  </head>
+  <body style="font-family: system-ui, sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0">
+    <main>
+      <p id="status">Waiting for your device…</p>
+      <button id="go" type="button">Continue with passkey</button>
+    </main>
+    <script type="module" src="./bridge.js"></script>
+  </body>
+</html>

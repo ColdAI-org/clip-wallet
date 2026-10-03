@@ -175,12 +175,18 @@ importers:
 
   apps/extension:
     dependencies:
+      '@clip-wallet/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@clip-wallet/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@clip-wallet/vault':
+        specifier: workspace:*
+        version: link:../../packages/vault
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0

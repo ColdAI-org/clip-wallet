@@ -271,3 +271,28 @@ describe("Onboarding", () => {
     expect(screen.getByRole("button", { name: "Create wallet" })).toBeDisabled();
   });
 });
+
+describe("WalletApp onboarding", () => {
+  it("keeps onboarding on screen after the wallet is created (vault already unlocked)", async () => {
+    const user = userEvent.setup();
+    let status: "empty" | "unlocked" = "empty";
+    let notify: () => void = () => undefined;
+    const client = fakeClient({
+      getState: vi.fn(async () => state({ status })),
+      createWallet: vi.fn(async () => {
+        status = "unlocked";
+        notify();
+      }),
+      onChange: (cb) => {
+        notify = cb;
+        return () => undefined;
+      },
+    });
+    renderUi(<WalletApp client={client} memoryRouter />, { client });
+    await user.click(await screen.findByRole("button", { name: "Create a new wallet" }));
+    await user.type(screen.getByLabelText("Password"), "correct horse battery staple");
+    await user.type(screen.getByLabelText("Type it again"), "correct horse battery staple");
+    await user.click(screen.getByRole("button", { name: "Create wallet" }));
+    expect(await screen.findByRole("heading", { name: "Your recovery phrase" })).toBeInTheDocument();
+  });
+});

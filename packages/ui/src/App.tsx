@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { WalletClient } from "./client";
 import type { ClipConfig, UiOptions } from "./theme/config";
 import { ClipProvider, Router, useRouter, useUi, type PasskeyFactory, type Variant } from "./context";
@@ -22,13 +22,20 @@ function Routes() {
   const { state, refresh } = useUi();
   const { path, navigate } = useRouter();
   const { pathname, query } = parsePath(path);
+  // Once onboarding starts it stays on screen until it finishes: the vault turns "unlocked" as soon as
+  // the wallet is created, but the phrase, backup check and passkey offer still follow.
+  const [onboarding, setOnboarding] = useState(false);
+  useEffect(() => {
+    if (state?.status === "empty") setOnboarding(true);
+  }, [state?.status]);
 
   if (!state) return <div className="clip-screen clip-center"><Spinner /></div>;
-  if (state.status === "empty") {
+  if (state.status === "empty" || onboarding) {
     return (
       <div className="clip-screen">
         <Onboarding
           onFinished={async () => {
+            setOnboarding(false);
             await refresh();
             navigate("/", { replace: true });
           }}
