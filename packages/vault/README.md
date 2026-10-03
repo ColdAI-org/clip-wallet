@@ -295,6 +295,8 @@ passkey PRF --HKDF-SHA256--> PWK ─wrap─┘   (optional, one per enrolled pas
 - `schnorr-secp256k1`: BIP-340 with fresh aux randomness. `options.taprootTweak` is the **script-tree
   merkle root** (32 bytes), or an **empty array** for a BIP-86 key-path-only spend.
   - The vault applies the BIP-341 TapTweak.
+  - Bitcoin schnorr payloads are always signed with the BIP-86 key m/86'/c'/0'/0/i, which `deriveAccount`
+    returns as `Account.taprootPublicKey` on every Bitcoin account (chain modules build bc1p scripts from it).
   - `Signature.publicKey` is the x-only key that verifies the signature: the output key when tweaked,
     the internal key otherwise.
 - `ed25519`: RFC 8032 over the message bytes. For Cardano and Algorand (ARC-52), the extended key is used:

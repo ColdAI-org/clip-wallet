@@ -27,11 +27,11 @@ import { Address, OutScript, SigHash, Transaction } from "@scure/btc-signer";
 import { concatBytes } from "@scure/btc-signer/utils.js";
 import { type Utxo, selectLargestFirst } from "./coinselect.js";
 import { type EsploraAddress, type EsploraUtxo, broadcast, esploraJson, feeRate } from "./esplora.js";
-import { type OwnScripts, changeKey, derivationPath, ownScripts, scriptType, segwitAddress, taprootAddress, xOnly } from "./keys.js";
+import { type OwnScripts, TAPROOT_UNAVAILABLE, changeKey, derivationPath, ownScripts, scriptType, segwitAddress, taprootAddress } from "./keys.js";
 import { bip137Digest, bip322Digest, bip322MessageHash, encodeSimpleSignature } from "./message.js";
 import { BITCOIN_NETWORKS, btcNet } from "./networks.js";
 import { SMALL_UTXO_SATS, addressInscriptions, checkOutpoint } from "./ordinals.js";
-import { type InputDigest, type PsbtAnalysis, TX_OPTS, analyzePsbt, tapTweakBytes, inputDigests, parsePsbt, psbtBase64, sighashRisk } from "./psbt.js";
+import { type InputDigest, type PsbtAnalysis, TX_OPTS, analyzePsbt, inputDigests, parsePsbt, psbtBase64, sighashRisk } from "./psbt.js";
 import { BTC_METHODS, type BtcOp, normalize } from "./requests.js";
 
 export interface BitcoinModuleOptions {
@@ -92,9 +92,9 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
 
   async function ownUtxos(ctx: ChainContext, own: OwnScripts): Promise<Utxo[]> {
     const out: Utxo[] = [];
-    const sources: [ "wpkh" | "tr", string, Uint8Array][] = [
+    const sources: ["wpkh" | "tr", string, Uint8Array][] = [
       ["wpkh", segwitAddress(own.pubkey, ctx.network), own.wpkh],
-      ["tr", taprootAddress(own.pubkey, ctx.network), own.tr],
+      ...(own.tr ? [["tr", taprootAddress(own.trInternalKey!, ctx.network), own.tr] as ["tr", string, Uint8Array]] : []),
       ...own.change.map((c): ["wpkh", string, Uint8Array] => ["wpkh", segwitAddress(c.pubkey, ctx.network), c.wpkh]),
     ];
     for (const [kind, address, script] of sources) {
@@ -139,7 +139,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     const tx = new Transaction(TX_OPTS);
     for (const u of sel.inputs) {
       const input: Parameters<Transaction["addInput"]>[0] = { txid: hex.decode(u.txid), index: u.vout, sequence: 0xfffffffd, witnessUtxo: { script: u.script, amount: u.value } };
-      if (u.kind === "tr") input.tapInternalKey = xOnly(own.pubkey);
+      if (u.kind === "tr") input.tapInternalKey = own.trInternalKey!;
       tx.addInput(input);
     }
     for (const o of outs) tx.addOutput({ script: o.script, amount: o.amount });
@@ -170,14 +170,22 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     return parsePsbt(b);
   }
 
+  /** The account's own addresses on this network (taproot only when the account has a BIP-86 key). */
+  function ownAddresses(own: OwnScripts, network: Network): string[] {
+    return [segwitAddress(own.pubkey, network), ...(own.trInternalKey ? [taprootAddress(own.trInternalKey, network)] : [])];
+  }
+
+  /** "Not ours": a taproot address while the account has no BIP-86 key gets the plain taproot message. */
+  function notOurs(address: string, own: OwnScripts, network: Network): ClipError {
+    if (!own.trInternalKey && isTaprootAddress(address, network)) return new ClipError(TAPROOT_UNAVAILABLE, "taproot-unavailable", address);
+    return new ClipError("This request is for a different account than the one you're using.", "wrong-account", address);
+  }
+
   function checkSigners(op: BtcOp, ctx: ChainContext) {
-    const mine = new Set([
-      segwitAddress(ownScripts(ctx.account).pubkey, ctx.network),
-      taprootAddress(ownScripts(ctx.account).pubkey, ctx.network),
-      ...(ctx.changeAddresses ?? []).map((c) => c.address),
-    ]);
+    const own = ownScripts(ctx.account);
+    const mine = new Set([...ownAddresses(own, ctx.network), ...(ctx.changeAddresses ?? []).map((c) => c.address)]);
     const addrs = op.kind === "psbt" ? op.signerAddresses : op.kind === "message" && op.address ? [op.address] : [];
-    for (const a of addrs) if (!mine.has(a)) throw new ClipError("This request is for a different account than the one you're using.", "wrong-account", a);
+    for (const a of addrs) if (!mine.has(a)) throw notOurs(a, own, ctx.network);
   }
 
   async function inscribedInputs(ctx: ChainContext, a: PsbtAnalysis): Promise<{ inscribed: number[]; unchecked: boolean }> {
@@ -192,10 +200,9 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
   function messageKind(op: Extract<BtcOp, { kind: "message" }>, ctx: ChainContext): { kind: "wpkh" | "tr"; address: string } {
     const own = ownScripts(ctx.account);
     const w = segwitAddress(own.pubkey, ctx.network);
-    const t = taprootAddress(own.pubkey, ctx.network);
     if (!op.address || op.address === w) return { kind: "wpkh", address: w };
-    if (op.address === t) return { kind: "tr", address: t };
-    throw new ClipError("This request is for a different account than the one you're using.", "wrong-account", op.address);
+    if (own.trInternalKey && op.address === taprootAddress(own.trInternalKey, ctx.network)) return { kind: "tr", address: op.address };
+    throw notOurs(op.address, own, ctx.network);
   }
 
   /* ---------------------------------------------------------------- decode */
@@ -298,7 +305,8 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       pending.set(req.id, { type: "message", kind, protocol: "bip322", message: op.message, digest, address, reply: op.reply });
       return kind === "wpkh"
         ? [{ accountId: ctx.account.id, scheme: "ecdsa-secp256k1", bytes: digest, approvalId }]
-        : [{ accountId: ctx.account.id, scheme: "schnorr-secp256k1", bytes: digest, options: { taprootTweak: tapTweakFor(own) }, approvalId }];
+        : // BIP-86 key path: empty merkle root; the vault derives the TapTweak from its own key.
+          [{ accountId: ctx.account.id, scheme: "schnorr-secp256k1", bytes: digest, options: { taprootTweak: new Uint8Array(0) }, approvalId }];
     }
 
     const tx = await resolvePsbt(req, ctx, op);
@@ -311,7 +319,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     pending.set(req.id, { type: "psbt", psbt: psbtBase64(tx), digests, op });
     return digests.map((g) => {
       const p: SignablePayload = { accountId: ctx.account.id, scheme: g.kind === "tr" ? "schnorr-secp256k1" : "ecdsa-secp256k1", bytes: g.digest, approvalId };
-      if (g.tweak) p.options = { taprootTweak: g.tweak };
+      if (g.kind === "tr") p.options = { taprootTweak: g.merkleRoot! }; // merkle root, never the tweak scalar
       if (g.subPath) p.derivationSubPath = g.subPath;
       return p;
     });
@@ -329,7 +337,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       if (!sig) throw new ClipError("The request wasn't signed.", "no-signature");
       let signature: string;
       if (p.kind === "tr") {
-        const s = checkSchnorr(sig, p.digest, own);
+        const s = checkSchnorr(sig, p.digest, own.trOutputKey);
         signature = encodeSimpleSignature([s]);
       } else if (p.protocol === "ecdsa") {
         const s = checkEcdsa(sig, p.digest, own.pubkey);
@@ -354,7 +362,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
         const s = checkEcdsa(sig, g.digest, g.pubkey);
         tx.updateInput(g.index, { partialSig: [[g.pubkey, concatBytes(s.toBytes("der"), Uint8Array.of(g.hashType))]] }, true);
       } else {
-        const s = checkSchnorr(sig, g.digest, own);
+        const s = checkSchnorr(sig, g.digest, g.outputKey);
         tx.updateInput(g.index, { tapKeySig: g.hashType === SigHash.DEFAULT ? s : concatBytes(s, Uint8Array.of(g.hashType)) }, true);
       }
     });
@@ -380,7 +388,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
   async function getBalances(ctx: ChainContext): Promise<TokenBalance[]> {
     const own = ownScripts(ctx.account, ctx.changeAddresses ?? [], ctx.network);
     let total = 0n;
-    for (const address of [segwitAddress(own.pubkey, ctx.network), taprootAddress(own.pubkey, ctx.network), ...own.change.map((c) => segwitAddress(c.pubkey, ctx.network))]) {
+    for (const address of [...ownAddresses(own, ctx.network), ...own.change.map((c) => segwitAddress(c.pubkey, ctx.network))]) {
       const s = await esploraJson<EsploraAddress>(ctx.network, ctx.fetch, `/address/${address}`);
       total += BigInt(s.chain_stats.funded_txo_sum - s.chain_stats.spent_txo_sum + s.mempool_stats.funded_txo_sum - s.mempool_stats.spent_txo_sum);
     }
@@ -392,7 +400,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     if (!index) return [];
     const own = ownScripts(ctx.account);
     const out: Nft[] = [];
-    for (const address of [segwitAddress(own.pubkey, ctx.network), taprootAddress(own.pubkey, ctx.network)]) {
+    for (const address of ownAddresses(own, ctx.network)) {
       for (const id of await addressInscriptions(ctx.fetch, index, address)) {
         out.push({ networkId: ctx.network.id, standard: "ordinal", collection: { address: "ordinals", name: "Ordinals" }, tokenId: id, name: `Inscription ${id.slice(0, 8)}…`, mediaUrl: `${index.replace(/\/$/, "")}/content/${id}` });
       }
@@ -476,12 +484,17 @@ function recoveryFor(s: InstanceType<typeof secp256k1.Signature>, digest: Uint8A
   throw new ClipError("The signature didn't match your account.", "bad-signature");
 }
 
-function tapTweakFor(own: OwnScripts): Uint8Array {
-  return tapTweakBytes(own.pubkey);
+function isTaprootAddress(value: string, n: Network): boolean {
+  try {
+    return Address(btcNet(n)).decode(value).type === "tr";
+  } catch {
+    return false;
+  }
 }
 
-function checkSchnorr(sig: Signature, msg: Uint8Array, own: OwnScripts): Uint8Array {
-  if (sig.scheme !== "schnorr-secp256k1" || sig.bytes.length !== 64) throw new ClipError("The signature didn't match this request.", "bad-signature");
-  if (!schnorr.verify(sig.bytes, msg, own.trOutputKey)) throw new ClipError("The signature didn't match your account, so nothing was sent.", "bad-signature");
+/** BIP-340 check against the taproot OUTPUT key (the vault signs with the tweaked key). */
+function checkSchnorr(sig: Signature, msg: Uint8Array, outputKey: Uint8Array | undefined): Uint8Array {
+  if (sig.scheme !== "schnorr-secp256k1" || sig.bytes.length !== 64 || !outputKey) throw new ClipError("The signature didn't match this request.", "bad-signature");
+  if (!schnorr.verify(sig.bytes, msg, outputKey)) throw new ClipError("The signature didn't match your account, so nothing was sent.", "bad-signature");
   return sig.bytes;
 }
