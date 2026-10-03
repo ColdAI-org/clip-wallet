@@ -8,3 +8,6 @@ coverage/
 .env.*
 !.env.example
 .DS_Store
+
+# Example plugin bundles are committed: their manifests pin the bundle sha256.
+!packages/plugins/examples/*/dist/
