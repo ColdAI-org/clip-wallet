@@ -223,13 +223,13 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       if (risk) d.warnings.push({ level: risk.level, code: "blind-signing", message: risk.message });
     }
     if (a.fee !== undefined && a.feeRate !== undefined && a.feeRate > 500) {
-      d.warnings.push({ level: "danger", code: "simulation-failed", message: `The network fee is unusually high (${a.feeRate} sat/vB).` });
+      d.warnings.push({ level: "danger", code: "high-fee", message: `The network fee is unusually high (${a.feeRate} sat/vB).` });
     }
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       d.warnings.push({
         level: "danger",
-        code: "approval-for-all",
+        code: "inscribed-utxo",
         message: "This would spend a coin that holds a collectible (an ordinal inscription). Clip Wallet won't sign it, so the collectible can't be lost by accident.",
       });
     } else if (ord.unchecked) {

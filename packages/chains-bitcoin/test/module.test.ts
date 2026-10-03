@@ -197,7 +197,7 @@ describe("ordinals guard", () => {
     const c = ctx(mockFetch(inscribedA));
     const r = req("bitcoin:signTransaction", { inputs: [{ psbt: SEND_PSBT, inputsToSign: [] }] });
     const d = await mod.decode(r, c);
-    expect(d.warnings.find((w) => w.code === "approval-for-all")?.level).toBe("danger");
+    expect(d.warnings.find((w) => w.code === "inscribed-utxo")?.level).toBe("danger");
     await expect(mod.prepare(r, c, "a")).rejects.toMatchObject({ code: "inscribed-utxo" });
   });
 });

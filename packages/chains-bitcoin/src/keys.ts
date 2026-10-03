@@ -1,9 +1,9 @@
 /**
  * Paths, addresses and scripts for an account. Public data only.
  *
- * Paths: BIP-84 (P2WPKH) is the account's primary key, m/84'/0'/<index>'/0/0. BIP-86 (P2TR) is
- * m/86'/0'/<index>'/0/0. The contract's derivationPath(index) has no network, so testnets use the
- * same coin type (0') as mainnet: the same key, encoded as tb1… addresses.
+ * Paths match @clip-wallet/vault, which derives and signs: BIP-84 (P2WPKH) m/84'/<coin>'/0'/0/<index>
+ * and BIP-86 (P2TR) m/86'/<coin>'/0'/0/<index>, coin 1' on test networks (the v1 default) and 0' on
+ * mainnet. Mainnet accounts therefore use different keys from testnet accounts.
  *
  * "Ours": an input/output is the user's when its script is P2WPKH(account key) or P2TR key-path with
  * internal key = account key (x-only). A vault account derived at the BIP-86 path is handled the same
@@ -22,14 +22,14 @@ function checkIndex(index: number) {
   if (!Number.isInteger(index) || index < 0 || index >= 2 ** 31) throw new Error("account index out of range");
 }
 
-export function derivationPath(index: number): string {
+export function derivationPath(index: number, mainnet = false): string {
   checkIndex(index);
-  return `m/84'/0'/${index}'/0/0`;
+  return `m/84'/${mainnet ? 0 : 1}'/0'/0/${index}`;
 }
 
-export function derivationPathTaproot(index: number): string {
+export function derivationPathTaproot(index: number, mainnet = false): string {
   checkIndex(index);
-  return `m/86'/0'/${index}'/0/0`;
+  return `m/86'/${mainnet ? 0 : 1}'/0'/0/${index}`;
 }
 
 export const pubkeyOf = (account: Account): Uint8Array => hex.decode(account.publicKey);
