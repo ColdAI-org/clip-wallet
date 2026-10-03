@@ -16,11 +16,19 @@ function lp(b: Uint8Array): Uint8Array {
 }
 
 /**
- * The hash the background registers for each payload. Binds account, scheme, bytes and the taproot tweak
- * (a strictly stronger binding than hashing the bytes alone). approvalId is the registry key, not hashed.
+ * The hash the background registers for each payload. Binds account, scheme, bytes, the taproot tweak and
+ * the derivation sub-path (a strictly stronger binding than hashing the bytes alone). approvalId is the
+ * registry key, not hashed.
+ *
+ * `derivationSubPath` is appended only when present (0x01 ‖ lp(utf8(subPath))), so hashes of payloads
+ * without it are byte-identical to Phase 1 and precomputed fixtures stay valid. Every earlier field is
+ * self-delimiting, so a payload with a sub-path never hashes the same preimage as one without.
  */
-export function hashSignablePayload(p: Pick<SignablePayload, "accountId" | "scheme" | "bytes" | "options">): Uint8Array {
+export function hashSignablePayload(
+  p: Pick<SignablePayload, "accountId" | "scheme" | "bytes" | "options" | "derivationSubPath">,
+): Uint8Array {
   const tweak = p.options?.taprootTweak;
+  const sub = p.derivationSubPath;
   return sha256(
     concat(
       utf8("clip-wallet/approval/v1"),
@@ -28,6 +36,7 @@ export function hashSignablePayload(p: Pick<SignablePayload, "accountId" | "sche
       lp(utf8(p.scheme)),
       lp(p.bytes),
       tweak ? concat(new Uint8Array([1]), lp(tweak)) : new Uint8Array([0]),
+      sub !== undefined ? concat(new Uint8Array([1]), lp(utf8(sub))) : new Uint8Array(),
     ),
   );
 }
