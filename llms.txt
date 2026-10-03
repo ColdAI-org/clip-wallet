@@ -1,0 +1,43 @@
+# Clip Wallet
+
+> Non-custodial multi-chain browser wallet for every CLPR network. Pre-release: test networks only. pnpm monorepo, TypeScript, MIT.
+
+Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract).
+
+## Commands
+- pnpm install && pnpm typecheck && pnpm test && pnpm harness   (all must pass)
+- node --test tools/harness/test/*.test.mjs   (harness unit tests)
+- pnpm --filter <package> test
+
+## Rules (enforced by pnpm harness)
+- Only packages/vault touches phrases, seeds, private keys, signing and Argon2.
+- Only packages/vault, the extension background and the onboarding screen import @clip-wallet/vault.
+- Chain modules (packages/chains-*) implement ChainModule and never import or depend on the vault.
+- Never log or commit phrases, keys, secrets or .env values. Tests use public BIP-39 vectors only.
+- Every dapp request becomes a DecodedRequest before approval; blind signing is off by default.
+- Networks are invisible in the default UI; testnet by default; mainnet needs the clip.config.ts checklist.
+- User-facing errors are ClipError(userMessage in plain words, code).
+
+## Contract (packages/core/src/index.ts)
+- Network, AssetRef (key merges same-issuer assets across networks), TokenBalance, Nft, Account
+- Vault: create, importPhrase, unlock, deriveAccount, sign(SignablePayload) -> Signature
+- DappRequest -> ChainModule.decode -> DecodedRequest -> approve -> prepare -> vault.sign -> finalize
+- ChainModule: derivationPath, addressFromPublicKey, getBalances, getNfts, decode, prepare, finalize, buildTransfer
+- ClipError(userMessage, code, cause)
+
+## Packages
+- packages/core: shared types (the contract). Additive changes only.
+- packages/vault: phrase, derivation, encrypted storage, approval-bound signing, passkey unlock. KATs in packages/vault/test/vectors.test.ts.
+- packages/1mask: dapp connectors (EIP-1193/6963, Solana Wallet Standard, Bitcoin, Hedera, WalletConnect).
+- packages/chains-evm, chains-hedera, chains-solana, chains-bitcoin: ChainModule per family.
+- packages/route: "Route and fund" on CLPRouter. findShortfall, RouteClient.quote / planPayOnHedera / trackRoute; Phase 3 settleOnHedera typed, throws "phase3". Planner vendored from ColdAI-org/clprouter@564e29e (src/vendor/clprouter-sdk); testnet deployment in src/deployments.ts, route graph in src/graph.ts.
+- packages/config: clip.config.ts schema (zod), defaults, defineConfig, MAINNET_ACKNOWLEDGEMENT.
+- packages/ui: React screens and theme tokens (packages/ui/src/screens, packages/ui/src/theme).
+- packages/create-clip-wallet: EXPERIMENTAL scaffolder (templates/extension).
+- apps/extension: MV3 extension (WXT); background owns the vault.
+- tools/harness/check.mjs: the rules above as checks (file:line, plain words).
+
+## Optional
+- .harness/README.md: every harness rule and what to do when one is wrong
+- packages/create-clip-wallet/README.md
+- https://github.com/ColdAI-org/clprouter: CLPRouter contracts, SDK, services, deployments

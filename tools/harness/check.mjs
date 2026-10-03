@@ -31,7 +31,8 @@ export const VAULT_DIRS = ["packages/vault/"];
 export const VAULT_IMPORT_ALLOW = [
   /^packages\/vault\//,
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
-  /(?:^|\/)onboarding(?:\/|\.[cm]?[jt]sx?$)/,
+  // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
+  /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
 
 /** Where literal BIP-39 phrases may appear (the public test vectors). */

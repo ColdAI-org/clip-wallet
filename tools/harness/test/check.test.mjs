@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { bindings, findImports, format, lex, runChecks } from "../check.mjs";
+import { VAULT_IMPORT_ALLOW, bindings, findImports, format, lex, runChecks } from "../check.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "..", "..", "..");
@@ -96,4 +96,21 @@ test("imports: static, multi-line, type-only, dynamic and require", () => {
   assert.deepEqual(bindings(imps[0].clause).map((b) => b.name), ["a", "c"]);
   assert.deepEqual(bindings(imps[2].clause), [{ name: "ns", imported: "*", namespace: true }]);
   assert.deepEqual(bindings(imps[3].clause).map((b) => b.name).sort(), ["d", "e"]);
+});
+
+test("vault importers: background, onboarding screen and the vault only", () => {
+  const allowed = (f) => VAULT_IMPORT_ALLOW.some((re) => re.test(f));
+  for (const f of [
+    "packages/vault/src/index.ts",
+    "apps/extension/entrypoints/background.ts",
+    "apps/extension/src/background/index.ts",
+    "packages/ui/src/screens/Onboarding.tsx",
+    "packages/ui/src/screens/onboarding/Create.tsx",
+  ]) assert.ok(allowed(f), f);
+  for (const f of [
+    "packages/ui/src/screens/Send.tsx",
+    "packages/route/src/onboarding.ts",
+    "packages/chains-evm/src/onboarding.ts",
+    "apps/extension/entrypoints/popup/main.tsx",
+  ]) assert.ok(!allowed(f), f);
 });
