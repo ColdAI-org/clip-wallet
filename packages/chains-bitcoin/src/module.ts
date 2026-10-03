@@ -299,7 +299,8 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
         if (kind !== "wpkh") throw new ClipError("This kind of message signature doesn't work with this address.", "unsupported-protocol");
         const digest = bip137Digest(op.message);
         pending.set(req.id, { type: "message", kind, protocol: "ecdsa", message: op.message, digest, address, reply: op.reply });
-        return [{ accountId: ctx.account.id, scheme: "ecdsa-secp256k1", bytes: digest, approvalId }];
+        // Hardware wallets sign the BIP-137 message itself (bytes is its double-SHA256 digest).
+        return [{ accountId: ctx.account.id, scheme: "ecdsa-secp256k1", bytes: digest, approvalId, raw: { format: "bitcoin-message", bytes: op.message } }];
       }
       const digest = bip322Digest(op.message, kind, own);
       pending.set(req.id, { type: "message", kind, protocol: "bip322", message: op.message, digest, address, reply: op.reply });
@@ -317,8 +318,11 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     }
     const digests = inputDigests(tx, a);
     pending.set(req.id, { type: "psbt", psbt: psbtBase64(tx), digests, op });
+    // Hardware wallets get the whole PSBT and the input each payload signs.
+    const psbtBytes = tx.toPSBT(0);
     return digests.map((g) => {
       const p: SignablePayload = { accountId: ctx.account.id, scheme: g.kind === "tr" ? "schnorr-secp256k1" : "ecdsa-secp256k1", bytes: g.digest, approvalId };
+      p.raw = { format: "psbt", bytes: psbtBytes, inputIndex: g.index };
       if (g.kind === "tr") p.options = { taprootTweak: g.merkleRoot! }; // merkle root, never the tweak scalar
       if (g.subPath) p.derivationSubPath = g.subPath;
       return p;

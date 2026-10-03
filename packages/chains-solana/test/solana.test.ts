@@ -250,6 +250,8 @@ describe("prepare / finalize", () => {
     expect(payloads).toHaveLength(1);
     expect(payloads[0]).toMatchObject({ scheme: "ed25519", accountId: "solana:0", approvalId: "ap" });
     expect(payloads[0]!.bytes).toEqual(getTransactionDecoder().decode(b64decode(FIX.solTransfer)).messageBytes);
+    // Hardware wallets: the same message bytes, labelled as a transaction.
+    expect(payloads[0]!.raw).toEqual({ format: "solana-tx", bytes: payloads[0]!.bytes });
     const out = (await m.finalize(request, payloads.map((p) => signer.sign(p)), ctx)) as { signedTransaction: string }[];
     const sig = mySigIn(b64decode(out[0]!.signedTransaction));
     expect(ed25519.verify(sig!, payloads[0]!.bytes, new Uint8Array(getAddressEncoder().encode(address(ME))))).toBe(true);

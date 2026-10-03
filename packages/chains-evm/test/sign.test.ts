@@ -218,3 +218,28 @@ describe("buildTransfer", () => {
     await expect(mod.buildTransfer({ asset: ctx.network.nativeAsset, to: BOB, amount: "0" }, ctx)).rejects.toMatchObject({ code: "bad-amount" });
   });
 });
+
+describe("raw payloads for hardware wallets", () => {
+  it("eth_sendTransaction: raw is the unsigned serialized tx and hashes to bytes", async () => {
+    const [p] = await createEvmModule().prepare(SEND_NATIVE, ctxFor(SEPOLIA, mockFetch(SEPOLIA_STATE)), "a");
+    expect(p!.raw).toMatchObject({ format: "evm-tx", chainId: 11155111 });
+    expect(keccak256(p!.raw!.bytes)).toBe(hex(p!.bytes));
+    expect(parseTransaction(bytesToHex(p!.raw!.bytes)).to?.toLowerCase()).toBe(BOB.toLowerCase());
+  });
+
+  it("personal_sign: raw is the message; EIP-191 of it is bytes", async () => {
+    const [p] = await createEvmModule().prepare(PERSONAL, ctxFor(SEPOLIA, mockFetch({})), "a");
+    expect(p!.raw!.format).toBe("evm-personal");
+    expect(new TextDecoder().decode(p!.raw!.bytes)).toBe("Hello Clip");
+    expect(hashMessage({ raw: p!.raw!.bytes })).toBe(hex(p!.bytes));
+  });
+
+  it("eth_signTypedData_v4: raw is the full typed data with EIP712Domain; its hash is bytes", async () => {
+    const [p] = await createEvmModule().prepare(TYPED, ctxFor(SEPOLIA, mockFetch({})), "a");
+    expect(p!.raw!.format).toBe("eip712");
+    const full = JSON.parse(new TextDecoder().decode(p!.raw!.bytes));
+    expect(full.types.EIP712Domain).toBeDefined();
+    const { EIP712Domain: _d, ...types } = full.types;
+    expect(hashTypedData({ domain: full.domain, types, primaryType: full.primaryType, message: full.message } as never)).toBe(hex(p!.bytes));
+  });
+});
