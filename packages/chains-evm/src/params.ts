@@ -46,8 +46,18 @@ export function parseTx(req: DappRequest, ctx: ChainContext): TxParams {
   return out;
 }
 
-/** personal_sign: [message, address] (some dapps send [address, message]). */
+/**
+ * personal_sign: [message, address] (some dapps send [address, message]).
+ * wallet_authenticate (WalletConnect one-click auth via 1Mask): { message, address, domain, authPayload },
+ * answered with a personal_sign signature over `message`.
+ */
 export function parsePersonalSign(req: DappRequest, ctx: ChainContext): { message: Hex | string } {
+  if (req.method === "wallet_authenticate") {
+    const o = (Array.isArray(req.params) ? req.params[0] : req.params) as Record<string, unknown> | undefined;
+    if (!o || typeof o.message !== "string") throw bad("wallet_authenticate needs { message, address }");
+    assertOwnAddress(ctx, o.address);
+    return { message: o.message };
+  }
   const p = req.params as unknown[];
   if (!Array.isArray(p) || p.length < 2) throw bad("personal_sign needs [message, address]");
   const [a, b] = p as [unknown, unknown];

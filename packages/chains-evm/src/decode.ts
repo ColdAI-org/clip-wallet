@@ -20,7 +20,11 @@ import { lookupSelector } from "./selectors.js";
 import { simulate } from "./simulate.js";
 import { appName } from "./tokens.js";
 
-export const SUPPORTED_METHODS = ["eth_sendTransaction", "personal_sign", "eth_signTypedData_v4", "eth_sign"] as const;
+/**
+ * Injected (1Mask EIP-1193) and WalletConnect eip155 requests use the same method names and params.
+ * `wallet_authenticate` is WalletConnect one-click auth (SIWE); `eth_signTypedData` is accepted as v4.
+ */
+export const SUPPORTED_METHODS = ["eth_sendTransaction", "personal_sign", "wallet_authenticate", "eth_signTypedData_v4", "eth_signTypedData", "eth_sign"] as const;
 
 const tokenAbi = parseAbi([
   "function transfer(address to, uint256 amount)",
@@ -57,8 +61,10 @@ export async function decodeRequest(req: DappRequest, ctx: ChainContext): Promis
     case "eth_sendTransaction":
       return decodeTransaction(req, ctx);
     case "personal_sign":
+    case "wallet_authenticate":
       return decodePersonalSign(req, ctx);
     case "eth_signTypedData_v4":
+    case "eth_signTypedData":
       return decodeTypedData(req, ctx);
     case "eth_sign":
       return decodeEthSign(req);
