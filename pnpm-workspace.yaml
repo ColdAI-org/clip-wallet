@@ -13,3 +13,4 @@ allowBuilds:
   bufferutil: false
   secp256k1: false
   utf-8-validate: false
+  keccak: false

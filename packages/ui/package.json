@@ -37,6 +37,7 @@
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/media-client": "workspace:*",
     "qrcode": "^1.5.4"
   }
