@@ -281,7 +281,14 @@ export interface Warning {
     /** Closes the account and sends everything left to someone (Algorand close-to, NEAR DeleteAccount, Stellar accountMerge). */
     | "account-closure"
     /** The recipient (an exchange, usually) needs a memo, or the funds may be lost (Stellar SEP-29). */
-    | "memo-required";
+    | "memo-required"
+    // Phase 2.5 (security)
+    /** The site is on a phishing list (MetaMask, ScamSniffer, Phantom, PolkadotJS) or a scanning provider flagged it. */
+    | "phishing-site"
+    /** The recipient looks like an address you used before but isn't (look-alike / zero-value transfer poisoning). */
+    | "address-poisoning"
+    /** A scanning provider or a scam address list says this transaction would hurt you. */
+    | "malicious-transaction";
   message: string;
 }
 

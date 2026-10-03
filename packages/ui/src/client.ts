@@ -13,6 +13,7 @@ import type {
   NetworkId,
   Nft,
   TokenBalance,
+  Warning,
 } from "@clip-wallet/core";
 import type { PasskeyCeremony } from "./lib/passkey";
 
@@ -122,6 +123,8 @@ export interface ConnectView {
   accountLabel: string;
   address: string;
   permissions: string[];
+  /** Phase 2.5 (additive): scam-list and WalletConnect Verify findings for the site ("phishing-site", "domain-mismatch"…). */
+  warnings?: Warning[];
 }
 
 export interface ApprovalView {

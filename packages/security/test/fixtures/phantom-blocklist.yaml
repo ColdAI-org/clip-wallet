@@ -1,0 +1,5 @@
+---
+  - url: phantom-airdrop.example
+  - url: solflare-bonus.example
+  # comment line
+  - url: "raydium-claim.example"
