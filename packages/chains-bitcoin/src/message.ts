@@ -8,7 +8,8 @@ import { base64 } from "@scure/base";
 import { RawWitness, Script, SigHash, Transaction } from "@scure/btc-signer";
 import { RawOldTx } from "@scure/btc-signer/script.js";
 import { concatBytes, sha256x2, tagSchnorr } from "@scure/btc-signer/utils.js";
-import { type OwnScripts, wpkhScriptCode } from "./keys.js";
+import { ClipError } from "@clip-wallet/core";
+import { type OwnScripts, TAPROOT_UNAVAILABLE, wpkhScriptCode } from "./keys.js";
 import { TX_OPTS } from "./psbt.js";
 
 const enc = new TextEncoder();
@@ -37,6 +38,7 @@ export function bip322ToSign(message: Uint8Array, scriptPubKey: Uint8Array): Tra
 
 export function bip322Digest(message: Uint8Array, kind: "wpkh" | "tr", own: OwnScripts): Uint8Array {
   const script = kind === "wpkh" ? own.wpkh : own.tr;
+  if (!script) throw new ClipError(TAPROOT_UNAVAILABLE, "taproot-unavailable");
   const tx = bip322ToSign(message, script);
   return kind === "wpkh"
     ? tx.preimageWitnessV0(0, wpkhScriptCode(own.pubkey), SigHash.ALL, 0n)

@@ -137,6 +137,16 @@ export interface Account {
   address: string;
   /** Hedera only: 0.0.x once the alias has been auto-created. */
   hederaAccountId?: string;
+  /**
+   * Bitcoin only (Phase 2, additive): hex public key (x-only 32 bytes, or compressed 33 bytes) of the
+   * account's BIP-86 key m/86'/<coin>'/0'/0/<index>, the key the vault signs `schnorr-secp256k1` payloads
+   * with. `publicKey` stays the BIP-84 (P2WPKH) key. The vault's `deriveAccount` fills it for Bitcoin
+   * accounts; a background holding an Account from elsewhere fills it from the `publicKey` of
+   * `vault.deriveAccount("bitcoin", i, { bitcoinAddressType: "p2tr" })`. When absent (e.g. hardware
+   * accounts), chains-bitcoin treats no taproot (bc1p…) script as the account's and refuses taproot
+   * receive and signing in plain words.
+   */
+  taprootPublicKey?: string;
   label?: string;
 }
 
@@ -151,8 +161,15 @@ export interface SignablePayload {
    * for ed25519 and schnorr it is the message as the network defines it.
    */
   bytes: Uint8Array;
-  /** Bitcoin taproot tweak etc. */
-  options?: { taprootTweak?: Uint8Array };
+  options?: {
+    /**
+     * Bitcoin `schnorr-secp256k1` only: the BIP-341 MERKLE ROOT of the output's script tree, or an EMPTY
+     * array for a key-path-only output (BIP-86). It is NOT the TapTweak scalar: the vault computes
+     * t = H_TapTweak(P_x ‖ merkleRoot) from its own BIP-86 key P and signs with the tweaked key, so the
+     * signature verifies against the output key Q = P + t·G. Omit it to sign with the untweaked key.
+     */
+    taprootTweak?: Uint8Array;
+  };
   /**
    * Phase 2 (additive): sign with a key BELOW the account's node instead of the account key itself, as
    * "<chain>/<index>" relative to that node. Bitcoin: "1/<n>" = change address n of the BIP-84/86 account

@@ -148,8 +148,10 @@ Ledger Live layouts appear only in Advanced mode ("Use Ledger Live's accounts").
 
 ## Not done yet
 
-- Taproot (`tr(@0/**)` on Ledger; `schnorr-secp256k1` payloads are refused). Also see the integration doc: the
-  Phase 1 vault and chains-bitcoin disagree about the taproot key and tweak.
+- Taproot (`tr(@0/**)` on Ledger; `schnorr-secp256k1` payloads are refused). Hardware accounts carry no
+  `Account.taprootPublicKey`, so chains-bitcoin shows no bc1p address for them. When added, follow the vault's
+  contract: `taprootPublicKey` is the BIP-86 key m/86'/c'/0'/0/i and `options.taprootTweak` is the BIP-341 merkle
+  root (empty for key-path spends), not the TapTweak scalar (integration doc §8).
 - Bitcoin messages on Keystone (`btc-sign-request`), Solana messages on Ledger (app limitation).
 - Hedera on Keystone (no Keystone support). Hedera on Ledger needs chains-hedera to accept Ed25519 accounts.
 - Real-device runs: everything is tested against Speculos recordings and Keystone's vectors only.

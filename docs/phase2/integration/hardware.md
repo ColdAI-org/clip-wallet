@@ -475,7 +475,8 @@ const psbtBytes = tx.toPSBT(0);
 return digests.map((g) => {
   const p: SignablePayload = { accountId: ctx.account.id, scheme: g.kind === "tr" ? "schnorr-secp256k1" : "ecdsa-secp256k1", bytes: g.digest, approvalId,
     raw: { format: "psbt", bytes: psbtBytes, inputIndex: g.index } };
-  if (g.tweak) p.options = { taprootTweak: g.tweak };
+  if (g.kind === "tr") p.options = { taprootTweak: g.merkleRoot! }; // BIP-341 merkle root (empty for BIP-86)
+  if (g.subPath) p.derivationSubPath = g.subPath;
   return p;
 });
 
@@ -534,9 +535,13 @@ To let Ledger Hedera accounts sign (and only then add `"hedera"` to `DEVICE_FAMI
 - **Service-worker lifetime.** A Keystone exchange can take a while; the approval window's pending `approve`
   message keeps the worker alive (Chrome allows up to 5 minutes per message response). If it is killed, the
   approval fails and can be retried.
-- **Taproot.** Not supported on hardware yet. While checking it we noticed what looks like a Phase 1 mismatch:
-  chains-bitcoin passes `options.taprootTweak = tapTweakBytes(pubkey)` (the full TapTweak tagged hash), but the
-  vault's `signSchnorr` treats `taprootTweak` as the *merkle root* and hashes it again; and `ownScripts()` builds the
-  P2TR script from `account.publicKey` (the BIP-84 key) while the vault signs schnorr payloads with the BIP-86 key.
-  Not verified end to end in this stream — worth a test in chains-bitcoin/vault.
+- **Taproot.** Not supported on hardware yet. The Phase 1 mismatch noted here earlier is fixed (branch
+  `fix/taproot`): `SignablePayload.options.taprootTweak` is the BIP-341 **merkle root** (empty array for BIP-86
+  key-path spends), never the TapTweak scalar, and the signer computes t = H_TapTweak(P_x ‖ merkleRoot) from its own
+  BIP-86 key. chains-bitcoin builds taproot scripts from `Account.taprootPublicKey` (the BIP-86 key
+  m/86'/c'/0'/0/i), not `Account.publicKey` (BIP-84). Hardware accounts don't set `taprootPublicKey`, so
+  chains-bitcoin treats no bc1p script as theirs and answers taproot requests with "taproot-unavailable"; the
+  hardware signers keep refusing `schnorr-secp256k1`. A future Ledger `tr(@0/**)` signer must follow the same
+  contract: fill `taprootPublicKey` from m/86'/c'/0'/0/i and treat `taprootTweak` as the merkle root. Covered end
+  to end in `packages/vault/test/bitcoin-taproot-e2e.test.ts`.
 - **Bitcoin messages on Keystone** (`btc-sign-request`) and **Solana messages on Ledger** are refused with plain words.

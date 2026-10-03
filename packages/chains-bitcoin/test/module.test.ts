@@ -1,13 +1,13 @@
 import type { DappRequest, Signature } from "@clip-wallet/core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
-import { RawWitness, SigHash, Transaction, p2wpkh } from "@scure/btc-signer";
+import { RawWitness, SigHash, Transaction, p2tr, p2wpkh } from "@scure/btc-signer";
 import { describe, expect, it } from "vitest";
 import { createBitcoinModule } from "../src/module.js";
 import { BITCOIN_MAINNET, BITCOIN_NETWORKS, BITCOIN_SIGNET, BITCOIN_TESTNET4, networkById } from "../src/networks.js";
-import { ownScripts } from "../src/keys.js";
+import { ownScripts, ownTaprootAddress, taprootOutputKey } from "../src/keys.js";
 import { TX_OPTS } from "../src/psbt.js";
-import { BOB_T4, MY_TR_T4, MY_WPKH_T4, OTHER_PUB, SEND_ROUTES, TEST_ACCOUNT, UTXO_A, UTXO_C, ctx, mockFetch } from "./helpers.js";
+import { BIP84_TR_T4, BOB_T4, MY_TR_T4, MY_WPKH_T4, NO_TAPROOT_ACCOUNT, OTHER_PUB, SEND_ROUTES, T4, TEST_ACCOUNT, UTXO_A, UTXO_C, ctx, mockFetch } from "./helpers.js";
 import { MSG_SIGS, SEND_PSBT, SEND_SIGS } from "./signatures.js";
 
 const pub = TEST_ACCOUNT.publicKey;
@@ -121,7 +121,7 @@ describe("send: buildTransfer → decode → prepare → finalize", () => {
     expect(d.warnings.map((w) => w.code)).toEqual(["simulation-failed"]); // no ord index → can't check collectibles
   });
 
-  it("prepare: BIP-143 ecdsa digest + BIP-341 schnorr digest with the TapTweak", async () => {
+  it("prepare: BIP-143 ecdsa digest + BIP-341 schnorr digest with the merkle root (empty, BIP-86)", async () => {
     const { mod, c, req } = await sendRequest();
     const payloads = await mod.prepare(req, c, "approval-9");
     expect(payloads.map((p) => p.scheme)).toEqual(["ecdsa-secp256k1", "schnorr-secp256k1"]);
@@ -129,8 +129,9 @@ describe("send: buildTransfer → decode → prepare → finalize", () => {
     // The fixture signatures came from @scure/btc-signer's own signer: they verify only if our digests match its sighash.
     const own = ownScripts(TEST_ACCOUNT);
     expect(secp256k1.verify(hex.decode(SEND_SIGS[0]), payloads[0]!.bytes, own.pubkey, { prehash: false })).toBe(true);
-    expect(schnorr.verify(hex.decode(SEND_SIGS[1]), payloads[1]!.bytes, own.trOutputKey)).toBe(true);
-    expect(payloads[1]!.options?.taprootTweak).toHaveLength(32);
+    expect(schnorr.verify(hex.decode(SEND_SIGS[1]), payloads[1]!.bytes, own.trOutputKey!)).toBe(true);
+    // The vault computes H_TapTweak(P ‖ merkleRoot) itself: we hand it the merkle root, never the tweak.
+    expect(payloads[1]!.options?.taprootTweak).toEqual(new Uint8Array(0));
     expect(payloads[0]!.options).toBeUndefined();
   });
 
@@ -299,7 +300,7 @@ describe("messages", () => {
     const r = { ...req("signMessage", { address: MY_TR_T4, message: "Hello Clip" }, "walletconnect"), id: "msgTr" };
     const [p] = await mod.prepare(r, c, "a");
     expect(p!.scheme).toBe("schnorr-secp256k1");
-    expect(p!.options?.taprootTweak).toHaveLength(32);
+    expect(p!.options?.taprootTweak).toEqual(new Uint8Array(0));
     const out = (await mod.finalize(r, [schnorrSig(MSG_SIGS.tr)], c)) as { address: string; signature: string };
     expect(out.address).toBe(MY_TR_T4);
     expect(RawWitness.decode(base64.decode(out.signature))[0]).toHaveLength(64);
@@ -328,5 +329,62 @@ describe("messages", () => {
   it("refuses a message for an address that isn't ours", async () => {
     const mod = createBitcoinModule();
     await expect(mod.decode(req("signMessage", { address: BOB_T4, message: "x" }, "walletconnect"), ctx(mockFetch({})))).rejects.toMatchObject({ code: "wrong-account" });
+  });
+});
+
+describe("taproot keys (BIP-86 key from Account.taprootPublicKey)", () => {
+  it("taproot scripts come from the BIP-86 key, not the BIP-84 key", () => {
+    const own = ownScripts(TEST_ACCOUNT);
+    expect(hex.encode(own.trInternalKey!)).toBe("cc8a4bc64d897bddc5fbc2f670f7a8ba0b386779106cf1223c6fc5d7cd6fc115");
+    expect(hex.encode(own.tr!)).toBe(hex.encode(p2tr(own.trInternalKey!).script));
+    expect(hex.encode(own.trOutputKey!)).toBe("a60869f0dbcf1dc659c9cecbaf8050135ea9e8cdc487053f1dc6880949dc684c"); // BIP-86 vector
+    expect(own.trOutputKey).toEqual(taprootOutputKey(own.trInternalKey!));
+    expect(ownTaprootAddress(TEST_ACCOUNT, networkById(BITCOIN_MAINNET)!)).toBe("bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr");
+    expect(MY_TR_T4).not.toBe(BIP84_TR_T4);
+  });
+
+  it("a P2TR coin of the BIP-84 key is not the account's", async () => {
+    const tx = new Transaction(TX_OPTS);
+    tx.addInput({ txid: hex.decode("33".repeat(32)), index: 0, witnessUtxo: { script: p2tr(hex.decode(TEST_ACCOUNT.publicKey).slice(1)).script, amount: 10_000n } });
+    tx.addOutput({ script: p2wpkh(OTHER_PUB).script, amount: 9_000n });
+    const r = req("signPsbt", { psbt: base64.encode(tx.toPSBT()), signInputs: [{ address: MY_TR_T4, index: 0 }] }, "walletconnect");
+    await expect(createBitcoinModule().decode(r, ctx(mockFetch({})))).rejects.toMatchObject({ code: "not-our-input" });
+  });
+
+  it("refuses a key-path input whose merkle root doesn't give our output key", async () => {
+    const own = ownScripts(TEST_ACCOUNT);
+    const tx = new Transaction(TX_OPTS);
+    tx.addInput({ txid: hex.decode("44".repeat(32)), index: 0, witnessUtxo: { script: own.tr!, amount: 10_000n }, tapInternalKey: own.trInternalKey!, tapMerkleRoot: new Uint8Array(32).fill(7) });
+    tx.addOutput({ script: p2wpkh(OTHER_PUB).script, amount: 9_000n });
+    const r = req("signPsbt", { psbt: base64.encode(tx.toPSBT()), signInputs: [{ address: MY_TR_T4, index: 0 }] }, "walletconnect");
+    await expect(createBitcoinModule().prepare(r, ctx(mockFetch({})), "a")).rejects.toMatchObject({ code: "unsupported-script" });
+  });
+
+  describe("an account without taprootPublicKey (hardware, older background)", () => {
+    const noTr = (m: ReturnType<typeof mockFetch>) => ({ network: T4, account: NO_TAPROOT_ACCOUNT, fetch: m.fetch });
+
+    it("has no taproot scripts, address or balance lookups", async () => {
+      expect(ownScripts(NO_TAPROOT_ACCOUNT).tr).toBeUndefined();
+      expect(() => ownTaprootAddress(NO_TAPROOT_ACCOUNT, T4)).toThrow(/Taproot \(bc1p…\) addresses aren't available/);
+      const m = mockFetch({ [`/address/${MY_WPKH_T4}`]: { chain_stats: { funded_txo_sum: 7, spent_txo_sum: 0 }, mempool_stats: { funded_txo_sum: 0, spent_txo_sum: 0 } } });
+      expect((await createBitcoinModule().getBalances(noTr(m)))[0]!.amount).toBe("7");
+      expect(m.requests.some((r) => r.url.includes("tb1p"))).toBe(false);
+    });
+
+    it("sends from P2WPKH coins only", async () => {
+      const m = mockFetch(SEND_ROUTES);
+      const r = await createBitcoinModule().buildTransfer({ asset: T4.nativeAsset, to: BOB_T4, amount: "60000" }, noTr(m));
+      const tx = Transaction.fromPSBT(base64.decode((r.params as { inputs: { psbt: string }[] }).inputs[0]!.psbt), TX_OPTS);
+      expect(Array.from({ length: tx.inputsLength }, (_, i) => hex.encode(tx.getInput(i).txid!))).toEqual([UTXO_A]);
+      expect(m.requests.some((q) => q.url.includes(MY_TR_T4))).toBe(false);
+    });
+
+    it("taproot message or PSBT signer → plain taproot-unavailable message", async () => {
+      const mod = createBitcoinModule();
+      const msg = req("signMessage", { address: MY_TR_T4, message: "Hello Clip" }, "walletconnect");
+      await expect(mod.decode(msg, noTr(mockFetch({})))).rejects.toMatchObject({ code: "taproot-unavailable", userMessage: expect.stringMatching(/^Taproot/) });
+      const psbt = req("signPsbt", { psbt: SEND_PSBT, signInputs: [{ address: MY_TR_T4, index: 1 }] }, "walletconnect");
+      await expect(mod.decode(psbt, noTr(mockFetch({})))).rejects.toMatchObject({ code: "taproot-unavailable" });
+    });
   });
 });
