@@ -1,0 +1,13 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noImplicitOverride": false,
+    "types": ["vitest/globals"]
+  },
+  "include": [".wxt/wxt.d.ts", "src", "test", "e2e", "passkey-bridge", "clip.config.ts", "wxt.config.ts", "vitest.config.ts", "playwright.config.ts"]
+}
