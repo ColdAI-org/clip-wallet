@@ -110,7 +110,9 @@ export interface Nft {
     | "fa2"
     | "arc3"
     | "arc19"
-    | "arc69";
+    | "arc69"
+    /** TON NFT items (TEP-62 / TEP-64 metadata). */
+    | "tep62";
   collection: { address: string; name: string };
   tokenId: string;
   name?: string;
