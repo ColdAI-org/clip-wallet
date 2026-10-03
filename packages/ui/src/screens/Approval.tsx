@@ -6,6 +6,7 @@ import type { ApprovalView } from "../client";
 import { userMessageOf } from "../client";
 import { useUi } from "../context";
 import { Button, Chip, ErrorNote, Row, Toggle, Warnings } from "../components";
+import { PluginInsights, type PluginInsightView } from "../plugins";
 import { IconChevron, IconShield, IconAlert } from "../components/icons";
 import { formatFiat, formatUnits, readyIn } from "../lib/format";
 import { hueFor } from "../lib/media";
@@ -173,6 +174,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
           </div>
         )}
         <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
+        <PluginInsights insights={(d as { pluginInsights?: PluginInsightView[] }).pluginInsights} />
         {d.blind && advanced && (
           <Toggle
             label="Sign this unreadable request anyway"

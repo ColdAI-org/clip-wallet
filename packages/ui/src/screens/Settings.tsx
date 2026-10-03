@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Prefs } from "../client";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
+import { asPlugins } from "../plugins/client";
 import { Button, Card, ErrorNote, Field, Row, Screen, Toggle } from "../components";
 import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
@@ -264,6 +265,11 @@ export function Settings() {
         />
       </Section>
       {prefs.advanced && <AdvancedNetworks prefs={prefs} setPrefs={setPrefs} />}
+      {prefs.advanced && asPlugins(client) && (
+        <Button variant="secondary" block onClick={() => navigate("/settings/plugins")}>
+          Plugins
+        </Button>
+      )}
 
       {state.mocks && client.devSimulateRequest && (
         <Section title="Developer (mock data)">
