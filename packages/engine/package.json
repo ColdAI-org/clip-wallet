@@ -1,0 +1,32 @@
+{
+  "name": "@clip-wallet/engine",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./wiring": "./src/wiring.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/chains-bitcoin": "workspace:*",
+    "@clip-wallet/chains-evm": "workspace:*",
+    "@clip-wallet/chains-hedera": "workspace:*",
+    "@clip-wallet/chains-solana": "workspace:*",
+    "@clip-wallet/config": "workspace:*",
+    "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/route": "workspace:*",
+    "@clip-wallet/ui": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}

@@ -106,11 +106,15 @@ test("vault importers: background, onboarding screen and the vault only", () => 
     "apps/extension/src/background/index.ts",
     "packages/ui/src/screens/Onboarding.tsx",
     "packages/ui/src/screens/onboarding/Create.tsx",
+    "apps/mobile/src/background/host.ts",
   ]) assert.ok(allowed(f), f);
   for (const f of [
     "packages/ui/src/screens/Send.tsx",
     "packages/route/src/onboarding.ts",
     "packages/chains-evm/src/onboarding.ts",
     "apps/extension/entrypoints/popup/main.tsx",
+    "apps/mobile/src/screens/Home.tsx",
+    "apps/mobile/src/browser/bridge.ts",
+    "packages/engine/src/engine.ts",
   ]) assert.ok(!allowed(f), f);
 });

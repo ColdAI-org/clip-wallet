@@ -3,5 +3,7 @@ packages:
   - apps/*
   - templates/*
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: true
   protobufjs: false
+  unrs-resolver: false

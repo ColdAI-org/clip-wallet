@@ -1,0 +1,7 @@
+# Generated native projects (Continuous Native Generation: `pnpm prebuild`).
+ios/
+android/
+.expo/
+dist/
+# Built from @clip-wallet/1mask at typecheck/test/start time.
+src/browser/inpage.generated.ts

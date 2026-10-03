@@ -46,6 +46,7 @@ import {
 } from "./derive.js";
 import type { Network2, TonWalletVersion } from "./encodings.js";
 import { emptyMeta, openMeta, sealMeta, type VaultMeta } from "./meta.js";
+import { hashWasmArgon2id, type Argon2idFn } from "./kdf.js";
 import { VaultErrors } from "./errors.js";
 import { passkeyBackup, passkeyWrapKey, type PasskeyPrf } from "./passkey.js";
 import { entropyToPhrase, newPhrase, phraseToEntropy, phraseToSeed, type PhraseLength } from "./phrase.js";
@@ -60,6 +61,8 @@ export interface ClipVaultOptions {
   autoLockMs?: number;
   /** Argon2id cost for newly written records. Default DEFAULT_ARGON2 (64 MiB, t=3, p=1). */
   argon2?: Argon2Params;
+  /** Argon2id implementation. Default hash-wasm (WebAssembly); React Native passes a native one (see kdf.ts). */
+  argon2id?: Argon2idFn;
   /** Default "testnet" (coin type 1', tb1 addresses). Mainnet needs an explicit build flag in the app. */
   bitcoinNetwork?: BitcoinNetwork;
   /** Default "testnet": Cardano base addresses use network id 0 (addr_test…). */
@@ -149,6 +152,7 @@ export class ClipVault implements Vault {
   private readonly clock: Clock;
   private readonly autoLockMs: number;
   private readonly argon2: Argon2Params;
+  private readonly argon2id: Argon2idFn;
   private readonly bitcoinNetwork: BitcoinNetwork;
   private readonly cardanoNetwork: Network2;
   private readonly tonNetwork: Network2;
@@ -173,6 +177,7 @@ export class ClipVault implements Vault {
     this.clock = opts.clock ?? systemClock;
     this.autoLockMs = opts.autoLockMs ?? 15 * 60 * 1000;
     this.argon2 = opts.argon2 ?? DEFAULT_ARGON2;
+    this.argon2id = opts.argon2id ?? hashWasmArgon2id;
     this.bitcoinNetwork = opts.bitcoinNetwork ?? "testnet";
     this.cardanoNetwork = opts.cardanoNetwork ?? "testnet";
     this.tonNetwork = opts.tonNetwork ?? "testnet";
@@ -236,7 +241,7 @@ export class ClipVault implements Vault {
     const vek = await this.unwrapWithPassword(rec, oldPassword);
     try {
       const kdf = newKdfRecord(this.argon2);
-      const kek = await deriveKek(newPassword, kdf);
+      const kek = await deriveKek(newPassword, kdf, this.argon2id);
       rec.kdf = kdf;
       rec.pwWrap = seal(kek, vek, AAD_PW);
       wipe(kek);
@@ -619,7 +624,7 @@ export class ClipVault implements Vault {
     const entropy = phraseToEntropy(phrase); // validates
     const vek = randomBytes(32);
     const kdf = newKdfRecord(this.argon2);
-    const kek = await deriveKek(password, kdf);
+    const kek = await deriveKek(password, kdf, this.argon2id);
     try {
       const rec: VaultRecord = {
         v: 1,
@@ -655,7 +660,7 @@ export class ClipVault implements Vault {
   private async unwrapWithPassword(rec: VaultRecord, password: string): Promise<Uint8Array> {
     let kek: Uint8Array | undefined;
     try {
-      kek = await deriveKek(password, rec.kdf);
+      kek = await deriveKek(password, rec.kdf, this.argon2id);
       return open(kek, rec.pwWrap, AAD_PW);
     } catch {
       throw VaultErrors.wrongPassword();

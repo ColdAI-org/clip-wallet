@@ -10,6 +10,7 @@ export {
 export { hashSignablePayload, MAX_APPROVAL_TTL_MS } from "./approvals.js";
 export { MemoryStorage, systemClock, type Clock, type VaultStorage } from "./storage.js";
 export { DEFAULT_ARGON2, type Argon2Params } from "./crypto.js";
+export { hashWasmArgon2id, type Argon2idFn, type Argon2idInput } from "./kdf.js";
 export { passkeyBackup, BACKUP_PRF_INPUT, type PasskeyPrf } from "./passkey.js";
 export {
   derivationPath,
