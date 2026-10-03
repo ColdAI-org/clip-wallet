@@ -7,8 +7,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./inpage": "./src/inpage/index.ts",
+    "./inpage/p2": "./src/inpage/p2.ts",
     "./content": "./src/content/index.ts",
     "./background": "./src/background/index.ts",
+    "./background/p2": "./src/background/p2-families.ts",
     "./walletconnect": "./src/walletconnect/index.ts"
   },
   "scripts": {
