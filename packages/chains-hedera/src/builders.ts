@@ -220,6 +220,27 @@ export function hbarAllowanceDraft(p: { owner: string; spender: string; tinybars
   };
 }
 
+/**
+ * AccountAllowanceApproveTransaction with several allowances at once (HIP-336): HBAR and fungible-token
+ * allowances by amount, NFT "all serials" allowances by switch. Revoking = amount 0 / approvedForAll false.
+ */
+export function approveAllowanceDraft(p: {
+  owner: string;
+  hbar?: { spender: string; tinybars: bigint | string | number }[];
+  token?: { tokenId: string; spender: string; amount: bigint | string | number }[];
+  nftAll?: { tokenId: string; spender: string; approved: boolean }[];
+}): TxDraft {
+  const owner = parseAccountId(p.owner);
+  return {
+    kind: BODY.cryptoApproveAllowance,
+    data: encodeApproveAllowance({
+      hbar: (p.hbar ?? []).map((a) => ({ owner, spender: parseAccountId(a.spender), amount: BigInt(a.tinybars) })),
+      token: (p.token ?? []).map((a) => ({ tokenId: parseEntityId(a.tokenId), owner, spender: parseAccountId(a.spender), amount: BigInt(a.amount) })),
+      nft: (p.nftAll ?? []).map((a) => ({ tokenId: parseEntityId(a.tokenId), owner, spender: parseAccountId(a.spender), approvedForAll: a.approved })),
+    }),
+  };
+}
+
 /* ------------------------------------------------------------------ builders */
 
 /** HBAR (asset.address absent) or an HTS fungible token (asset.address = token id). `amount` in base units. */

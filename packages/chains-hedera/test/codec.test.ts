@@ -31,6 +31,7 @@ import {
 import { describe, expect, it } from "vitest";
 import {
   aliasAddress,
+  approveAllowanceDraft,
   attachSignatures,
   bodiesToSign,
   contractCallDraft,
@@ -198,6 +199,23 @@ describe("builders are byte-identical to the SDK", () => {
     );
     expectSdkIdentical(freezeDraft(hbarAllowanceDraft({ owner: ME, spender: BOB, tinybars: 99 }), opts), () =>
       new AccountAllowanceApproveTransaction().approveHbarAllowance(ME, BOB, Hbar.fromTinybars(99)),
+    );
+    // Revoking several at once (security stream's permission revoker): HBAR 0, token 0, NFT all-serials off.
+    expectSdkIdentical(
+      freezeDraft(
+        approveAllowanceDraft({
+          owner: ME,
+          hbar: [{ spender: BOB, tinybars: 0 }],
+          token: [{ tokenId: "0.0.731861", spender: "0.0.1414040", amount: 0 }],
+          nftAll: [{ tokenId: "0.0.4000", spender: BOB, approved: false }],
+        }),
+        opts,
+      ),
+      () =>
+        new AccountAllowanceApproveTransaction()
+          .approveHbarAllowance(ME, AccountId.fromString(BOB), Hbar.fromTinybars(0))
+          .approveTokenAllowance("0.0.731861", ME, AccountId.fromString("0.0.1414040"), 0)
+          .deleteTokenNftAllowanceAllSerials("0.0.4000", ME, AccountId.fromString(BOB)),
     );
   });
 

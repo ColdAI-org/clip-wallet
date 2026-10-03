@@ -1197,9 +1197,6 @@ importers:
       '@clip-wallet/features':
         specifier: workspace:*
         version: link:../features
-      '@hiero-ledger/sdk':
-        specifier: ^2.89.1
-        version: 2.89.1(bn.js@5.2.3)(expo-crypto@57.0.3)(supports-color@8.1.1)
       '@solana-program/token':
         specifier: ^0.17.0
         version: 0.17.0(@solana/kit@8.4.0(typescript@5.9.3))
@@ -1213,6 +1210,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
+      '@hiero-ledger/sdk':
+        specifier: ^2.89.1
+        version: 2.89.1(bn.js@5.2.3)(expo-crypto@57.0.3)(supports-color@8.1.1)
       typescript:
         specifier: ^5.6.0
         version: 5.9.3

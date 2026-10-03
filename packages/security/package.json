@@ -20,13 +20,13 @@
     "@clip-wallet/chains-solana": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
-    "@hiero-ledger/sdk": "^2.89.1",
     "@solana-program/token": "^0.17.0",
     "@solana/kit": "^8.4.0",
     "viem": "^2.57.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@hiero-ledger/sdk": "^2.89.1",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   }

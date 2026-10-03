@@ -1,7 +1,6 @@
 import type { ChainContext } from "@clip-wallet/core";
-import { freezeNew, mirrorFor, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
+import { approveAllowanceDraft, freezeNew, mirrorFor, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { formatUnits, type Step } from "@clip-wallet/features";
-import { AccountAllowanceApproveTransaction, AccountId, Hbar } from "@hiero-ledger/sdk";
 import { spenderName } from "../labels.js";
 import { chunk } from "../solana.js";
 import { type ApprovalScanner, type Grant, type RevokeSpec, type ScanOptions, type ScanResult, grantId, risksFor } from "./types.js";
@@ -34,6 +33,16 @@ interface MirrorAllowance {
   amount_granted?: number | string;
   approved_for_all?: boolean;
   timestamp?: { from?: string };
+}
+
+/** The allowances in `specs` set to zero (HBAR, tokens) or switched off (NFT "all serials"), owned by `payer`. */
+export function revokeDraft(payer: string, specs: RevokeSpec[]) {
+  return approveAllowanceDraft({
+    owner: payer,
+    hbar: specs.flatMap((s) => (s.kind === "hedera-hbar" ? [{ spender: s.spender, tinybars: 0 }] : [])),
+    token: specs.flatMap((s) => (s.kind === "hedera-token" ? [{ tokenId: s.tokenId, spender: s.spender, amount: 0 }] : [])),
+    nftAll: specs.flatMap((s) => (s.kind === "hedera-nft-all" ? [{ tokenId: s.tokenId, spender: s.spender, approved: false }] : [])),
+  });
 }
 
 const secondsToMs = (s?: string) => (s ? Math.floor(Number(s) * 1000) : undefined);
@@ -150,12 +159,8 @@ export class HederaApprovals implements ApprovalScanner {
       lines: [{ label: "What happens", value: "The apps lose their permission. Nothing is moved." }],
       request: async () => {
         const payer = await resolvePayer(ctx);
-        const tx = new AccountAllowanceApproveTransaction();
-        for (const s of batch) {
-          if (s.kind === "hedera-hbar") tx.approveHbarAllowance(payer, AccountId.fromString(s.spender), Hbar.fromTinybars(0));
-          else if (s.kind === "hedera-token") tx.approveTokenAllowance(s.tokenId, payer, AccountId.fromString(s.spender), 0);
-          else if (s.kind === "hedera-nft-all") tx.deleteTokenNftAllowanceAllSerials(s.tokenId, payer, AccountId.fromString(s.spender));
-        }
+        // chains-hedera's codec (no Hiero SDK at runtime); test/hedera-revoke.test.ts checks the bytes against the SDK.
+        const tx = revokeDraft(payer, batch);
         return requestFor(freezeNew(tx, payer, ctx), payer, ctx);
       },
     }));

@@ -491,6 +491,8 @@ export function decodeApproveAllowance(b: Uint8Array): ApproveAllowanceP {
 export function encodeApproveAllowance(p: {
   hbar?: { owner: AccountIdP | null; spender: AccountIdP | null; amount: bigint | null }[];
   token?: { tokenId: EntityIdP; owner: AccountIdP | null; spender: AccountIdP | null; amount: bigint }[];
+  /** NftAllowance (field 2): only the "all serials" switch (approved_for_all, a BoolValue) is written. */
+  nft?: { tokenId: EntityIdP; owner: AccountIdP | null; spender: AccountIdP | null; approvedForAll: boolean }[];
 }): Uint8Array {
   const w = new Writer();
   for (const a of p.hbar ?? []) {
@@ -500,6 +502,18 @@ export function encodeApproveAllowance(p: {
         .message(1, a.owner ? encodeAccountId(a.owner) : null)
         .message(2, a.spender ? encodeAccountId(a.spender) : null)
         .int(3, a.amount)
+        .finish(),
+    );
+  }
+  for (const a of p.nft ?? []) {
+    w.message(
+      2,
+      new Writer()
+        .message(1, encodeEntityId(a.tokenId))
+        .message(2, a.owner ? encodeAccountId(a.owner) : null)
+        .message(3, a.spender ? encodeAccountId(a.spender) : null)
+        // google.protobuf.BoolValue { bool value = 1; }, written even when false (as the SDK does).
+        .message(5, Uint8Array.of(0x08, a.approvedForAll ? 1 : 0))
         .finish(),
     );
   }
