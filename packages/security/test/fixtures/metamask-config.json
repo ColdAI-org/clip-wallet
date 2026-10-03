@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "tolerance": 1,
+  "fuzzylist": ["metamask.io", "opensea.io", "etherscan.io"],
+  "whitelist": ["opensea.pro", "metamask.io", "safe.drainer-lookalike.example"],
+  "blacklist": ["drainer-lookalike.example", "claim-airdrop.example", "uniswap-rewards.example"]
+}

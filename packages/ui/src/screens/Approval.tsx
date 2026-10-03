@@ -199,6 +199,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
   const { client, state, config } = useUi();
   const a = props.approval;
   const advanced = !!state?.prefs.advanced;
+  const phishing = !!a.connect?.warnings?.some((w) => w.level === "danger");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const act = async (approve: boolean) => {
@@ -231,7 +232,8 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
       </ul>
       {advanced && a.connect && <Row label="Address" value={<code className="clip-mono">{a.connect.address}</code>} />}
       <div className="clip-approval__bottom">
-        {!a.dapp.verified && (
+        <Warnings warnings={a.connect?.warnings ?? []} />
+        {!a.dapp.verified && !a.connect?.warnings?.some((w) => w.code === "domain-mismatch") && (
           <Warnings
             warnings={[
               { level: "caution", code: "domain-mismatch", message: `${config.name} doesn't recognise ${a.dapp.domain}. Only connect if you opened it yourself.` },
@@ -243,8 +245,8 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
           <Button variant="secondary" onClick={() => act(false)} disabled={busy}>
             Cancel
           </Button>
-          <Button onClick={() => act(true)} disabled={busy}>
-            Connect
+          <Button variant={phishing ? "danger" : "primary"} onClick={() => act(true)} disabled={busy}>
+            {phishing ? "Connect anyway" : "Connect"}
           </Button>
         </div>
       </div>
