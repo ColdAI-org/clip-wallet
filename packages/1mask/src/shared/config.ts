@@ -36,7 +36,11 @@ export interface InpageConfig {
   /** Also set window.ethereum (only if nothing else owns it). Default false: EIP-6963 only. */
   claimWindowEthereum?: boolean;
   /** Which providers to install. Default: all. */
-  providers?: { evm?: boolean; solana?: boolean; bitcoin?: boolean; sui?: boolean; aptos?: boolean };
+  providers?: { evm?: boolean; solana?: boolean; bitcoin?: boolean; sui?: boolean; aptos?: boolean; near?: boolean; stellar?: boolean; tezos?: boolean; algorand?: boolean };
+  /** Global the NEAR/Stellar/Algorand providers hang off (window[globalKey].<family>). Default "clipwallet". */
+  globalKey?: string;
+  /** Beacon extension id (Beacon's wallet list matches the browser extension id). Default: identity.rdns. */
+  beaconExtensionId?: string;
   /** Per-site compatibility mode. Typed stub, NOT implemented in v1. */
   compatibility?: CompatibilityModeConfig;
   /** Per-request timeout in the page, ms. Default 10 minutes (approvals can take a while). */

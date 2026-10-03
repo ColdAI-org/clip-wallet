@@ -12,6 +12,10 @@ import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } fr
 import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
 import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui";
 import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos";
+import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near";
+import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar";
+import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos";
+import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
 function curatedAsset(t: CuratedToken): AssetRef {
@@ -34,6 +38,10 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     SUI_MAINNET,
     APTOS_TESTNET,
     APTOS_MAINNET,
+    ...NEAR_NETWORKS,
+    ...STELLAR_NETWORKS,
+    ...TEZOS_NETWORKS,
+    ...ALGORAND_NETWORKS,
   ];
   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
 }
@@ -67,6 +75,20 @@ export function walletAssets(networks: Network[]): AssetRef[] {
     if (n.family === "aptos") {
       const fa = USDC_METADATA[n.testnet ? "testnet" : "mainnet"];
       if (fa) out.push({ key: aptosKey(n.id, fa), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: fa });
+    }
+    if (n.family === "near") {
+      const contract = USDC_CONTRACTS[n.testnet ? "testnet" : "mainnet"];
+      out.push({ key: nep141Key(n.id, contract), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: contract });
+    }
+    if (n.family === "stellar") out.push(classicAsset(n.id, "USDC", USDC_ISSUERS[n.testnet ? "testnet" : "pubnet"]));
+    if (n.family === "algorand") {
+      const id = ALGORAND_NETS[n.testnet ? "testnet" : "mainnet"].usdc;
+      out.push({ key: asaAssetKey(n.id, id), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: id });
+    }
+    if (n.family === "tezos") {
+      for (const t of TEZOS_TOKENS.filter((t) => t.networkId === n.id && t.key === "usdt")) {
+        out.push({ key: t.key, symbol: t.symbol, name: t.name, decimals: t.decimals, networkId: n.id, address: `${t.contract}:${t.tokenId}` });
+      }
     }
   }
   return out;

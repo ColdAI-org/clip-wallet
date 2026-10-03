@@ -83,7 +83,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 }
 const APPROVAL_TTL_MS = 2 * 60_000;
-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin", "sui", "aptos"];
+const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin", "sui", "aptos", "near", "stellar", "tezos", "algorand"];
 
 function parseUnits(value: string, decimals: number): bigint {
   const [w = "0", f = ""] = value.split(".");

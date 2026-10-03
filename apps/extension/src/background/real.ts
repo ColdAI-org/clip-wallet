@@ -6,17 +6,50 @@ import { ClipError } from "@clip-wallet/core";
 import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
 import { createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
+import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/background/p2";
+import type { KV } from "../shared/storage";
 import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
 
-const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect", "aptos:connect"]);
+const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect", "aptos:connect", ...P2_CONNECT_METHODS]);
 const READ_ONLY = new Set<string>(EVM_METHODS.readOnly);
 
 /* ------------------------------------------------------------------ 1Mask */
 
+/**
+ * Tezos Beacon extension peer (kit-modules/tezos), loaded on first Beacon message. Beacon's packages
+ * expect a global Buffer, so the polyfill is installed before they load.
+ */
+function lazyBeacon(kv: KV, name: string, iconUrl: string, router: () => OneMaskRouter | undefined): BeaconRelay {
+  let peer: Promise<BeaconRelay> | undefined;
+  const load = () =>
+    (peer ??= (async () => {
+      const { Buffer } = await import("buffer");
+      (globalThis as { Buffer?: unknown }).Buffer ??= Buffer;
+      const { createBeaconExtensionPeer } = await import("@clip-wallet/kit-modules/tezos");
+      return createBeaconExtensionPeer({
+        name,
+        iconUrl,
+        storage: { get: (k) => kv.get<string>(`beacon:${k}`), set: (k, v) => kv.set(`beacon:${k}`, v) },
+        dispatch: (origin, input) => {
+          const r = router();
+          if (!r) return Promise.reject(new ClipError("Clip Wallet is starting. Try again.", "not-ready"));
+          return r.dispatch(origin, input);
+        },
+      });
+    })());
+  return {
+    receive: async (origin, message) => (await load()).receive(origin, message),
+    result: async (origin, id) => (await load()).result(origin, id),
+  };
+}
+
 export class OneMaskConnector implements DappConnector {
   private router?: OneMaskRouter;
-  constructor(private readonly networks: Network[]) {}
+  constructor(
+    private readonly networks: Network[],
+    private readonly beacon?: { kv: KV; name: string; iconUrl: string },
+  ) {}
 
   start(host: DappHost) {
     this.router = createOneMaskRouter({
@@ -26,6 +59,7 @@ export class OneMaskConnector implements DappConnector {
       isUnlocked: () => host.isUnlocked(),
       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
       cancel: (requestId) => host.cancel(requestId),
+      ...(this.beacon ? { tezosBeacon: lazyBeacon(this.beacon.kv, this.beacon.name, this.beacon.iconUrl, () => this.router) } : {}),
       handle: async (req) => {
         if (CONNECT_METHODS.has(req.method)) {
           const ok = await host.approveConnect({ origin: req.origin, family: req.family, networkId: req.networkId, via: "injected" });
@@ -145,7 +179,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
 
 /* ------------------------------------------------------------------ route */
 
-const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600, sui: 1, aptos: 1 };
+const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600, sui: 1, aptos: 1, near: 2, stellar: 6, tezos: 10, algorand: 4 };
 
 /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
 export class RoutePlannerAdapter implements RoutePlanner {

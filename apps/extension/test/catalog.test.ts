@@ -18,6 +18,10 @@ describe("catalog (real chain packages)", () => {
     const assets = walletAssets(walletNetworks(config));
     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "eip155:84532")).toBe(true);
     expect(assets.some((a) => a.symbol === "USDC" && a.networkId === "hedera:testnet")).toBe(true);
+    for (const id of ["near:testnet", "stellar:testnet", "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe"]) {
+      expect(assets.find((a) => a.symbol === "USDC" && a.networkId === id)?.key).toBe("usdc");
+    }
+    expect(assets.some((a) => a.networkId === "tezos:NetXsqzbfFenSTS" && a.key === "xtz")).toBe(true);
   });
 });
 

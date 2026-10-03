@@ -27,6 +27,10 @@ import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
 import { createSuiModule } from "@clip-wallet/chains-sui";
 import { createAptosModule } from "@clip-wallet/chains-aptos";
+import { createNearModule } from "@clip-wallet/chains-near";
+import { createStellarModule } from "@clip-wallet/chains-stellar";
+import { createTezosModule } from "@clip-wallet/chains-tezos";
+import { createAlgorandModule } from "@clip-wallet/chains-algorand";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
@@ -209,11 +213,23 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   return {
     mocks: false,
     vault,
-    chains: { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule(), sui: createSuiModule(), aptos: createAptosModule() },
+    chains: {
+      evm: createEvmModule(),
+      hedera,
+      solana: createSolanaModule(),
+      bitcoin: createBitcoinModule(),
+      sui: createSuiModule(),
+      aptos: createAptosModule(),
+      near: createNearModule(),
+      stellar: createStellarModule(),
+      tezos: createTezosModule(),
+      // Must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
+      algorand: createAlgorandModule(),
+    },
     networks,
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency),
-    dapps: new OneMaskConnector(networks),
+    dapps: new OneMaskConnector(networks, { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
     names: new NoNameResolver(),

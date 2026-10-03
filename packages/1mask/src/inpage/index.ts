@@ -10,6 +10,7 @@ import { assertCompatibilityModeOff } from "../shared/compat.js";
 import { resolveChannel, resolveIdentity, type InpageConfig, type WalletIdentity } from "../shared/config.js";
 import { ClipBitcoinWallet } from "./bitcoin.js";
 import { ClipEthereumProvider, announceEip6963, claimWindowEthereum, type EIP6963ProviderDetail } from "./evm.js";
+import { installP2Providers, type InstalledP2 } from "./p2.js";
 import { ClipSolanaWallet } from "./solana.js";
 import { ClipSuiWallet } from "./sui.js";
 import { ClipAptosWallet } from "./aptos.js";
@@ -23,6 +24,8 @@ export interface InstalledOneMask {
   bitcoin?: ClipBitcoinWallet;
   sui?: ClipSuiWallet;
   aptos?: ClipAptosWallet;
+  /** NEAR (window.clipwallet.near + NEAR Connect), Stellar (SEP-43), Algorand, Tezos (Beacon relay). */
+  p2?: InstalledP2;
   destroy(): void;
 }
 
@@ -63,6 +66,13 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
     stops.push(() => aptos.destroy());
     registerWallet(aptos);
   }
+  const p2 = installP2Providers(win, identity, config.networks, transport, {
+    want: { near: want.near ?? true, stellar: want.stellar ?? true, tezos: want.tezos ?? true, algorand: want.algorand ?? true },
+    ...(config.globalKey ? { globalKey: config.globalKey } : {}),
+    ...(config.beaconExtensionId ? { beaconExtensionId: config.beaconExtensionId } : {}),
+  });
+  stops.push(p2.stop);
+  out.p2 = p2;
   return out;
 }
 
@@ -74,3 +84,4 @@ export { ClipSuiWallet, SUI_FEATURES, SUI_SIGNING_METHODS, suiChain } from "./su
 export { ClipAptosWallet, APTOS_FEATURES, METHOD_APTOS_NETWORK, aptosChain, toWireArg } from "./aptos.js";
 export * from "./bitcoin-features.js";
 export { createInpageTransport, type InpageTransport } from "./transport.js";
+export * from "./p2.js";

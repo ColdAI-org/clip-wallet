@@ -292,6 +292,9 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
     if (namespaceOf(chainId) === "solana" && (method === "solana_getAccounts" || method === "solana_requestAccounts")) {
       return { result: sessionAccounts(session, chainId).map((pubkey) => ({ pubkey })) };
     }
+    if (namespaceOf(chainId) === "near" && method === "near_getAccounts") {
+      return { result: sessionAccounts(session, chainId).map((accountId) => ({ accountId })) };
+    }
     return undefined;
   };
 

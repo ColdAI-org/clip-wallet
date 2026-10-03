@@ -21,6 +21,7 @@ import {
 } from "../shared/protocol.js";
 import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist } from "./methods.js";
 import { METHOD_APTOS_NETWORK } from "../inpage/aptos.js";
+import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
 import type { PermissionStore } from "./permissions.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
@@ -67,6 +68,8 @@ export interface OneMaskRouterOptions {
   /** Told when the router gives up on a request (timeout) so the approval window can close. */
   cancel?(requestId: string, reason: "timeout"): void;
   timeouts?: { approvalMs?: number; readMs?: number };
+  /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
+  tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
   rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
   newId?(): string;
   now?(): number;
@@ -444,6 +447,22 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     return approve(makeReq(origin, family, net, method, params));
   };
 
+  /* ------------------------------------------------------------ NEAR, Stellar, Tezos, Algorand */
+
+  const p2 = createP2Dispatcher(
+    {
+      permitted,
+      requirePermission,
+      accounts,
+      connect,
+      approve,
+      makeReq,
+      requireNetwork,
+      revoke: (origin, family) => revoke(origin, family),
+    },
+    opts.tezosBeacon ? { beacon: opts.tezosBeacon } : {},
+  );
+
   /* ------------------------------------------------------------ public */
 
   /** Errors leave the router as ProviderRpcError {code,message} only: no stacks, no causes. */
@@ -463,6 +482,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "solana" || family === "bitcoin" || family === "sui" || family === "aptos") {
       return dispatchStandard(origin, family, method, params, chain);
     }
+    if (P2_FAMILIES.has(family)) return p2.dispatch(origin, family, method, params, chain);
     throw rpcError.unsupportedMethod(method);
   };
 
