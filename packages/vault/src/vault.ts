@@ -46,6 +46,7 @@ import {
 } from "./derive.js";
 import type { Network2, TonWalletVersion } from "./encodings.js";
 import { emptyMeta, openMeta, sealMeta, type VaultMeta } from "./meta.js";
+import { openAppData as openAppDataBox, sealAppData as sealAppDataBox } from "./appdata.js";
 import { hashWasmArgon2id, type Argon2idFn } from "./kdf.js";
 import { VaultErrors } from "./errors.js";
 import { passkeyBackup, passkeyWrapKey, type PasskeyPrf } from "./passkey.js";
@@ -363,6 +364,26 @@ export class ClipVault implements Vault {
     const list = meta.change[this.changeKey(type)]?.owners[String(accountIndex)] ?? [];
     this.touch();
     return list.map((n) => this.changeAddressFor(src, type, n));
+  }
+
+  /**
+   * Encrypts a small private document (e.g. the address book) under a seed-derived key for `namespace`
+   * (appdata.ts). Unlocked only. The ciphertext is safe to keep in ordinary extension/app storage.
+   */
+  async sealAppData(namespace: string, plaintext: string): Promise<{ nonce: string; ct: string }> {
+    const seed = this.requireSeed();
+    this.touch();
+    return sealAppDataBox(seed, namespace, plaintext);
+  }
+
+  /** Opens what sealAppData sealed. Throws VaultErrors.appDataUnreadable on a wrong namespace, seed or tampering. */
+  async openAppData(namespace: string, box: { nonce: string; ct: string }): Promise<string> {
+    const seed = this.requireSeed();
+    try {
+      return openAppDataBox(seed, namespace, box);
+    } catch (e) {
+      throw VaultErrors.appDataUnreadable(e);
+    }
   }
 
   /* ------------------------------------------------------------ approvals + signing */

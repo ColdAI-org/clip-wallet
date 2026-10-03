@@ -62,6 +62,12 @@ const config: ExpoConfig = {
     // Ledger over Bluetooth. Foreground only (no background modes); neverForLocation: we never derive location.
     ["react-native-ble-plx", { isBackgroundEnabled: false, modes: [], bluetoothAlwaysPermission: BLUETOOTH, neverForLocation: true }],
     "expo-web-browser",
+    // Local notifications only (no push server): adds Android's POST_NOTIFICATIONS; iOS asks at runtime.
+    "expo-notifications",
+    // Background checks: UIBackgroundModes "processing" + BGTaskSchedulerPermittedIdentifiers on iOS, WorkManager on Android.
+    "expo-background-task",
+    // The phone's language list (Settings → Language: "Match device").
+    "expo-localization",
   ],
   experiments: { typedRoutes: false },
   extra: { mainnet: false },

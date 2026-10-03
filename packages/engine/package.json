@@ -12,7 +12,8 @@
     "./catalog": "./src/catalog.ts",
     "./features": "./src/features.ts",
     "./social-signin": "./src/social-signin.ts",
-    "./hardware": "./src/hardware.ts"
+    "./hardware": "./src/hardware.ts",
+    "./social": "./src/social.ts"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
@@ -39,8 +40,10 @@
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
     "@clip-wallet/hardware": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@noble/hashes": "^2.4.0",
     "zod": "^4.6.5"

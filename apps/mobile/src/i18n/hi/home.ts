@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "वॉलेट लॉक करें",
+  "m.home.pending": "{n, plural, one {# रिक्वेस्ट आपका इंतज़ार कर रही है} other {# रिक्वेस्ट आपका इंतज़ार कर रही हैं}}",
+  "m.home.total": "कुल बैलेंस",
+  "m.home.bridged": "ब्रिज किया गया",
+  "m.home.empty.title": "अभी यहां कुछ नहीं है",
+  "m.home.empty.body": "किसी दूसरे वॉलेट या एक्सचेंज से पैसे जोड़ने के लिए प्राप्त करें पर टैप करें।",
+  "m.home.hideSmall": "छोटे बैलेंस छिपाएं",
+  "m.home.spam.hide": "संदिग्ध टोकन छिपाएं",
+  "m.home.spam.hidden": "{n, plural, one {# संदिग्ध टोकन छिपा है} other {# संदिग्ध टोकन छिपे हैं}}",
+  "m.home.stale": "कुछ बैलेंस कुछ मिनट पुराने हो सकते हैं।",
+  "m.home.asset.title": "एसेट",
+  "m.home.asset.gone": "अब यह आपके पास नहीं है",
+  "m.home.asset.pin": "पिन करें",
+  "m.home.asset.unpin": "अनपिन करें",
+  "m.home.asset.bridgedCopy": "ब्रिज की गई कॉपी — असली {symbol} नहीं",
+  "m.home.asset.where": "यह कहां है",
+  "m.home.asset.whereHint": "आपको इसे मैनेज करने की ज़रूरत नहीं — {symbol} जहां भी है, वहीं से खर्च होता है।",
+  "m.home.asset.contract": "कॉन्ट्रैक्ट ({network})",
+} satisfies Record<keyof typeof en, string>;

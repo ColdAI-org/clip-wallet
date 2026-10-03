@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "स्टेक",
+  "stake.lede": "अपने पास रखे कॉइन पर रिवॉर्ड कमाएं। पूरे समय कंट्रोल आपके पास रहता है।",
+  "stake.empty.title": "अभी स्टेक करने को कुछ नहीं",
+  "stake.empty.body": "जिन कॉइन को आप स्टेक कर सकते हैं, वे यहां दिखते हैं।",
+  "stake.change": "बदलें",
+  "stake.stakeSymbol": "{symbol} स्टेक करें",
+  "stake.stakeAmount": "{amount} {symbol} स्टेक करें",
+  "stake.stakeAll": "मेरे {symbol} स्टेक करें",
+  "stake.with": "किसके साथ",
+  "stake.rewardsOnTheWay": "रिवॉर्ड आने वाले हैं",
+  "stake.action.unstake": "अनस्टेक करें",
+  "stake.action.withdraw": "बैलेंस में डालें",
+  "stake.action.claim": "रिवॉर्ड लें",
+  "stake.action.change": "बदलें",
+  "stake.amount": "राशि",
+  "stake.amountBad": "2 या 0.5 जैसी राशि डालें।",
+  "stake.amountMissing": "कितना स्टेक करना है, वह डालें।",
+  "stake.where": "कहां",
+  "stake.whereLabel": "कहां स्टेक करें",
+  "stake.pickedForYou": "आपके लिए चुना गया",
+} satisfies Record<keyof typeof en, string>;

@@ -19,9 +19,16 @@ import { createEngineDependencies } from "@clip-wallet/engine/wiring";
 import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
 import { EngineHardware, createEngineHardwareClient, type EngineKeystone, type EngineLedger } from "@clip-wallet/engine/hardware";
 import { HardwareKeyring, KeystoneBridge, type HardwareStorage, type KeystoneSigner, type LedgerSigner } from "@clip-wallet/hardware/core";
-import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, WalletClient } from "@clip-wallet/ui";
+import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, SocialClient, WalletClient } from "@clip-wallet/ui";
 import * as WebBrowser from "expo-web-browser";
 import * as LocalAuthentication from "expo-local-authentication";
+import { createSocial } from "@clip-wallet/engine/social";
+import { COINGECKO_IDS } from "@clip-wallet/features";
+import { createEngineSocialClient } from "@clip-wallet/engine";
+import { expoNotifier, requestNotificationPermission } from "./notifications";
+import { setBackgroundPoll, syncBackgroundTask } from "./background-task";
+import { deviceLanguages } from "../i18n/device";
+import * as Linking from "expo-linking";
 import { ClipError } from "@clip-wallet/core";
 import { APP } from "../env";
 import { pickArgon2id, selfTest, type Argon2Choice } from "./argon2";
@@ -70,6 +77,10 @@ export interface MobileWallet {
    * false when the device has no biometrics set up (the password check still applies); throws when cancelled.
    */
   confirmPresence(reason: string): Promise<boolean>;
+  /** Contacts, Clip handles, notifications and Discover (same services as the extension). */
+  social: SocialClient;
+  /** One notification check now (foreground timer; the background task calls the same). */
+  pollNotifications(): Promise<unknown>;
   events: Events;
   argon2: Argon2Choice & { selfTest: Promise<boolean> };
   walletConnectEnabled: boolean;
@@ -182,6 +193,35 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
   engine.attachHardware(engineHardware);
   void deps.walletConnect.warmUp();
 
+  // Contacts (sealed by the vault's app-data key), Clip handles, local notifications and Discover.
+  const social = createSocial({
+    networks: deps.networks,
+    assets: deps.assets,
+    chains: deps.chains,
+    kv,
+    vault,
+    ctx: (id) => engine.featureCtx(id),
+    enqueue: async (request, appName) => ({ id: (await engine.enqueueWalletRequest(request, appName)).id }),
+    approvals: async () => engine.socialApprovals(),
+    prices: deps.prices,
+    notifier: expoNotifier(),
+    deviceLanguages,
+    walletName: APP.config.name,
+    coingeckoIds: COINGECKO_IDS,
+    ...(APP.config.services.clipHandles ? { handles: APP.config.services.clipHandles } : {}),
+  });
+  engine.attachSocial(social);
+  const pollNotifications = () => social.poll();
+  setBackgroundPoll(pollNotifications);
+  void social.notifications.settings().then((st) => syncBackgroundTask(st.enabled), () => undefined);
+  const socialClient = createEngineSocialClient(engine, {
+    async requestNotificationPermission() {
+      const ok = await requestNotificationPermission();
+      if (ok) void syncBackgroundTask(true);
+      return ok;
+    },
+  });
+
   const client = createEngineClient(engine, {
     subscribe: (cb) => events.on((e) => e.type !== "approval" && cb()),
   });
@@ -230,6 +270,8 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
       if (!r.success) throw new ClipError("Cancelled. Nothing was shown.", "presence/cancelled");
       return true;
     },
+    social: socialClient,
+    pollNotifications,
     events,
     argon2: { ...argon2, selfTest: argonCheck },
     walletConnectEnabled: deps.walletConnect.enabled,

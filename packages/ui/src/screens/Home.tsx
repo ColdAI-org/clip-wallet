@@ -7,8 +7,10 @@ import { STAKEABLE_NOW } from "../features/routes";
 import { useFeaturesOptional } from "../features/context";
 import { formatFiat, formatUnits, shortAddress } from "../lib/format";
 import { mergeBalances, type MergedAsset } from "../lib/portfolio";
+import { useUiT } from "../i18n";
 
 export function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => void }) {
+  const t = useUiT();
   const a = props.asset;
   return (
     <li>
@@ -17,8 +19,8 @@ export function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: 
         <span className="clip-asset-row__main">
           <span className="clip-asset-row__symbol">
             {a.symbol}
-            {a.pinned && <IconPin width={13} height={13} aria-label="Pinned" className="clip-pin" />}
-            {a.bridged && <Chip tone="muted">bridged</Chip>}
+            {a.pinned && <IconPin width={13} height={13} aria-label={t("home.pinned")} className="clip-pin" />}
+            {a.bridged && <Chip tone="muted">{t("home.bridged")}</Chip>}
           </span>
           <span className="clip-asset-row__name">
             {formatUnits(a.amount, a.decimals, 4)} {a.symbol}
@@ -31,6 +33,7 @@ export function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: 
 }
 
 export function Home() {
+  const t = useUiT();
   const { client, state, variant, config, refresh } = useUi();
   const { navigate } = useRouter();
   const features = useFeaturesOptional();
@@ -62,18 +65,18 @@ export function Home() {
       title={<span className="clip-brand-title">{config.name}</span>}
       actions={
         <>
-          <button type="button" className="clip-icon-btn" aria-label="Search assets" aria-expanded={searchOpen} onClick={() => setSearchOpen((o) => !o)}>
+          <button type="button" className="clip-icon-btn" aria-label={t("home.searchAssets")} aria-expanded={searchOpen} onClick={() => setSearchOpen((o) => !o)}>
             <IconSearch />
           </button>
           {variant === "popup" && (
-            <button type="button" className="clip-icon-btn" aria-label="Open in a tab" onClick={() => client.openFullTab("/")}>
+            <button type="button" className="clip-icon-btn" aria-label={t("home.openInTab")} onClick={() => client.openFullTab("/")}>
               <IconExpand />
             </button>
           )}
           <button
             type="button"
             className="clip-icon-btn"
-            aria-label="Lock wallet"
+            aria-label={t("home.lockWallet")}
             onClick={async () => {
               await client.lock();
               await refresh();
@@ -86,12 +89,12 @@ export function Home() {
     >
       {state && state.pendingApprovals > 0 && (
         <button type="button" className="clip-banner" onClick={() => navigate("/approvals")}>
-          {state.pendingApprovals === 1 ? "1 request is waiting for you" : `${state.pendingApprovals} requests are waiting for you`}
+          {t("home.pendingRequests", { n: state.pendingApprovals })}
         </button>
       )}
 
       <div className="clip-total">
-        <span className="clip-total__label">Total balance</span>
+        <span className="clip-total__label">{t("home.totalBalance")}</span>
         <span className="clip-total__value" data-testid="total">
           {loading && !data ? <Spinner /> : formatFiat(merged.total, currency)}
         </span>
@@ -99,22 +102,22 @@ export function Home() {
 
       <div className="clip-actions clip-actions--hero">
         <Button onClick={() => navigate("/send")}>
-          <IconArrowUp /> Send
+          <IconArrowUp /> {t("home.send")}
         </Button>
         <Button variant="secondary" onClick={() => navigate("/receive")}>
-          <IconArrowDown /> Receive
+          <IconArrowDown /> {t("home.receive")}
         </Button>
       </div>
       {features && (
-        <div className="clip-actions clip-actions--more" aria-label="More actions">
+        <div className="clip-actions clip-actions--more" aria-label={t("home.moreActions")}>
           <Button variant="ghost" onClick={() => navigate("/swap")}>
-            <IconSwap /> Swap
+            <IconSwap /> {t("home.swap")}
           </Button>
           <Button variant="ghost" onClick={() => navigate("/buy")}>
-            Buy
+            {t("home.buy")}
           </Button>
           <Button variant="ghost" onClick={() => navigate("/stake")}>
-            Stake
+            {t("home.stake")}
           </Button>
         </div>
       )}
@@ -123,8 +126,8 @@ export function Home() {
         <div className="clip-search">
           <IconSearch />
           <input
-            aria-label="Search assets"
-            placeholder="Search"
+            aria-label={t("home.searchAssets")}
+            placeholder={t("home.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             autoFocus
@@ -135,11 +138,11 @@ export function Home() {
       <ErrorNote message={error ? userMessageOf(error) : null} />
 
       {data && merged.assets.length === 0 ? (
-        <Empty title={search ? "Nothing matches that search" : "Nothing here yet"}>
-          {!search && "Tap Receive to add money from another wallet or exchange."}
+        <Empty title={search ? t("home.noMatches") : t("home.emptyTitle")}>
+          {!search && t("home.emptyBody")}
         </Empty>
       ) : (
-        <ul className="clip-list" aria-label="Your assets">
+        <ul className="clip-list" aria-label={t("home.yourAssets")}>
           {merged.assets.map((a) => (
             <AssetRow key={a.id} asset={a} currency={currency} onOpen={() => navigate(`/asset/${encodeURIComponent(a.id)}`)} />
           ))}
@@ -148,13 +151,13 @@ export function Home() {
 
       {data && (
         <div className="clip-home-foot">
-          <Toggle label="Hide small balances" checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
+          <Toggle label={t("home.hideSmall")} checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
           {(merged.hiddenSpam > 0 || prefs?.showSpam) && (
             <button type="button" className="clip-link" onClick={() => setPref({ showSpam: !prefs?.showSpam })}>
-              {prefs?.showSpam ? "Hide suspicious tokens" : `${merged.hiddenSpam} suspicious token${merged.hiddenSpam === 1 ? "" : "s"} hidden`}
+              {prefs?.showSpam ? t("home.hideSuspicious") : t("home.suspiciousHidden", { n: merged.hiddenSpam })}
             </button>
           )}
-          {data.stale.length > 0 && <p className="clip-hint">Some balances may be a few minutes old.</p>}
+          {data.stale.length > 0 && <p className="clip-hint">{t("home.stale")}</p>}
         </div>
       )}
     </Screen>
@@ -166,6 +169,7 @@ export function networkName(portfolio: PortfolioView | undefined, id: string): s
 }
 
 export function AssetDetail(props: { id: string }) {
+  const t = useUiT();
   const { client, state, refresh } = useUi();
   const { navigate } = useRouter();
   const features = useFeaturesOptional();
@@ -176,8 +180,8 @@ export function AssetDetail(props: { id: string }) {
     () => mergeBalances(data?.balances ?? [], { showSpam: true, pinned: prefs?.pinned }).assets.find((a) => a.id === props.id),
     [data, props.id, prefs?.pinned],
   );
-  if (!data) return <Screen back title="Asset"><Spinner /></Screen>;
-  if (!asset) return <Screen back title="Asset"><Empty title="You don't hold this anymore" /></Screen>;
+  if (!data) return <Screen back title={t("home.asset.title")}><Spinner /></Screen>;
+  if (!asset) return <Screen back title={t("home.asset.title")}><Empty title={t("home.asset.notHeld")} /></Screen>;
 
   const togglePin = async () => {
     const pinned = new Set(prefs?.pinned ?? []);
@@ -192,7 +196,7 @@ export function AssetDetail(props: { id: string }) {
       back
       title={asset.name}
       actions={
-        <button type="button" className={`clip-icon-btn ${asset.pinned ? "is-active" : ""}`} aria-pressed={asset.pinned} aria-label={asset.pinned ? "Unpin" : "Pin to top"} onClick={togglePin}>
+        <button type="button" className={`clip-icon-btn ${asset.pinned ? "is-active" : ""}`} aria-pressed={asset.pinned} aria-label={asset.pinned ? t("home.asset.unpin") : t("home.asset.pin")} onClick={togglePin}>
           <IconPin />
         </button>
       }
@@ -203,27 +207,27 @@ export function AssetDetail(props: { id: string }) {
           {formatUnits(asset.amount, asset.decimals, 6)} {asset.symbol}
         </span>
         <span className="clip-total__label">{formatFiat(asset.fiatValue, currency)}</span>
-        {asset.bridged && <Chip tone="muted">bridged copy — not the original {asset.symbol}</Chip>}
+        {asset.bridged && <Chip tone="muted">{t("home.asset.bridgedCopy", { symbol: asset.symbol })}</Chip>}
       </div>
       <div className="clip-actions clip-actions--hero">
         <Button onClick={() => navigate(`/send?asset=${encodeURIComponent(asset.key)}`)}>
-          <IconArrowUp /> Send
+          <IconArrowUp /> {t("home.send")}
         </Button>
         <Button variant="secondary" onClick={() => navigate(`/receive?asset=${encodeURIComponent(asset.key)}`)}>
-          <IconArrowDown /> Receive
+          <IconArrowDown /> {t("home.receive")}
         </Button>
       </div>
       {features && (
         <div className="clip-actions clip-actions--more">
           <Button variant="ghost" onClick={() => navigate(`/swap?sell=${encodeURIComponent(asset.key)}`)}>
-            <IconSwap /> Swap
+            <IconSwap /> {t("home.swap")}
           </Button>
           <Button variant="ghost" onClick={() => navigate(`/buy?asset=${encodeURIComponent(asset.key)}`)}>
-            Buy
+            {t("home.buy")}
           </Button>
           {STAKEABLE_NOW.includes(asset.key) && (
             <Button variant="ghost" onClick={() => navigate(`/stake?asset=${encodeURIComponent(asset.key)}`)}>
-              Stake
+              {t("home.stake")}
             </Button>
           )}
         </div>
@@ -231,7 +235,7 @@ export function AssetDetail(props: { id: string }) {
       {asset.parts.length > 1 || prefs?.advanced ? (
         <section aria-labelledby="split-h">
           <h2 id="split-h" className="clip-h2">
-            Where it is
+            {t("home.asset.whereItIs")}
           </h2>
           <div className="clip-rows" data-testid="network-split">
             {asset.parts.map((p) => (
@@ -243,13 +247,13 @@ export function AssetDetail(props: { id: string }) {
               />
             ))}
           </div>
-          <p className="clip-hint">You don't need to manage this — {asset.symbol} is spent from wherever it is.</p>
+          <p className="clip-hint">{t("home.asset.whereHint", { symbol: asset.symbol })}</p>
         </section>
       ) : null}
       {prefs?.advanced &&
         asset.parts.map((p) =>
           p.asset.address ? (
-            <Row key={`addr-${p.asset.networkId}`} label={`Contract (${networkName(data, p.asset.networkId)})`} value={<code className="clip-mono">{shortAddress(p.asset.address, 6)}</code>} />
+            <Row key={`addr-${p.asset.networkId}`} label={t("home.asset.contract", { network: networkName(data, p.asset.networkId) })} value={<code className="clip-mono">{shortAddress(p.asset.address, 6)}</code>} />
           ) : null,
         )}
     </Screen>

@@ -24,6 +24,10 @@ import { TradeCreate, TradeDetail, TradeHome, TradeReview } from "./screens/Trad
 import { BackupHub, PasskeyBackup, RecoveryPhraseBackup } from "./screens/Backup";
 import { Accounts } from "./screens/Accounts";
 import { ConnectHardware, HardwareSettings, HardwareStep } from "./screens/Hardware";
+import { Contacts } from "./screens/Contacts";
+import { ContactEdit } from "./screens/ContactEdit";
+import { Notifications } from "./screens/Notifications";
+import { useNotificationBridge } from "./ui/notifications";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
 
@@ -76,6 +80,12 @@ function Routes(props: { route: Route }) {
       return <HardwareSettings />;
     case "hardware-connect":
       return <ConnectHardware />;
+    case "contacts":
+      return <Contacts />;
+    case "contact":
+      return <ContactEdit key={r.id ?? "new"} id={r.id} address={r.address} family={r.family} />;
+    case "notifications":
+      return <Notifications />;
   }
 }
 
@@ -108,6 +118,7 @@ function ApprovalSheet() {
 
 function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
   const { state, refresh, route, navigate, client, theme } = useWallet();
+  useNotificationBridge(!!state && state.status !== "empty");
   useEffect(() => {
     if (state?.status !== "unlocked" || !props.pendingLink) return;
     const l = props.pendingLink;

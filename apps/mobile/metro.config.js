@@ -20,6 +20,11 @@ const SHIMS = {
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   const resolve = upstream ?? context.resolveRequest;
   if (SHIMS[moduleName]) return { type: "sourceFile", filePath: SHIMS[moduleName] };
+  // One React: workspace packages with React hooks (@clip-wallet/i18n/react) have their own dev copy of
+  // react under pnpm; hooks from a second copy crash ("reading 'useMemo'"). Always use the app's.
+  if (moduleName === "react" || moduleName.startsWith("react/")) {
+    return resolve({ ...context, originModulePath: path.join(__dirname, "index.ts") }, moduleName, platform);
+  }
   if (moduleName.startsWith(".") && moduleName.endsWith(".js")) {
     const from = path.dirname(context.originModulePath);
     if (from.includes(`${path.sep}packages${path.sep}`) && !from.includes(`${path.sep}node_modules${path.sep}`)) {

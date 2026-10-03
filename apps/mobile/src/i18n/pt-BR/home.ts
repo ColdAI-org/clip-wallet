@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "Bloquear carteira",
+  "m.home.pending": "{n, plural, one {# solicitação aguarda você} other {# solicitações aguardam você}}",
+  "m.home.total": "Saldo total",
+  "m.home.bridged": "via ponte",
+  "m.home.empty.title": "Nada aqui ainda",
+  "m.home.empty.body": "Toque em Receber para adicionar dinheiro de outra carteira ou corretora.",
+  "m.home.hideSmall": "Ocultar saldos pequenos",
+  "m.home.spam.hide": "Ocultar tokens suspeitos",
+  "m.home.spam.hidden": "{n, plural, one {# token suspeito oculto} other {# tokens suspeitos ocultos}}",
+  "m.home.stale": "Alguns saldos podem estar alguns minutos desatualizados.",
+  "m.home.asset.title": "Ativo",
+  "m.home.asset.gone": "Você não tem mais este ativo",
+  "m.home.asset.pin": "Fixar",
+  "m.home.asset.unpin": "Desafixar",
+  "m.home.asset.bridgedCopy": "cópia via ponte — não é o {symbol} original",
+  "m.home.asset.where": "Onde está",
+  "m.home.asset.whereHint": "Você não precisa gerenciar isso — o {symbol} é gasto de onde estiver.",
+  "m.home.asset.contract": "Contrato ({network})",
+} satisfies Record<keyof typeof en, string>;

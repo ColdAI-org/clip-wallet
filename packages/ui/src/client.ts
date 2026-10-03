@@ -16,6 +16,7 @@ import type {
   Warning,
 } from "@clip-wallet/core";
 import type { PasskeyCeremony } from "./lib/passkey";
+import type { LocalePref } from "@clip-wallet/i18n";
 
 export type VaultStatus = "empty" | "locked" | "unlocked";
 export type ThemePref = "system" | "light" | "dark";
@@ -32,6 +33,8 @@ export interface Prefs {
   showSpam: boolean;
   /** Advanced mode: per-network RPC override. */
   rpcOverrides: Record<NetworkId, string>;
+  /** Display language: "system" (absent) follows the device; otherwise a shipped locale code ("de", "pt-BR"). */
+  locale?: LocalePref;
 }
 
 export interface WalletState {
@@ -141,6 +144,8 @@ export interface ApprovalView {
   connect?: ConnectView;
   /** Raw request params, Advanced mode only. */
   raw?: string;
+  /** Wallet-built sends (Send screen): who receives, so the approval can say "Send to Alex" (social stream). */
+  recipient?: { address: string; family: Family };
   /** Set while a hardware wallet is signing this request (see packages/ui/src/hardware). */
   hardware?: import("./hardware/types").HardwareApprovalState;
 }

@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "스테이킹",
+  "stake.lede": "보유한 코인으로 보상을 받으세요. 그동안에도 자산은 계속 직접 관리해요.",
+  "stake.empty.title": "아직 스테이킹할 자산이 없어요",
+  "stake.empty.body": "스테이킹할 수 있는 코인이 여기에 표시돼요.",
+  "stake.change": "변경",
+  "stake.stakeSymbol": "{symbol} 스테이킹",
+  "stake.stakeAmount": "{amount} {symbol} 스테이킹",
+  "stake.stakeAll": "내 {symbol} 스테이킹",
+  "stake.with": "맡긴 곳",
+  "stake.rewardsOnTheWay": "보상 지급 예정",
+  "stake.action.unstake": "스테이킹 해제",
+  "stake.action.withdraw": "잔액으로 옮기기",
+  "stake.action.claim": "보상 받기",
+  "stake.action.change": "변경",
+  "stake.amount": "수량",
+  "stake.amountBad": "2 또는 0.5처럼 수량을 입력하세요.",
+  "stake.amountMissing": "스테이킹할 수량을 입력하세요.",
+  "stake.where": "맡길 곳",
+  "stake.whereLabel": "스테이킹할 곳",
+  "stake.pickedForYou": "추천",
+} satisfies Record<keyof typeof en, string>;

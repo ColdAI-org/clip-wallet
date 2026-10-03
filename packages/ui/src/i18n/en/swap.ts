@@ -1,0 +1,23 @@
+/** Swap. Namespace "swap". */
+export default {
+  "swap.title": "Swap",
+  "swap.youPayWith": "You pay with",
+  "swap.sellAsset": "Asset to swap",
+  "swap.amount": "Amount",
+  "swap.youHave": "You have {amount} {symbol}",
+  "swap.youGet": "You get",
+  "swap.buyAsset": "Asset to get",
+  "swap.slippage": "Price can move by",
+  "swap.slippageHint": "If the price moves more than this before the swap runs, it stops and nothing is swapped.",
+  "swap.youPay": "You pay",
+  "swap.route": "Route",
+  "swap.priceImpact": "Price impact",
+  "swap.network": "Network",
+  "swap.steps": "What you'll approve",
+  "swap.reviewAndSwap": "Review and swap",
+  "swap.swap": "Swap",
+  "swap.gettingPrice": "Getting the best price…",
+  "swap.getPrice": "Get price",
+  "swap.amountBad": "Enter an amount like 25 or 0.5.",
+  "swap.expired": "This price expired. Get a new one.",
+} satisfies Record<`swap.${string}`, string>;

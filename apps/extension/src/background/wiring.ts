@@ -150,7 +150,7 @@ export interface NameResolver {
    * "alice.eth", "alice.hbar", "alice.sol" → address, or null. `networkIds` = networks the name points at
    * specifically (empty = any of its family); `addressOn` = ENS per-network address records.
    */
-  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string> } | null>;
+  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string>; byFamily?: Partial<Record<Family, string>> } | null>;
   /** Primary name for an address, for display. */
   reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
 }

@@ -1,6 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useColorScheme } from "react-native";
-import type { WalletClient, WalletState } from "@clip-wallet/ui";
+import { I18nManager, View, useColorScheme } from "react-native";
+import { setFormatLocale, type WalletClient, type WalletState } from "@clip-wallet/ui";
+import type { Family } from "@clip-wallet/core";
+import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
+import { LocaleProvider } from "@clip-wallet/i18n/react";
+import { deviceLanguages } from "../i18n/device";
 import type { MobileWallet } from "../background/host";
 import { APP } from "../env";
 import { themeFor, type Theme } from "./theme";
@@ -31,7 +35,12 @@ export type Route =
   | { name: "accounts"; origin?: string }
   /* hardware wallets */
   | { name: "hardware" }
-  | { name: "hardware-connect" };
+  | { name: "hardware-connect" }
+  /* social: contacts, notifications */
+  | { name: "contacts" }
+  /** Edit a contact (`id`) or add one, optionally prefilled with an address. */
+  | { name: "contact"; id?: string; address?: string; family?: Family }
+  | { name: "notifications" };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 
@@ -78,6 +87,14 @@ export function WalletProvider(props: { wallet: MobileWallet; children: ReactNod
 
   const mode = state?.prefs.theme && state.prefs.theme !== "system" ? state.prefs.theme : scheme === "dark" ? "dark" : "light";
   const theme = useMemo(() => themeFor(APP.config, mode), [mode]);
+  const locale: LocaleCode = resolveLocale(state?.prefs.locale, deviceLanguages());
+  const dir = dirOf(locale);
+  setFormatLocale(locale);
+  useEffect(() => {
+    // Native RTL (I18nManager) applies from the next launch; the root `direction` style below flips the layout now.
+    I18nManager.allowRTL(true);
+    if (I18nManager.isRTL !== (dir === "rtl")) I18nManager.forceRTL(dir === "rtl");
+  }, [dir]);
   const route = stack[stack.length - 1]!;
 
   const value: Ctx = {
@@ -93,7 +110,13 @@ export function WalletProvider(props: { wallet: MobileWallet; children: ReactNod
     approvalId,
     showApproval: setApprovalId,
   };
-  return <WalletCtx.Provider value={value}>{props.children}</WalletCtx.Provider>;
+  return (
+    <WalletCtx.Provider value={value}>
+      <LocaleProvider locale={locale}>
+        <View style={{ flex: 1, direction: dir }}>{props.children}</View>
+      </LocaleProvider>
+    </WalletCtx.Provider>
+  );
 }
 
 /** Same contract as @clip-wallet/ui's useAsync: reloads when deps change or the wallet broadcasts a change. */

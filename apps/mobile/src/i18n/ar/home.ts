@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "قفل المحفظة",
+  "m.home.pending": "{n, plural, zero {لا طلبات بانتظارك} one {طلب واحد بانتظارك} two {طلبان بانتظارك} few {# طلبات بانتظارك} many {# طلبًا بانتظارك} other {# طلب بانتظارك}}",
+  "m.home.total": "الرصيد الإجمالي",
+  "m.home.bridged": "عبر جسر",
+  "m.home.empty.title": "لا شيء هنا بعد",
+  "m.home.empty.body": "اضغط على «استلام» لإضافة أموال من محفظة أخرى أو منصة تداول.",
+  "m.home.hideSmall": "إخفاء الأرصدة الصغيرة",
+  "m.home.spam.hide": "إخفاء الرموز المشبوهة",
+  "m.home.spam.hidden": "{n, plural, zero {لا رموز مشبوهة مخفية} one {رمز مشبوه واحد مخفي} two {رمزان مشبوهان مخفيان} few {# رموز مشبوهة مخفية} many {# رمزًا مشبوهًا مخفيًا} other {# رمز مشبوه مخفي}}",
+  "m.home.stale": "قد يكون عمر بعض الأرصدة بضع دقائق.",
+  "m.home.asset.title": "الأصل",
+  "m.home.asset.gone": "لم تعد تملك هذا الأصل",
+  "m.home.asset.pin": "تثبيت",
+  "m.home.asset.unpin": "إلغاء التثبيت",
+  "m.home.asset.bridgedCopy": "نسخة منقولة عبر جسر — ليست {symbol} الأصلية",
+  "m.home.asset.where": "أين يوجد",
+  "m.home.asset.whereHint": "لا حاجة لإدارة ذلك — يُصرف {symbol} من أي مكان يوجد فيه.",
+  "m.home.asset.contract": "العقد ({network})",
+} satisfies Record<keyof typeof en, string>;

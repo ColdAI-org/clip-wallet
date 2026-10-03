@@ -1,25 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
+import type { Family } from "@clip-wallet/core";
 import type { RecipientResolution } from "../client";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { AssetIcon, Button, ErrorNote, Field, Screen, Spinner } from "../components";
-import { formatFiat, formatUnits, parseUnits, shortAddress } from "../lib/format";
+import { amountInput, canonicalAmount, formatFiat, formatUnits, parseUnits, shortAddress } from "../lib/format";
 import { mergeBalances } from "../lib/portfolio";
+import { useUiT } from "../i18n";
+import { useSocialOptional } from "../social/context";
+import { ContactSuggestions } from "../social/Contacts";
 
 type Phase = { p: "form" } | { p: "ask"; res: Extract<RecipientResolution, { kind: "ask" }> } | { p: "sending" };
 
 /**
  * Send: who + how much. The network is inferred from the address; only when several networks fit and
  * nothing tells them apart (an EVM address, an exchange deposit address) do we ask — once, in plain
- * words — and remember the answer for that recipient.
+ * words — and remember the answer for that recipient. With the social stream, "To" also searches contacts.
  */
 export function Send(props: { assetKey?: string }) {
+  const t = useUiT();
   const { client, state } = useUi();
+  const social = useSocialOptional();
   const { navigate } = useRouter();
   const { data } = useAsync(() => client.getPortfolio(), [client]);
   const assets = useMemo(() => mergeBalances(data?.balances ?? [], { pinned: state?.prefs.pinned }).assets, [data, state?.prefs.pinned]);
   const [assetId, setAssetId] = useState<string>("");
   const [to, setTo] = useState("");
+  const [contactName, setContactName] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [phase, setPhase] = useState<Phase>({ p: "form" });
   const [err, setErr] = useState<string | null>(null);
@@ -31,9 +38,16 @@ export function Send(props: { assetKey?: string }) {
 
   const asset = assets.find((a) => a.id === assetId);
   const currency = data?.currency ?? "USD";
+  // The asset's family, when all its networks share one (USDC on EVM and Solana: no filter).
+  const family = useMemo<Family | undefined>(() => {
+    if (!asset || !data) return undefined;
+    const fams = new Set(data.balances.filter((b) => b.asset.key === asset.key).map((b) => data.networks.find((n) => n.id === b.asset.networkId)?.family));
+    return fams.size === 1 ? ([...fams][0] as Family | undefined) : undefined;
+  }, [asset, data]);
   const parsed = asset ? parseUnits(amount, asset.decimals) : null;
   const tooMuch = asset && parsed !== null ? parsed > BigInt(asset.amount) : false;
-  const amountErr = amount && parsed === null ? "Enter an amount like 25 or 0.5." : tooMuch ? `You have ${formatUnits(asset!.amount, asset!.decimals)} ${asset!.symbol}.` : null;
+  const amountErr =
+    amount && parsed === null ? t("send.amountBad") : tooMuch ? t("send.youHaveOnly", { amount: formatUnits(asset!.amount, asset!.decimals), symbol: asset!.symbol }) : null;
   const fiatPreview =
     asset && parsed !== null && asset.fiatValue !== undefined && BigInt(asset.amount) > 0n
       ? (Number(parsed) / Number(BigInt(asset.amount))) * asset.fiatValue
@@ -41,9 +55,11 @@ export function Send(props: { assetKey?: string }) {
 
   const submit = async (networkId: string, address: string) => {
     if (!asset) return;
+    const canonical = canonicalAmount(amount);
+    if (!canonical) return setErr(t("send.amountBad"));
     setPhase({ p: "sending" });
     try {
-      const id = await client.send({ assetKey: asset.key, networkId, to: address, amount });
+      const id = await client.send({ assetKey: asset.key, networkId, to: address, amount: canonical });
       navigate(`/approval/${encodeURIComponent(id)}`, { replace: true });
     } catch (e) {
       setErr(userMessageOf(e));
@@ -67,33 +83,39 @@ export function Send(props: { assetKey?: string }) {
     }
   };
 
-  if (!data) return <Screen back title="Send"><Spinner /></Screen>;
+  if (!data) {
+    return (
+      <Screen back title={t("send.title")}>
+        <Spinner />
+      </Screen>
+    );
+  }
 
   if (phase.p === "ask" && asset) {
     const res = phase.res;
+    const who = contactName ?? res.displayName;
     return (
-      <Screen back={() => setPhase({ p: "form" })} title="Send">
+      <Screen back={() => setPhase({ p: "form" })} title={t("send.title")}>
         <div className="clip-ask" role="group" aria-labelledby="ask-h">
           <h1 id="ask-h" className="clip-h1">
-            Where should the {asset.symbol} arrive?
+            {t("send.ask.title", { symbol: asset.symbol })}
           </h1>
-          <p className="clip-lede">
-            {res.displayName ?? shortAddress(res.address, 6)} can receive {asset.symbol} in more than one place. If it's an exchange or someone else's
-            wallet, ask them which network to use — sending to the wrong one can lose the money.
-          </p>
+          <p className="clip-lede">{t("send.ask.lede", { who: who ?? shortAddress(res.address, 6), symbol: asset.symbol })}</p>
           <fieldset className="clip-options">
-            <legend className="clip-visually-hidden">Network for this recipient</legend>
+            <legend className="clip-visually-hidden">{t("send.ask.legend")}</legend>
             {res.candidates.map((c) => (
               <label key={c.network.id} className={`clip-option ${choice === c.network.id ? "is-selected" : ""}`}>
                 <input type="radio" name="network" value={c.network.id} checked={choice === c.network.id} onChange={() => setChoice(c.network.id)} />
                 <span className="clip-option__title">{c.network.name}</span>
                 <span className="clip-option__hint">
-                  {BigInt(c.balance) > 0n ? `You have ${formatUnits(c.balance, asset.decimals, 4)} ${asset.symbol} there` : `We'll move your ${asset.symbol} there for you`}
+                  {BigInt(c.balance) > 0n
+                    ? t("send.ask.haveThere", { amount: formatUnits(c.balance, asset.decimals, 4), symbol: asset.symbol })
+                    : t("send.ask.moveThere", { symbol: asset.symbol })}
                 </span>
               </label>
             ))}
           </fieldset>
-          <p className="clip-hint">We'll remember this for {res.displayName ?? "this address"} so you won't be asked again.</p>
+          <p className="clip-hint">{who ? t("send.ask.rememberName", { name: who }) : t("send.ask.rememberAddress")}</p>
           <ErrorNote message={err} />
           <Button
             block
@@ -103,15 +125,16 @@ export function Send(props: { assetKey?: string }) {
               await submit(choice, res.address);
             }}
           >
-            Continue
+            {t("common.continue")}
           </Button>
         </div>
       </Screen>
     );
   }
 
+  const typed = to.trim();
   return (
-    <Screen back title="Send">
+    <Screen back title={t("send.title")}>
       <form
         className="clip-stack"
         onSubmit={(e) => {
@@ -120,50 +143,68 @@ export function Send(props: { assetKey?: string }) {
         }}
       >
         <label className="clip-field">
-          <span className="clip-field__label">What</span>
+          <span className="clip-field__label">{t("send.what")}</span>
           <div className="clip-asset-select">
             {asset && <AssetIcon symbol={asset.symbol} size={28} />}
-            <select className="clip-select" value={assetId} onChange={(e) => setAssetId(e.target.value)} aria-label="Asset to send">
+            <select className="clip-select" value={assetId} onChange={(e) => setAssetId(e.target.value)} aria-label={t("send.assetLabel")}>
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.symbol}
-                  {a.bridged ? " (bridged)" : ""} — {formatFiat(a.fiatValue, currency)}
+                  {t(a.bridged ? "send.assetOptionBridged" : "send.assetOption", { symbol: a.symbol, value: formatFiat(a.fiatValue, currency) })}
                 </option>
               ))}
             </select>
           </div>
         </label>
         <Field
-          label="To"
-          placeholder="Name or address"
+          label={t("send.to")}
+          placeholder={social ? t("send.toPlaceholder") : t("send.toPlaceholderPlain")}
           autoComplete="off"
           spellCheck={false}
           value={to}
           onChange={(e) => {
             setTo(e.target.value);
+            setContactName(null);
             setErr(null);
           }}
+          hint={contactName ? t("send.toContact", { name: contactName }) : undefined}
         />
+        {social && !contactName && typed.length > 0 && typed.length < 60 && (
+          <ContactSuggestions
+            query={typed}
+            {...(family ? { family } : {})}
+            onPick={(address, name) => {
+              setTo(address);
+              setContactName(name);
+              setErr(null);
+            }}
+          />
+        )}
         <Field
-          label="Amount"
+          label={t("send.amount")}
           inputMode="decimal"
           placeholder="0"
           autoComplete="off"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           error={amountErr}
-          hint={fiatPreview !== undefined ? `≈ ${formatFiat(fiatPreview, currency)}` : asset ? `You have ${formatUnits(asset.amount, asset.decimals, 4)} ${asset.symbol}` : undefined}
+          hint={
+            fiatPreview !== undefined
+              ? t("send.approx", { value: formatFiat(fiatPreview, currency) })
+              : asset
+                ? t("send.youHave", { amount: formatUnits(asset.amount, asset.decimals, 4), symbol: asset.symbol })
+                : undefined
+          }
           trailing={
             asset && (
-              <button type="button" className="clip-link" onClick={() => setAmount(formatUnits(asset.amount, asset.decimals, asset.decimals).replace(/,/g, ""))}>
-                Max
+              <button type="button" className="clip-link" onClick={() => setAmount(amountInput(asset.amount, asset.decimals))}>
+                {t("common.max")}
               </button>
             )
           }
         />
         <ErrorNote message={err} />
         <Button block type="submit" disabled={!asset || !to.trim() || parsed === null || parsed === 0n || tooMuch || phase.p === "sending"}>
-          {phase.p === "sending" ? "Preparing…" : "Review"}
+          {phase.p === "sending" ? t("send.preparing") : t("send.review")}
         </Button>
       </form>
     </Screen>

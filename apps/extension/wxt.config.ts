@@ -51,6 +51,8 @@ export default defineConfig({
       name: clipConfig.name,
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       permissions: ["storage", "alarms"],
+      // Asked for when the user turns notifications on (Settings → Notifications), never at install.
+      optional_permissions: ["notifications"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
       host_permissions: [
         ...rpHost,
@@ -67,6 +69,9 @@ export default defineConfig({
         "https://sepolia.api.avnu.fi/*",
         "https://api.ston.fi/*",
         "https://smartrouter.ref.finance/*",
+        // Discover (social stream): DEX Screener market data; Clip handles read through the Hedera JSON-RPC relay.
+        "https://api.dexscreener.com/*",
+        "https://testnet.hashio.io/*",
         // Optional hosted services from clip.config (unset by default).
         ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],

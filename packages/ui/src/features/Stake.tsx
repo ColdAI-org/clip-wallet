@@ -2,19 +2,21 @@ import { useEffect, useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter } from "../context";
 import { Button, Card, Chip, Empty, ErrorNote, Field, Screen, Spinner } from "../components";
-import { parseUnits } from "../lib/format";
+import { canonicalAmount, parseUnits } from "../lib/format";
+import { useUiT, type UiMessageId } from "../i18n";
 import type { StakeAssetView, StakePositionView } from "./client";
 import { useFeatures } from "./context";
 
-const ACTION_LABEL: Record<StakePositionView["actions"][number], string> = {
-  unstake: "Unstake",
-  withdraw: "Move to balance",
-  claim: "Collect rewards",
-  change: "Change",
+const ACTION_LABEL: Record<StakePositionView["actions"][number], UiMessageId> = {
+  unstake: "stake.action.unstake",
+  withdraw: "stake.action.withdraw",
+  claim: "stake.action.claim",
+  change: "stake.action.change",
 };
 
 /** Staking overview: one card per coin you can stake. No network names; the wallet picks. */
 export function StakeHome() {
+  const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
   const { data, error, reload } = useAsync(() => features.stakingOverview(), [features]);
@@ -53,11 +55,11 @@ export function StakeHome() {
   }
 
   return (
-    <Screen back title="Stake">
-      <p className="clip-lede">Earn rewards on coins you hold. You stay in control the whole time.</p>
+    <Screen back title={t("stake.title")}>
+      <p className="clip-lede">{t("stake.lede")}</p>
       <ErrorNote message={err ?? (error ? userMessageOf(error) : null)} />
       {!data && !error && <Spinner />}
-      {data?.length === 0 && <Empty title="Nothing to stake yet">Coins you can stake show up here.</Empty>}
+      {data?.length === 0 && <Empty title={t("stake.empty.title")}>{t("stake.empty.body")}</Empty>}
       {data?.map((a) => (
         <Card key={a.assetKey}>
           <div className="clip-row">
@@ -67,7 +69,7 @@ export function StakeHome() {
             <span className="clip-row__value">
               {!a.unavailable && (
                 <Button variant="secondary" onClick={() => navigate(`/stake?asset=${encodeURIComponent(a.assetKey)}`)}>
-                  {a.positions.length > 0 && a.wholeBalance ? "Change" : `Stake ${a.symbol}`}
+                  {a.positions.length > 0 && a.wholeBalance ? t("stake.change") : t("stake.stakeSymbol", { symbol: a.symbol })}
                 </Button>
               )}
             </span>
@@ -80,12 +82,12 @@ export function StakeHome() {
                 <span className="clip-row__value">{p.statusText}</span>
               </div>
               <div className="clip-row">
-                <span className="clip-row__label">With</span>
+                <span className="clip-row__label">{t("stake.with")}</span>
                 <span className="clip-row__value">{p.with}</span>
               </div>
               {p.pendingReward && (
                 <div className="clip-row">
-                  <span className="clip-row__label">Rewards on the way</span>
+                  <span className="clip-row__label">{t("stake.rewardsOnTheWay")}</span>
                   <span className="clip-row__value">{p.pendingReward.display}</span>
                 </div>
               )}
@@ -122,7 +124,7 @@ export function StakeHome() {
                 <div className="clip-actions">
                   {p.actions.map((action) => (
                     <Button key={action} variant={action === "unstake" ? "ghost" : "secondary"} disabled={busy !== null} onClick={() => void act(a, p, action)}>
-                      {ACTION_LABEL[action]}
+                      {t(ACTION_LABEL[action])}
                     </Button>
                   ))}
                 </div>
@@ -137,6 +139,7 @@ export function StakeHome() {
 
 /** "Stake SOL": how it works, where (picked for you), how much. */
 export function StakeAsset(props: { assetKey: string }) {
+  const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
   const overview = useAsync(() => features.stakingOverview(), [features]);
@@ -153,14 +156,14 @@ export function StakeAsset(props: { assetKey: string }) {
 
   if (overview.error || options.error) {
     return (
-      <Screen back title="Stake">
+      <Screen back title={t("stake.title")}>
         <ErrorNote message={userMessageOf(overview.error ?? options.error)} />
       </Screen>
     );
   }
   if (!asset || !options.data) {
     return (
-      <Screen back title="Stake">
+      <Screen back title={t("stake.title")}>
         <Spinner />
       </Screen>
     );
@@ -169,10 +172,10 @@ export function StakeAsset(props: { assetKey: string }) {
 
   async function submit() {
     setErr(null);
-    if (!asset!.wholeBalance && ((!amount && !asset!.amountOptional) || amountBad)) return setErr("Enter how much to stake.");
+    if (!asset!.wholeBalance && ((!amount.trim() && !asset!.amountOptional) || amountBad)) return setErr(t("stake.amountMissing"));
     setBusy(true);
     try {
-      const q = await features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance || !amount ? undefined : amount });
+      const q = await features.stake({ assetKey: props.assetKey, optionId, amount: asset!.wholeBalance || !amount.trim() ? undefined : canonicalAmount(amount)! });
       navigate(`/approval/${encodeURIComponent(q.approvalId)}`);
     } catch (e) {
       setErr(userMessageOf(e));
@@ -182,20 +185,20 @@ export function StakeAsset(props: { assetKey: string }) {
   }
 
   return (
-    <Screen back title={`Stake ${asset.symbol}`}>
+    <Screen back title={t("stake.stakeSymbol", { symbol: asset.symbol })}>
       <p className="clip-lede">{asset.howItWorks}</p>
       {!asset.wholeBalance && (
-        <Field label={asset.amountOptional ? "Amount to stake (optional)" : "Amount"} inputMode="decimal" placeholder="0" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} error={amountBad ? "Enter an amount like 2 or 0.5." : null} />
+        <Field label={asset.amountOptional ? t("stake.amountOptional") : t("stake.amount")} inputMode="decimal" placeholder="0" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} error={amountBad ? t("stake.amountBad") : null} />
       )}
-      <h2 className="clip-h2">Where</h2>
-      <ul className="clip-list" aria-label="Where to stake">
+      <h2 className="clip-h2">{t("stake.where")}</h2>
+      <ul className="clip-list" aria-label={t("stake.whereLabel")}>
         {options.data.map((o) => (
           <li key={o.id}>
             <label className="clip-select-row">
               <input type="radio" name="stake-option" checked={optionId === o.id} onChange={() => setOptionId(o.id)} />
               <span className="clip-asset-row__main">
                 <span className="clip-asset-row__symbol">
-                  {o.title} {o.recommended && <Chip tone="accent">Picked for you</Chip>}
+                  {o.title} {o.recommended && <Chip tone="accent">{t("stake.pickedForYou")}</Chip>}
                 </span>
                 <span className="clip-asset-row__name">{o.detail}</span>
               </span>
@@ -205,7 +208,11 @@ export function StakeAsset(props: { assetKey: string }) {
       </ul>
       <ErrorNote message={err} />
       <Button block disabled={busy} onClick={() => void submit()}>
-        {asset.wholeBalance || (asset.amountOptional && !amount) ? `Stake my ${asset.symbol}` : `Stake ${amount || ""} ${asset.symbol}`.replace(/\s+/g, " ")}
+        {asset.wholeBalance || (asset.amountOptional && !amount.trim())
+          ? t("stake.stakeAll", { symbol: asset.symbol })
+          : amount.trim()
+            ? t("stake.stakeAmount", { amount: amount.trim(), symbol: asset.symbol })
+            : t("stake.stakeSymbol", { symbol: asset.symbol })}
       </Button>
     </Screen>
   );

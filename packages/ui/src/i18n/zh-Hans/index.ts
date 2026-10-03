@@ -1,0 +1,62 @@
+/**
+ * Simplified Chinese UI catalog. Glossary (keep these consistent everywhere, including the mobile catalog later):
+ *   wallet → 钱包, recovery phrase → 助记词, passkey → 通行密钥, password → 密码, account → 账户,
+ *   address → 地址, network → 网络, asset → 资产, token → 代币, coin → 币, collectible → 收藏品,
+ *   collection → 系列, send → 发送, receive → 接收, buy → 购买, swap → 兑换, stake → 质押,
+ *   unstake → 解除质押, rewards → 奖励, trade (Secure Trade) → 交易, transaction → 交易,
+ *   approve → 批准, reject → 拒绝, sign → 签署 (signature → 签名), request → 请求, connect → 连接,
+ *   disconnect → 断开连接, connected apps → 已连接的应用, hardware wallet → 硬件钱包, backup → 备份,
+ *   restore → 恢复, lock / unlock → 锁定 / 解锁, handle → 用户名 (Clip handle → Clip 用户名),
+ *   contact → 联系人, notification → 通知, price alert → 价格提醒, fee → 手续费, bridged → 跨链桥接,
+ *   liquidity → 流动性, pool → 资金池, look-alike address → 相似地址, suspicious token → 可疑代币,
+ *   scammer → 诈骗者, Advanced mode → 高级模式, Activity → 活动, Explore → 探索, Discover → 发现,
+ *   Home → 首页, Settings → 设置, pin → 置顶, QR code → 二维码, chain id → 链 ID, publish → 公开.
+ * Style: "你"; full-width punctuation; a half-width space between Chinese and Latin words, numbers and
+ * {variables} (e.g. "发送 {amount} {symbol}"), none next to full-width punctuation.
+ */
+import type { Translation } from "@clip-wallet/i18n";
+import type { UiMessages } from "../en";
+import common from "./common";
+import settings from "./settings";
+import onboarding from "./onboarding";
+import backup from "./backup";
+import home from "./home";
+import collectibles from "./collectibles";
+import activity from "./activity";
+import receive from "./receive";
+import accounts from "./accounts";
+import approvals from "./approvals";
+import components from "./components";
+import stake from "./stake";
+import swap from "./swap";
+import buy from "./buy";
+import trade from "./trade";
+import hardware from "./hardware";
+import send from "./send";
+import approval from "./approval";
+import explore from "./explore";
+import social from "./social";
+
+const messages: Translation<UiMessages> = {
+  ...common,
+  ...settings,
+  ...onboarding,
+  ...backup,
+  ...home,
+  ...collectibles,
+  ...activity,
+  ...receive,
+  ...accounts,
+  ...approvals,
+  ...components,
+  ...stake,
+  ...swap,
+  ...buy,
+  ...trade,
+  ...hardware,
+  ...send,
+  ...approval,
+  ...explore,
+  ...social,
+};
+export default messages;

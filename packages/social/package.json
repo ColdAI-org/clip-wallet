@@ -1,0 +1,34 @@
+{
+  "name": "@clip-wallet/social",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./messages": "./src/messages.ts",
+    "./views": "./src/views.ts",
+    "./contacts": "./src/contacts/index.ts",
+    "./discover": "./src/discover/index.ts",
+    "./notifications": "./src/notifications/index.ts",
+    "./handles": "./src/handles/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/chains-hedera": "workspace:*",
+    "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/names": "workspace:*",
+    "@hiero-ledger/sdk": "^2.89.1",
+    "viem": "^2.57.2",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.9"
+  }
+}

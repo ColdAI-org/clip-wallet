@@ -2,19 +2,18 @@ import { useMemo, useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { Button, Card, ErrorNote, Field, Row, Screen, Spinner, Warnings } from "../components";
-import { formatUnits } from "../lib/format";
+import { canonicalAmount, formatUnits } from "../lib/format";
+import { useFormat, useUiT } from "../i18n";
 import { mergeBalances } from "../lib/portfolio";
 import type { SwapQuoteView } from "./client";
 import { useFeatures } from "./context";
 
-const SLIPPAGE = [
-  { bps: 50, label: "0.5%" },
-  { bps: 100, label: "1%" },
-  { bps: 300, label: "3%" },
-];
+const SLIPPAGE = [50, 100, 300];
 
 /** Swap in assets: "100 USDC for ETH". The wallet finds where; a network only shows in Advanced mode. */
-export function Swap(props: { sell?: string; buy?: string }) {
+export function Swap(props: { sell?: string; buy?: string; /** Discover: symbol for a token the wallet doesn't list yet ("token:<chain>:<address>"). */ buySymbol?: string }) {
+  const t = useUiT();
+  const f = useFormat();
   const { client, state } = useUi();
   const features = useFeatures();
   const { navigate } = useRouter();
@@ -24,8 +23,10 @@ export function Swap(props: { sell?: string; buy?: string }) {
     const seen = new Map<string, { key: string; symbol: string }>();
     for (const a of data?.assets ?? []) if (!a.spam && !seen.has(a.key)) seen.set(a.key, { key: a.key, symbol: a.symbol });
     for (const h of held) if (!seen.has(h.key)) seen.set(h.key, { key: h.key, symbol: h.symbol });
+    // A token picked in Discover that the wallet doesn't list: offer it so the quote can say plainly if it can't be swapped.
+    if (props.buy && props.buySymbol && !seen.has(props.buy)) seen.set(props.buy, { key: props.buy, symbol: props.buySymbol });
     return [...seen.values()];
-  }, [data, held]);
+  }, [data, held, props.buy, props.buySymbol]);
 
   const [sell, setSell] = useState(props.sell ?? "");
   const [buy, setBuy] = useState(props.buy ?? "");
@@ -42,10 +43,11 @@ export function Swap(props: { sell?: string; buy?: string }) {
   async function getPrice() {
     setErr(null);
     setQuote(null);
-    if (!/^\d+(\.\d+)?$/.test(amount.trim())) return setErr("Enter an amount like 25 or 0.5.");
+    const canonical = canonicalAmount(amount);
+    if (!canonical) return setErr(t("swap.amountBad"));
     setBusy(true);
     try {
-      setQuote(await features.swapQuote({ sell: sellKey, buy: buyKey, amount: amount.trim(), slippageBps }));
+      setQuote(await features.swapQuote({ sell: sellKey, buy: buyKey, amount: canonical, slippageBps }));
     } catch (e) {
       setErr(userMessageOf(e));
     } finally {
@@ -60,7 +62,7 @@ export function Swap(props: { sell?: string; buy?: string }) {
     try {
       if (Date.now() > quote.expiresAt + 30_000) {
         setQuote(null);
-        return setErr("This price expired. Get a new one.");
+        return setErr(t("swap.expired"));
       }
       const q = await features.swapExecute({ quoteId: quote.id });
       navigate(`/approval/${encodeURIComponent(q.approvalId)}`);
@@ -74,18 +76,18 @@ export function Swap(props: { sell?: string; buy?: string }) {
 
   if (!data) {
     return (
-      <Screen back title="Swap">
+      <Screen back title={t("swap.title")}>
         <Spinner />
       </Screen>
     );
   }
 
   return (
-    <Screen back title="Swap">
+    <Screen back title={t("swap.title")}>
       <div className="clip-stack">
         <label className="clip-field">
-          <span className="clip-field__label">You pay with</span>
-          <select className="clip-select" aria-label="Asset to swap" value={sellKey} onChange={(e) => { setSell(e.target.value); setQuote(null); }}>
+          <span className="clip-field__label">{t("swap.youPayWith")}</span>
+          <select className="clip-select" aria-label={t("swap.sellAsset")} value={sellKey} onChange={(e) => { setSell(e.target.value); setQuote(null); }}>
             {held.map((h) => (
               <option key={h.key} value={h.key}>
                 {h.symbol}
@@ -94,17 +96,17 @@ export function Swap(props: { sell?: string; buy?: string }) {
           </select>
         </label>
         <Field
-          label="Amount"
+          label={t("swap.amount")}
           inputMode="decimal"
           placeholder="0"
           autoComplete="off"
           value={amount}
           onChange={(e) => { setAmount(e.target.value); setQuote(null); }}
-          hint={sellAsset ? `You have ${formatUnits(sellAsset.amount, sellAsset.decimals, 4)} ${sellAsset.symbol}` : undefined}
+          hint={sellAsset ? t("swap.youHave", { amount: formatUnits(sellAsset.amount, sellAsset.decimals, 4), symbol: sellAsset.symbol }) : undefined}
         />
         <label className="clip-field">
-          <span className="clip-field__label">You get</span>
-          <select className="clip-select" aria-label="Asset to get" value={buyKey} onChange={(e) => { setBuy(e.target.value); setQuote(null); }}>
+          <span className="clip-field__label">{t("swap.youGet")}</span>
+          <select className="clip-select" aria-label={t("swap.buyAsset")} value={buyKey} onChange={(e) => { setBuy(e.target.value); setQuote(null); }}>
             {buyable.filter((b) => b.key !== sellKey).map((b) => (
               <option key={b.key} value={b.key}>
                 {b.symbol}
@@ -112,14 +114,14 @@ export function Swap(props: { sell?: string; buy?: string }) {
             ))}
           </select>
         </label>
-        <div className="clip-segmented" role="radiogroup" aria-label="Price can move by">
-          {SLIPPAGE.map((s) => (
-            <button key={s.bps} type="button" role="radio" aria-checked={slippageBps === s.bps} className={slippageBps === s.bps ? "is-active" : ""} onClick={() => { setSlippage(s.bps); setQuote(null); }}>
-              {s.label}
+        <div className="clip-segmented" role="radiogroup" aria-label={t("swap.slippage")}>
+          {SLIPPAGE.map((bps) => (
+            <button key={bps} type="button" role="radio" aria-checked={slippageBps === bps} className={slippageBps === bps ? "is-active" : ""} onClick={() => { setSlippage(bps); setQuote(null); }}>
+              {f.percent(bps / 100)}
             </button>
           ))}
         </div>
-        <p className="clip-hint">If the price moves more than this before the swap runs, it stops and nothing is swapped.</p>
+        <p className="clip-hint">{t("swap.slippageHint")}</p>
       </div>
 
       {quote && (
@@ -127,13 +129,13 @@ export function Swap(props: { sell?: string; buy?: string }) {
           <p className="clip-h2" data-testid="swap-you-get">{quote.youGet}</p>
           <p className="clip-hint">{quote.atLeast}</p>
           <div className="clip-rows">
-            <Row label="You pay" value={quote.sell.display} />
-            <Row label="Route" value={quote.route} />
-            {quote.priceImpactPct !== undefined && <Row label="Price impact" value={`${quote.priceImpactPct.toFixed(2)}%`} />}
-            {state?.prefs.advanced && <Row label="Network" value={quote.networkId} />}
+            <Row label={t("swap.youPay")} value={quote.sell.display} />
+            <Row label={t("swap.route")} value={quote.route} />
+            {quote.priceImpactPct !== undefined && <Row label={t("swap.priceImpact")} value={f.number(quote.priceImpactPct / 100, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 })} />}
+            {state?.prefs.advanced && <Row label={t("swap.network")} value={quote.networkId} />}
           </div>
           {quote.steps.length > 1 && (
-            <ol className="clip-steps" aria-label="What you'll approve">
+            <ol className="clip-steps" aria-label={t("swap.steps")}>
               {quote.steps.map((s, i) => (
                 <li key={s + i}>{s}</li>
               ))}
@@ -146,11 +148,11 @@ export function Swap(props: { sell?: string; buy?: string }) {
       <ErrorNote message={err} />
       {quote?.executable ? (
         <Button block disabled={busy} onClick={() => void swap()}>
-          {quote.steps.length > 1 ? "Review and swap" : "Swap"}
+          {quote.steps.length > 1 ? t("swap.reviewAndSwap") : t("swap.swap")}
         </Button>
       ) : (
         <Button block disabled={busy || !sellKey || !buyKey} onClick={() => void getPrice()}>
-          {busy ? "Getting the best price…" : "Get price"}
+          {busy ? t("swap.gettingPrice") : t("swap.getPrice")}
         </Button>
       )}
     </Screen>

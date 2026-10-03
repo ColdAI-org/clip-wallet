@@ -6,6 +6,9 @@ import { IconFingerprint } from "../components/icons";
 import { passwordStrength } from "../lib/strength";
 import { asPlatform, type BackupProvidersView, type BackupStatusView } from "../platform/client";
 import { runCeremony } from "../platform/ceremony";
+import { passkeyErrorText } from "../lib/passkey";
+import { formatLocale } from "../lib/format";
+import { rich, useUiT } from "../i18n";
 
 /**
  * Passkey backup (services/backup) and restore on a new device.
@@ -17,22 +20,20 @@ import { runCeremony } from "../platform/ceremony";
  */
 
 function fmtDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  return new Date(ms).toLocaleDateString(formatLocale(), { year: "numeric", month: "short", day: "numeric" });
 }
 
 /** The plain-words explanation shown before anyone opts in. Exported for the restore screen and tests. */
 export function PasskeyBackupExplainer() {
+  const t = useUiT();
   return (
     <div className="clip-stack" data-testid="passkey-backup-explainer">
-      <p className="clip-lede">Your passkey can lock a copy of your recovery phrase so you can get your wallet back on a new device.</p>
+      <p className="clip-lede">{t("backup.explainer.lede")}</p>
       <ul className="clip-bullets">
-        <li>We store only the locked copy. We can't open it, and neither can anyone who breaks into our servers.</li>
-        <li>To restore, you need the email, Google or Apple account you signed in with (to fetch the copy) and the passkey (to unlock it), on the new device. That sign-in only finds your copy; it can't unlock it.</li>
-        <li>
-          <strong>Your passkey syncs through your Apple, Google or password-manager account.</strong> Whoever controls that account
-          and can pass its Face ID, fingerprint or PIN could restore this wallet if they also get into the email, Google or Apple account you back up with. Protect both.
-        </li>
-        <li>Keep your recovery phrase written down too. It works even if this service or your passkey is gone.</li>
+        <li>{t("backup.explainer.stored")}</li>
+        <li>{t("backup.explainer.restoreAny")}</li>
+        <li>{rich(t("backup.explainer.syncAny"), { b: (c) => <strong>{c}</strong> })}</li>
+        <li>{t("backup.explainer.keepPhrase")}</li>
       </ul>
     </div>
   );
@@ -78,6 +79,7 @@ export function SocialSignIn(props: { providers: BackupProvidersView; onSignedIn
 
 /** Email sign-in by one-time link. The link only works on the device that asked for it. */
 export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () => void }) {
+  const t = useUiT();
   const { client } = useUi();
   const p = asPlatform(client);
   const providers = useAsync(async () => (p.backupProviders ? p.backupProviders() : null), []);
@@ -106,10 +108,10 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
     return (
       <div className="clip-stack">
         {social && <SocialSignIn providers={pv!} onSignedIn={props.onSignedIn} busy={busy} setBusy={setBusy} setErr={setErr} />}
-        {social && showEmail && <p className="clip-hint">Or use your email:</p>}
+        {social && showEmail && <p className="clip-hint">{t("backup.signIn.orEmail")}</p>}
         {!showEmail && <ErrorNote message={err} />}
         {showEmail && <>
-        <Field label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} hint="We'll email you a sign-in link. No password." />
+        <Field label={t("backup.signIn.email")} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} hint={t("backup.signIn.emailHint")} />
         <ErrorNote message={err} />
         <Button
           block
@@ -121,7 +123,7 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
             })
           }
         >
-          {busy ? "Sending…" : "Email me a link"}
+          {busy ? t("backup.signIn.sending") : t("backup.signIn.send")}
         </Button>
         </>}
       </div>
@@ -129,10 +131,8 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
   }
   return (
     <div className="clip-stack">
-      <p className="clip-lede">
-        We sent a link to <strong>{sentTo}</strong>. Open it on this device, or paste it here. It works once, for 15 minutes.
-      </p>
-      <Field label="Link from the email" autoComplete="off" spellCheck={false} value={link} onChange={(e) => setLink(e.target.value)} />
+      <p className="clip-lede">{rich(t("backup.signIn.sent", { email: sentTo }), { b: (c) => <strong>{c}</strong> })}</p>
+      <Field label={t("backup.signIn.link")} autoComplete="off" spellCheck={false} value={link} onChange={(e) => setLink(e.target.value)} />
       <ErrorNote message={err} />
       <Button
         block
@@ -144,10 +144,10 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
           })
         }
       >
-        {busy ? "Checking…" : "Continue"}
+        {busy ? t("backup.signIn.checking") : t("common.continue")}
       </Button>
       <Button block variant="ghost" disabled={busy} onClick={() => setSentTo(undefined)}>
-        Use a different email
+        {t("backup.signIn.otherEmail")}
       </Button>
     </div>
   );
@@ -155,6 +155,7 @@ export function BackupSignIn(props: { status: BackupStatusView; onSignedIn: () =
 
 /** Settings → "Back up with your passkey". */
 export function PasskeyBackup() {
+  const t = useUiT();
   const { client, passkeys } = useUi();
   const p = asPlatform(client);
   const status = useAsync(() => p.backupStatus(), []);
@@ -165,20 +166,20 @@ export function PasskeyBackup() {
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  if (status.loading && !status.data) return <Screen title="Passkey backup" back><Spinner /></Screen>;
+  if (status.loading && !status.data) return <Screen title={t("backup.passkey.screen")} back><Spinner /></Screen>;
   const st = status.data;
-  if (!st) return <Screen title="Passkey backup" back><ErrorNote message={userMessageOf(status.error)} /></Screen>;
+  if (!st) return <Screen title={t("backup.passkey.screen")} back><ErrorNote message={userMessageOf(status.error)} /></Screen>;
   if (!st.available) {
     return (
-      <Screen title="Passkey backup" back>
-        <Empty title="Passkey backup isn't available in this version">Your recovery phrase is your backup.</Empty>
+      <Screen title={t("backup.passkey.screen")} back>
+        <Empty title={t("backup.passkey.unavailableTitle")}>{t("backup.passkey.unavailableBody")}</Empty>
       </Screen>
     );
   }
 
   const create = async () => {
     setErr(null);
-    if (!passkeys) return setErr("Passkeys aren't available in this browser. Your recovery phrase is still your backup.");
+    if (!passkeys) return setErr(t("backup.passkey.noPasskeys"));
     if (!passkeys.canRunHere) {
       await client.openFullTab("/backup/passkey");
       return;
@@ -191,7 +192,7 @@ export function PasskeyBackup() {
       setAdding(false);
       status.reload();
     } catch (e) {
-      setErr(userMessageOf(e));
+      setErr(passkeyErrorText(e, t, userMessageOf));
     } finally {
       setBusy(false);
     }
@@ -199,25 +200,25 @@ export function PasskeyBackup() {
 
   const showCreate = adding || st.backups.length === 0;
   return (
-    <Screen title="Passkey backup" back>
+    <Screen title={t("backup.passkey.screen")} back>
       <div className="clip-onboard">
         <span className="clip-done-badge" aria-hidden>
           <IconFingerprint width={28} height={28} />
         </span>
-        <h1 className="clip-h1">Back up with your passkey</h1>
+        <h1 className="clip-h1">{t("backup.passkey.title")}</h1>
         {done && (
           <div className="clip-notice clip-notice--info" role="status">
-            <span>Backed up. You can restore on a new device with your email and this passkey.</span>
+            <span>{t("backup.passkey.backedUp")}</span>
           </div>
         )}
 
         {st.backups.length > 0 && (
           <Card>
-            <h2 className="clip-h2">Your backups</h2>
+            <h2 className="clip-h2">{t("backup.passkey.yourBackups")}</h2>
             {st.backups.map((b) => (
               <Row
                 key={b.id}
-                label={`Made ${fmtDate(b.createdAt)}`}
+                label={t("backup.passkey.made", { date: fmtDate(b.createdAt) })}
                 value={
                   <Button
                     variant="ghost"
@@ -230,12 +231,12 @@ export function PasskeyBackup() {
                       }
                     }}
                   >
-                    Delete
+                    {t("common.delete")}
                   </Button>
                 }
               />
             ))}
-            {st.email && <p className="clip-hint">Signed in as {st.email}</p>}
+            {st.email && <p className="clip-hint">{t("backup.passkey.signedInAs", { email: st.email })}</p>}
           </Card>
         )}
 
@@ -243,15 +244,15 @@ export function PasskeyBackup() {
           <>
             <PasskeyBackupExplainer />
             <label className="clip-check">
-              <input type="checkbox" checked={understood} onChange={(e) => setUnderstood(e.target.checked)} /> I understand who can restore my wallet
+              <input type="checkbox" checked={understood} onChange={(e) => setUnderstood(e.target.checked)} /> {t("backup.passkey.understand")}
             </label>
             {understood && !st.signedIn && <BackupSignIn status={st} onSignedIn={() => status.reload()} />}
             {understood && st.signedIn && (
               <div className="clip-stack">
-                <Field label="Your wallet password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Field label={t("backup.passwordLabel")} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <ErrorNote message={err} />
                 <Button block onClick={create} disabled={busy || !password}>
-                  <IconFingerprint /> {busy ? "Waiting for your device…" : "Create backup passkey"}
+                  <IconFingerprint /> {busy ? t("backup.waiting") : t("backup.passkey.create")}
                 </Button>
               </div>
             )}
@@ -260,7 +261,7 @@ export function PasskeyBackup() {
           <div className="clip-stack">
             <ErrorNote message={err} />
             <Button block variant="secondary" onClick={() => setAdding(true)}>
-              Add another backup
+              {t("backup.passkey.addAnother")}
             </Button>
             <Button
               block
@@ -270,7 +271,7 @@ export function PasskeyBackup() {
                 status.reload();
               }}
             >
-              Sign out of backups
+              {t("backup.passkey.signOut")}
             </Button>
           </div>
         )}
@@ -281,6 +282,7 @@ export function PasskeyBackup() {
 
 /** New device: restore a wallet from a passkey backup. Reached from onboarding ("Restore with a passkey"). */
 export function PasskeyRestore(props: { onDone: () => void }) {
+  const t = useUiT();
   const { client, passkeys, refresh } = useUi();
   const p = asPlatform(client);
   const status = useAsync(() => p.backupStatus(), []);
@@ -291,15 +293,15 @@ export function PasskeyRestore(props: { onDone: () => void }) {
   const [err, setErr] = useState<string | null>(null);
   const strength = passwordStrength(password);
 
-  if (status.loading && !status.data) return <Screen title="Restore" back><Spinner /></Screen>;
+  if (status.loading && !status.data) return <Screen title={t("backup.restore.screen")} back><Spinner /></Screen>;
   const st = status.data;
-  if (!st) return <Screen title="Restore" back><ErrorNote message={userMessageOf(status.error)} /></Screen>;
+  if (!st) return <Screen title={t("backup.restore.screen")} back><ErrorNote message={userMessageOf(status.error)} /></Screen>;
 
   const restore = async () => {
     setErr(null);
     if (!chosen) return;
-    if (password !== confirm) return setErr("The passwords don't match.");
-    if (!passkeys) return setErr("Passkeys aren't available in this browser. Use your recovery phrase instead.");
+    if (password !== confirm) return setErr(t("backup.passwordMismatch"));
+    if (!passkeys) return setErr(t("backup.restore.noPasskeys"));
     if (!passkeys.canRunHere) {
       await client.openFullTab("/restore/passkey");
       return;
@@ -312,26 +314,26 @@ export function PasskeyRestore(props: { onDone: () => void }) {
       await refresh();
       props.onDone();
     } catch (e) {
-      setErr(userMessageOf(e));
+      setErr(passkeyErrorText(e, t, userMessageOf));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <Screen title="Restore" back>
+    <Screen title={t("backup.restore.screen")} back>
       <div className="clip-onboard">
-        <h1 className="clip-h1">Restore with your passkey</h1>
+        <h1 className="clip-h1">{t("backup.restore.title")}</h1>
         {!st.signedIn ? (
           <>
             <PasskeyBackupExplainer />
             <BackupSignIn status={st} onSignedIn={() => status.reload()} />
           </>
         ) : st.backups.length === 0 ? (
-          <Empty title="No backups for this email">Use your recovery phrase instead, or sign in with another email.</Empty>
+          <Empty title={t("backup.restore.noBackupsTitle")}>{t("backup.restore.noBackupsBody")}</Empty>
         ) : (
           <div className="clip-stack">
-            <div className="clip-options" role="radiogroup" aria-label="Backups">
+            <div className="clip-options" role="radiogroup" aria-label={t("backup.restore.backupsLabel")}>
               {st.backups.map((b) => (
                 <button
                   key={b.id}
@@ -341,17 +343,24 @@ export function PasskeyRestore(props: { onDone: () => void }) {
                   className={`clip-option ${chosen === b.id ? "is-selected" : ""}`}
                   onClick={() => setChosen(b.id)}
                 >
-                  <span className="clip-option__title">Backup from {fmtDate(b.createdAt)}</span>
+                  <span className="clip-option__title">{t("backup.restore.backupFrom", { date: fmtDate(b.createdAt) })}</span>
                 </button>
               ))}
             </div>
             {chosen && (
               <>
-                <Field label="New password for this device" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} hint={password ? (strength.hint ?? strength.label) : "At least 8 characters."} />
-                <Field label="Type it again" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                <Field
+                  label={t("backup.restore.newPassword")}
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  hint={password ? t((strength.hintId ?? strength.labelId)!) : t("backup.restore.passwordHint")}
+                />
+                <Field label={t("backup.restore.again")} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
                 <ErrorNote message={err} />
                 <Button block onClick={restore} disabled={busy || !strength.acceptable || !confirm}>
-                  <IconFingerprint /> {busy ? "Waiting for your device…" : "Unlock with passkey"}
+                  <IconFingerprint /> {busy ? t("backup.waiting") : t("backup.restore.unlock")}
                 </Button>
               </>
             )}
@@ -364,21 +373,22 @@ export function PasskeyRestore(props: { onDone: () => void }) {
 
 /** Full-tab landing for the emailed link (`#/backup/sign-in?token=…`): finishes sign-in on this device. */
 export function BackupLinkLanding(props: { link: string }) {
+  const t = useUiT();
   const { client } = useUi();
   const { navigate } = useRouter();
   const res = useAsync(() => asPlatform(client).backupCompleteSignIn({ link: props.link }), [props.link]);
   return (
-    <Screen title="Passkey backup">
+    <Screen title={t("backup.passkey.screen")}>
       <div className="clip-onboard clip-onboard--welcome">
         {res.loading ? (
-          <Spinner label="Signing in" />
+          <Spinner label={t("backup.signIn.landingLoading")} />
         ) : res.error ? (
           <ErrorNote message={userMessageOf(res.error)} />
         ) : (
           <>
-            <h1 className="clip-h1">You're signed in</h1>
+            <h1 className="clip-h1">{t("backup.signIn.landingDone")}</h1>
             <Button block onClick={() => navigate("/backup/passkey", { replace: true })}>
-              Continue
+              {t("common.continue")}
             </Button>
           </>
         )}

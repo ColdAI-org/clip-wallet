@@ -120,7 +120,7 @@ export interface PriceFeed {
 
 export interface NameResolver {
   /** `networkIds`: networks the name points at specifically; `addressOn`: ENS per-network addresses. */
-  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string> } | null>;
+  resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string>; byFamily?: Partial<Record<Family, string>> } | null>;
   /** Primary name for an address, for display. */
   reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
 }

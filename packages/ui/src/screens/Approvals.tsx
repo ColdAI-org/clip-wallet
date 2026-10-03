@@ -4,9 +4,11 @@ import { userMessageOf } from "../client";
 import { useUi } from "../context";
 import { Empty, ErrorNote, Screen, Spinner } from "../components";
 import { ApprovalScreen } from "./Approval";
+import { useUiT } from "../i18n";
 
 /** Shows the oldest waiting request, then the next, until the queue is empty. */
 export function ApprovalQueue(props: { focusId?: string; onEmpty?: () => void; standalone?: boolean }) {
+  const t = useUiT();
   const { client, refresh } = useUi();
   const [items, setItems] = useState<ApprovalView[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -35,10 +37,10 @@ export function ApprovalQueue(props: { focusId?: string; onEmpty?: () => void; s
   ) : !items ? (
     <Spinner />
   ) : !current ? (
-    <Empty title="Nothing waiting for you" />
+    <Empty title={t("approvals.empty")} />
   ) : (
     <>
-      {items.length > 1 && <p className="clip-queue-count">1 of {items.length} requests</p>}
+      {items.length > 1 && <p className="clip-queue-count">{t("approvals.position", { n: items.length })}</p>}
       <ApprovalScreen
         key={current.id}
         approval={current}

@@ -1,0 +1,34 @@
+/** Namespace "m.approval" (mobile): the approval sheet. Same English as the extension's "approval" namespace. */
+export default {
+  /** Screen-reader label for the requesting site, e.g. "app.uniswap.org (verified)". */
+  "m.approval.domainVerified": "{domain} (verified)",
+  "m.approval.domainNotVerified": "{domain} (not verified)",
+  /** Advanced mode: network name and chain id, e.g. "Base · 8453". */
+  "m.approval.networkChain": "{name} · {chainId}",
+  /** A balance change line, e.g. "−0.5 ETH" or "+12 USDC". {sign} is "−" or "+". */
+  "m.approval.change": "{sign}{amount} {symbol}",
+  "m.approval.blocked": "{name} can't read this request, so it's blocked. Signing something you can't read can empty your wallet.",
+  "m.approval.blockedNeedsAdvanced": "{name} can't read this request, so it's blocked. Signing something you can't read can empty your wallet. Only Advanced mode can override this.",
+  "m.approval.blindToggle": "Sign this unreadable request anyway",
+  "m.approval.blindToggleHint": "Only if you trust this site completely.",
+  "m.approval.reject": "Reject",
+  "m.approval.approve": "Approve",
+  "m.approval.approving": "Approving…",
+  "m.approval.unreadable": "Unreadable request",
+  "m.approval.from": "From",
+  "m.approval.yourBalance": "Your balance",
+  "m.approval.fee": "Fee",
+  "m.approval.feeCovered": "network fee covered",
+  "m.approval.ready": "Ready",
+  "m.approval.details": "Details",
+  "m.approval.estimated": "These changes are estimated; this network can't preview them.",
+  "m.approval.network": "Network",
+  "m.approval.networkValue": "{name} ({id})",
+  "m.approval.via": "Via",
+  "m.approval.connect.title": "Connect to {app}?",
+  "m.approval.connect.lede": "{app} will see your {account}. It can ask you to approve things, but can't move anything without you.",
+  "m.approval.connect.account": "account",
+  "m.approval.connect.address": "Address",
+  "m.approval.connect.unknown": "{name} doesn't recognise {domain}. Only connect if you opened it yourself.",
+  "m.approval.connect.connect": "Connect",
+} satisfies Record<`m.approval.${string}`, string>;

@@ -10,6 +10,7 @@ import { useWallet } from "../ui/context";
 import { Button, ErrorNote, Field, Screen, T } from "../ui/kit";
 import { IconFingerprint, IconShield } from "../ui/icons";
 import { APP } from "../env";
+import { useMobileT, type MobileMessageId } from "../i18n";
 
 type Step =
   | { s: "welcome" }
@@ -22,33 +23,47 @@ type Step =
 
 const ICON = require("../../assets/icon.png");
 
+/** passwordStrength's English label → [label id, hint id]. */
+const STRENGTH: Record<string, [MobileMessageId, MobileMessageId?]> = {
+  "Too common": ["m.onboarding.strength.tooCommon", "m.onboarding.strength.tooCommon.hint"],
+  "Too short": ["m.onboarding.strength.tooShort", "m.onboarding.strength.tooShort.hint"],
+  Okay: ["m.onboarding.strength.okay", "m.onboarding.strength.okay.hint"],
+  Good: ["m.onboarding.strength.good"],
+  Strong: ["m.onboarding.strength.strong"],
+};
+
 function StrengthMeter(props: { password: string }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   const st = passwordStrength(props.password);
+  const ids = st.label ? STRENGTH[st.label] : undefined;
+  const label = ids ? t(ids[0]) : st.label;
+  const hint = ids?.[1] ? t(ids[1]) : st.hint;
   const colors = ["", theme.c.dangerFg, theme.c.cautionFg, theme.c.positive, theme.c.positive];
   return (
-    <View style={{ gap: 6 }} accessibilityLabel={`Password strength ${st.label || "empty"}`}>
+    <View style={{ gap: 6 }} accessibilityLabel={t("m.onboarding.strength.a11y", { level: label || t("m.onboarding.strength.empty") })}>
       <View style={{ flexDirection: "row", gap: 4 }}>
         {[1, 2, 3, 4].map((i) => (
           <View key={i} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: st.score >= i ? colors[st.score] : theme.c.border }} />
         ))}
       </View>
-      {st.label ? <T v="hint" testID="strength">{`${st.label}${st.hint ? ` — ${st.hint}` : ""}`}</T> : null}
+      {label ? <T v="hint" testID="strength">{hint ? t("m.onboarding.strength.withHint", { label, hint }) : label}</T> : null}
     </View>
   );
 }
 
 function Welcome(props: { onCreate: () => void; onImport: () => void }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   return (
     <Screen
       footer={
         <>
           <Button block onPress={props.onCreate} testID="create">
-            Create a new wallet
+            {t("m.onboarding.welcome.create")}
           </Button>
           <Button block variant="secondary" onPress={props.onImport} testID="import">
-            I already have a recovery phrase
+            {t("m.onboarding.welcome.import")}
           </Button>
         </>
       }
@@ -57,7 +72,7 @@ function Welcome(props: { onCreate: () => void; onImport: () => void }) {
         <Image source={ICON} style={{ width: 72, height: 72, borderRadius: 18 }} accessibilityIgnoresInvertColors />
         <T v="display">{APP.config.name}</T>
         <T v="lede" style={{ textAlign: "center" }}>
-          One place for your money, collectibles and apps. Test networks only for now.
+          {t("m.onboarding.welcome.lede")}
         </T>
       </View>
     </Screen>
@@ -65,6 +80,7 @@ function Welcome(props: { onCreate: () => void; onImport: () => void }) {
 }
 
 function PasswordStep(props: { flow: "create" | "import"; onSubmit: (password: string) => Promise<void>; onBack: () => void }) {
+  const t = useMobileT();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -88,15 +104,15 @@ function PasswordStep(props: { flow: "create" | "import"; onSubmit: (password: s
       back={props.onBack}
       footer={
         <Button block onPress={submit} disabled={!st.acceptable || pw !== pw2 || busy} testID="password-submit">
-          {busy ? "Securing your wallet…" : props.flow === "create" ? "Create wallet" : "Import wallet"}
+          {busy ? t("m.onboarding.password.busy") : props.flow === "create" ? t("m.onboarding.password.create") : t("m.onboarding.password.import")}
         </Button>
       }
     >
-      <T v="h1">Choose a password</T>
-      <T v="lede">It unlocks this wallet on this device. It can't be recovered, but your recovery phrase can always restore the wallet.</T>
-      <Field label="Password" secureTextEntry textContentType="newPassword" autoComplete="new-password" value={pw} onChangeText={setPw} testID="password" autoFocus />
+      <T v="h1">{t("m.onboarding.password.title")}</T>
+      <T v="lede">{t("m.onboarding.password.lede")}</T>
+      <Field label={t("m.onboarding.password.label")} secureTextEntry textContentType="newPassword" autoComplete="new-password" value={pw} onChangeText={setPw} testID="password" autoFocus />
       <StrengthMeter password={pw} />
-      <Field label="Type it again" secureTextEntry textContentType="newPassword" value={pw2} onChangeText={setPw2} testID="password2" error={mismatch ? "The passwords don't match." : null} onSubmitEditing={submit} />
+      <Field label={t("m.onboarding.password.again")} secureTextEntry textContentType="newPassword" value={pw2} onChangeText={setPw2} testID="password2" error={mismatch ? t("m.onboarding.password.mismatch") : null} onSubmitEditing={submit} />
       <ErrorNote message={err} />
     </Screen>
   );
@@ -104,21 +120,20 @@ function PasswordStep(props: { flow: "create" | "import"; onSubmit: (password: s
 
 function PhraseStep(props: { words: string[]; onNext: () => void }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   const [shown, setShown] = useState(false);
   const [saved, setSaved] = useState(false);
   return (
     <Screen
       footer={
         <Button block onPress={props.onNext} disabled={!shown || !saved} testID="phrase-continue">
-          Continue
+          {t("m.common.continue")}
         </Button>
       }
     >
-      <T v="h1">Your recovery phrase</T>
-      <T v="lede">
-        These {props.words.length} words are the only way to get your wallet back. Write them down in order and keep them offline. Anyone who has them can take everything.
-      </T>
-      <View accessibilityLabel="Recovery phrase" style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, backgroundColor: theme.c.surface, borderRadius: theme.r.lg, padding: 12, borderWidth: 1, borderColor: theme.c.border }}>
+      <T v="h1">{t("m.onboarding.phrase.title")}</T>
+      <T v="lede">{t("m.onboarding.phrase.lede", { n: props.words.length })}</T>
+      <View accessibilityLabel={t("m.onboarding.phrase.a11y")} style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, backgroundColor: theme.c.surface, borderRadius: theme.r.lg, padding: 12, borderWidth: 1, borderColor: theme.c.border }}>
         {props.words.map((w, i) => (
           <View key={i} style={{ width: "31%", flexDirection: "row", gap: 6, paddingVertical: 8, paddingHorizontal: 8, backgroundColor: theme.c.surface2, borderRadius: theme.r.sm }}>
             <T v="hint">{i + 1}</T>
@@ -130,7 +145,7 @@ function PhraseStep(props: { words: string[]; onNext: () => void }) {
       </View>
       {!shown && (
         <Button block variant="secondary" onPress={() => setShown(true)} testID="reveal">
-          Show my phrase
+          {t("m.onboarding.phrase.reveal")}
         </Button>
       )}
       <Pressable
@@ -142,42 +157,43 @@ function PhraseStep(props: { words: string[]; onNext: () => void }) {
         style={{ flexDirection: "row", gap: 10, alignItems: "center", opacity: shown ? 1 : 0.5 }}
       >
         <View style={{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: saved ? theme.c.accent : theme.c.border, backgroundColor: saved ? theme.c.accent : "transparent" }} />
-        <T>I wrote these words down</T>
+        <T>{t("m.onboarding.phrase.saved")}</T>
       </Pressable>
     </Screen>
   );
 }
 
 function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: () => void; indexes?: number[] }) {
+  const t = useMobileT();
   const indexes = useMemo(() => props.indexes ?? pickConfirmIndexes(props.words.length), [props.indexes, props.words.length]);
   const [answers, setAnswers] = useState<string[]>(indexes.map(() => ""));
   const [err, setErr] = useState<string | null>(null);
   const submit = () => {
     const ok = indexes.every((idx, i) => answers[i]!.trim().toLowerCase() === props.words[idx]);
     if (ok) props.onConfirmed();
-    else setErr("Those words don't match. Check your written copy and try again.");
+    else setErr(t("m.onboarding.confirm.mismatch"));
   };
   return (
     <Screen
       back={props.onBack}
       footer={
         <Button block onPress={submit} disabled={answers.some((a) => !a.trim())} testID="confirm">
-          Confirm
+          {t("m.onboarding.confirm.button")}
         </Button>
       }
     >
-      <T v="h1">Check your backup</T>
-      <T v="lede">Type the words at these positions.</T>
+      <T v="h1">{t("m.onboarding.confirm.title")}</T>
+      <T v="lede">{t("m.onboarding.confirm.lede")}</T>
       {indexes.map((idx, i) => (
         <Field
           key={idx}
-          label={`Word #${idx + 1}`}
+          label={t("m.onboarding.confirm.word", { n: idx + 1 })}
           testID={`confirm-${i}`}
           autoCapitalize="none"
           autoComplete="off"
           spellCheck={false}
           value={answers[i]}
-          onChangeText={(t) => setAnswers((a) => a.map((v, j) => (j === i ? t : v)))}
+          onChangeText={(text) => setAnswers((a) => a.map((v, j) => (j === i ? text : v)))}
         />
       ))}
       <ErrorNote message={err} />
@@ -186,6 +202,7 @@ function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: 
 }
 
 function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => void }) {
+  const t = useMobileT();
   const [phrase, setPhrase] = useState("");
   const words = phrase.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const valid = [12, 15, 18, 21, 24].includes(words.length);
@@ -194,23 +211,26 @@ function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => voi
       back={props.onBack}
       footer={
         <Button block disabled={!valid} onPress={() => props.onNext(words.join(" "))} testID="import-continue">
-          Continue
+          {t("m.common.continue")}
         </Button>
       }
     >
-      <T v="h1">Import your wallet</T>
-      <T v="lede">Enter your 12 or 24-word recovery phrase, separated by spaces.</T>
-      <Field label="Recovery phrase" multiline numberOfLines={4} style={{ minHeight: 110, textAlignVertical: "top" }} autoCapitalize="none" autoComplete="off" spellCheck={false} secureTextEntry={false} value={phrase} onChangeText={setPhrase} testID="phrase-input" />
-      <T v="hint">{words.length > 0 && !valid ? `${words.length} words so far` : " "}</T>
+      <T v="h1">{t("m.onboarding.import.title")}</T>
+      <T v="lede">{t("m.onboarding.import.lede")}</T>
+      <Field label={t("m.onboarding.import.label")} multiline numberOfLines={4} style={{ minHeight: 110, textAlignVertical: "top" }} autoCapitalize="none" autoComplete="off" spellCheck={false} secureTextEntry={false} value={phrase} onChangeText={setPhrase} testID="phrase-input" />
+      <T v="hint">{words.length > 0 && !valid ? t("m.onboarding.import.count", { n: words.length }) : " "}</T>
     </Screen>
   );
 }
 
 export function BiometricsStep(props: { password: string; onDone: () => void }) {
   const { wallet, theme } = useWallet();
+  const t = useMobileT();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [label, setLabel] = useState("Face ID or Touch ID");
+  const [osLabel, setLabel] = useState<string | null>(null);
+  // Biometric names come from the OS and are never translated.
+  const label = osLabel ?? t("m.onboarding.biometrics.either", { face: "Face ID", touch: "Touch ID" });
   const [available, setAvailable] = useState<boolean | null>(null);
   useEffect(() => {
     void wallet.biometrics().then((b) => {
@@ -240,10 +260,10 @@ export function BiometricsStep(props: { password: string; onDone: () => void }) 
               }
             }}
           >
-            {`Use ${label}`}
+            {t("m.onboarding.biometrics.use", { label })}
           </Button>
           <Button block variant="ghost" onPress={props.onDone} testID="biometrics-skip">
-            Not now
+            {t("m.onboarding.biometrics.notNow")}
           </Button>
         </>
       }
@@ -252,9 +272,9 @@ export function BiometricsStep(props: { password: string; onDone: () => void }) 
         <View style={{ backgroundColor: theme.c.accentSoft, borderRadius: 40, padding: 18 }}>
           <IconFingerprint color={theme.c.accent} size={36} />
         </View>
-        <T v="h1" style={{ textAlign: "center" }}>{`Unlock with ${label}?`}</T>
+        <T v="h1" style={{ textAlign: "center" }}>{t("m.onboarding.biometrics.title", { label })}</T>
         <T v="lede" style={{ textAlign: "center" }}>
-          Use your device instead of typing your password. Your password keeps working.
+          {t("m.onboarding.biometrics.lede")}
         </T>
       </View>
       <ErrorNote message={err} />
@@ -264,11 +284,12 @@ export function BiometricsStep(props: { password: string; onDone: () => void }) 
 
 function Done(props: { onFinish: () => void }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   return (
     <Screen
       footer={
         <Button block onPress={props.onFinish} testID="open-wallet">
-          Open my wallet
+          {t("m.onboarding.done.open")}
         </Button>
       }
     >
@@ -276,8 +297,8 @@ function Done(props: { onFinish: () => void }) {
         <View style={{ backgroundColor: theme.c.accentSoft, borderRadius: 40, padding: 18 }}>
           <IconShield color={theme.c.accent} size={36} />
         </View>
-        <T v="h1">You're all set</T>
-        <T v="lede" style={{ textAlign: "center" }}>{`${APP.config.name} is ready.`}</T>
+        <T v="h1">{t("m.onboarding.done.title")}</T>
+        <T v="lede" style={{ textAlign: "center" }}>{t("m.onboarding.done.lede", { name: APP.config.name })}</T>
       </View>
     </Screen>
   );
@@ -339,6 +360,7 @@ export function Onboarding(props: { onFinished: () => void; confirmIndexes?: num
 
 export function Unlock(props: { onUnlocked: () => void }) {
   const { client, wallet, theme } = useWallet();
+  const t = useMobileT();
   const [pw, setPw] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -366,17 +388,17 @@ export function Unlock(props: { onUnlocked: () => void }) {
       footer={
         <>
           <Button block testID="unlock" disabled={!pw || busy} onPress={() => run(() => client.unlock(pw))}>
-            Unlock
+            {t("m.onboarding.unlock.button")}
           </Button>
           {bio && (
             <Button block variant="secondary" testID="unlock-biometrics" disabled={busy} onPress={() => run(() => wallet.unlockWithBiometrics())}>
               <IconFingerprint color={theme.c.text} />
-              <T>{`Unlock with ${bio.label}`}</T>
+              <T>{t("m.onboarding.unlock.biometrics", { label: bio.label })}</T>
             </Button>
           )}
           {passkey && (
             <Button block variant="ghost" disabled={busy} onPress={() => run(() => wallet.unlockWithPasskey())}>
-              Unlock with passkey
+              {t("m.onboarding.unlock.passkey")}
             </Button>
           )}
         </>
@@ -384,9 +406,9 @@ export function Unlock(props: { onUnlocked: () => void }) {
     >
       <View style={{ alignItems: "center", gap: theme.s(4), paddingTop: 60 }}>
         <Image source={ICON} style={{ width: 60, height: 60, borderRadius: 15 }} />
-        <T v="h1">Welcome back</T>
+        <T v="h1">{t("m.onboarding.unlock.title")}</T>
       </View>
-      <Field label="Password" secureTextEntry textContentType="password" value={pw} onChangeText={setPw} testID="unlock-password" onSubmitEditing={() => pw && run(() => client.unlock(pw))} />
+      <Field label={t("m.onboarding.password.label")} secureTextEntry textContentType="password" value={pw} onChangeText={setPw} testID="unlock-password" onSubmitEditing={() => pw && run(() => client.unlock(pw))} />
       <ErrorNote message={err} />
     </Screen>
   );

@@ -38,8 +38,10 @@
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
     "@clip-wallet/hardware": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/media-client": "workspace:*",
     "@clip-wallet/security": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
     "qrcode": "^1.5.4"
   }
 }

@@ -1,0 +1,57 @@
+/**
+ * Brazilian Portuguese mobile catalog (same glossary as packages/ui/src/i18n/pt-BR). Glossary (keep these consistent with the UI catalog):
+ *   wallet → carteira, recovery phrase → frase de recuperação, password → senha, passkey → chave de acesso,
+ *   backup → backup (verb: fazer backup), restore → restaurar, account → conta, address → endereço,
+ *   network → rede, asset → ativo, token → token, coin → moeda, collectible → colecionável,
+ *   balance → saldo, fee / network fee → taxa / taxa de rede, amount → valor,
+ *   send → enviar, receive → receber, buy → comprar, swap → trocar (noun: troca),
+ *   stake → staking / fazer staking, unstake → retirar do staking, rewards → recompensas,
+ *   trade (Secure Trade) → negociação / negociar (feature name "Secure Trade" kept), liquidity → liquidez,
+ *   request → solicitação, approve → aprovar, reject → recusar, sign → assinar, signature → assinatura,
+ *   connect / disconnect → conectar / desconectar, connected apps → apps conectados, app → app,
+ *   lock / unlock → bloquear / desbloquear, hardware wallet → carteira de hardware, device → dispositivo,
+ *   scan → escanear, QR code → código QR, contact → contato, handle (Clip handle) → usuário (usuário Clip),
+ *   claim a handle → registrar, give up a handle → abrir mão de, publish → publicar,
+ *   look-alike address → endereço parecido, scammer → golpista, exchange → corretora,
+ *   bridged → via ponte, pin / unpin → fixar / desafixar, price alert → alerta de preço,
+ *   notifications → notificações, activity → atividade, settings → configurações, Advanced mode → Modo avançado,
+ *   Discover → Descobrir, Explore → Explorar, Home → Início, unreadable request → solicitação ilegível,
+ *   Browse (tab) → Navegar, biometrics → biometria,
+ *   Try again → Tentar de novo (in sentences: "tente de novo"). Decimal examples use a comma (0,5).
+ */
+import type { Translation } from "@clip-wallet/i18n";
+import type { MobileMessages } from "../en";
+import common from "./common";
+import onboarding from "./onboarding";
+import home from "./home";
+import collectibles from "./collectibles";
+import activity from "./activity";
+import receive from "./receive";
+import scan from "./scan";
+import browser from "./browser";
+import kit from "./kit";
+import app from "./app";
+import send from "./send";
+import approval from "./approval";
+import settings from "./settings";
+import explore from "./explore";
+import social from "./social";
+
+const messages: Translation<MobileMessages> = {
+  ...common,
+  ...onboarding,
+  ...home,
+  ...collectibles,
+  ...activity,
+  ...receive,
+  ...scan,
+  ...browser,
+  ...kit,
+  ...app,
+  ...send,
+  ...approval,
+  ...settings,
+  ...explore,
+  ...social,
+};
+export default messages;

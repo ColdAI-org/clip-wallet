@@ -1,0 +1,19 @@
+# ClipHandles — opt-in "@handle" → published addresses, on Hedera's EVM (Hedera testnet, chain id 296).
+# Hedera runs the Prague EVM without EIP-7702 and blobs (https://docs.hedera.com/evm/development/deploying.md);
+# cancun bytecode (PUSH0, MCOPY, TSTORE) is a safe subset.
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+cache_path = "cache"
+libs = []
+solc_version = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 10000
+fuzz = { runs = 512 }
+
+[rpc_endpoints]
+# Hashio is the public testnet JSON-RPC relay (https://docs.hedera.com/evm/quickstart/setup-metamask.md).
+hedera_testnet = "${HEDERA_TESTNET_RPC_URL}"

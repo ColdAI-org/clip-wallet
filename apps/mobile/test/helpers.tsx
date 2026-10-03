@@ -4,8 +4,10 @@
  */
 import { act, render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
-import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient } from "@clip-wallet/engine";
+import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSocialClient } from "@clip-wallet/engine";
 import { EngineHardware, createEngineHardwareClient } from "@clip-wallet/engine/hardware";
+import { createSocial } from "@clip-wallet/engine/social";
+import type { Notice } from "@clip-wallet/social";
 import type { MobileWallet } from "../src/background/host";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
@@ -29,6 +31,8 @@ export interface TestWallet extends MobileWallet {
   opened: string[];
   releaseLedger: () => void;
   ledgerPicked: { id: string; name: string } | null;
+  /** Local notifications the social service showed. */
+  notices: Notice[];
 }
 
 export function testWallet(answers: Partial<Record<string, (m: Record<string, unknown>) => unknown>> = {}): TestWallet {
@@ -36,14 +40,33 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
   const vault = new PhraseVault();
   const env = makeEnv((id) => events.emit({ type: "approval", id }));
   env.broadcast = () => events.emit({ type: "change" });
+  const deps = makeDeps(vault);
   const kv = new MemoryKV();
-  const engine = new WalletEngine(makeDeps(vault), kv, env);
+  const engine = new WalletEngine(deps, kv, env);
   engine.start();
   const hw = fakeHardwareDeps(kv, () => events.emit({ type: "change" }));
   const engineHardware = new EngineHardware(hw.deps);
   engine.attachHardware(engineHardware);
   const featureCalls: TestWallet["featureCalls"] = [];
   const opened: string[] = [];
+  // Social services with no network: Discover fails plainly, notices are collected.
+  const notices: Notice[] = [];
+  engine.attachSocial(
+    createSocial({
+      networks: deps.networks,
+      assets: deps.assets,
+      chains: deps.chains,
+      kv,
+      ctx: (id) => engine.featureCtx(id),
+      enqueue: async (r, app) => ({ id: (await engine.enqueueWalletRequest(r, app)).id }),
+      approvals: async () => engine.socialApprovals(),
+      prices: deps.prices,
+      notifier: { show: async (n) => void notices.push(n) },
+      deviceLanguages: () => ["en-US"],
+      walletName: "Clip Wallet",
+      fetch: (async () => new Response("{}", { status: 503 })) as typeof fetch,
+    }),
+  );
   const client = createEngineClient(engine, { subscribe: (cb) => events.on((e) => e.type !== "approval" && cb()) });
   // Feature services with sample answers (the real ones call partner APIs). Wallet-built requests still go
   // through the engine's real approval queue (enqueueWalletRequest), like the real StakingService/Swap/Trade.
@@ -62,6 +85,7 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
     }) as never,
   });
   const features = createEngineFeaturesClient(engine, { openExternal: async (url) => void opened.push(url) });
+  const social = createEngineSocialClient(engine, { requestNotificationPermission: async () => true });
   let ledgerPicked: TestWallet["ledgerPicked"] = null;
   const wallet: TestWallet = {
     vault,
@@ -88,6 +112,9 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
     passkeyPrf: null,
     openSheet: async (url) => void opened.push(url),
     confirmPresence: async () => true,
+    social,
+    notices,
+    pollNotifications: async () => undefined,
     events,
     argon2: { kind: "native", fn: async () => new Uint8Array(32), selfTest: Promise.resolve(true) },
     walletConnectEnabled: false,

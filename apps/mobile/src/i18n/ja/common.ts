@@ -1,0 +1,22 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "戻る",
+  "m.common.continue": "続ける",
+  "m.common.cancel": "キャンセル",
+  "m.common.copy": "コピー",
+  "m.common.copied": "コピーしました",
+  "m.common.max": "最大",
+  "m.common.send": "送金",
+  "m.common.receive": "受け取る",
+  "m.common.somethingWentWrong": "問題が発生しました。もう一度お試しください。",
+  "m.common.tab.home": "ホーム",
+  "m.common.tab.collectibles": "コレクティブル",
+  "m.common.tab.explore": "探す",
+  "m.common.tab.activity": "アクティビティ",
+  "m.common.tab.browse": "ブラウズ",
+  "m.common.tab.settings": "設定",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "まもなく",
+  "m.common.readyIn.seconds": "約{n, plural, other {#秒}}後",
+  "m.common.readyIn.minutes": "約{n, plural, other {#分}}後",
+} satisfies Record<keyof typeof en, string>;

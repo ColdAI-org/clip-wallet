@@ -8,11 +8,19 @@ import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
 import { useFeaturesOptional } from "../features/context";
 import { useHardwareOptional } from "../hardware/context";
+import { useSocialOptional } from "../social/context";
+import { useUiT } from "../i18n";
+import { LOCALES, localeInfo, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 
 export function isWalletConnectUri(uri: string): boolean {
   return /^wc:[0-9a-f]{64}@2\?/i.test(uri.trim()) && /[?&]symKey=[0-9a-f]{64}/i.test(uri) && /[?&]relay-protocol=/i.test(uri);
+}
+
+function systemLanguages(): readonly string[] {
+  if (typeof navigator === "undefined") return [];
+  return navigator.languages?.length ? navigator.languages : [navigator.language];
 }
 
 function Section(props: { title: string; children: React.ReactNode; id?: string }) {
@@ -28,37 +36,38 @@ function Section(props: { title: string; children: React.ReactNode; id?: string 
 }
 
 function Sessions() {
+  const t = useUiT();
   const { client, state } = useUi();
   const { navigate } = useRouter();
   const { data, reload, error } = useAsync(() => client.listSessions(), [client]);
   return (
-    <Section title="Connected apps">
+    <Section title={t("settings.sessions.title")} id="connected-apps">
       <ErrorNote message={error ? userMessageOf(error) : null} />
-      {data && data.length === 0 && <p className="clip-hint">No apps are connected.</p>}
+      {data && data.length === 0 && <p className="clip-hint">{t("settings.sessions.none")}</p>}
       <ul className="clip-sessions">
         {data?.map((s) => (
           <li key={s.id} className="clip-session">
             <div>
               <div className="clip-session__name">{s.dapp.name}</div>
               <div className="clip-session__meta">
-                {s.dapp.domain} · {s.via === "walletconnect" ? "WalletConnect" : "In this browser"} · {relativeTime(s.connectedAt)}
+                {s.dapp.domain} · {s.via === "walletconnect" ? t("settings.sessions.walletConnect") : t("settings.sessions.inBrowser")} · {relativeTime(s.connectedAt)}
                 {state?.prefs.advanced && s.networkIds.length > 0 && <> · {s.networkIds.join(", ")}</>}
               </div>
             </div>
             {s.via === "injected" && (
-              <Button variant="ghost" aria-label={`Accounts for ${s.dapp.name}`} onClick={() => navigate(`/accounts?origin=${encodeURIComponent(s.dapp.origin)}`)}>
-                Accounts
+              <Button variant="ghost" aria-label={t("settings.sessions.accountsFor", { app: s.dapp.name })} onClick={() => navigate(`/accounts?origin=${encodeURIComponent(s.dapp.origin)}`)}>
+                {t("settings.sessions.accounts")}
               </Button>
             )}
             <Button
               variant="secondary"
-              aria-label={`Disconnect ${s.dapp.name}`}
+              aria-label={t("settings.sessions.disconnectApp", { app: s.dapp.name })}
               onClick={async () => {
                 await client.disconnect(s.id);
                 reload();
               }}
             >
-              Disconnect
+              {t("settings.sessions.disconnect")}
             </Button>
           </li>
         ))}
@@ -68,16 +77,17 @@ function Sessions() {
 }
 
 function WalletConnectPair() {
+  const t = useUiT();
   const { client } = useUi();
   const [uri, setUri] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const valid = isWalletConnectUri(uri);
   return (
-    <Section title="Connect with a code" id="walletconnect">
-      <p className="clip-hint">For apps on another device or browser: copy their WalletConnect code (it starts with "wc:") or scan its QR code.</p>
+    <Section title={t("settings.wc.title")} id="walletconnect">
+      <p className="clip-hint">{t("settings.wc.hint")}</p>
       <Field
-        label="Connection code"
+        label={t("settings.wc.code")}
         placeholder="wc:…"
         autoComplete="off"
         spellCheck={false}
@@ -87,13 +97,13 @@ function WalletConnectPair() {
           setErr(null);
           setMsg(null);
         }}
-        error={uri && !valid ? "That doesn't look like a WalletConnect code." : null}
+        error={uri && !valid ? t("settings.wc.invalid") : null}
       />
       <ErrorNote message={err} />
       {msg && <p className="clip-notice clip-notice--info">{msg}</p>}
       <div className="clip-actions">
         <Button variant="secondary" onClick={() => client.openFullTab("/scan")}>
-          Scan QR code
+          {t("settings.wc.scan")}
         </Button>
         <Button
           disabled={!valid}
@@ -101,13 +111,13 @@ function WalletConnectPair() {
             try {
               await client.pairWalletConnect(uri.trim());
               setUri("");
-              setMsg("Pairing started. The app will ask you to connect.");
+              setMsg(t("settings.wc.started"));
             } catch (e) {
               setErr(userMessageOf(e));
             }
           }}
         >
-          Connect
+          {t("settings.wc.connect")}
         </Button>
       </div>
     </Section>
@@ -115,16 +125,17 @@ function WalletConnectPair() {
 }
 
 function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) => Promise<void> }) {
+  const t = useUiT();
   const { client } = useUi();
   const { data } = useAsync(() => client.getPortfolio(), [client]);
   const [draft, setDraft] = useState<Record<string, string>>(props.prefs.rpcOverrides);
   return (
-    <Section title="Networks">
+    <Section title={t("settings.networks")} id="networks">
       {data?.networks.map((n) => (
         <div key={n.id} className="clip-network-adv">
-          <Row label={n.name} value={<code className="clip-mono">{n.id}</code>} hint={n.chainId !== undefined ? `chain id ${n.chainId}` : undefined} />
+          <Row label={n.name} value={<code className="clip-mono">{n.id}</code>} hint={n.chainId !== undefined ? t("settings.networks.chainId", { id: n.chainId }) : undefined} />
           <Field
-            label={`RPC override for ${n.name}`}
+            label={t("settings.networks.rpcFor", { network: n.name })}
             placeholder={n.rpcUrl ?? "https://"}
             value={draft[n.id] ?? ""}
             onChange={(e) => setDraft((d) => ({ ...d, [n.id]: e.target.value }))}
@@ -135,7 +146,7 @@ function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) =
               else delete next[n.id];
               void props.setPrefs({ rpcOverrides: next });
             }}
-            error={draft[n.id] && !/^https:\/\//.test(draft[n.id]!) ? "Use an https:// URL." : null}
+            error={draft[n.id] && !/^https:\/\//.test(draft[n.id]!) ? t("settings.networks.httpsOnly") : null}
           />
         </div>
       ))}
@@ -144,6 +155,7 @@ function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) =
 }
 
 export function Settings() {
+  const t = useUiT();
   const { client, state, refresh, config, options } = useUi();
   const [enrolling, setEnrolling] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -151,6 +163,7 @@ export function Settings() {
   const { navigate } = useRouter();
   const features = useFeaturesOptional();
   const hardware = useHardwareOptional();
+  const social = useSocialOptional();
   if (!state) return null;
   const prefs = state.prefs;
   const setPrefs = async (p: Partial<Prefs>) => {
@@ -163,22 +176,46 @@ export function Settings() {
   };
 
   return (
-    <Screen nav title="Settings">
+    <Screen nav title={t("settings.title")}>
       <ErrorNote message={err} />
       {features && (
-        <Section title="More">
-          <nav className="clip-menu" aria-label="More">
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/stake")}>Stake</button>
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/swap")}>Swap</button>
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/buy")}>Buy</button>
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/trade")}>Secure Trade</button>
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/explore")}>Explore apps</button>
+        <Section title={t("settings.more")} id="more">
+          <nav className="clip-menu" aria-label={t("settings.more")}>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/stake")}>{t("settings.more.stake")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/swap")}>{t("settings.more.swap")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/buy")}>{t("settings.more.buy")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/trade")}>{t("settings.more.trade")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/explore")}>{t("settings.more.explore")}</button>
           </nav>
         </Section>
       )}
-      <Section title="Display">
+      {social && (
+        <Section title={t("settings.people")} id="people">
+          <nav className="clip-menu" aria-label={t("settings.people")}>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/contacts")}>{t("social.contacts.title")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/handle")}>{t("social.handle.menu")}</button>
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/notifications")}>{t("social.notify.menu")}</button>
+          </nav>
+        </Section>
+      )}
+      <Section title={t("settings.display")} id="display">
         <label className="clip-select-row">
-          <span>Currency</span>
+          <span>{t("settings.language")}</span>
+          <select
+            className="clip-select"
+            value={prefs.locale ?? "system"}
+            onChange={(e) => setPrefs({ locale: e.target.value as LocalePref })}
+          >
+            <option value="system">{t("settings.language.system", { language: localeInfo(resolveLocale("system", systemLanguages())).nativeName })}</option>
+            {LOCALES.map((l) => (
+              <option key={l.code} value={l.code} lang={l.code} dir={l.dir}>
+                {l.nativeName}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="clip-select-row">
+          <span>{t("settings.currency")}</span>
           <select className="clip-select" value={prefs.displayCurrency} onChange={(e) => setPrefs({ displayCurrency: e.target.value })}>
             {options.currencies.map((c) => (
               <option key={c} value={c}>
@@ -188,30 +225,30 @@ export function Settings() {
           </select>
         </label>
         <label className="clip-select-row">
-          <span>Appearance</span>
+          <span>{t("settings.appearance")}</span>
           <select className="clip-select" value={prefs.theme} onChange={(e) => setPrefs({ theme: e.target.value as Prefs["theme"] })}>
-            <option value="system">Match system</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
+            <option value="system">{t("settings.appearance.system")}</option>
+            <option value="light">{t("settings.appearance.light")}</option>
+            <option value="dark">{t("settings.appearance.dark")}</option>
           </select>
         </label>
       </Section>
 
-      <Section title="Security">
+      <Section title={t("settings.security")} id="security">
         <label className="clip-select-row">
-          <span>Lock automatically after</span>
+          <span>{t("settings.autoLock")}</span>
           <select className="clip-select" value={prefs.autoLockMinutes} onChange={(e) => setPrefs({ autoLockMinutes: Number(e.target.value) })}>
             {AUTO_LOCK.map((m) => (
               <option key={m} value={m}>
-                {m === 60 ? "1 hour" : `${m} minute${m === 1 ? "" : "s"}`}
+                {m === 60 ? t("settings.autoLock.hour") : t("settings.autoLock.minutes", { n: m })}
               </option>
             ))}
           </select>
         </label>
         <div className="clip-passkey-row">
           <div>
-            <div className="clip-toggle__label">Unlock with Face ID / Touch ID</div>
-            <div className="clip-toggle__desc">{state.passkey.enrolled ? "On for this device." : "Use a passkey instead of your password."}</div>
+            <div className="clip-toggle__label">{t("settings.passkey.title")}</div>
+            <div className="clip-toggle__desc">{state.passkey.enrolled ? t("settings.passkey.on") : t("settings.passkey.off")}</div>
           </div>
           {state.passkey.enrolled ? (
             <Button
@@ -221,23 +258,23 @@ export function Settings() {
                 await refresh();
               }}
             >
-              Remove
+              {t("settings.passkey.remove")}
             </Button>
           ) : (
             !enrolling && (
               <Button variant="secondary" onClick={() => setEnrolling(true)}>
-                Set up
+                {t("settings.passkey.setUp")}
               </Button>
             )
           )}
         </div>
         {enrolling && <PasskeyEnroll onDone={() => setEnrolling(false)} />}
-        <nav className="clip-menu" aria-label="Backup and accounts">
-          <button type="button" className="clip-menu__item" onClick={() => navigate("/backup")}>Backup</button>
-          <button type="button" className="clip-menu__item" onClick={() => navigate("/accounts")}>Accounts</button>
+        <nav className="clip-menu" aria-label={t("settings.backupAndAccounts")}>
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/backup")}>{t("settings.backup")}</button>
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/accounts")}>{t("settings.accounts")}</button>
           {hardware && (
-            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/hardware")} title="Ledger or Keystone: keys stay on the device">
-              Hardware wallets
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/hardware")} title={t("settings.hardware.hint")}>
+              {t("settings.hardware")}
             </button>
           )}
         </nav>
@@ -249,17 +286,17 @@ export function Settings() {
             await refresh();
           }}
         >
-          Lock now
+          {t("settings.lockNow")}
         </Button>
       </Section>
 
       <Sessions />
       <WalletConnectPair />
 
-      <Section title="Advanced">
+      <Section title={t("settings.advanced")} id="advanced">
         <Toggle
-          label="Advanced mode"
-          description="Shows network names, chain ids, RPC settings and raw requests. Also lets you override blocked unreadable requests, one at a time."
+          label={t("settings.advanced.mode")}
+          description={t("settings.advanced.modeHint")}
           checked={prefs.advanced}
           onChange={(v) => setPrefs({ advanced: v })}
         />
@@ -272,8 +309,8 @@ export function Settings() {
       )}
 
       {state.mocks && client.devSimulateRequest && (
-        <Section title="Developer (mock data)">
-          <p className="clip-hint">This build uses sample data. Simulate a request from an app:</p>
+        <Section title={t("settings.dev.title")} id="developer-mock-data">
+          <p className="clip-hint">{t("settings.dev.hint")}</p>
           <div className="clip-dev-buttons">
             {(["pay", "connect", "blind", "approval-for-all"] as const).map((k) => (
               <Button
@@ -281,7 +318,7 @@ export function Settings() {
                 variant="secondary"
                 onClick={async () => {
                   const id = await client.devSimulateRequest!(k);
-                  setDevMsg(`Queued ${k} request`);
+                  setDevMsg(t("settings.dev.queued", { kind: k }));
                   await refresh();
                   navigate(`/approval/${encodeURIComponent(id)}`);
                 }}
@@ -295,7 +332,7 @@ export function Settings() {
       )}
 
       <p className="clip-about">
-        {config.name} · test networks only
+        {t("settings.about", { name: config.name })}
       </p>
     </Screen>
   );
@@ -308,9 +345,10 @@ interface BarcodeDetectorLike {
 }
 
 export function ScanWalletConnect() {
+  const t = useUiT();
   const { client } = useUi();
   const video = useRef<HTMLVideoElement>(null);
-  const [status, setStatus] = useState<string>("Point your camera at the app's QR code.");
+  const [status, setStatus] = useState<string>(t("settings.scan.point"));
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
@@ -319,7 +357,7 @@ export function ScanWalletConnect() {
     let stop = false;
     const Detector = (globalThis as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => BarcodeDetectorLike }).BarcodeDetector;
     if (!Detector) {
-      setErr("This browser can't read QR codes from the camera. Paste the connection code in Settings instead.");
+      setErr(t("settings.scan.noDetector"));
       return;
     }
     const detector = new Detector({ formats: ["qr_code"] });
@@ -333,16 +371,16 @@ export function ScanWalletConnect() {
           const codes = await detector.detect(video.current).catch(() => []);
           const hit = codes.find((c) => isWalletConnectUri(c.rawValue));
           if (hit) {
-            setStatus("Found it. Connecting…");
+            setStatus(t("settings.scan.found"));
             await client.pairWalletConnect(hit.rawValue);
             setDone(true);
-            setStatus("Pairing started. Go back to the app to finish connecting.");
+            setStatus(t("settings.scan.started"));
             break;
           }
           await new Promise((r) => setTimeout(r, 300));
         }
       } catch (e) {
-        setErr(e && typeof e === "object" && "name" in e && (e as { name: string }).name === "NotAllowedError" ? "Camera access was blocked. Allow it, or paste the code instead." : userMessageOf(e));
+        setErr(e && typeof e === "object" && "name" in e && (e as { name: string }).name === "NotAllowedError" ? t("settings.scan.blocked") : userMessageOf(e));
       } finally {
         stream?.getTracks().forEach((t) => t.stop());
       }
@@ -351,11 +389,11 @@ export function ScanWalletConnect() {
       stop = true;
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, [client]);
+  }, [client]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Screen title="Scan to connect">
-      {!done && !err && <video ref={video} className="clip-scan-video" muted playsInline aria-label="Camera preview" />}
+    <Screen title={t("settings.scan.title")}>
+      {!done && !err && <video ref={video} className="clip-scan-video" muted playsInline aria-label={t("settings.scan.preview")} />}
       <ErrorNote message={err} />
       <p className="clip-lede">{status}</p>
     </Screen>

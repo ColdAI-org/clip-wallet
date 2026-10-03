@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "Bloquear billetera",
+  "m.home.pending": "{n, plural, one {# solicitud te está esperando} other {# solicitudes te están esperando}}",
+  "m.home.total": "Saldo total",
+  "m.home.bridged": "puenteado",
+  "m.home.empty.title": "Aún no hay nada",
+  "m.home.empty.body": "Toca Recibir para añadir dinero desde otra billetera o un exchange.",
+  "m.home.hideSmall": "Ocultar saldos pequeños",
+  "m.home.spam.hide": "Ocultar tokens sospechosos",
+  "m.home.spam.hidden": "{n, plural, one {# token sospechoso oculto} other {# tokens sospechosos ocultos}}",
+  "m.home.stale": "Algunos saldos pueden tener unos minutos de antigüedad.",
+  "m.home.asset.title": "Activo",
+  "m.home.asset.gone": "Ya no tienes este activo",
+  "m.home.asset.pin": "Fijar",
+  "m.home.asset.unpin": "Desfijar",
+  "m.home.asset.bridgedCopy": "copia puenteada: no es el {symbol} original",
+  "m.home.asset.where": "Dónde está",
+  "m.home.asset.whereHint": "No necesitas gestionarlo: el {symbol} se gasta desde donde esté.",
+  "m.home.asset.contract": "Contrato ({network})",
+} satisfies Record<keyof typeof en, string>;

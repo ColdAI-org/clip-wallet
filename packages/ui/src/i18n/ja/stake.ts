@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "ステーキング",
+  "stake.lede": "保有しているコインで報酬を得られます。その間も、管理権はずっとあなたにあります。",
+  "stake.empty.title": "ステーキングできるものはまだありません",
+  "stake.empty.body": "ステーキングできるコインがここに表示されます。",
+  "stake.change": "変更",
+  "stake.stakeSymbol": "{symbol}をステーキング",
+  "stake.stakeAmount": "{amount} {symbol}をステーキング",
+  "stake.stakeAll": "保有している{symbol}をステーキング",
+  "stake.with": "ステーキング先",
+  "stake.rewardsOnTheWay": "報酬を受け取り中",
+  "stake.action.unstake": "ステーキング解除",
+  "stake.action.withdraw": "残高に移す",
+  "stake.action.claim": "報酬を受け取る",
+  "stake.action.change": "変更",
+  "stake.amount": "数量",
+  "stake.amountBad": "2 や 0.5 のように数量を入力してください。",
+  "stake.amountMissing": "ステーキングする数量を入力してください。",
+  "stake.where": "ステーキング先",
+  "stake.whereLabel": "ステーキング先",
+  "stake.pickedForYou": "おすすめ",
+} satisfies Record<keyof typeof en, string>;

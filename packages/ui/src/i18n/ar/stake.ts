@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "التخزين",
+  "stake.lede": "اكسب مكافآت على العملات التي تملكها. تظل متحكمًا بها طوال الوقت.",
+  "stake.empty.title": "لا شيء للتخزين بعد",
+  "stake.empty.body": "تظهر هنا العملات التي يمكنك تخزينها.",
+  "stake.change": "تغيير",
+  "stake.stakeSymbol": "تخزين {symbol}",
+  "stake.stakeAmount": "تخزين {amount} {symbol}",
+  "stake.stakeAll": "تخزين ما أملكه من {symbol}",
+  "stake.with": "لدى",
+  "stake.rewardsOnTheWay": "المكافآت في الطريق",
+  "stake.action.unstake": "إلغاء التخزين",
+  "stake.action.withdraw": "النقل إلى الرصيد",
+  "stake.action.claim": "جمع المكافآت",
+  "stake.action.change": "تغيير",
+  "stake.amount": "المبلغ",
+  "stake.amountBad": "أدخل مبلغًا مثل 2 أو 0.5.",
+  "stake.amountMissing": "أدخل المبلغ المراد تخزينه.",
+  "stake.where": "أين",
+  "stake.whereLabel": "مكان التخزين",
+  "stake.pickedForYou": "مُختار لك",
+} satisfies Record<keyof typeof en, string>;

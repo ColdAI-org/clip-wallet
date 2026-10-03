@@ -8,14 +8,71 @@ import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { BalanceChange } from "@clip-wallet/core";
-import { formatFiat, formatUnits, hueFor, readyIn, userMessageOf, type ApprovalView } from "@clip-wallet/ui";
-import { useWallet } from "../ui/context";
+import type { Family } from "@clip-wallet/core";
+import { formatFiat, formatUnits, hueFor, readyInMessage, userMessageOf, type ApprovalView, formatLocale } from "@clip-wallet/ui";
+import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Notice, Row, T, Toggle, Warnings } from "../ui/kit";
 import { IconAlert, IconChevron, IconShield } from "../ui/icons";
 import { APP } from "../env";
+import { useMobileT, type MobileMessageId } from "../i18n";
+import { ContactAvatar } from "./Contacts";
+
+/** readyInMessage's ids, in the mobile catalog ("common.readyIn.x" → "m.common.readyIn.x"). */
+function useReadyIn() {
+  const t = useMobileT();
+  return (seconds: number) => {
+    const r = readyInMessage(seconds);
+    return t(`m.${r.id}` as MobileMessageId, "n" in r ? { n: r.n } : undefined);
+  };
+}
+
+/**
+ * On a wallet send: "Sending to Alex" when the recipient is a saved contact, or a danger notice when it looks
+ * like a contact's address but isn't (address poisoning: same first and last characters, different middle).
+ */
+export function RecipientCheck(props: { address: string; family: Family }) {
+  const { wallet, theme } = useWallet();
+  const t = useMobileT();
+  const { data } = useAsync(() => wallet.social.checkAddress({ address: props.address, family: props.family }), [wallet, props.address, props.family]);
+  if (!data) return null;
+  if (data.contact) {
+    const c = data.contact;
+    return (
+      <View testID="recipient-contact" style={{ flexDirection: "row", alignItems: "center", gap: 10, alignSelf: "center" }}>
+        <ContactAvatar contact={c.contact} size={28} />
+        <T style={{ fontWeight: "500" }}>
+          {t("m.social.recipient.contact", { name: c.contact.name })}
+          {c.entry.label ? <T v="hint">{` · ${c.entry.label}`}</T> : null}
+        </T>
+      </View>
+    );
+  }
+  const l = data.lookalikes[0];
+  if (!l) return null;
+  return (
+    <View testID="recipient-lookalike" accessibilityRole="alert" style={{ flexDirection: "row", gap: 10, backgroundColor: theme.c.dangerBg, borderRadius: theme.r.md, padding: 12, alignItems: "flex-start" }}>
+      <IconAlert color={theme.c.dangerFg} size={18} />
+      <View style={{ flex: 1, gap: 6 }}>
+        <T color={theme.c.dangerFg} style={{ fontWeight: "700", fontSize: 15 }}>
+          {t("m.social.recipient.lookalikeTitle")}
+        </T>
+        <T color={theme.c.dangerFg} style={{ fontSize: 14, lineHeight: 19 }}>
+          {t("m.social.recipient.lookalike", { name: l.contact.name })}
+        </T>
+        <T v="mono" color={theme.c.dangerFg} selectable>
+          {t("m.social.recipient.saved", { address: l.entry.address })}
+        </T>
+        <T v="mono" color={theme.c.dangerFg} selectable>
+          {t("m.social.recipient.this", { address: props.address })}
+        </T>
+      </View>
+    </View>
+  );
+}
 
 function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   const { dapp, network } = props.approval;
   const hue = hueFor(dapp.domain);
   return (
@@ -29,23 +86,24 @@ function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
         <T style={{ fontWeight: "600" }} testID="dapp-name">
           {dapp.name}
         </T>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} accessibilityLabel={`${dapp.domain} ${dapp.verified ? "(verified)" : "(not verified)"}`}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }} accessibilityLabel={t(dapp.verified ? "m.approval.domainVerified" : "m.approval.domainNotVerified", { domain: dapp.domain })}>
           {dapp.verified ? <IconShield color={theme.c.positive} size={14} /> : <IconAlert color={theme.c.cautionFg} size={14} />}
           <T v="hint" color={dapp.verified ? theme.c.positive : theme.c.cautionFg} testID="dapp-domain">
             {dapp.domain}
           </T>
         </View>
       </View>
-      <Chip tone="muted" testID="network-chip">{`${network.name}${props.advanced && network.chainId !== undefined ? ` · ${network.chainId}` : ""}`}</Chip>
+      <Chip tone="muted" testID="network-chip">{props.advanced && network.chainId !== undefined ? t("m.approval.networkChain", { name: network.name, chainId: network.chainId }) : network.name}</Chip>
     </View>
   );
 }
 
 function ChangeLine(props: { change: BalanceChange }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   const neg = props.change.delta.startsWith("-");
   const amount = formatUnits(neg ? props.change.delta.slice(1) : props.change.delta, props.change.asset.decimals);
-  return <T color={neg ? theme.c.text : theme.c.positive}>{`${neg ? "−" : "+"}${amount} ${props.change.asset.symbol}`}</T>;
+  return <T color={neg ? theme.c.text : theme.c.positive}>{t("m.approval.change", { sign: neg ? "−" : "+", amount, symbol: props.change.asset.symbol })}</T>;
 }
 
 function Shell(props: { children: React.ReactNode; footer: React.ReactNode }) {
@@ -61,6 +119,8 @@ function Shell(props: { children: React.ReactNode; footer: React.ReactNode }) {
 
 export function TransactionApproval(props: { approval: ApprovalView; onDone: (approved: boolean) => void }) {
   const { client, state, theme } = useWallet();
+  const t = useMobileT();
+  const readyIn = useReadyIn();
   const a = props.approval;
   const d = a.decoded!;
   const advanced = !!state?.prefs.advanced;
@@ -78,7 +138,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
       : d.fee?.fiatValue !== undefined
         ? formatFiat(d.fee.fiatValue, currency)
         : d.fee
-          ? `${formatUnits(d.fee.amount, d.fee.asset.decimals)} ${d.fee.asset.symbol}`
+          ? t("m.common.amount", { amount: formatUnits(d.fee.amount, d.fee.asset.decimals), symbol: d.fee.asset.symbol })
           : "—";
   const act = async (approve: boolean) => {
     setBusy(true);
@@ -101,19 +161,19 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
         <>
           {d.blind && (
             <Notice level="danger">
-              {`${APP.config.name} can't read this request, so it's blocked. Signing something you can't read can empty your wallet.${advanced ? "" : " Only Advanced mode can override this."}`}
+              {t(advanced ? "m.approval.blocked" : "m.approval.blockedNeedsAdvanced", { name: APP.config.name })}
             </Notice>
           )}
           {problem && <Notice level="caution">{problem}</Notice>}
           <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
-          {d.blind && advanced && <Toggle label="Sign this unreadable request anyway" description="Only if you trust this site completely." checked={blindOk} onChange={setBlindOk} />}
+          {d.blind && advanced && <Toggle label={t("m.approval.blindToggle")} description={t("m.approval.blindToggleHint")} checked={blindOk} onChange={setBlindOk} />}
           <ErrorNote message={err} />
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
-              Reject
+              {t("m.approval.reject")}
             </Button>
             <Button onPress={() => act(true)} disabled={busy || blocked} testID="approve">
-              {busy ? "Approving…" : "Approve"}
+              {busy ? t("m.approval.approving") : t("m.approval.approve")}
             </Button>
           </View>
         </>
@@ -122,21 +182,22 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
       <DappHeader approval={a} advanced={advanced} />
       <View style={{ alignItems: "center", gap: 6, paddingVertical: theme.s(3) }}>
         <T v="h1" style={{ textAlign: "center" }} testID="approval-title">
-          {d.blind ? "Unreadable request" : d.title}
+          {d.blind ? t("m.approval.unreadable") : d.title}
         </T>
         {a.fiatValue !== undefined && !d.blind && <T v="display">{formatFiat(a.fiatValue, currency)}</T>}
       </View>
+      {a.recipient && <RecipientCheck address={a.recipient.address} family={a.recipient.family} />}
       <Card style={{ gap: 0 }}>
-        {movesMoney && <Row label="From" value={a.plan?.source ?? "Your balance"} />}
-        {d.fee && <Row label="Fee" value={feeText} hint={a.plan?.sponsored ? "network fee covered" : undefined} />}
-        {(movesMoney || d.fee) && <Row label="Ready" value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
+        {movesMoney && <Row label={t("m.approval.from")} value={a.plan?.source ?? t("m.approval.yourBalance")} />}
+        {d.fee && <Row label={t("m.approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("m.approval.feeCovered") : undefined} />}
+        {(movesMoney || d.fee) && <Row label={t("m.approval.ready")} value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
         {d.lines.map((l) => (
           <Row key={l.label} label={l.label} value={l.value} />
         ))}
       </Card>
       <Pressable onPress={() => setOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
         <T color={theme.c.accent} style={{ fontWeight: "600" }}>
-          Details
+          {t("m.approval.details")}
         </T>
         <View style={{ transform: [{ rotate: open ? "90deg" : "0deg" }] }}>
           <IconChevron color={theme.c.accent} size={14} />
@@ -159,11 +220,11 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
             </View>
           ))}
           {a.plan?.settlement ? <T v="hint">{a.plan.settlement}</T> : null}
-          {!d.simulated && !d.blind && <T v="hint">These changes are estimated; this network can't preview them.</T>}
+          {!d.simulated && !d.blind && <T v="hint">{t("m.approval.estimated")}</T>}
           {advanced && (
             <Card>
-              <Row label="Network" value={`${a.network.name} (${a.network.id})`} />
-              <Row label="Via" value={a.via} />
+              <Row label={t("m.approval.network")} value={t("m.approval.networkValue", { name: a.network.name, id: a.network.id })} />
+              <Row label={t("m.approval.via")} value={a.via} />
               {a.raw ? <T v="mono">{a.raw}</T> : null}
             </Card>
           )}
@@ -175,6 +236,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
 
 export function ConnectApproval(props: { approval: ApprovalView; onDone: (approved: boolean) => void }) {
   const { client, state, theme } = useWallet();
+  const t = useMobileT();
   const a = props.approval;
   const advanced = !!state?.prefs.advanced;
   const [busy, setBusy] = useState(false);
@@ -197,15 +259,15 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
       footer={
         <>
           {!a.dapp.verified && (
-            <Warnings warnings={[{ level: "caution", code: "domain-mismatch", message: `${APP.config.name} doesn't recognise ${a.dapp.domain}. Only connect if you opened it yourself.` }]} />
+            <Warnings warnings={[{ level: "caution", code: "domain-mismatch", message: t("m.approval.connect.unknown", { name: APP.config.name, domain: a.dapp.domain }) }]} />
           )}
           <ErrorNote message={err} />
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
-              Cancel
+              {t("m.common.cancel")}
             </Button>
             <Button onPress={() => act(true)} disabled={busy} testID="approve">
-              Connect
+              {t("m.approval.connect.connect")}
             </Button>
           </View>
         </>
@@ -213,15 +275,15 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
     >
       <DappHeader approval={a} advanced={advanced} />
       <View style={{ gap: 8, paddingVertical: theme.s(3) }}>
-        <T v="h1" testID="approval-title">{`Connect to ${a.dapp.name}?`}</T>
-        <T v="lede">{`${a.dapp.name} will see your ${a.connect?.accountLabel ?? "account"}. It can ask you to approve things, but can't move anything without you.`}</T>
+        <T v="h1" testID="approval-title">{t("m.approval.connect.title", { app: a.dapp.name })}</T>
+        <T v="lede">{t("m.approval.connect.lede", { app: a.dapp.name, account: formatLocale() === "en" && a.connect?.accountLabel ? a.connect.accountLabel : t("m.approval.connect.account") })}</T>
       </View>
       <Card>
         {(a.connect?.permissions ?? []).map((p) => (
           <T key={p}>{`•  ${p}`}</T>
         ))}
       </Card>
-      {advanced && a.connect && <Row label="Address" value={<T v="mono">{a.connect.address}</T>} />}
+      {advanced && a.connect && <Row label={t("m.approval.connect.address")} value={<T v="mono">{a.connect.address}</T>} />}
     </Shell>
   );
 }

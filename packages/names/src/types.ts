@@ -1,7 +1,7 @@
 import type { Family, NetworkId } from "@clip-wallet/core";
 
-/** "plugin" (Phase 2.5, additive): answered by a Clip Plugin; see `ResolvedName.via`. */
-export type NameService = "ens" | "sns" | "hns" | "plugin";
+/** "plugin" (Phase 2.5, additive): answered by a Clip Plugin; see `ResolvedName.via`. "clip": a Clip handle. */
+export type NameService = "ens" | "sns" | "hns" | "plugin" | "clip";
 
 export interface ResolvedName {
   /** The name as typed, normalised ("alice.eth"). */
@@ -24,6 +24,13 @@ export interface ResolvedName {
   displayName: string;
   /** Phase 2.5 (additive): set when a plugin answered; Send shows it as "from <plugin>". */
   via?: { pluginId: string; pluginName: string; from: string };
+  /**
+   * Clip handles (additive): the handle's published address per family. Send uses the one for the asset's
+   * family (`byFamily[family] ?? address`); `address`/`family` are the first published (EVM first).
+   */
+  byFamily?: Partial<Record<Family, string>>;
+  /** Clip handles: who owns it and since when. `recentlyRegistered` → Send shows a caution. */
+  handle?: { owner: string; registeredAt: number; updatedAt: number; recentlyRegistered: boolean };
 }
 
 /**

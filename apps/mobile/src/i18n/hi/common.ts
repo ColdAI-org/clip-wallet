@@ -1,0 +1,22 @@
+import type en from "../en/common";
+export default {
+  "m.common.back": "वापस",
+  "m.common.continue": "आगे बढ़ें",
+  "m.common.cancel": "रद्द करें",
+  "m.common.copy": "कॉपी करें",
+  "m.common.copied": "कॉपी हो गया",
+  "m.common.max": "अधिकतम",
+  "m.common.send": "भेजें",
+  "m.common.receive": "प्राप्त करें",
+  "m.common.somethingWentWrong": "कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।",
+  "m.common.tab.home": "होम",
+  "m.common.tab.collectibles": "कलेक्टिबल",
+  "m.common.tab.explore": "एक्सप्लोर",
+  "m.common.tab.activity": "गतिविधि",
+  "m.common.tab.browse": "ब्राउज़ करें",
+  "m.common.tab.settings": "सेटिंग्स",
+  "m.common.amount": "{amount} {symbol}",
+  "m.common.readyIn.moment": "बस कुछ ही पल में",
+  "m.common.readyIn.seconds": "लगभग {n, plural, one {# सेकंड} other {# सेकंड}} में",
+  "m.common.readyIn.minutes": "लगभग {n, plural, one {# मिनट} other {# मिनट}} में",
+} satisfies Record<keyof typeof en, string>;

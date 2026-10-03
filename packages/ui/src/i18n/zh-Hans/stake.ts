@@ -1,0 +1,23 @@
+import type en from "../en/stake";
+export default {
+  "stake.title": "质押",
+  "stake.lede": "用你持有的币赚取奖励。整个过程中资产始终由你掌控。",
+  "stake.empty.title": "还没有可质押的资产",
+  "stake.empty.body": "可质押的币会显示在这里。",
+  "stake.change": "更改",
+  "stake.stakeSymbol": "质押 {symbol}",
+  "stake.stakeAmount": "质押 {amount} {symbol}",
+  "stake.stakeAll": "质押我的 {symbol}",
+  "stake.with": "质押对象",
+  "stake.rewardsOnTheWay": "奖励即将到账",
+  "stake.action.unstake": "解除质押",
+  "stake.action.withdraw": "转入余额",
+  "stake.action.claim": "领取奖励",
+  "stake.action.change": "更改",
+  "stake.amount": "金额",
+  "stake.amountBad": "请输入金额，例如 2 或 0.5。",
+  "stake.amountMissing": "请输入要质押的金额。",
+  "stake.where": "质押位置",
+  "stake.whereLabel": "选择质押位置",
+  "stake.pickedForYou": "为你推荐",
+} satisfies Record<keyof typeof en, string>;

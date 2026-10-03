@@ -4,6 +4,14 @@ import type { ClipConfig } from "./theme/config";
 import { defaultClipConfig, defaultUiOptions, type UiOptions } from "./theme/config";
 import { tokensFor, type ColorMode } from "./theme/tokens";
 import type { PasskeyPrfFactory } from "./lib/passkey";
+import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
+import { LocaleProvider } from "@clip-wallet/i18n/react";
+import { setFormatLocale } from "./lib/format";
+
+function deviceLanguages(): readonly string[] {
+  if (typeof navigator === "undefined") return [];
+  return navigator.languages?.length ? navigator.languages : [navigator.language];
+}
 
 export type Variant = "popup" | "tab" | "window";
 
@@ -70,6 +78,13 @@ export function ClipProvider(props: {
     return () => mq.removeEventListener?.("change", on);
   }, []);
 
+  const locale: LocaleCode = resolveLocale(state?.prefs.locale, deviceLanguages());
+  setFormatLocale(locale);
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = dirOf(locale);
+  }, [locale]);
+
   const pref = state?.prefs.theme ?? "system";
   const mode: ColorMode = pref === "system" ? sysMode : pref;
 
@@ -85,7 +100,11 @@ export function ClipProvider(props: {
     () => ({ client: props.client, config, options, variant: props.variant ?? "popup", state, refresh, passkeys: props.config?.passkeys.enabled === false ? undefined : props.passkeys }),
     [props.client, config, options, props.variant, state, refresh, props.passkeys],
   );
-  return <UiContext.Provider value={value}>{props.children}</UiContext.Provider>;
+  return (
+    <UiContext.Provider value={value}>
+      <LocaleProvider locale={locale}>{props.children}</LocaleProvider>
+    </UiContext.Provider>
+  );
 }
 
 /* ------------------------------------------------------------------ router */

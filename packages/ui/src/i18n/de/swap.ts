@@ -1,0 +1,23 @@
+import type en from "../en/swap";
+export default {
+  "swap.title": "Tauschen",
+  "swap.youPayWith": "Du zahlst mit",
+  "swap.sellAsset": "Asset zum Tauschen",
+  "swap.amount": "Betrag",
+  "swap.youHave": "Du hast {amount} {symbol}",
+  "swap.youGet": "Du bekommst",
+  "swap.buyAsset": "Asset, das du bekommst",
+  "swap.slippage": "Preis darf sich ändern um",
+  "swap.slippageHint": "Ändert sich der Preis stärker, bevor der Tausch ausgeführt wird, bricht er ab und es wird nichts getauscht.",
+  "swap.youPay": "Du zahlst",
+  "swap.route": "Route",
+  "swap.priceImpact": "Preiseinfluss",
+  "swap.network": "Netzwerk",
+  "swap.steps": "Was du genehmigst",
+  "swap.reviewAndSwap": "Prüfen und tauschen",
+  "swap.swap": "Tauschen",
+  "swap.gettingPrice": "Bester Preis wird gesucht…",
+  "swap.getPrice": "Preis abrufen",
+  "swap.amountBad": "Gib einen Betrag wie 25 oder 0,5 ein.",
+  "swap.expired": "Dieser Preis ist abgelaufen. Hol dir einen neuen.",
+} satisfies Record<keyof typeof en, string>;

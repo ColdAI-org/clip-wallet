@@ -1,0 +1,23 @@
+import type en from "../en/swap";
+export default {
+  "swap.title": "Trocar",
+  "swap.youPayWith": "Você paga com",
+  "swap.sellAsset": "Ativo a trocar",
+  "swap.amount": "Valor",
+  "swap.youHave": "Você tem {amount} {symbol}",
+  "swap.youGet": "Você recebe",
+  "swap.buyAsset": "Ativo a receber",
+  "swap.slippage": "O preço pode variar até",
+  "swap.slippageHint": "Se o preço variar mais que isso antes da troca ser executada, ela é interrompida e nada é trocado.",
+  "swap.youPay": "Você paga",
+  "swap.route": "Rota",
+  "swap.priceImpact": "Impacto no preço",
+  "swap.network": "Rede",
+  "swap.steps": "O que você vai aprovar",
+  "swap.reviewAndSwap": "Revisar e trocar",
+  "swap.swap": "Trocar",
+  "swap.gettingPrice": "Buscando o melhor preço…",
+  "swap.getPrice": "Ver preço",
+  "swap.amountBad": "Digite um valor como 25 ou 0,5.",
+  "swap.expired": "Este preço expirou. Busque um novo.",
+} satisfies Record<keyof typeof en, string>;

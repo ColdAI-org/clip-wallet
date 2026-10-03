@@ -2,6 +2,8 @@
  * What the hardware screens need from the background. The extension implements this over its message
  * bus (docs/phase2/integration/hardware.md); tests use a fake. Public data only.
  */
+import type { UiMessageId } from "../i18n";
+
 export type HardwareKindView = "ledger" | "keystone";
 export type HardwareFamilyView = "evm" | "solana" | "bitcoin" | "hedera";
 export type PathStyleView = "standard" | "ledger-live" | "ledger-legacy";
@@ -42,11 +44,15 @@ export interface HardwareClient {
   setActive(family: HardwareFamilyView, accountId: string | null): Promise<void>;
 }
 
-export const FAMILY_WORDS: Record<HardwareFamilyView, { title: string; app: string; assets: string }> = {
-  evm: { title: "Ethereum and EVM apps", app: "Ethereum", assets: "ETH, USDC and tokens on Ethereum-style networks" },
-  solana: { title: "Solana", app: "Solana", assets: "SOL and Solana tokens" },
-  bitcoin: { title: "Bitcoin", app: "Bitcoin", assets: "BTC" },
-  hedera: { title: "Hedera", app: "Hedera", assets: "HBAR and Hedera tokens" },
+/**
+ * How each family is described. `title` and `assets` are UI catalog message ids (render with t()); `app` is
+ * the name of the device app, which stays as is in every language.
+ */
+export const FAMILY_WORDS: Record<HardwareFamilyView, { title: UiMessageId; app: string; assets: UiMessageId }> = {
+  evm: { title: "hardware.family.evm.title", app: "Ethereum", assets: "hardware.family.evm.assets" },
+  solana: { title: "hardware.family.solana.title", app: "Solana", assets: "hardware.family.solana.assets" },
+  bitcoin: { title: "hardware.family.bitcoin.title", app: "Bitcoin", assets: "hardware.family.bitcoin.assets" },
+  hedera: { title: "hardware.family.hedera.title", app: "Hedera", assets: "hardware.family.hedera.assets" },
 };
 
 /**

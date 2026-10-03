@@ -288,7 +288,10 @@ export interface Warning {
     /** The recipient looks like an address you used before but isn't (look-alike / zero-value transfer poisoning). */
     | "address-poisoning"
     /** A scanning provider or a scam address list says this transaction would hurt you. */
-    | "malicious-transaction";
+    | "malicious-transaction"
+    // Phase 2.5 (social)
+    /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
+    | "public-record";
   message: string;
 }
 

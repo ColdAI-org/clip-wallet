@@ -1,0 +1,21 @@
+import type en from "../en/home";
+export default {
+  "m.home.lock": "Wallet sperren",
+  "m.home.pending": "{n, plural, one {# Anfrage wartet auf dich} other {# Anfragen warten auf dich}}",
+  "m.home.total": "Gesamtguthaben",
+  "m.home.bridged": "gebridgt",
+  "m.home.empty.title": "Noch nichts hier",
+  "m.home.empty.body": "Tippe auf Empfangen, um Geld von einem anderen Wallet oder einer Börse hinzuzufügen.",
+  "m.home.hideSmall": "Kleine Guthaben ausblenden",
+  "m.home.spam.hide": "Verdächtige Token ausblenden",
+  "m.home.spam.hidden": "{n, plural, one {# verdächtiger Token ausgeblendet} other {# verdächtige Token ausgeblendet}}",
+  "m.home.stale": "Manche Guthaben sind eventuell ein paar Minuten alt.",
+  "m.home.asset.title": "Asset",
+  "m.home.asset.gone": "Du besitzt das nicht mehr",
+  "m.home.asset.pin": "Anheften",
+  "m.home.asset.unpin": "Lösen",
+  "m.home.asset.bridgedCopy": "gebridgte Kopie – nicht das originale {symbol}",
+  "m.home.asset.where": "Wo es liegt",
+  "m.home.asset.whereHint": "Darum musst du dich nicht kümmern – {symbol} wird von dort ausgegeben, wo es gerade liegt.",
+  "m.home.asset.contract": "Vertrag ({network})",
+} satisfies Record<keyof typeof en, string>;

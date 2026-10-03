@@ -30,6 +30,7 @@ import { CARDANO_METHODS_ALLOWED, type RouterPort } from "@clip-wallet/1mask/bac
 import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
+import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
 import { PlatformService, type PlatformRequest } from "./platform.js";
 import type { KV } from "./kv.js";
 import { EngineRequest, type EngineResponseMap } from "./messages.js";
@@ -116,6 +117,8 @@ export class WalletEngine implements DappHost {
   private features?: Pick<FeaturesService, "handle" | "refine">;
   /** Ledger / Keystone accounts (./hardware.ts); absent = phrase accounts only. */
   private hardware?: EngineHardware;
+  /** Contacts, Clip handles, notifications, Discover (social stream). */
+  private social?: Pick<SocialService, "handle" | "refine" | "onLock">;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
   readonly platform: PlatformService;
 
@@ -155,6 +158,14 @@ export class WalletEngine implements DappHost {
   }
 
   /* ------------------------------------------------------------------ features (staking, swap, buy, trade, explore) */
+
+  attachSocial(s: Pick<SocialService, "handle" | "refine" | "onLock">) {
+    this.social = s;
+  }
+  /** Public facts for the social host: approvals waiting now (for notifications). */
+  socialApprovals(): { id: string; app: string; title: string }[] {
+    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+  }
 
   attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
     this.features = f;
@@ -272,6 +283,12 @@ export class WalletEngine implements DappHost {
         return;
     }
 
+    if (isSocialRequest(m)) {
+      if (!this.social) throw new ClipError("This isn't available in this build.", "social/off");
+      // Notification settings and Discover work while locked; contacts and handles need the vault.
+      if (!SocialService.LOCKED_OK.has(m.type)) this.requireUnlocked(status);
+      return this.social.handle(m as SocialRequest);
+    }
     this.requireUnlocked(status);
     if (isFeatureRequest(m)) {
       if (!this.features) throw new ClipError("This isn't available in this build.", "features/off");
@@ -375,6 +392,7 @@ export class WalletEngine implements DappHost {
 
   async lock() {
     await this.deps.vault.lock();
+    this.social?.onLock();
     this.accounts.clear();
     this.hardware?.lock();
     for (const [id, p] of this.approvals) {
@@ -528,8 +546,8 @@ export class WalletEngine implements DappHost {
   async resolveRecipient(input: string, assetKey: string): Promise<RecipientResolution> {
     let address = input.trim();
     let displayName: string | undefined;
-    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream).
-    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream)$/i.test(address);
+    // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream), Clip handles (@alex, alex.clip).
+    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address);
     let implied: string[] = [];
     let addressOn: Record<string, string> = {};
     if (looksLikeName) {
@@ -540,7 +558,10 @@ export class WalletEngine implements DappHost {
         return { kind: "invalid", message: `We couldn't look up ${address} right now. Try again, or paste their address.` };
       }
       if (!hit) return { kind: "invalid", message: `We couldn't find ${address}. Check the spelling, or paste their address.` };
-      address = hit.address;
+      // A Clip handle publishes one address per family: use the one for this asset's family.
+      const forAsset = hit.byFamily ? this.handleAddressFor(hit.byFamily, assetKey) : hit.address;
+      if (!forAsset) return { kind: "invalid", message: `${hit.displayName} hasn't published an address that can receive this.` };
+      address = forAsset;
       displayName = hit.displayName;
       implied = hit.networkIds ?? [];
       addressOn = hit.addressOn ?? {};
@@ -575,6 +596,12 @@ export class WalletEngine implements DappHost {
     };
   }
 
+  /** A Clip handle's address for the families that carry `assetKey` (first match). */
+  private handleAddressFor(byFamily: Partial<Record<Family, string>>, assetKey: string): string | undefined {
+    const fams = new Set(this.deps.networks.filter((n) => this.deps.assets.some((a) => a.key === assetKey && a.networkId === n.id)).map((n) => n.family));
+    return [...fams].map((f) => byFamily[f]).find((a): a is string => !!a);
+  }
+
   private async send(m: Extract<EngineRequest, { type: "send" }>): Promise<string> {
     const asset = this.deps.assets.find((a) => a.key === m.assetKey && a.networkId === m.networkId);
     if (!asset) throw new ClipError("That asset can't be sent there.", "send/asset");
@@ -585,7 +612,7 @@ export class WalletEngine implements DappHost {
     let to = m.to;
     if (!mod.isAddress(to)) {
       const hit = await this.deps.names.resolve(to).catch(() => null);
-      const resolved = hit ? (hit.addressOn?.[m.networkId] ?? hit.address) : "";
+      const resolved = hit ? (hit.addressOn?.[m.networkId] ?? hit.byFamily?.[network.family] ?? hit.address) : "";
       if (!resolved || !mod.isAddress(resolved)) throw new ClipError("That doesn't look like an address. Check it and try again.", "send/address");
       to = resolved;
     }
@@ -654,6 +681,7 @@ export class WalletEngine implements DappHost {
       };
     }
     decoded = this.features?.refine(request, decoded) ?? decoded;
+    decoded = this.social?.refine(request, decoded) ?? decoded;
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -681,6 +709,7 @@ export class WalletEngine implements DappHost {
       fiatValue,
       plan,
       raw: JSON.stringify({ method: request.method, params: request.params }, null, 2).slice(0, 4000),
+      ...(extra.recipient ? { recipient: { address: extra.recipient, family: network.family } } : {}),
     };
     const d = this.deferred<unknown>();
     this.approvals.set(id, { view, request, resolve: d.resolve, reject: d.reject });

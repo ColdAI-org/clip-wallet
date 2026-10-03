@@ -24,7 +24,7 @@ export function featureRoute(seg: string[], query: URLSearchParams, hash = ""): 
       return a ? <StakeAsset assetKey={a} /> : <StakeHome />;
     }
     case "swap":
-      return <Swap sell={query.get("sell") ?? undefined} buy={query.get("buy") ?? undefined} />;
+      return <Swap sell={query.get("sell") ?? undefined} buy={query.get("buy") ?? undefined} buySymbol={query.get("buySymbol") ?? undefined} />;
     case "buy":
       return <Buy assetKey={query.get("asset") ?? undefined} />;
     case "trade":

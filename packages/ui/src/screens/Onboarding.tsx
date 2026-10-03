@@ -5,9 +5,10 @@ import { Button, ErrorNote, Field } from "../components";
 import { IconFingerprint, IconShield } from "../components/icons";
 import { passwordStrength } from "../lib/strength";
 import { PasskeyEnroll } from "./Passkey";
-import { runPasskeyCeremony } from "../lib/passkey";
+import { passkeyErrorText, runPasskeyCeremony } from "../lib/passkey";
 import { ConnectHardware } from "../hardware/ConnectHardware";
 import { useHardwareOptional } from "../hardware/context";
+import { useUiT } from "../i18n";
 
 type Step =
   | { s: "welcome" }
@@ -29,6 +30,7 @@ export function pickConfirmIndexes(count: number, rand: () => number = Math.rand
 }
 
 function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware?: () => void }) {
+  const t = useUiT();
   const { config, options, client } = useUi();
   const { navigate } = useRouter();
   // Offered only when this build has a backup service (services/backup); otherwise there's nothing to restore from.
@@ -37,22 +39,22 @@ function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware
     <div className="clip-onboard clip-onboard--welcome">
       <img className="clip-brand-icon" src={options.iconUrl} alt="" width={64} height={64} />
       <h1 className="clip-display">{config.name}</h1>
-      <p className="clip-lede">One place for your money, collectibles and apps. Test networks only for now.</p>
+      <p className="clip-lede">{t("onboarding.welcome.lede")}</p>
       <div className="clip-stack">
         <Button block onClick={props.onCreate}>
-          Create a new wallet
+          {t("onboarding.welcome.create")}
         </Button>
         <Button block variant="secondary" onClick={props.onImport}>
-          I already have a recovery phrase
+          {t("onboarding.welcome.import")}
         </Button>
         {props.onHardware && (
           <Button block variant="ghost" onClick={props.onHardware}>
-            Connect a hardware wallet
+            {t("onboarding.welcome.hardware")}
           </Button>
         )}
         {backup.data && (
           <Button block variant="ghost" onClick={() => navigate("/restore/passkey")}>
-            Restore with a passkey backup
+            {t("onboarding.welcome.restorePasskey")}
           </Button>
         )}
       </div>
@@ -61,25 +63,24 @@ function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware
 }
 
 function StrengthMeter(props: { password: string }) {
+  const t = useUiT();
   const st = passwordStrength(props.password);
+  const label = st.labelId ? t(st.labelId) : "";
+  const hint = st.hintId ? t(st.hintId) : "";
   return (
     <div className="clip-strength" aria-live="polite">
-      <div className="clip-strength__bar" role="meter" aria-label="Password strength" aria-valuemin={0} aria-valuemax={4} aria-valuenow={st.score} aria-valuetext={st.label || "empty"}>
+      <div className="clip-strength__bar" role="meter" aria-label={t("onboarding.strength.meter")} aria-valuemin={0} aria-valuemax={4} aria-valuenow={st.score} aria-valuetext={label || t("onboarding.strength.empty")}>
         {[1, 2, 3, 4].map((i) => (
           <span key={i} className={`clip-strength__seg ${st.score >= i ? `is-on s${st.score}` : ""}`} />
         ))}
       </div>
-      {st.label && (
-        <span className="clip-strength__label">
-          {st.label}
-          {st.hint ? ` — ${st.hint}` : ""}
-        </span>
-      )}
+      {label && <span className="clip-strength__label">{hint ? t("onboarding.strength.labelWithHint", { label, hint }) : label}</span>}
     </div>
   );
 }
 
 function PasswordStep(props: { flow: "create" | "import" | "hardware"; onSubmit: (password: string) => Promise<void>; onBack: () => void }) {
+  const t = useUiT();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -103,25 +104,25 @@ function PasswordStep(props: { flow: "create" | "import" | "hardware"; onSubmit:
         }
       }}
     >
-      <h1 className="clip-h1">Choose a password</h1>
-      <p className="clip-lede">It unlocks this wallet on this device. It can't be recovered, but your recovery phrase can always restore the wallet.</p>
-      <Field label="Password" type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
+      <h1 className="clip-h1">{t("onboarding.password.title")}</h1>
+      <p className="clip-lede">{t("onboarding.password.lede")}</p>
+      <Field label={t("onboarding.password.label")} type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
       <StrengthMeter password={pw} />
       <Field
-        label="Type it again"
+        label={t("onboarding.password.again")}
         type="password"
         autoComplete="new-password"
         value={pw2}
         onChange={(e) => setPw2(e.target.value)}
-        error={mismatch ? "The passwords don't match." : null}
+        error={mismatch ? t("onboarding.password.mismatch") : null}
       />
       <ErrorNote message={err} />
       <div className="clip-actions">
         <Button variant="secondary" onClick={props.onBack}>
-          Back
+          {t("common.back")}
         </Button>
         <Button type="submit" disabled={!st.acceptable || pw !== pw2 || busy}>
-          {props.flow === "import" ? "Import wallet" : "Create wallet"}
+          {props.flow === "import" ? t("onboarding.password.importWallet") : t("onboarding.password.createWallet")}
         </Button>
       </div>
     </form>
@@ -129,16 +130,15 @@ function PasswordStep(props: { flow: "create" | "import" | "hardware"; onSubmit:
 }
 
 function PhraseStep(props: { words: string[]; onNext: () => void }) {
+  const t = useUiT();
   const [shown, setShown] = useState(false);
   const [saved, setSaved] = useState(false);
   return (
     <div className="clip-onboard">
-      <h1 className="clip-h1">Your recovery phrase</h1>
-      <p className="clip-lede">
-        These {props.words.length} words are the only way to get your wallet back. Write them down in order and keep them offline. Anyone who has them can take everything.
-      </p>
+      <h1 className="clip-h1">{t("onboarding.phrase.title")}</h1>
+      <p className="clip-lede">{t("onboarding.phrase.lede", { count: props.words.length })}</p>
       <div className={`clip-phrase ${shown ? "" : "is-hidden"}`}>
-        <ol aria-hidden={!shown} aria-label="Recovery phrase">
+        <ol aria-hidden={!shown} aria-label={t("onboarding.phrase.listLabel")}>
           {props.words.map((w, i) => (
             <li key={i}>
               <span className="clip-phrase__n">{i + 1}</span>
@@ -148,22 +148,23 @@ function PhraseStep(props: { words: string[]; onNext: () => void }) {
         </ol>
         {!shown && (
           <Button variant="secondary" className="clip-phrase__reveal" onClick={() => setShown(true)}>
-            Show my phrase
+            {t("onboarding.phrase.show")}
           </Button>
         )}
       </div>
       <label className="clip-check">
         <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} disabled={!shown} />
-        <span>I wrote these words down</span>
+        <span>{t("onboarding.phrase.saved")}</span>
       </label>
       <Button block onClick={props.onNext} disabled={!shown || !saved}>
-        Continue
+        {t("common.continue")}
       </Button>
     </div>
   );
 }
 
 function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: () => void; indexes?: number[] }) {
+  const t = useUiT();
   const indexes = useMemo(() => props.indexes ?? pickConfirmIndexes(props.words.length), [props.indexes, props.words.length]);
   const [answers, setAnswers] = useState<string[]>(indexes.map(() => ""));
   const [err, setErr] = useState<string | null>(null);
@@ -174,15 +175,15 @@ function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: 
         e.preventDefault();
         const ok = indexes.every((idx, i) => answers[i]!.trim().toLowerCase() === props.words[idx]);
         if (ok) props.onConfirmed();
-        else setErr("Those words don't match. Check your written copy and try again.");
+        else setErr(t("onboarding.confirm.mismatch"));
       }}
     >
-      <h1 className="clip-h1">Check your backup</h1>
-      <p className="clip-lede">Type the words at these positions.</p>
+      <h1 className="clip-h1">{t("onboarding.confirm.title")}</h1>
+      <p className="clip-lede">{t("onboarding.confirm.lede")}</p>
       {indexes.map((idx, i) => (
         <Field
           key={idx}
-          label={`Word #${idx + 1}`}
+          label={t("onboarding.confirm.word", { n: idx + 1 })}
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
@@ -194,10 +195,10 @@ function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: 
       <ErrorNote message={err} />
       <div className="clip-actions">
         <Button variant="secondary" onClick={props.onBack}>
-          Show phrase again
+          {t("onboarding.confirm.showAgain")}
         </Button>
         <Button type="submit" disabled={answers.some((a) => !a.trim())}>
-          Confirm
+          {t("onboarding.confirm.submit")}
         </Button>
       </div>
     </form>
@@ -205,6 +206,7 @@ function ConfirmStep(props: { words: string[]; onConfirmed: () => void; onBack: 
 }
 
 function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => void }) {
+  const t = useUiT();
   const [phrase, setPhrase] = useState("");
   const words = phrase.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const valid = [12, 15, 18, 21, 24].includes(words.length);
@@ -216,10 +218,10 @@ function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => voi
         if (valid) props.onNext(words.join(" "));
       }}
     >
-      <h1 className="clip-h1">Import your wallet</h1>
-      <p className="clip-lede">Enter your 12 or 24-word recovery phrase, separated by spaces.</p>
+      <h1 className="clip-h1">{t("onboarding.import.title")}</h1>
+      <p className="clip-lede">{t("onboarding.import.lede")}</p>
       <label className="clip-field">
-        <span className="clip-field__label">Recovery phrase</span>
+        <span className="clip-field__label">{t("onboarding.import.label")}</span>
         <textarea
           className="clip-textarea"
           rows={4}
@@ -230,13 +232,13 @@ function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => voi
           onChange={(e) => setPhrase(e.target.value)}
         />
       </label>
-      <p className="clip-hint">{words.length > 0 && !valid ? `${words.length} words so far` : " "}</p>
+      <p className="clip-hint">{words.length > 0 && !valid ? t("onboarding.import.wordCount", { n: words.length }) : " "}</p>
       <div className="clip-actions">
         <Button variant="secondary" onClick={props.onBack}>
-          Back
+          {t("common.back")}
         </Button>
         <Button type="submit" disabled={!valid}>
-          Continue
+          {t("common.continue")}
         </Button>
       </div>
     </form>
@@ -244,22 +246,24 @@ function ImportStep(props: { onNext: (phrase: string) => void; onBack: () => voi
 }
 
 function Done(props: { onFinish: () => void }) {
+  const t = useUiT();
   const { config } = useUi();
   return (
     <div className="clip-onboard clip-onboard--welcome">
       <span className="clip-done-badge" aria-hidden>
         <IconShield width={32} height={32} />
       </span>
-      <h1 className="clip-h1">You're all set</h1>
-      <p className="clip-lede">{config.name} is ready. Open it from your browser toolbar any time.</p>
+      <h1 className="clip-h1">{t("onboarding.done.title")}</h1>
+      <p className="clip-lede">{t("onboarding.done.lede", { name: config.name })}</p>
       <Button block onClick={props.onFinish}>
-        Open my wallet
+        {t("onboarding.done.open")}
       </Button>
     </div>
   );
 }
 
 export function Onboarding(props: { onFinished: () => void; confirmIndexes?: number[] }) {
+  const t = useUiT();
   const { client } = useUi();
   const hardware = useHardwareOptional();
   const [step, setStep] = useState<Step>({ s: "welcome" });
@@ -325,9 +329,9 @@ export function Onboarding(props: { onFinished: () => void; confirmIndexes?: num
           <span className="clip-done-badge" aria-hidden>
             <IconFingerprint width={32} height={32} />
           </span>
-          <h1 className="clip-h1">Unlock with Face ID or Touch ID?</h1>
-          <p className="clip-lede">Use your device's passkey instead of typing your password. Your password keeps working.</p>
-          <PasskeyEnroll password={step.password} onDone={() => setStep({ s: "done" })} skipLabel="Not now" />
+          <h1 className="clip-h1">{t("onboarding.passkeyOffer.title")}</h1>
+          <p className="clip-lede">{t("onboarding.passkeyOffer.lede")}</p>
+          <PasskeyEnroll password={step.password} onDone={() => setStep({ s: "done" })} skipLabel={t("onboarding.passkeyOffer.notNow")} />
         </div>
       );
     case "done":
@@ -336,6 +340,7 @@ export function Onboarding(props: { onFinished: () => void; confirmIndexes?: num
 }
 
 export function Unlock(props: { onUnlocked: () => void }) {
+  const t = useUiT();
   const { client, options, state, passkeys } = useUi();
   const [pw, setPw] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -352,7 +357,7 @@ export function Unlock(props: { onUnlocked: () => void }) {
       await runPasskeyCeremony(client, passkeys, { op: "unlock" });
       props.onUnlocked();
     } catch (e) {
-      setErr(userMessageOf(e));
+      setErr(passkeyErrorText(e, t, userMessageOf));
     } finally {
       setBusy(false);
     }
@@ -376,15 +381,15 @@ export function Unlock(props: { onUnlocked: () => void }) {
       }}
     >
       <img className="clip-brand-icon" src={options.iconUrl} alt="" width={56} height={56} />
-      <h1 className="clip-h1">Welcome back</h1>
-      <Field label="Password" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
+      <h1 className="clip-h1">{t("onboarding.unlock.title")}</h1>
+      <Field label={t("onboarding.password.label")} type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
       <ErrorNote message={err} />
       <Button block type="submit" disabled={!pw || busy}>
-        Unlock
+        {t("onboarding.unlock.submit")}
       </Button>
       {state?.passkey.enrolled && (
         <Button block variant="secondary" onClick={passkeyUnlock} disabled={busy}>
-          <IconFingerprint /> Unlock with passkey
+          <IconFingerprint /> {t("onboarding.unlock.withPasskey")}
         </Button>
       )}
     </form>

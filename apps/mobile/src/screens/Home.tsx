@@ -9,9 +9,11 @@ import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Chip, Empty, ErrorNote, IconButton, Row, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { IconArrowDown, IconArrowUp, IconLock, IconSwap } from "../ui/icons";
 import { APP } from "../env";
+import { useMobileT } from "../i18n";
 
 function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => void }) {
   const { theme } = useWallet();
+  const t = useMobileT();
   const a = props.asset;
   return (
     <Pressable accessibilityRole="button" testID={`asset-${a.id}`} onPress={props.onOpen} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}>
@@ -19,9 +21,9 @@ function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => v
       <View style={{ flex: 1, gap: 2 }}>
         <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
           <T style={{ fontWeight: "600" }}>{a.symbol}</T>
-          {a.bridged && <Chip tone="muted">bridged</Chip>}
+          {a.bridged && <Chip tone="muted">{t("m.home.bridged")}</Chip>}
         </View>
-        <T v="hint">{`${formatUnits(a.amount, a.decimals, 4)} ${a.symbol}`}</T>
+        <T v="hint">{t("m.common.amount", { amount: formatUnits(a.amount, a.decimals, 4), symbol: a.symbol })}</T>
       </View>
       <T style={{ fontWeight: "500", color: theme.c.text }}>{formatFiat(a.fiatValue, props.currency)}</T>
     </Pressable>
@@ -57,6 +59,7 @@ function MoreActions(props: { onSwap: () => void; onBuy: () => void; onStake?: (
 
 export function Home() {
   const { client, state, refresh, navigate, theme, showApproval } = useWallet();
+  const t = useMobileT();
   const prefs = state?.prefs;
   const { data, error, loading, reload } = useAsync(() => client.getPortfolio(), [client, prefs?.displayCurrency]);
   const currency = data?.currency ?? prefs?.displayCurrency ?? "USD";
@@ -75,7 +78,7 @@ export function Home() {
       scroll={false}
       title={<T v="h1" style={{ fontSize: 18 }}>{APP.config.name}</T>}
       actions={
-        <IconButton label="Lock wallet" testID="lock" onPress={async () => (await client.lock(), await refresh())}>
+        <IconButton label={t("m.home.lock")} testID="lock" onPress={async () => (await client.lock(), await refresh())}>
           <IconLock color={theme.c.text} />
         </IconButton>
       }
@@ -94,24 +97,24 @@ export function Home() {
             style={{ backgroundColor: theme.c.accentSoft, borderRadius: theme.r.md, padding: 12 }}
           >
             <T color={theme.c.accent} style={{ fontWeight: "600" }}>
-              {state.pendingApprovals === 1 ? "1 request is waiting for you" : `${state.pendingApprovals} requests are waiting for you`}
+              {t("m.home.pending", { n: state.pendingApprovals })}
             </T>
           </Pressable>
         )}
 
         <View style={{ alignItems: "center", gap: 4, paddingVertical: theme.s(4) }}>
-          <T v="label">Total balance</T>
+          <T v="label">{t("m.home.total")}</T>
           {loading && !data ? <Spinner /> : <T v="display" testID="total" style={{ fontSize: 40 }}>{formatFiat(merged.total, currency)}</T>}
         </View>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Button onPress={() => navigate({ name: "send" })} testID="send">
             <IconArrowUp color={theme.c.accentText} />
-            <T color={theme.c.accentText} style={{ fontWeight: "600" }}>Send</T>
+            <T color={theme.c.accentText} style={{ fontWeight: "600" }}>{t("m.common.send")}</T>
           </Button>
           <Button variant="secondary" onPress={() => navigate({ name: "receive" })} testID="receive">
             <IconArrowDown color={theme.c.text} />
-            <T style={{ fontWeight: "600" }}>Receive</T>
+            <T style={{ fontWeight: "600" }}>{t("m.common.receive")}</T>
           </Button>
         </View>
         <MoreActions onSwap={() => navigate({ name: "swap" })} onBuy={() => navigate({ name: "buy" })} onStake={() => navigate({ name: "stake" })} />
@@ -119,7 +122,7 @@ export function Home() {
         <ErrorNote message={error ? userMessageOf(error) : null} />
 
         {data && merged.assets.length === 0 ? (
-          <Empty title="Nothing here yet">Tap Receive to add money from another wallet or exchange.</Empty>
+          <Empty title={t("m.home.empty.title")}>{t("m.home.empty.body")}</Empty>
         ) : (
           <Card style={{ gap: 0, paddingVertical: 6 }}>
             {merged.assets.map((a) => (
@@ -130,15 +133,15 @@ export function Home() {
 
         {data && (
           <View style={{ gap: 12 }}>
-            <Toggle label="Hide small balances" checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
+            <Toggle label={t("m.home.hideSmall")} checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
             {(merged.hiddenSpam > 0 || prefs?.showSpam) && (
               <Pressable onPress={() => setPref({ showSpam: !prefs?.showSpam })}>
                 <T v="hint" color={theme.c.accent}>
-                  {prefs?.showSpam ? "Hide suspicious tokens" : `${merged.hiddenSpam} suspicious token${merged.hiddenSpam === 1 ? "" : "s"} hidden`}
+                  {prefs?.showSpam ? t("m.home.spam.hide") : t("m.home.spam.hidden", { n: merged.hiddenSpam })}
                 </T>
               </Pressable>
             )}
-            {data.stale.length > 0 && <T v="hint">Some balances may be a few minutes old.</T>}
+            {data.stale.length > 0 && <T v="hint">{t("m.home.stale")}</T>}
           </View>
         )}
       </ScrollView>
@@ -148,12 +151,13 @@ export function Home() {
 
 export function AssetDetail(props: { id: string }) {
   const { client, state, refresh, navigate, theme } = useWallet();
+  const t = useMobileT();
   const { data } = useAsync(() => client.getPortfolio(), [client]);
   const prefs = state?.prefs;
   const currency = data?.currency ?? prefs?.displayCurrency ?? "USD";
   const asset = useMemo(() => mergeBalances(data?.balances ?? [], { showSpam: true, pinned: prefs?.pinned }).assets.find((a) => a.id === props.id), [data, props.id, prefs?.pinned]);
-  if (!data) return <Screen back title="Asset"><Spinner /></Screen>;
-  if (!asset) return <Screen back title="Asset"><Empty title="You don't hold this anymore" /></Screen>;
+  if (!data) return <Screen back title={t("m.home.asset.title")}><Spinner /></Screen>;
+  if (!asset) return <Screen back title={t("m.home.asset.title")}><Empty title={t("m.home.asset.gone")} /></Screen>;
   const name = (id: string) => data.networks.find((n) => n.id === id)?.name ?? id;
   const togglePin = async () => {
     const pinned = new Set(prefs?.pinned ?? []);
@@ -163,17 +167,17 @@ export function AssetDetail(props: { id: string }) {
     await refresh();
   };
   return (
-    <Screen back title={asset.name} actions={<Button variant="ghost" onPress={togglePin}>{asset.pinned ? "Unpin" : "Pin"}</Button>}>
+    <Screen back title={asset.name} actions={<Button variant="ghost" onPress={togglePin}>{asset.pinned ? t("m.home.asset.unpin") : t("m.home.asset.pin")}</Button>}>
       <View style={{ alignItems: "center", gap: 8 }}>
         <AssetIcon symbol={asset.symbol} size={48} />
-        <T v="h1">{`${formatUnits(asset.amount, asset.decimals, 6)} ${asset.symbol}`}</T>
+        <T v="h1">{t("m.common.amount", { amount: formatUnits(asset.amount, asset.decimals, 6), symbol: asset.symbol })}</T>
         <T v="label">{formatFiat(asset.fiatValue, currency)}</T>
-        {asset.bridged && <Chip tone="muted">{`bridged copy — not the original ${asset.symbol}`}</Chip>}
+        {asset.bridged && <Chip tone="muted">{t("m.home.asset.bridgedCopy", { symbol: asset.symbol })}</Chip>}
       </View>
       <View style={{ flexDirection: "row", gap: 12 }}>
-        <Button onPress={() => navigate({ name: "send", assetKey: asset.key })}>Send</Button>
+        <Button onPress={() => navigate({ name: "send", assetKey: asset.key })}>{t("m.common.send")}</Button>
         <Button variant="secondary" onPress={() => navigate({ name: "receive", assetKey: asset.key })}>
-          Receive
+          {t("m.common.receive")}
         </Button>
       </View>
       <MoreActions
@@ -183,17 +187,17 @@ export function AssetDetail(props: { id: string }) {
       />
       {asset.parts.length > 1 || prefs?.advanced ? (
         <View style={{ gap: 8 }} testID="network-split">
-          <T v="h2">Where it is</T>
+          <T v="h2">{t("m.home.asset.where")}</T>
           <Card style={{ gap: 0 }}>
             {asset.parts.map((p) => (
-              <Row key={p.asset.networkId + (p.asset.address ?? "")} label={name(p.asset.networkId)} value={`${formatUnits(p.amount, p.asset.decimals, 4)} ${p.asset.symbol}`} hint={formatFiat(p.fiatValue, currency)} />
+              <Row key={p.asset.networkId + (p.asset.address ?? "")} label={name(p.asset.networkId)} value={t("m.common.amount", { amount: formatUnits(p.amount, p.asset.decimals, 4), symbol: p.asset.symbol })} hint={formatFiat(p.fiatValue, currency)} />
             ))}
           </Card>
-          <T v="hint">{`You don't need to manage this — ${asset.symbol} is spent from wherever it is.`}</T>
+          <T v="hint">{t("m.home.asset.whereHint", { symbol: asset.symbol })}</T>
         </View>
       ) : null}
       {prefs?.advanced &&
-        asset.parts.map((p) => (p.asset.address ? <Row key={`addr-${p.asset.networkId}`} label={`Contract (${name(p.asset.networkId)})`} value={<T v="mono">{shortAddress(p.asset.address, 6)}</T>} /> : null))}
+        asset.parts.map((p) => (p.asset.address ? <Row key={`addr-${p.asset.networkId}`} label={t("m.home.asset.contract", { network: name(p.asset.networkId) })} value={<T v="mono">{shortAddress(p.asset.address, 6)}</T>} /> : null))}
     </Screen>
   );
 }
