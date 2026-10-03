@@ -91,7 +91,8 @@ export interface TokenBalance {
 
 export interface Nft {
   networkId: NetworkId;
-  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal";
+  /** tep62: TON NFT items (TEP-62 / TEP-64 metadata). */
+  standard: "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal" | "tep62";
   collection: { address: string; name: string };
   tokenId: string;
   name?: string;

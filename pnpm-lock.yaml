@@ -279,9 +279,15 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
+      '@types/jsdom':
+        specifier: ^30.0.0
+        version: 30.0.0
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
+      jsdom:
+        specifier: ^30.1.1
+        version: 30.1.1(@noble/hashes@2.4.0)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -357,6 +363,43 @@ importers:
       '@solana/kit':
         specifier: ^8.4.0
         version: 8.4.0(typescript@5.9.3)
+
+  packages/chains-starknet:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      starknet:
+        specifier: ^10.8.0
+        version: 10.8.0(typescript@5.9.3)(zod@4.6.5)
+
+  packages/chains-ton:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@ton/core':
+        specifier: ^0.63.1
+        version: 0.63.1(@ton/crypto@3.3.0)
+      '@ton/crypto':
+        specifier: ^3.3.0
+        version: 3.3.0
+      '@ton/ton':
+        specifier: ^16.3.0
+        version: 16.3.0(@ton/core@0.63.1(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.5
 
   packages/config:
     dependencies:
@@ -2249,6 +2292,9 @@ packages:
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
 
+  '@types/jsdom@30.0.0':
+    resolution: {integrity: sha512-uAHGxujGE0cDaKGdK28zgDotFtNA7MKq5DXl8LrfdxdCI8VHcg15oJz+amHTChPNI5JpgEPQWc2xFdrw3em/nQ==}
+
   '@types/node@11.11.6':
     resolution: {integrity: sha512-Exw4yUWMBXM3X+8oqzJNRqZSwUAaS4+7NdvHqQuFi/d+synz++xmX3QIf+BFqneW8N31R8Ky+sikfZUXq07ggQ==}
 
@@ -2274,6 +2320,9 @@ packages:
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
   '@types/whatwg-mimetype@3.0.2':
     resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
@@ -6891,6 +6940,13 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
 
+  '@types/jsdom@30.0.0':
+    dependencies:
+      '@types/node': 22.20.5
+      '@types/tough-cookie': 4.0.5
+      parse5: 8.0.1
+      undici-types: 8.11.2
+
   '@types/node@11.11.6': {}
 
   '@types/node@22.20.5':
@@ -6918,6 +6974,8 @@ snapshots:
       csstype: 3.2.3
 
   '@types/stack-utils@2.0.3': {}
+
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/whatwg-mimetype@3.0.2': {}
 
