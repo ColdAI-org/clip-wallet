@@ -216,6 +216,36 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@26.6.4)(happy-dom@20.14.5)(lightningcss@1.33.0)
 
+  packages/chains-bitcoin:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@scure/base':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@scure/btc-signer':
+        specifier: ^2.4.1
+        version: 2.4.1
+
+  packages/chains-evm:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: ^2.4.0
+        version: 2.4.0
+      viem:
+        specifier: ^2.57.2
+        version: 2.57.2(typescript@5.9.3)(zod@4.6.5)
+
   packages/config:
     dependencies:
       zod:
@@ -658,6 +688,9 @@ packages:
 
   '@scure/bip39@2.4.0':
     resolution: {integrity: sha512-82dxFbZUYboyOf0AXiydsQrFQ5Q4h9mX+O2UkE91ROYmsc0BKMGZLwDmy96Jpa2+vrtoxomjUhy1RPIgH/r2nA==}
+
+  '@scure/btc-signer@2.4.1':
+    resolution: {integrity: sha512-ch6h66o9nPhEoe/KciMMUJeH2MBPB8UAJI1if35Fxl6885lKTsc9YoCRqTW0/RjI0Vv9GSg1tmKtHHODyAw81g==}
 
   '@solana/wallet-standard-features@1.5.0':
     resolution: {integrity: sha512-gxlLaEfPAqbhd3LNkK0Ks2pbVvDm1SDGqBK/ynDQy13Gu+qiURLpRCfSPjbtrw5bmqQsZ6rS2YJHL31bY/Koag==}
@@ -1627,6 +1660,13 @@ snapshots:
   '@scure/bip39@2.4.0':
     dependencies:
       '@noble/hashes': 2.4.0
+
+  '@scure/btc-signer@2.4.1':
+    dependencies:
+      '@noble/curves': 2.4.0
+      '@noble/hashes': 2.4.0
+      '@scure/base': 2.4.0
+      micro-packed: 0.11.1
 
   '@solana/wallet-standard-features@1.5.0':
     dependencies:
