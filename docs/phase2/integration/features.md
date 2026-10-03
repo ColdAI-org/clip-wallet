@@ -148,7 +148,7 @@ const FEATURES = {
   const __CLIP_FEATURES__: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
 ```
 
-Test configs that define globals (`apps/extension/vitest.config.ts`) need `__CLIP_FEATURES__: JSON.stringify({ testnet: true })`.
+`__CLIP_FEATURES__` is read only in `main.ts`, so the extension's vitest setup needs no change.
 
 Partner keys and the MoonPay signer URL are build-time env only. Never commit them or put them in
 `clip.config.ts`.
@@ -228,6 +228,10 @@ Never add it to `packages/1mask/src/background/methods.ts`.
 - Featured apps for those families already exist in `dapps/featured.json`. They appear once the family's
   network is switched on.
 
-## Verification (on a scratch copy with sections 1–8 applied)
+## Verification (scratch worktree with sections 1–8 applied, 2026-10-03)
 
-`pnpm install && pnpm typecheck && pnpm test && pnpm harness` all passed. See the stream report for counts.
+A script applied the snippets above verbatim (anchors: the lines quoted in each section). Results:
+- `pnpm typecheck` passed for every package.
+- `pnpm test` passed: features 63, ui 45, extension 16, all other packages unchanged.
+- `pnpm --filter @clip-wallet/extension build` succeeded. The manifest's `host_permissions` include CoinGecko,
+  Jupiter and 0x.
