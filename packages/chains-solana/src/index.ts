@@ -5,6 +5,7 @@ export { RpcError, SolanaRpc } from "./rpc.js";
 export { type SignInInput, createSignInMessageText } from "./siws.js";
 export { METADATA_PROGRAM, TOKEN_2022_PROGRAM, clearTokenCache, metadataPda, parseMetaplexMetadata } from "./tokens.js";
 export { looksLikeTransaction, parseTransaction } from "./tx.js";
+export { type SwapIntent, type Venue, SWAP_PROGRAMS, decodeSwap } from "./swaps.js";
 
 import { createSolanaModule } from "./module.js";
 export const solanaModule = createSolanaModule();

@@ -48,6 +48,15 @@ const SIGNATURES: { sig: string; plain: string }[] = [
   { sig: "exactInput((bytes,address,uint256,uint256))", plain: "Swap" },
   { sig: "exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))", plain: "Swap" },
   { sig: "exactOutput((bytes,address,uint256,uint256))", plain: "Swap" },
+  // SaucerSwap V2 SwapRouter: the original Uniswap V3 shapes, with `deadline` (saucerswaplabs-v2-periphery ISwapRouter.sol).
+  // Full decoding with amounts lives in saucerswap.ts; these entries name the call for other V3-style routers.
+  { sig: "exactInput((bytes,address,uint256,uint256,uint256))", plain: "Swap" },
+  { sig: "exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))", plain: "Swap" },
+  { sig: "exactOutput((bytes,address,uint256,uint256,uint256))", plain: "Swap" },
+  { sig: "exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))", plain: "Swap" },
+  { sig: "swapExactETHForTokensSupportingFeeOnTransferTokens(uint256,address[],address,uint256)", plain: "Swap" },
+  { sig: "swapExactTokensForETHSupportingFeeOnTransferTokens(uint256,uint256,address[],address,uint256)", plain: "Swap" },
+  { sig: "sweepToken(address,uint256,address)", plain: "Collect leftover tokens" },
   { sig: "refundETH()", plain: "Refund leftover HBAR" },
   { sig: "unwrapWHBAR(uint256,address)", plain: "Unwrap HBAR" },
   // Staking / misc

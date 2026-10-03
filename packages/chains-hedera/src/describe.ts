@@ -16,7 +16,8 @@ import {
 } from "@hiero-ledger/sdk";
 import { longZeroToAccountId } from "./address.js";
 import type { Mirror, MirrorToken } from "./mirror.js";
-import { hbarAsset, tokenAssetKey } from "./networks.js";
+import { hbarAsset, ledgerOf, tokenAssetKey } from "./networks.js";
+import { type SaucerSwapIntent, decodeSaucerSwap } from "./saucerswap.js";
 import { abiAddress, abiUint, lookupSelector } from "./selectors.js";
 import { bodyKind, scheduledInner, transactionFromSchedulableBody } from "./tx.js";
 import { abs, formatUnits, hex, joinWords } from "./util.js";
@@ -373,6 +374,9 @@ async function describeContract(tx: ContractExecuteTransaction, dc: DescribeCont
     if (payable > 0n) return { title: `Send ${formatUnits(payable, 8)} HBAR to contract ${contract}`, lines, balanceChanges, warnings: [], blind: false };
     return blindResult(`Use contract ${contract}`, "This contract call has no readable function.", lines);
   }
+  const swap = tx.contractId ? decodeSaucerSwap(contract, data, payable, ledgerOf(dc.networkId)) : null;
+  if (swap) return describeSaucerSwap(swap, contract, payable, lines, dc);
+
   const entry = lookupSelector(data);
   if (!entry) {
     lines.push({ label: "Function", value: `0x${hex(data.subarray(0, 4))} (unknown)` });
@@ -443,6 +447,40 @@ async function describeContract(tx: ContractExecuteTransaction, dc: DescribeCont
       if (payable > 0n) title += ` and send ${formatUnits(payable, 8)} HBAR`;
   }
   return { title, lines, balanceChanges, warnings, blind: false };
+}
+
+async function describeSaucerSwap(sw: SaucerSwapIntent, router: string, payable: bigint, lines: Line[], dc: DescribeContext): Promise<Described> {
+  const hbar = { ...hbarAsset(dc.networkId), known: true };
+  const assetOf = async (t: string): Promise<AssetRef & { known?: boolean }> => {
+    if (t === "HBAR") return hbar;
+    if (/^0\.0\.\d+$/.test(t)) return tokenAsset(dc, t);
+    return { key: `evm:${t}`, symbol: t, name: t, decimals: 0, networkId: dc.networkId, address: t, known: false };
+  };
+  const [inA, outA, ...hops] = await Promise.all([assetOf(sw.tokenIn), assetOf(sw.tokenOut), ...sw.path.map(assetOf)]);
+  const pay = sw.exactIn ? amountText(inA!, sw.amountIn) : `up to ${amountText(inA!, sw.amountIn)}`;
+  const get = sw.exactIn ? `at least ${amountText(outA!, sw.amountOut)}` : amountText(outA!, sw.amountOut);
+  const out: Line[] = [{ label: "App", value: `SaucerSwap (router ${router})` }, { label: "You pay", value: pay }, { label: "You get", value: get }];
+  if (hops.length > 2) out.push({ label: "Route", value: hops.map((h) => h.symbol).join(" → ") });
+  out.push(...lines.filter((l) => l.label === "Gas limit"));
+
+  const balanceChanges: BalanceChange[] = [];
+  if (sw.tokenIn === "HBAR") balanceChanges.push({ asset: hbarAsset(dc.networkId), delta: (-(payable > 0n ? payable : sw.amountIn)).toString() });
+  else {
+    balanceChanges.push({ asset: stripExtra(inA!), delta: (-sw.amountIn).toString() });
+    if (payable > 0n) balanceChanges.push({ asset: hbarAsset(dc.networkId), delta: (-payable).toString() });
+  }
+  if (sw.tokenIn === "HBAR" && payable < sw.amountIn && sw.exactIn) {
+    out.push({ label: "Note", value: `The app sends ${formatUnits(payable, 8)} HBAR but asks to swap ${formatUnits(sw.amountIn, 8)} HBAR` });
+  }
+
+  const warnings: Warning[] = [];
+  const mine = sw.recipient === dc.myAlias || (dc.me != null && longZeroToAccountId(sw.recipient) === dc.me);
+  if (!mine) {
+    const who = evmLabel(sw.recipient);
+    out.push({ label: "Sends what you get to", value: who });
+    warnings.push({ level: "danger", code: "new-recipient", message: `The tokens from this swap go to ${who}, not to you.` });
+  }
+  return { title: `Swap ${pay} for ${get} on SaucerSwap`, lines: out, balanceChanges, warnings, blind: false };
 }
 
 /* ------------------------------------------------------------------ account settings & staking */

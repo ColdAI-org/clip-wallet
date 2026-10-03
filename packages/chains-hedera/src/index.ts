@@ -11,3 +11,4 @@ export { prefixMessage } from "./tx.js";
 import { createHederaModule } from "./module.js";
 /** Default instance (submits through the SDK client). */
 export const hederaModule = createHederaModule();
+export { SAUCERSWAP, SAUCERSWAP_SIGNATURES, decodeSaucerSwap, isSaucerSwapRouter, type SaucerSwapIntent } from "./saucerswap.js";

@@ -14,6 +14,7 @@ import {
   toFunctionSelector,
 } from "viem";
 import { chainIdOf, quoteFees, tokenMeta } from "./chain.js";
+import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
 import { type TxParams, type TypedData, parsePersonalSign, parseTx, parseTypedData } from "./params.js";
 import { lookupSelector } from "./selectors.js";
@@ -120,7 +121,19 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<D
   try {
     const fees = await quoteFees(ctx);
     const gas = tx.gas ?? (sim.gasUsed !== undefined ? (sim.gasUsed * 12n) / 10n : undefined);
-    if (gas !== undefined) d.fee = { asset: native, amount: (gas * fees.expectedPerGas).toString() };
+    if (gas !== undefined) {
+      let amount = gas * fees.expectedPerGas;
+      // OP-stack chains also charge an L1 data fee outside gas × price: include it, or the fee shown is too low.
+      const chainId = chainIdOf(ctx);
+      if (isOpStack(chainId)) {
+        try {
+          amount += await l1DataFee(ctx, chainId, { to: tx.to, data: tx.data, value: tx.value });
+        } catch {
+          d.warnings.push({ level: "caution", code: "high-fee", message: "Part of this fee (posting the data to Ethereum) couldn't be estimated, so the real fee may be higher." });
+        }
+      }
+      d.fee = { asset: native, amount: amount.toString() };
+    }
   } catch {
     /* fee unknown: the UI shows "fee unavailable" */
   }

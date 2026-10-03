@@ -68,6 +68,20 @@ decoded when the contract is an HTS token; unknown selector → blind), AccountU
 memo; key change or hooks → blind + danger), ScheduleCreate (inner transaction), ScheduleSign (inner transaction
 read from `/api/v1/schedules/{id}`), TopicMessageSubmit, AccountDelete (blind). Anything else → blind.
 
+**SaucerSwap** (`src/saucerswap.ts`): calls to the documented routers (testnet V1 `0.0.19264`, V2 `0.0.1414040`;
+mainnet V1 `0.0.3045981`, V2 `0.0.3949434`) are decoded with amounts: "Swap 100 HBAR for at least 25 SAUCE on
+SaucerSwap", "Swap up to 9 SAUCE for 2 HBAR on SaucerSwap". V1 = the Uniswap V2 router ABI with "ETH" meaning HBAR
+(payable amount); V2 = the original Uniswap V3 SwapRouter shapes **with `deadline`** (`exactInput(Single)`,
+`exactOutput(Single)`), plus the SaucerSwap app's `multicall([swap, refundETH()])` and
+`multicall([swap → router, unwrapWHBAR(min, recipient)])`. WHBAR is shown as HBAR; multi-hop routes get a
+"Route: USDC → HBAR → SAUCE" line. If the final recipient isn't you → `new-recipient` danger. Any other
+multicall content falls back to the selector table. Sources: deployments
+<https://docs.saucerswap.finance/developerx/contract-deployments>, ABIs from
+`saucerswaplabs/saucerswap-periphery` (IUniswapV2Router01/02.sol) and `saucerswaplabs/saucerswaplabs-v2-periphery`
+(ISwapRouter.sol, IPeripheryPayments.sol); tests encode calls with viem from those ABIs. The selector table also
+gained the V2 (with-deadline) signatures; the earlier `exactInput((bytes,address,uint256,uint256))` entries are
+SwapRouter02 shapes that SaucerSwap does not use.
+
 The fee is the transaction's max fee in HBAR ("Network fee: up to 2 HBAR"). It's only shown when this account
 pays. For token transfers the recipient's association and free auto-association slots are checked. If the token
 can't land, it says: "0.0.1234 hasn't added the SAUCE token yet, so this transfer will fail and the fee is still
@@ -124,7 +138,8 @@ No funds needed.
   queries need a payment transaction signed inside the SDK's execute loop, which doesn't fit prepare/finalize yet.
 - No pre-execution simulation (Hedera has no dry run for native transactions). Contract calls could use the mirror
   node's `/api/v1/contracts/call` later.
-- ContractExecute args are decoded only for ERC-20/721-style calls. Swaps show the function, not amounts.
+- ContractExecute args are decoded for ERC-20/721-style calls and SaucerSwap swaps. Other DEXes and SaucerSwap
+  liquidity calls show the function only. Balance changes for exact-out swaps use the maximum input.
 - `decode` reads private SDK fields for token/NFT transfer legs (`_tokenTransfers`, `_nftTransfers`, needed for
   `isApproved`/hooks) and for the scheduled inner transaction (`_scheduledTransaction`, `_expirationTime`).
   Re-check them when bumping the SDK.

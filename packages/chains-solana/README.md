@@ -48,6 +48,17 @@ request is refused.
   associated-token-account create ("Also opens a USDC account for the recipient (≈0.002 SOL)"); compute budget
   (fee); memo. SetAuthority, system Assign/Allocate on your account, and any unknown program are listed by
   program id and make the request **blind**.
+- **Swaps** (`src/swaps.ts`) are described, not blind: Jupiter v6 (`route`, `routeWithTokenLedger`,
+  `sharedAccountsRoute(WithTokenLedger)`, `exactOutRoute`, `sharedAccountsExactOutRoute`), Raydium AMM v4
+  (`SwapBaseIn/Out` and V2), Raydium CPMM (`swap_base_input/output`), Raydium CLMM (`swap`, `swap_v2`) and Orca
+  Whirlpool (`swap`, `swap_v2`), mainnet and devnet program ids. Title: "Swap 2.5 USDC for at least 0.01 SOL on
+  Jupiter" from the instruction (exact in + minimum out, or maximum in + exact out; Jupiter's slippage is shown),
+  replaced by the simulated amounts ("Swap 2.5 USDC for 0.0102 SOL on Jupiter") when simulation runs. The swap
+  must be paid by this account (else blind); if the output token account belongs to someone else → danger
+  `new-recipient`; if its owner can't be confirmed → caution. SOL sent into your own wSOL account is shown as
+  "Wraps". Layout sources are cited at the top of `src/swaps.ts` (Jupiter IDL from jup-ag/instruction-parser and
+  jupiter-cpi; raydium-amm `instruction.rs`; raydium-cp-swap / raydium-clmm `lib.rs`; orca-so/whirlpools `lib.rs`);
+  Anchor discriminators are re-derived from `sha256("global:<name>")` in the tests.
 - First instruction `AdvanceNonceAccount` → `durable-nonce` danger ("never expires").
 - `simulateTransaction` (`sigVerify: false`, `replaceRecentBlockhash` unless durable-nonce,
   `accounts: { addresses: [me] }`). Balance changes come from pre/post balances and token balances, with the fee
@@ -93,7 +104,8 @@ devnet checks (balances, and a simulation of an unfunded payer).
 ## Gaps
 
 - v1 transactions (kit 8 can decode them): the durable-nonce check only looks at legacy/v0 instructions.
-- No per-program descriptions beyond System / Token / ATA / Compute Budget / Memo. Swaps (Jupiter etc.) are blind;
-  simulation still shows what moves.
+- Program descriptions: System / Token / ATA / Compute Budget / Memo and the swap programs above. Whirlpool two-hop
+  swaps, Raydium's router, Meteora, Phoenix and liquidity instructions are still blind (simulation still shows
+  what moves). Jupiter has no devnet deployment, so its decoding is only exercised by fixtures.
 - Token-2022 extensions (transfer fees, hooks, permanent delegate) aren't flagged yet.
 - `solana:signAndSendAllTransactions` and `solana:signOffchainMessage` aren't handled (1Mask doesn't expose them).
