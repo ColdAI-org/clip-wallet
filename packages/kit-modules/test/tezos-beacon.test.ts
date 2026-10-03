@@ -42,6 +42,13 @@ const PUB = "3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29";
 const TZ1 = "tz1XvkuUNDk8j2tG3RJaRUo4Xppcjc6FvK39"; // beacon-utils getAddressFromPublicKey(PUB)
 const EDPK = "edpku6Pc31JWM3RXfym4pG5RzoKkyNCxQzakzsfQiG1aKXP1J651n8";
 const tick = (ms = 5) => new Promise((r) => setTimeout(r, ms));
+async function until(cond: () => boolean, ms = 3000) {
+  const end = Date.now() + ms;
+  while (!cond()) {
+    if (Date.now() > end) throw new Error("timed out waiting");
+    await tick(2);
+  }
+}
 
 function memoryStorage(init: Record<string, string> = {}) {
   const m = new Map(Object.entries(init));
@@ -107,7 +114,7 @@ describe("Beacon extension peer + 1Mask relay vs Beacon's dApp PostMessageClient
     const onPong = (e: any) => e.data?.payload === "pong" && pongs.push(e.data.sender);
     win.addEventListener("message", onPong);
     win.postMessage({ target: "toExtension", payload: "ping" }, win.location.origin);
-    await tick();
+    await until(() => pongs.length > 0);
     expect(pongs).toContainEqual({ id: "org.coldai.clipwallet", name: "Clip Wallet", iconUrl: identity.icon });
 
     // 2. Pairing with Beacon's dApp client.
@@ -128,20 +135,20 @@ describe("Beacon extension peer + 1Mask relay vs Beacon's dApp PostMessageClient
     const send = async (msg: Record<string, unknown>) => dapp.sendMessage(await ser.serialize({ version: "2", senderId: dappSender, ...msg }), pairing);
 
     await send({ id: "p1", type: "permission_request", appMetadata: { senderId: dappSender, name: "Test dApp" }, network: { type: "shadownet" }, scopes: ["operation_request", "sign", "encrypt"] });
-    await tick(30);
+    await until(() => inbox.length >= 2);
     expect(inbox.map((m) => m.type)).toEqual(["acknowledge", "permission_response"]);
     expect(inbox[1]).toMatchObject({ id: "p1", version: "2", publicKey: EDPK, address: TZ1, network: { type: "shadownet" }, scopes: ["operation_request", "sign"], senderId: await peer.senderId() });
     expect(w.calls[0]).toEqual({ origin, method: "tezos:connect", params: { scopes: ["operation_request", "sign", "encrypt"], app: { name: "Test dApp", icon: undefined } }, chain: "tezos:NetXsqzbfFenSTS" });
 
     await send({ id: "o1", type: "operation_request", network: { type: "shadownet" }, sourceAddress: TZ1, operationDetails: [{ kind: "transaction", amount: "1000000", destination: TZ1 }] });
     await send({ id: "s1", type: "sign_payload_request", signingType: "micheline", payload: "05010000000568656c6c6f", sourceAddress: TZ1 });
-    await tick(40);
+    await until(() => inbox.some((m) => m.id === "o1" && m.type !== "acknowledge") && inbox.some((m) => m.id === "s1" && m.type !== "acknowledge"));
     expect(inbox.find((m) => m.id === "o1" && m.type === "operation_response")).toMatchObject({ transactionHash: "ooTestHash" });
     expect(inbox.find((m) => m.id === "s1" && m.type === "sign_payload_response")).toMatchObject({ signingType: "micheline", signature: "edsigTest" });
 
     // 4. Errors become Beacon errors; unknown peers are ignored.
     await send({ id: "x1", type: "broadcast_request", network: { type: "shadownet" }, signedTransaction: "00" });
-    await tick(30);
+    await until(() => inbox.some((m) => m.id === "x1" && m.type !== "acknowledge"));
     expect(inbox.find((m) => m.id === "x1" && m.type !== "acknowledge")).toMatchObject({ type: "error", errorType: "BROADCAST_ERROR" });
     expect(await peer.receive("https://other.example", { encryptedPayload: "00".repeat(60) })).toEqual({ replies: [] });
 
@@ -197,9 +204,9 @@ describe("Beacon P2P wallet wrapper", () => {
     await p2p.start();
     const req: BeaconV2Request = { type: "permission_request", version: "2", id: "a", senderId: "SID", appMetadata: { senderId: "SID", name: "Mobile dApp" }, network: { type: "mainnet" }, scopes: ["sign"] };
     cb!(req);
-    await tick();
+    await until(() => responses.length >= 1);
     cb!({ type: "operation_request", version: "2", id: "b", senderId: "SID", network: { type: "mainnet" }, sourceAddress: TZ1, operationDetails: [{ kind: "delegation" }] });
-    await tick();
+    await until(() => responses.length >= 2);
     expect(w.calls.map((c) => [c.origin, c.method])).toEqual([
       ["beacon:SID", "tezos:connect"],
       ["beacon:SID", "tezos_send"],

@@ -18,7 +18,11 @@ const sigs = await Promise.all(payloads.map((p) => vault.sign(p)));
 
 Extra (additive) API beyond the core contract: `registerApproval`, `revokeApproval`, `changePassword`,
 `reset`, `enrollPasskey`, `unlockWithPasskey`, `listPasskeys`, `removePasskey`, `createPasskeyBackup`,
-`deriveAccount(family, index, { bitcoinAddressType })`. No change to `@clip-wallet/core` was needed.
+`deriveAccount(family, index, { bitcoinAddressType })`, and in Phase 2 `listAccounts`, `addAccount`,
+`setAccountLabel`, `deriveChange`, `freshChange`, `listChange`.
+
+Phase 2 core additions (additive, optional fields): `SignablePayload.derivationSubPath`, the `ChildAddress`
+type, and `ChainContext.freshChangeAddress` / `ChainContext.changeAddresses`.
 
 ## Phrase
 
@@ -28,22 +32,57 @@ normalised (NFKD, lower-case, collapsed whitespace). The BIP-39 passphrase is **
 
 ## Derivation
 
-`@scure/bip32` for secp256k1; SLIP-10 ed25519 is implemented in `src/slip10.ts` with
-`@noble/hashes` HMAC-SHA512 (hardened only) and tested against the official SLIP-10 vectors.
+One BIP-39 phrase (12 or 24 words, no passphrase) derives every family. `@scure/bip32` does secp256k1;
+SLIP-10 ed25519 is `src/slip10.ts` (official SLIP-10 vectors); BIP32-Ed25519 is `src/bip32ed25519.ts`;
+sr25519 is `@scure/sr25519`; the Stark curve is `@scure/starknet`. `i` is the account index.
 
-| Family  | Curve     | Path                                  | Compatible with |
-|---------|-----------|---------------------------------------|-----------------|
-| evm     | secp256k1 | `m/44'/60'/0'/0/i`                    | MetaMask, Rabby |
-| hedera  | secp256k1 | `m/44'/3030'/0'/0/i`                  | Hiero/Hedera SDK `toStandardECDSAsecp256k1PrivateKey` |
-| solana  | ed25519   | `m/44'/501'/i'/0'`                    | Phantom, Solflare |
-| bitcoin | secp256k1 | `m/84'/c'/0'/0/i` (BIP-84, primary)   | Sparrow, BlueWallet, etc. |
-| bitcoin | secp256k1 | `m/86'/c'/0'/0/i` (BIP-86, taproot)   | via `{ bitcoinAddressType: "p2tr" }` |
+| Family | Curve | Path (account `i`) | Address | Compatible with |
+|---|---|---|---|---|
+| evm | secp256k1 | `m/44'/60'/0'/0/i` | EIP-55 | MetaMask, Rabby |
+| hedera | secp256k1 | `m/44'/3030'/0'/0/i` | EVM alias | Hiero SDK standard ECDSA |
+| solana | ed25519 | `m/44'/501'/i'/0'` | base58 | Phantom, Solflare |
+| bitcoin | secp256k1 | `m/84'/c'/0'/0/i` (`m/86'/…` taproot); change `m/84'/c'/0'/1/n` | bech32 / bech32m | Sparrow, BlueWallet |
+| sui | ed25519 (SLIP-10) | `m/44'/784'/i'/0'/0'` | `0x` BLAKE2b-256(0x00 ‖ pk) | Sui Wallet/Slush, `@mysten/sui` |
+| aptos | ed25519 (SLIP-10) | `m/44'/637'/i'/0'/0'` | `0x` SHA3-256(pk ‖ 0x00) (legacy Ed25519 auth key) | Petra, aptos-ts-sdk |
+| near | ed25519 (SLIP-10) | `m/44'/397'/i'` | implicit account = hex(pk) | near-seed-phrase, MyNearWallet (i = 0) |
+| stellar | ed25519 (SLIP-10) | `m/44'/148'/i'` | StrKey `G…` | SEP-0005 (official vectors pass) |
+| algorand | BIP32-Ed25519, ARC-52 Peikert | `m/44'/283'/i'/0/0` | base32(pk ‖ SHA-512/256 checksum) | Pera Universal Wallet; `algorandScheme: "slip10"` → `m/44'/283'/i'/0'/0'` (Trust Wallet) |
+| tezos | ed25519 (SLIP-10) | `m/44'/1729'/i'/0'` | `tz1` base58check(BLAKE2b-160(pk)) | Temple, Kukai, Taquito |
+| ton | ed25519 (SLIP-10) | `m/44'/607'/i'` | wallet v5r1, TEP-2 non-bounceable (`UQ…` / `0Q…` testnet) | Tonkeeper BIP-39 import (i = 0); `tonWalletVersion: "v4r2"` → Trust Wallet |
+| cardano | BIP32-Ed25519, CIP-3 Icarus | payment `m/1852'/1815'/i'/0/0`, stake `…/i'/2/0` | CIP-19 base address `addr_test…` / `addr…` | Eternl, Lace, Yoroi, cardano-serialization-lib |
+| substrate | sr25519 | account 0 = root; `i ≥ 1` = `//(i-1)` | SS58 generic prefix 42 | polkadot.js, Talisman, SubWallet (root) |
+| starknet | Stark (grindKey) | `argent-x:m/44'/9004'/0'/0/i` | OpenZeppelin counterfactual address (see below) | Argent X; `starknetScheme: "braavos"` / `"ledger"` |
 
-`c` is `0'` on mainnet and `1'` on test networks. **The vault defaults to testnet** (`bitcoinNetwork`
-option) per AGENTS.md rule 6.
+Network-dependent encodings default to **testnet** (AGENTS.md rule 6): `bitcoinNetwork`, `cardanoNetwork`,
+`tonNetwork`. Other families' addresses are network-independent; chain modules re-encode where a network
+needs it (e.g. SS58 prefix 0 for Polkadot).
 
-Bitcoin taproot uses the same account id (`bitcoin:<i>`) as the BIP-84 account. `sign()` chooses the
-key from the scheme: `ecdsa-secp256k1` uses the BIP-84 key, `schnorr-secp256k1` uses the BIP-86 key.
+Sources for each row (checked October 2026):
+
+- **Sui:** `DEFAULT_ED25519_DERIVATION_PATH` and the all-hardened path regex in
+  <https://github.com/MystenLabs/ts-sdks/blob/main/packages/sui/src/keypairs/ed25519/keypair.ts>; address
+  <https://docs.sui.io/concepts/cryptography/transaction-auth/keys-addresses>.
+- **Aptos:** `APTOS_HARDENED_REGEX` in
+  <https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/core/crypto/hdKey.ts>; legacy Ed25519
+  authentication key (scheme byte 0x00) in `src/core/authenticationKey.ts`. The SingleKey scheme
+  (`0x02` suffix) gives a different address; Petra and the SDK default show the legacy one, so we do too.
+- **NEAR:** `KEY_DERIVATION_PATH = "m/44'/397'/0'"` in <https://github.com/near/near-seed-phrase/blob/master/index.js>.
+  MyNearWallet uses only index 0 (new accounts get a new phrase); `i ≥ 1` is our extension of the same path.
+- **Stellar:** <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md>, StrKey
+  <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md>.
+- **Algorand:** see "Algorand" below.
+- **Tezos:** `derivationPath = "44'/1729'/0'/0'"` in
+  <https://github.com/ecadlabs/taquito/blob/master/packages/taquito-signer/src/in-memory-signer.ts>;
+  Temple `m/44'/1729'/${index}'/0'` (<https://github.com/madfish-solutions/templewallet-extension>,
+  `src/lib/temple/helpers.ts`); Kukai `44'/1729'/${accountIndex}'/0'` (<https://github.com/kukai-wallet/kukai>,
+  `src/app/libraries/hd.ts`).
+- **TON:** see "TON" below.
+- **Cardano:** <https://github.com/cardano-foundation/CIPs/blob/master/CIP-0003/Icarus.md>,
+  <https://github.com/cardano-foundation/CIPs/blob/master/CIP-1852/README.md>,
+  <https://github.com/cardano-foundation/CIPs/blob/master/CIP-0019/README.md>, derivation V2 in
+  <https://github.com/typed-io/rust-ed25519-bip32/blob/master/src/derivation/v2.rs>.
+- **Substrate:** see "Substrate" below.
+- **Starknet:** see "Starknet" below.
 
 ### Hedera: why ECDSA at `m/44'/3030'/0'/0/i`
 
@@ -67,16 +106,129 @@ key from the scheme: `ecdsa-secp256k1` uses the BIP-84 key, `schnorr-secp256k1` 
   account; Clip derives that key only for the `evm` family. If users report a "missing" Hedera balance,
   this is the likely cause. A per-account path override is an open question.
 
+### Algorand
+
+There are three incompatible ways to derive Algorand keys from BIP-39, and one wallet family isn't BIP-39 at all:
+
+- **ARC-52 (default here).** BIP32-Ed25519 with Peikert's amendment (g = 9), root from the BIP-39 seed
+  (`k = SHA-512(seed)`, re-hashed while `kL[31] & 0x20`, chain code `SHA-256(0x01 ‖ seed)`), path
+  `m/44'/283'/i'/0/0`. This is what **Pera's Universal Wallet** (24-word BIP-39) uses. Sources:
+  ARC-52 draft <https://github.com/algorandfoundation/ARCs/pull/239>, reference
+  <https://github.com/algorandfoundation/xHD-Wallet-API-ts/blob/main/src/bip32-ed25519.ts>, Pera
+  <https://github.com/perawallet/pera-react-native> (`packages/chain-algorand/src/accounts/hd-derivation.ts`,
+  Peikert, plus its known-answer vector, which our test reproduces).
+- **SLIP-10, `algorandScheme: "slip10"`.** `m/44'/283'/i'/0'/0'`, as Trust Wallet / wallet-core
+  (<https://github.com/trustwallet/wallet-core/blob/master/registry.json>).
+- **Ledger** (not supported): `m/44'/283'/i'/0/0` with Ledger's own BIP32-Ed25519 root (HMAC "ed25519 seed",
+  g = 32), per <https://github.com/LedgerHQ/app-algorand/blob/main/app/src/crypto.c> and Speculos
+  `os_bip32.c`. Same path string as ARC-52, **different keys**.
+- **Pera/Defly legacy accounts use the 25-word Algorand mnemonic, which is not BIP-39.** It encodes a raw
+  Ed25519 seed with its own checksum and cannot be imported as a Clip phrase. Users must move funds, or
+  a future "import Algorand 25-word key" flow would add a standalone (non-HD) key.
+
+Because ARC-52 keys are extended keys, `Account.curve` is `"bip32-ed25519"` for Algorand (ARC-52) and
+signatures use the extended-key signer. They still verify as plain Ed25519 (`algosdk.verifyBytes`).
+
+### TON
+
+- Path `m/44'/607'/i'` SLIP-10: `TON_DERIVATION_PATH = "m/44'/607'/0'"` in Tonkeeper's BIP-39 import
+  (<https://github.com/tonkeeper/tonkeeper-web>, `packages/core/src/service/mnemonicService.ts`) and
+  wallet-core's registry. Account `i ≥ 1` extends it.
+- Address: wallet **v5r1** (Tonkeeper's `defaultWalletVersion`). The v5r1 `wallet_id` depends on the network
+  (global id −239 mainnet, −3 testnet; `@ton/ton` `WalletV5R1WalletId.ts`), so the testnet address differs
+  from the mainnet one. `tonWalletVersion: "v4r2"` gives Trust Wallet's address (wallet-core
+  `rust/chains/tw_ton/src/entry.rs`: "Currently, we use the V4R2 wallet"). Addresses are computed from the
+  pinned code-cell hashes (`TON_V5R1_CODE_HASH`, `TON_V4R2_CODE_HASH`) and checked against `@ton/ton`.
+- **A phrase made in Tonkeeper or Wallet (Telegram) is usually a native 24-word TON mnemonic, not BIP-39.**
+  It derives keys with PBKDF2 over its own seed and will either fail the BIP-39 checksum or import a
+  *different* account. Only BIP-39 phrases (from Trust Wallet, Ledger-style backups, or Clip) map to the
+  same TON account. TON-native mnemonics need their own import path and aren't supported.
+- Ledger TON uses `m/44'/607'/{net}'/{chain}'/i'/0'` (<https://github.com/ton-community/ton-ledger-ts>), so its
+  accounts differ too.
+
+### Substrate
+
+- Mini-secret: substrate-bip39, `PBKDF2-HMAC-SHA512(password = entropy, salt = "mnemonic", 2048)`, first
+  32 bytes (<https://github.com/paritytech/substrate-bip39/blob/master/src/lib.rs>). This is why the vault
+  now keeps the BIP-39 **entropy** in memory alongside the seed while unlocked; Cardano needs it too. Both
+  are wiped on lock.
+- sr25519 keys come from `@scure/sr25519` `secretFromSeed` (Ed25519 expansion mode, as sp-core) and
+  `HDKD.secretHard`. Junction chain codes are encoded as polkadot.js `DeriveJunction` does: numbers
+  little-endian, padded to 32 bytes.
+- **Account mapping.** Account 0 is the root key (no junction), which is what every Substrate wallet shows
+  when a phrase is imported. Account `i ≥ 1` is `//(i-1)`: `//0`, `//1`, … This follows Talisman
+  (`apps/extension/src/core/domains/accounts/helpers.ts`, root then first unused `//n` from 0) and
+  polkadot.js extension "derive" (`nextDerivationPath.ts`, first child `//0`). **SubWallet** numbers its
+  children `//1`, `//2`, … (`derive/info/solo.ts`), so its second account is our account 2. `Account.derivationPath`
+  holds the junction (`""` for the root).
+- `Account.address` is the generic SS58 prefix 42. Chain modules re-encode (Polkadot 0, Kusama 2).
+- Signing context is `"substrate"` (the `@scure/sr25519` constant).
+
+### Starknet
+
+The brief assumed EIP-2645. In fact the two big wallets don't use it:
+
+| `starknetScheme` | Seed of the BIP-32 tree | Path | Who |
+|---|---|---|---|
+| `"argent-x"` (default) | the **Ethereum private key** at `m/44'/60'/0'/0/0` (32 bytes as BIP-32 seed) | `m/44'/9004'/0'/0/i` | Argent X / Ready (<https://github.com/argentlabs/argent-x>, `packages/extension/src/shared/signer`) |
+| `"braavos"` | the BIP-39 seed | `m/44'/9004'/0'/0/i` | Braavos (Braavos team post, <https://community.starknet.io/t/account-keys-and-addresses-derivation-standard/1230>) |
+| `"ledger"` | the BIP-39 seed | EIP-2645 `m/2645'/1195502025'/1148870696'/0'/0'/i` | Ledger Starknet app (<https://github.com/LedgerHQ/app-starknet>) |
+
+All three then apply StarkWare's `grindKey` (`@scure/starknet`). Our tests reproduce Argent X's own repo
+vector (`packages/extension/test/keyDerivation.test.ts`), a third-party Braavos-style vector for the test
+phrase, and the derivations with `ethers` (the library Argent X uses). Ledger's on-device grinding is not
+verified against hardware.
+
+`Account.publicKey` is the 32-byte Stark key (x-coordinate). The account *address* depends on the account
+contract class. By default the vault computes the **OpenZeppelin** counterfactual address
+(constructor `public_key`, salt = public key, deployer 0) for `STARKNET_OZ_ACCOUNT_CLASS_HASH` (OZ v0.17.0,
+as in the starknet.js `create_account` guide). Override with `starknetAccountClassHash`. To show an Argent
+or Braavos account address, chains-starknet should provide `addressOf` (the existing injection point),
+because those constructors take different calldata.
+
 ## Addresses
 
-The vault computes `Account.address` itself with small pure helpers in `src/address.ts`:
-- EIP-55 keccak checksum for EVM and the Hedera EVM alias
-- base58 for Solana
-- bech32 P2WPKH and bech32m P2TR via `@scure/base`
+The vault computes `Account.address` itself with small pure helpers: `src/address.ts` (Phase 1) and
+`src/encodings.ts` (Phase 2: Sui, Aptos, NEAR, Stellar, Algorand, Tezos, TON v5r1/v4r2 state-init hashing,
+Cardano CIP-19, SS58, Starknet contract address). Each is checked in the tests against the family's
+official SDK. It keeps rule 2 intact (chain modules never import the vault, and the vault never imports
+chain modules). To delegate to chain modules instead, inject `addressOf(family, publicKey, ctx)` in
+`ClipVaultOptions`; `ctx` carries the networks, the TON version, the Starknet class hash and, for Cardano,
+the stake key.
 
-That is about 60 lines, smaller than threading chain modules into the vault. It also keeps rule 2 intact
-(chain modules never import the vault, and the vault never imports chain modules). To delegate to chain
-modules instead, inject `addressOf(family, publicKey, ctx)` in `ClipVaultOptions`.
+## Accounts, labels and encrypted metadata
+
+- `listAccounts(families?)` returns the stored account indexes per family, with labels. A family with
+  nothing stored lists account 0.
+- `addAccount(family, label?)` adds the next index (one above the highest).
+- `setAccountLabel(family, index, label)` sets a label; `""` clears it. Labels are NFC-normalised, have
+  control characters stripped, and are capped at 64 characters.
+- The list is stored as `VaultRecord.meta`, XChaCha20-Poly1305 under
+  `HKDF-SHA256(seed, "clip-wallet/vault/meta", "clip-wallet/vault/meta-key/v1")` with AAD
+  `clip-vault/v1/meta`. It is tied to the seed, not the password, so `changePassword` and passkeys leave it
+  alone. It needs an unlocked vault, and tampering reads as `vault/corrupt`.
+
+## Bitcoin change addresses
+
+- Vault Bitcoin accounts are address indexes of BIP-84 account `0'` (Phase 1 layout: `m/84'/c'/0'/0/i`).
+  Change uses that account node's internal chain: **`m/84'/c'/0'/1/n`** (`m/86'/c'/0'/1/n` for taproot).
+  This is the standard BIP-84 change chain, so Sparrow and other wallets find the coins on restore.
+- `freshChange("bitcoin", accountIndex)` hands out the next never-used `n`. The counter is global and
+  persisted, so two vault accounts never share a change address. It records which account received `n`.
+- `deriveChange("bitcoin", accountIndex, n)` derives a specific change address and records it the same way.
+- `listChange("bitcoin", accountIndex)` returns the change addresses already handed out to that account.
+- All three return `ChildAddress` `{ address, publicKey, derivationPath, derivationSubPath: "1/n" }`.
+- `sign()` with `derivationSubPath: "1/n"` signs with that change key, but **only** if `n` was handed out to
+  that account. Any other Bitcoin sub-path is refused.
+- packages/chains-bitcoin:
+  - `buildPsbt` sends change to the lowest handed-out change address with no history, so cancelled sends
+    don't widen the BIP-44 gap. Failing that it uses `ctx.freshChangeAddress()`, and with neither the
+    primary address (v1).
+  - It finds and spends coins on `ctx.changeAddresses`, sets `derivationSubPath` on those inputs, and
+    counts change addresses in balances.
+- **Gap limit.** Indexes handed out for transfers the user cancels can still leave gaps. Reusing unused
+  addresses keeps this small, but a restore tool with gap limit 20 could miss coins after 20+ consecutive
+  unused handouts.
 
 ## Encryption at rest
 
@@ -104,9 +256,9 @@ passkey PRF --HKDF-SHA256--> PWK ─wrap─┘   (optional, one per enrolled pas
 - **Storage:** an injected `{ get, set, remove }` with string values. The app wraps
   `chrome.storage.local`; tests use `MemoryStorage`. Only ciphertext and public metadata (salts, KDF
   parameters, credential ids) are stored.
-- **In memory while unlocked:** only the 64-byte BIP-39 seed. KEK, VEK and entropy are wiped right after
-  use. Derived private keys are wiped after each sign or derive call, and `lock()` wipes the seed and
-  clears all approvals.
+- **In memory while unlocked:** only the 64-byte BIP-39 seed and the BIP-39 entropy (Cardano's CIP-3 master key and Substrate's mini-secret are derived from the entropy, not the seed).
+  KEK, VEK and the decrypted blob are wiped right after use. Derived private keys are wiped after each sign
+  or derive call, and `lock()` wipes the seed and entropy and clears all approvals.
   - Zeroisation is best-effort: JavaScript can't guarantee the GC or JIT left no copies, and
     `revealPhrase()` necessarily returns an immutable string.
 - **Auto-lock:** default 15 minutes of inactivity (`autoLockMs`); `deriveAccount` and `sign` count as
@@ -119,14 +271,19 @@ passkey PRF --HKDF-SHA256--> PWK ─wrap─┘   (optional, one per enrolled pas
 - `registerApproval(approvalId, payloadHashes, ttlMs)` must be called by the background **only after**
   the user approves the `DecodedRequest`.
 - Compute each hash with `hashSignablePayload(payload)`. It is
-  SHA-256(domain ‖ accountId ‖ scheme ‖ bytes ‖ taprootTweak), each field length-prefixed. That is
-  stricter than hashing the bytes alone: an approval for `evm:0` can't be replayed on `evm:1` or under
-  another scheme.
+  SHA-256(domain ‖ accountId ‖ scheme ‖ bytes ‖ taprootTweak [‖ derivationSubPath]), each field
+  length-prefixed. That is stricter than hashing the bytes alone: an approval for `evm:0` can't be replayed
+  on `evm:1`, under another scheme, or with another sub-path (e.g. the Cardano stake key instead of the
+  payment key).
+  - `derivationSubPath` is appended only when present, so hashes of payloads without one are unchanged
+    from Phase 1.
 - `sign()` refuses unless all of these hold:
   - the approval is live (TTL is capped at 10 minutes)
   - the payload hash is listed and unused
-  - the account's curve matches the scheme
-  - schnorr is only used for `bitcoin:*`
+  - the scheme is allowed for the account's family (`FAMILY_SCHEMES`: e.g. substrate → sr25519 only,
+    starknet → stark-ecdsa only, schnorr → bitcoin only)
+  - any `derivationSubPath` is valid for the family (Bitcoin `1/n` handed out to this account; Cardano
+    `0/n`, `1/n`, `2/0`; nothing for other families)
 - Every hash is single-use. An approval covering N payloads (for example a multi-input PSBT) allows
   exactly N signatures, then disappears.
 - Curve and payload checks run before the approval is consumed, so a malformed request doesn't burn it.
@@ -140,7 +297,13 @@ passkey PRF --HKDF-SHA256--> PWK ─wrap─┘   (optional, one per enrolled pas
   - The vault applies the BIP-341 TapTweak.
   - `Signature.publicKey` is the x-only key that verifies the signature: the output key when tweaked,
     the internal key otherwise.
-- `ed25519`: RFC 8032 over the message bytes.
+- `ed25519`: RFC 8032 over the message bytes. For Cardano and Algorand (ARC-52), the extended key is used:
+  scalar `kL`, nonce `SHA-512(kR ‖ M)`. Signatures match cardano-serialization-lib and the xHD reference
+  byte for byte and verify as plain Ed25519.
+- `sr25519`: Schnorrkel with signing context `"substrate"`, fresh nonce randomness (`@scure/sr25519`).
+- `stark-ecdsa`: Stark-curve ECDSA (RFC 6979) over the message hash the chain module computed: at most 32
+  big-endian bytes, value below 2^251 (checked before the approval is consumed). Returns r ‖ s (64 bytes) and
+  `recovery`; `publicKey` is the 32-byte Stark key.
 
 ## Passkey unlock (WebAuthn PRF)
 
@@ -200,7 +363,25 @@ Yes, from an **extension page**, not from the service worker.
 
 ## Tests
 
-`pnpm --filter @clip-wallet/vault test`:
+`pnpm --filter @clip-wallet/vault test` (138 tests). Phase 2 adds `test/families.test.ts` (37) and
+`test/vault-phase2.test.ts` (22).
+
+Phase 2 cross-checks against independent implementations (devDependencies only):
+
+| Family | Independent implementation | Published vectors |
+|---|---|---|
+| sui | `@mysten/sui` `Ed25519Keypair.deriveKeypair`, identical signature | — |
+| aptos | `@aptos-labs/ts-sdk` `Account.fromDerivationPath`, `verifySignature` | — |
+| near | `near-seed-phrase` `parseSeedPhrase` | — |
+| stellar | `@stellar/stellar-base` StrKey, `Keypair.verify` | SEP-0005 test 5 (accounts 0–2, public and secret) |
+| algorand | `@algorandfoundation/xhd-wallet-api` `keyGen` + `rawSign`, `algosdk` `encodeAddress` + `verifyBytes`; `micro-key-producer` for SLIP-10 | Pera Universal Wallet conformance vector |
+| tezos | `@taquito/signer` `InMemorySigner.fromMnemonic`, identical signed bytes | — |
+| ton | `@ton/crypto` `deriveEd25519Path` + `signVerify`, `@ton/ton` `WalletContractV5R1` / `V4` (mainnet and testnet) | — |
+| cardano | `@emurgo/cardano-serialization-lib-nodejs` (keys, base addresses, identical signature) | CIP-3 Icarus vector; Keystone root and `addr1qy8ac7…` for the test phrase |
+| substrate | `@polkadot/keyring` `addFromUri` (root, `//0`, `//1`), `sr25519Verify` (wasm schnorrkel) | sp-core dev phrase root and `//Alice`; substrate-bip39 mini-secret |
+| starknet | `ethers` HDNodeWallet + `starknet.js` `grindKey`, `calculateContractAddressFromHash`, `verify` | Argent X repo vector (indexes 5, 7) and `grindKey` vector; third-party Braavos-style key |
+
+Phase 1 vectors (unchanged):
 - all 24 official BIP-39 English vectors
 - BIP-32 vector 1
 - SLIP-10 ed25519 vectors 1 and 2

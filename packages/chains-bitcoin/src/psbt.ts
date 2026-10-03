@@ -5,11 +5,11 @@
  *    TapTweak scalar in options.taprootTweak (the vault signs with d' = d·(even-Y) + t).
  * Legacy P2PKH and nested P2SH-P2WPKH inputs are not signed in v1.
  */
-import { ClipError, type Account, type Network } from "@clip-wallet/core";
+import { ClipError, type Account, type ChildAddress, type Network } from "@clip-wallet/core";
 import { base64, hex } from "@scure/base";
 import { SigHash, Transaction } from "@scure/btc-signer";
 import { tagSchnorr } from "@scure/btc-signer/utils.js";
-import { type OwnKind, type OwnScripts, addressOfScript, isOpReturn, ownKind, ownScripts, scriptType, wpkhScriptCode, xOnly } from "./keys.js";
+import { type ChangeKey, type OwnKind, type OwnScripts, addressOfScript, changeKeyOf, isOpReturn, ownKind, ownScripts, scriptType, wpkhScriptCode, xOnly } from "./keys.js";
 
 export const TX_OPTS = {
   allowUnknownOutputs: true,
@@ -44,6 +44,8 @@ export interface InputInfo {
   address?: string;
   kind: OwnKind;
   sequence: number;
+  /** Set when the coin sits on one of the account's change addresses (signed with that key). */
+  change?: ChangeKey;
   /** Set when we will sign this input. */
   sign?: { hashType: number };
 }
@@ -90,8 +92,8 @@ export function estimateVsize(tx: Transaction, inputTypes: string[]): number {
   return Math.ceil((baseBytes * 4 + witness) / 4);
 }
 
-export function analyzePsbt(tx: Transaction, account: Account, network: Network, toSign?: SignRequest[]): PsbtAnalysis {
-  const own = ownScripts(account);
+export function analyzePsbt(tx: Transaction, account: Account, network: Network, toSign?: SignRequest[], change: ChildAddress[] = []): PsbtAnalysis {
+  const own = ownScripts(account, change, network);
   const wanted = toSign ? new Map(toSign.map((s) => [s.index, s.sighash])) : undefined;
   const inputs: InputInfo[] = [];
   for (let i = 0; i < tx.inputsLength; i++) {
@@ -100,6 +102,8 @@ export function analyzePsbt(tx: Transaction, account: Account, network: Network,
     const kind = script ? ownKind(script, own) : null;
     const info: InputInfo = { index: i, txid: hex.encode(inp.txid!), vout: inp.index!, kind, sequence: inp.sequence ?? 0xffffffff };
     if (amount !== undefined) info.amount = amount;
+    const ck = script ? changeKeyOf(script, own) : undefined;
+    if (ck) info.change = ck;
     if (script) {
       info.script = script;
       const a = addressOfScript(script, network);
@@ -150,6 +154,10 @@ export interface InputDigest {
   kind: "wpkh" | "tr";
   hashType: number;
   digest: Uint8Array;
+  /** Key that signs this input (the account key, or a change key). */
+  pubkey: Uint8Array;
+  /** Change inputs: the vault's derivationSubPath ("1/<n>"). */
+  subPath?: string;
   /** taproot only: TapTweak scalar bytes for the vault. */
   tweak?: Uint8Array;
 }
@@ -170,7 +178,10 @@ export function inputDigests(tx: Transaction, a: PsbtAnalysis): InputDigest[] {
     const hashType = x.sign!.hashType;
     if (x.amount === undefined) throw new ClipError("This Bitcoin transaction is missing details we need to check it, so we stopped it.", "missing-prevouts");
     if (x.kind === "wpkh") {
-      out.push({ index: x.index, kind: "wpkh", hashType, digest: tx.preimageWitnessV0(x.index, wpkhScriptCode(a.own.pubkey), hashType, x.amount) });
+      const pubkey = x.change?.pubkey ?? a.own.pubkey;
+      const d: InputDigest = { index: x.index, kind: "wpkh", hashType, pubkey, digest: tx.preimageWitnessV0(x.index, wpkhScriptCode(pubkey), hashType, x.amount) };
+      if (x.change) d.subPath = x.change.subPath;
+      out.push(d);
     } else if (x.kind === "tr") {
       const inp = tx.getInput(x.index);
       if (inp.tapLeafScript?.length && !inp.tapInternalKey) throw new ClipError("Clip Wallet can't sign this kind of Bitcoin script yet.", "unsupported-script");
@@ -180,7 +191,7 @@ export function inputDigests(tx: Transaction, a: PsbtAnalysis): InputDigest[] {
         hashType,
         a.inputs.map((i) => i.amount!),
       );
-      out.push({ index: x.index, kind: "tr", hashType, digest, tweak: tapTweakBytes(a.own.pubkey, inp.tapMerkleRoot) });
+      out.push({ index: x.index, kind: "tr", hashType, digest, pubkey: a.own.pubkey, tweak: tapTweakBytes(a.own.pubkey, inp.tapMerkleRoot) });
     }
   }
   return out;

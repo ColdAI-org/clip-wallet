@@ -92,7 +92,7 @@ export interface TokenBalance {
 export interface Nft {
   networkId: NetworkId;
   standard:
-    | "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal"
+    | "erc721" | "erc1155" | "hts-nft" | "metaplex" | "ordinal" | "sui-object" | "aptos-digital-asset"
     // Phase 2 (near-stellar-tezos-algorand): NEAR NEP-171, Tezos FA2, Algorand ARC-3 / ARC-19 / ARC-69 ASAs.
     | "nep171" | "fa2" | "arc3" | "arc19" | "arc69";
   collection: { address: string; name: string };
@@ -135,6 +135,13 @@ export interface SignablePayload {
   bytes: Uint8Array;
   /** Bitcoin taproot tweak etc. */
   options?: { taprootTweak?: Uint8Array };
+  /**
+   * Phase 2 (additive): sign with a key BELOW the account's node instead of the account key itself, as
+   * "<chain>/<index>" relative to that node. Bitcoin: "1/<n>" = change address n of the BIP-84/86 account
+   * node (m/84'/c'/0'/1/n). Cardano: "0/<n>" payment, "1/<n>" internal, "2/0" stake key under
+   * m/1852'/1815'/<i>'. Other families reject it. Covered by the approval hash.
+   */
+  derivationSubPath?: string;
   /** Binds the signature to the request the user approved. */
   approvalId: string;
 }
@@ -222,10 +229,28 @@ export interface DecodedRequest {
   networkId: NetworkId;
 }
 
+/** Phase 2 (additive): a fresh address under an account, derived by the vault (e.g. a Bitcoin change address). */
+export interface ChildAddress {
+  address: string;
+  /** Hex, as Account.publicKey. */
+  publicKey: string;
+  /** Full path, e.g. "m/84'/1'/0'/1/3". */
+  derivationPath: string;
+  /** What a SignablePayload sets as `derivationSubPath` to sign with this key, e.g. "1/3". */
+  derivationSubPath: string;
+}
+
 export interface ChainContext {
   network: Network;
   account: Account;
   fetch: typeof fetch;
+  /**
+   * Phase 2 (additive, optional): the background asks the vault for an unused change address of
+   * `account` (Bitcoin). Modules fall back to the account's own address when it is absent.
+   */
+  freshChangeAddress?: () => Promise<ChildAddress>;
+  /** Phase 2 (additive, optional): change addresses already handed out for `account`, so the module can find and spend their coins. */
+  changeAddresses?: ChildAddress[];
 }
 
 /** One sandboxed module per network family. Never imports @clip-wallet/vault. */

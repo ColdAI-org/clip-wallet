@@ -23,7 +23,11 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^7.3.0",
+    "@aptos-labs/wallet-standard": "^2.0.0",
     "@clip-wallet/core": "workspace:*",
+    "@mysten/sui": "^2.33.2",
+    "@mysten/wallet-standard": "^0.21.31",
     "@reown/walletkit": "^1.6.0",
     "@solana/wallet-standard-features": "^1.5.0",
     "@wallet-standard/base": "^1.1.1",

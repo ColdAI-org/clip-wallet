@@ -224,6 +224,14 @@ describe("Algorand injected provider", () => {
   });
 });
 
+async function until(cond: () => boolean, ms = 2000) {
+  const end = Date.now() + ms;
+  while (!cond()) {
+    if (Date.now() > end) throw new Error("timed out waiting");
+    await tick(2);
+  }
+}
+
 describe("Tezos Beacon relay", () => {
   it("answers ping with pong and relays addressed messages to the background peer", async () => {
     const win = newWindow();
@@ -242,7 +250,7 @@ describe("Tezos Beacon relay", () => {
     win.addEventListener("message", (e) => seen.push((e as MessageEvent).data));
 
     win.postMessage({ target: "toExtension", payload: "ping" }, win.location.origin);
-    await tick(5);
+    await until(() => seen.some((m) => m.payload === "pong"));
     expect(seen.find((m) => m.payload === "pong")).toMatchObject({ target: "toPage", sender: { id: extensionId, name: "Clip Wallet" } });
 
     win.postMessage({ target: "toExtension", payload: "pairing", targetId: "someone.else" }, win.location.origin);
@@ -250,12 +258,12 @@ describe("Tezos Beacon relay", () => {
     expect(received).toHaveLength(0);
 
     win.postMessage({ target: "toExtension", payload: "pairing", targetId: extensionId }, win.location.origin);
-    await tick(5);
+    await until(() => seen.some((m) => m.message?.payload === "beef"));
     expect(received[0]).toEqual({ origin: h.ORIGIN, message: { payload: "pairing" } });
     expect(seen.find((m) => m.message?.payload === "beef")).toEqual({ message: { target: "toPage", payload: "beef" }, sender: { id: extensionId } });
 
     win.postMessage({ target: "toExtension", encryptedPayload: "c0ffee", targetId: extensionId }, win.location.origin);
-    await tick(10);
+    await until(() => seen.filter((m) => m.message?.encryptedPayload).length >= 2);
     const enc = seen.filter((m) => m.message?.encryptedPayload).map((m) => m.message.encryptedPayload);
     expect(enc).toEqual(["aa01", "bb02"]);
     stop();
