@@ -1,0 +1,55 @@
+{
+  "name": "@clip-wallet/kit-modules",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "description": "Clip Wallet connection modules for NEAR Wallet Selector, Stellar Wallets Kit, Tezos Beacon (wallet side) and TxnLab use-wallet.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./near": "./src/near/index.ts",
+    "./stellar": "./src/stellar/index.ts",
+    "./tezos": "./src/tezos/index.ts",
+    "./algorand": "./src/algorand/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@airgap/beacon-core": "4.8.0",
+    "@airgap/beacon-types": "4.8.0",
+    "@airgap/beacon-utils": "4.8.0",
+    "@airgap/beacon-wallet": "4.8.1"
+  },
+  "peerDependencies": {
+    "@near-js/crypto": "^2.3.0",
+    "@near-wallet-selector/core": "^10.1.4",
+    "@txnlab/use-wallet": "^5.0.1",
+    "algosdk": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@near-js/crypto": {
+      "optional": true
+    },
+    "@near-wallet-selector/core": {
+      "optional": true
+    },
+    "@txnlab/use-wallet": {
+      "optional": true
+    },
+    "algosdk": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@airgap/beacon-transport-postmessage": "4.8.0",
+    "@near-js/crypto": "^2.3.0",
+    "@near-wallet-selector/core": "^10.1.4",
+    "@txnlab/use-wallet": "^5.0.1",
+    "algosdk": "^3.8.0",
+    "happy-dom": "^20.14.5",
+    "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/core": "workspace:*"
+  }
+}
