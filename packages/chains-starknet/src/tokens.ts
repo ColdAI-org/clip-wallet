@@ -26,7 +26,9 @@ const both = (t: Omit<CuratedToken, "chain">): CuratedToken[] => [
 
 export const CURATED_TOKENS: CuratedToken[] = [
   ...both({ address: STRK_ADDRESS, key: "strk", symbol: "STRK", name: "Starknet Token", decimals: 18 }),
-  ...both({ address: ETH_ADDRESS, key: "eth", symbol: "ETH", name: "Ether", decimals: 18 }),
+  // StarkGate ETH merges with the EVM chains' ETH: "eth" on mainnet, "eth-testnet" on Sepolia (chains-evm's key).
+  { chain: "SN_MAIN", address: ETH_ADDRESS, key: "eth", symbol: "ETH", name: "Ether", decimals: 18 },
+  { chain: "SN_SEPOLIA", address: ETH_ADDRESS, key: "eth-testnet", symbol: "ETH", name: "Ether", decimals: 18 },
   { chain: "SN_MAIN", address: "0x033068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb", key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6 },
   { chain: "SN_SEPOLIA", address: "0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343", key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6 },
   {
