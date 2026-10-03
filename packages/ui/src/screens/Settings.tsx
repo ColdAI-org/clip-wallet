@@ -6,6 +6,7 @@ import { Button, Card, ErrorNote, Field, Row, Screen, Toggle } from "../componen
 import { PasskeyEnroll } from "./Passkey";
 import { relativeTime } from "../lib/format";
 import { useFeaturesOptional } from "../features/context";
+import { useHardwareOptional } from "../hardware/context";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 
@@ -148,6 +149,7 @@ export function Settings() {
   const [devMsg, setDevMsg] = useState<string | null>(null);
   const { navigate } = useRouter();
   const features = useFeaturesOptional();
+  const hardware = useHardwareOptional();
   if (!state) return null;
   const prefs = state.prefs;
   const setPrefs = async (p: Partial<Prefs>) => {
@@ -232,6 +234,11 @@ export function Settings() {
         <nav className="clip-menu" aria-label="Backup and accounts">
           <button type="button" className="clip-menu__item" onClick={() => navigate("/backup")}>Backup</button>
           <button type="button" className="clip-menu__item" onClick={() => navigate("/accounts")}>Accounts</button>
+          {hardware && (
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/hardware")} title="Ledger or Keystone: keys stay on the device">
+              Hardware wallets
+            </button>
+          )}
         </nav>
         <Button
           variant="secondary"

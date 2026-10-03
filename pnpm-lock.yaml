@@ -232,6 +232,9 @@ importers:
       '@clip-wallet/features':
         specifier: workspace:*
         version: link:../../packages/features
+      '@clip-wallet/hardware':
+        specifier: workspace:*
+        version: link:../../packages/hardware
       '@clip-wallet/kit-modules':
         specifier: workspace:*
         version: link:../../packages/kit-modules

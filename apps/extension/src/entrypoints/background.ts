@@ -1,3 +1,4 @@
+import "../shared/node-globals";
 import { defineBackground } from "wxt/utils/define-background";
 import { startBackground } from "../background/main";
 

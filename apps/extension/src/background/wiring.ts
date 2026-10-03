@@ -53,6 +53,7 @@ import {
 } from "./real";
 import { createPriceFeed } from "./features";
 import { BackupClient } from "@clip-wallet/backup-client";
+import { HardwareKeyring, KeystoneBridge, KeystoneSigner, LedgerSigner, type HardwareStorage } from "@clip-wallet/hardware";
 import { MultiNameResolver } from "@clip-wallet/names";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 
@@ -179,6 +180,10 @@ export interface Dependencies {
   prices: PriceFeed;
   names: NameResolver;
   registry: DappRegistry;
+  /** Hardware accounts (Ledger, Keystone): public data, approval binding, device routing. */
+  hardware: HardwareKeyring;
+  ledger: LedgerSigner;
+  keystone: { signer: KeystoneSigner; bridge: KeystoneBridge };
   /** services/backup client factory; null when no backup service is configured (clip.config services.backupUrl). */
   backup: ((session: { token: string; expiresAt: number } | null) => BackupClient) | null;
   /** Hedera "0.0.x" for the account's EVM alias, if it exists yet. */
@@ -195,6 +200,8 @@ export interface WiringOptions {
   currency: () => Promise<string>;
   /** Bundled icon URL for WalletConnect metadata. */
   iconUrl: string;
+  /** Called when a Keystone exchange opens or closes, so the approval window re-fetches. */
+  onHardwareChange?: () => void;
   /** Partner keys for features (from build env; never committed). */
   features?: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** Tests pass cheap Argon2 params; production uses the vault's defaults. */
@@ -210,6 +217,14 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   // The chain modules below are created with the matching defaults (TON v5r1, Starknet OpenZeppelin, Algorand ARC-52).
   const vault = new ClipVault({ storage: vaultStorageOf(opts.kv), autoLockMs: VAULT_MAX_IDLE_MS, ...opts.vaultOptions });
   const registry = new KnownDappRegistry();
+  const hwStorage: HardwareStorage = { get: (k) => opts.kv.get<string>(k), set: (k, v) => opts.kv.set(k, v) };
+  // Same network as the vault (testnet unless the vault is configured otherwise).
+  const bitcoinNetwork = opts.vaultOptions?.bitcoinNetwork ?? "testnet";
+  const keystoneBridge = new KeystoneBridge(() => opts.onHardwareChange?.());
+  const keystone = new KeystoneSigner({ channel: keystoneBridge, storage: hwStorage, bitcoinNetwork });
+  const ledger = new LedgerSigner({ bitcoinNetwork });
+  const hardware = new HardwareKeyring({ signers: { ledger, keystone }, storage: hwStorage });
+  const hw = { hardware, ledger, keystone: { signer: keystone, bridge: keystoneBridge } };
 
   if (opts.mocks) {
     return {
@@ -224,6 +239,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       prices: new MockPriceFeed(),
       names: new MockNameResolver(),
       registry,
+      ...hw,
       backup: null,
       hederaAccountId: async () => "0.0.4815162",
       seedActivity: MOCK_ACTIVITY,
@@ -265,6 +281,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     // ENS (.eth), SNS (.sol) and Hedera names (.hbar …), limited to the networks this wallet has.
     names: new MultiNameResolver({ networks }),
     registry,
+    ...hw,
     backup: BACKUP_SERVICE_URL ? (session) => new BackupClient({ baseUrl: BACKUP_SERVICE_URL!, session }) : null,
     hederaAccountId: async (ctx) => (await hedera.getAccountState(ctx)).accountId ?? undefined,
     seedActivity: [],

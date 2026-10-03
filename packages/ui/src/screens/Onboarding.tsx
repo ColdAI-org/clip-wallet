@@ -6,10 +6,14 @@ import { IconFingerprint, IconShield } from "../components/icons";
 import { passwordStrength } from "../lib/strength";
 import { PasskeyEnroll } from "./Passkey";
 import { runPasskeyCeremony } from "../lib/passkey";
+import { ConnectHardware } from "../hardware/ConnectHardware";
+import { useHardwareOptional } from "../hardware/context";
 
 type Step =
   | { s: "welcome" }
-  | { s: "password"; flow: "create" | "import"; phrase?: string }
+  | { s: "password"; flow: "create" | "import" | "hardware"; phrase?: string }
+  /** "Connect a hardware wallet": a phrase wallet is still created (back it up later in Settings → Backup). */
+  | { s: "hardware" }
   | { s: "phrase"; password: string; words: string[] }
   | { s: "confirm"; password: string; words: string[] }
   | { s: "import" }
@@ -24,7 +28,7 @@ export function pickConfirmIndexes(count: number, rand: () => number = Math.rand
   return [...set].sort((a, b) => a - b);
 }
 
-function Welcome(props: { onCreate: () => void; onImport: () => void }) {
+function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware?: () => void }) {
   const { config, options, client } = useUi();
   const { navigate } = useRouter();
   // Offered only when this build has a backup service (services/backup); otherwise there's nothing to restore from.
@@ -41,6 +45,11 @@ function Welcome(props: { onCreate: () => void; onImport: () => void }) {
         <Button block variant="secondary" onClick={props.onImport}>
           I already have a recovery phrase
         </Button>
+        {props.onHardware && (
+          <Button block variant="ghost" onClick={props.onHardware}>
+            Connect a hardware wallet
+          </Button>
+        )}
         {backup.data && (
           <Button block variant="ghost" onClick={() => navigate("/restore/passkey")}>
             Restore with a passkey backup
@@ -70,7 +79,7 @@ function StrengthMeter(props: { password: string }) {
   );
 }
 
-function PasswordStep(props: { flow: "create" | "import"; onSubmit: (password: string) => Promise<void>; onBack: () => void }) {
+function PasswordStep(props: { flow: "create" | "import" | "hardware"; onSubmit: (password: string) => Promise<void>; onBack: () => void }) {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -112,7 +121,7 @@ function PasswordStep(props: { flow: "create" | "import"; onSubmit: (password: s
           Back
         </Button>
         <Button type="submit" disabled={!st.acceptable || pw !== pw2 || busy}>
-          {props.flow === "create" ? "Create wallet" : "Import wallet"}
+          {props.flow === "import" ? "Import wallet" : "Create wallet"}
         </Button>
       </div>
     </form>
@@ -252,12 +261,21 @@ function Done(props: { onFinish: () => void }) {
 
 export function Onboarding(props: { onFinished: () => void; confirmIndexes?: number[] }) {
   const { client } = useUi();
+  const hardware = useHardwareOptional();
   const [step, setStep] = useState<Step>({ s: "welcome" });
   const [phraseForImport, setPhraseForImport] = useState<string>("");
 
   switch (step.s) {
     case "welcome":
-      return <Welcome onCreate={() => setStep({ s: "password", flow: "create" })} onImport={() => setStep({ s: "import" })} />;
+      return (
+        <Welcome
+          onCreate={() => setStep({ s: "password", flow: "create" })}
+          onImport={() => setStep({ s: "import" })}
+          {...(hardware ? { onHardware: () => setStep({ s: "password", flow: "hardware" }) } : {})}
+        />
+      );
+    case "hardware":
+      return hardware ? <ConnectHardware hardware={hardware} onDone={() => setStep({ s: "done" })} onBack={() => setStep({ s: "done" })} /> : <Done onFinish={props.onFinished} />;
     case "import":
       return (
         <ImportStep
@@ -272,9 +290,12 @@ export function Onboarding(props: { onFinished: () => void; confirmIndexes?: num
       return (
         <PasswordStep
           flow={step.flow}
-          onBack={() => setStep(step.flow === "create" ? { s: "welcome" } : { s: "import" })}
+          onBack={() => setStep(step.flow === "import" ? { s: "import" } : { s: "welcome" })}
           onSubmit={async (password) => {
-            if (step.flow === "create") {
+            if (step.flow === "hardware") {
+              await client.createWallet(password);
+              setStep({ s: "hardware" });
+            } else if (step.flow === "create") {
               await client.createWallet(password);
               const phrase = await client.revealPhrase(password);
               setStep({ s: "phrase", password, words: phrase.split(" ") });

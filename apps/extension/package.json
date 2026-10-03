@@ -35,6 +35,7 @@
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/kit-modules": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/route": "workspace:*",

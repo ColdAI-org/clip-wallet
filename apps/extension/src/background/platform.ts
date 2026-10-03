@@ -399,6 +399,12 @@ export class PlatformService {
     this.d.changed();
   }
 
+  /** The account id a site chose for a family in Settings → Accounts (no wallet-default fallback). */
+  async siteChoice(family: Family, origin: string): Promise<string | undefined> {
+    const id = (await this.active()).origins[originKey(origin)]?.[family];
+    return id && (await this.known(id)) ? id : undefined;
+  }
+
   /**
    * The account a site sees for a family: its override, else the wallet default, else account 0.
    * service.ts calls this from accountsFor() / ctx() (see the integration doc).

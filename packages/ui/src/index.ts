@@ -26,3 +26,19 @@ export { RecoveryPhraseBackup, quizPositions } from "./screens/RecoveryPhrase";
 export { PasskeyBackup, PasskeyRestore, PasskeyBackupExplainer, BackupSignIn, BackupLinkLanding } from "./screens/PasskeyBackup";
 export { Accounts } from "./screens/Accounts";
 export { BackupHub } from "./screens/Backup";
+export {
+  ConnectHardware,
+  HardwareSettings,
+  LedgerConfirm,
+  KeystoneExchangeScreen,
+  HardwareApprovalGate,
+  AnimatedQr,
+  UrScanner,
+  HardwareProvider,
+  useHardwareOptional,
+  DEVICE_FAMILIES,
+  FAMILY_WORDS,
+  type ScannerStart,
+  type FullHardwareClient,
+} from "./hardware";
+export type { HardwareKindView, HardwareFamilyView, PathStyleView, HardwareAccountView, KeystoneRequestView, HardwareClient, HardwareApprovalState, HardwareApprovalClient } from "./hardware/types";

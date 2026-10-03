@@ -1,6 +1,7 @@
 import { defineConfig } from "wxt";
 import clipConfig from "./clip.config";
 import { randomUUID } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
 import { walletNetworks } from "./src/shared/catalog";
@@ -80,6 +81,13 @@ export default defineConfig({
       __CLIP_IDENTITY__: JSON.stringify({ name: clipConfig.name, icon: ICON, rdns: clipConfig.rdns }),
       __CLIP_TON_CONNECT__: JSON.stringify(TON_CONNECT),
       __CLIP_FEATURES__: JSON.stringify(FEATURES),
+    },
+    resolve: {
+      alias: {
+        // hdkey (Keystone's bc-ur-registry-eth) requires Node's crypto/stream for code paths we never call.
+        crypto: fileURLToPath(new URL("./src/shared/empty-module.ts", import.meta.url)),
+        stream: fileURLToPath(new URL("./src/shared/empty-module.ts", import.meta.url)),
+      },
     },
     build: { target: "es2022" },
   }),

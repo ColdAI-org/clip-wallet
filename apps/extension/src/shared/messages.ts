@@ -12,6 +12,8 @@ import type {
   ActiveAccounts,
   ActivityEntry,
   BackupStatusView,
+  HardwareAccountView,
+  HardwareFamilyView,
   ApprovalView,
   PasskeyCeremony,
   PortfolioView,
@@ -42,6 +44,11 @@ export const PrefsPatch = z
   })
   .partial()
   .strict();
+
+const hwFamily = z.enum(["evm", "solana", "bitcoin", "hedera"]);
+const pathStyle = z.enum(["standard", "ledger-live", "ledger-legacy"]);
+const urJson = z.object({ type: z.string().regex(/^[a-z0-9-]{1,40}$/), cborHex: z.string().regex(/^[0-9a-f]*$/).max(200_000) }).strict();
+const hwId = z.string().regex(/^hw:(ledger|keystone):[0-9a-f]{8}:[a-z]+:\d{1,10}(:ledger-live|:ledger-legacy)?$/);
 
 export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("getState") }),
@@ -86,6 +93,17 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
   z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all"]) }),
   ...FEATURE_REQUESTS,
+  // hardware wallets (Ledger, Keystone)
+  z.object({ type: z.literal("hwLedgerAccounts"), family: hwFamily, start: z.number().int().min(0).max(1000), count: z.number().int().min(1).max(20), pathStyle: pathStyle.optional() }),
+  z.object({ type: z.literal("hwKeystoneImport"), ur: urJson }),
+  z.object({ type: z.literal("hwKeystoneAccounts"), family: hwFamily, start: z.number().int().min(0).max(1000), count: z.number().int().min(1).max(20), pathStyle: pathStyle.optional() }),
+  z.object({ type: z.literal("hwAddAccounts"), ids: z.array(hwId).min(1).max(50) }),
+  z.object({ type: z.literal("hwListAccounts") }),
+  z.object({ type: z.literal("hwRenameAccount"), id: hwId, label: z.string().max(60) }),
+  z.object({ type: z.literal("hwForgetDevice"), kind: z.enum(["ledger", "keystone"]), fingerprint: z.string().regex(/^[0-9a-f]{8}$/) }),
+  z.object({ type: z.literal("hwSetActive"), family: hwFamily, accountId: hwId.nullable() }),
+  z.object({ type: z.literal("hwKeystoneAnswer"), id, ur: urJson }),
+  z.object({ type: z.literal("hwCancel"), id }),
   // platform: passkey backup, phrase backup flag, multiple accounts, names
   z.object({ type: z.literal("backupStatus") }),
   z.object({ type: z.literal("backupStartSignIn"), email: z.string().min(3).max(254) }),
@@ -148,6 +166,16 @@ export interface ResponseMap extends FeatureResponseMap {
   getActiveAccounts: ActiveAccounts;
   setActiveAccount: void;
   lookupName: string | null;
+  hwLedgerAccounts: HardwareAccountView[];
+  hwKeystoneImport: { fingerprint: string; families: HardwareFamilyView[] };
+  hwKeystoneAccounts: HardwareAccountView[];
+  hwAddAccounts: void;
+  hwListAccounts: HardwareAccountView[];
+  hwRenameAccount: void;
+  hwForgetDevice: void;
+  hwSetActive: void;
+  hwKeystoneAnswer: void;
+  hwCancel: void;
 }
 
 export const Envelope = z.union([

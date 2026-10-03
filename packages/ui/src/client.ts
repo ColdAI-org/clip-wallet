@@ -138,6 +138,8 @@ export interface ApprovalView {
   connect?: ConnectView;
   /** Raw request params, Advanced mode only. */
   raw?: string;
+  /** Set while a hardware wallet is signing this request (see packages/ui/src/hardware). */
+  hardware?: import("./hardware/types").HardwareApprovalState;
 }
 
 export type RecipientResolution =
