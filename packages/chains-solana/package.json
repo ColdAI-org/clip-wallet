@@ -1,0 +1,23 @@
+{
+  "name": "@clip-wallet/chains-solana",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/core": "workspace:*",
+    "@noble/curves": "^2.4.0",
+    "@solana-program/compute-budget": "^0.19.0",
+    "@solana-program/system": "^0.15.0",
+    "@solana-program/token": "^0.17.0",
+    "@solana/kit": "^8.4.0"
+  }
+}
