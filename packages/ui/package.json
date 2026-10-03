@@ -36,6 +36,7 @@
   "dependencies": {
     "@clip-wallet/config": "workspace:*",
     "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/features": "workspace:*",
     "qrcode": "^1.5.4"
   }
 }
