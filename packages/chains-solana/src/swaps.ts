@@ -9,6 +9,16 @@
  *    exactOutRoute, sharedAccountsExactOutRoute) and github.com/jup-ag/jupiter-cpi idl.json. Args end with
  *    `… in_amount|out_amount u64, quoted_* u64, slippage_bps u16, platform_fee_bps u8`, so the fixed tail is read
  *    from the end without parsing the variable-length route plan. Mainnet only (no devnet deployment).
+ *    The *_v2 instructions used by the Swap API v2 (api.jup.ag/swap/v2 order/execute) put the fixed args FIRST:
+ *    `[id u8,] in|out_amount u64, quoted_* u64, slippage_bps u16, platform_fee_bps u16, positive_slippage_bps u16,
+ *    route_plan Vec<RoutePlanStepV2>`; accounts route_v2/exact_out_route_v2: user_transfer_authority,
+ *    user_source_token_account, user_destination_token_account, source_mint, destination_mint, source_token_program,
+ *    destination_token_program, destination_token_account?, …; shared_accounts_*_v2: program_authority,
+ *    user_transfer_authority, source_token_account, program_source_token_account, program_destination_token_account,
+ *    destination_token_account, source_mint, destination_mint, …. Read from the program's on-chain Anchor IDL
+ *    (account C88XWfp26heEmDkmfSzeXP7Fd7GQJ2j9dDTUsyiZbUTa, fetched 2026-10-03), which also lists the helper
+ *    instructions create_idempotent_associated_token_account and close_wsol_token_account.
+ *    The minimum output is quoted_out × (1 − slippage) (exact in); the maximum input quoted_in × (1 + slippage).
  *  - Raydium AMM v4 `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` (devnet `DRaya7Kj3aMWQSy19kSjvmuwq9docCHofyP9kanQGaav`):
  *    github.com/raydium-io/raydium-amm program/src/instruction.rs — tag 9 SwapBaseIn(amount_in, minimum_amount_out),
  *    11 SwapBaseOut(max_amount_in, amount_out), 16/17 the V2 variants; user source/destination/owner are the
@@ -48,6 +58,13 @@ export const DISCRIMINATORS = {
   sharedAccountsRouteWithTokenLedger: "e6798f50779f6aaa",
   exactOutRoute: "d033ef977b2bed5c",
   sharedAccountsExactOutRoute: "b0d169a89a7d453e",
+  routeV2: "bb64facc31c4af14",
+  exactOutRouteV2: "9d8ab85215f4f324",
+  sharedAccountsRouteV2: "d19853937cfed8e9",
+  sharedAccountsExactOutRouteV2: "3560e5cad8bbfa18",
+  /** Jupiter helper instructions used by Swap API v2 transactions. */
+  jupCreateIdempotentAta: "5368c096b4479cc6",
+  jupCloseWsolAccount: "cb816785c57d6b56",
   swap: "f8c69e91e17587c8",
   swapV2: "2b04ed0b1ac91e62",
   swapBaseInput: "8fbe5adac41e33de",
@@ -107,6 +124,8 @@ function jupiter(ix: Instruction, d: Bytes): SwapIntent | null {
   // Fixed tail: [amountA u64][amountB u64][slippage u16][platform fee u8] (or one amount for token-ledger variants)
   const tail2 = () => ({ a: u64(d, n - 19), b: u64(d, n - 11), slip: u16(d, n - 3) });
   const tail1 = () => ({ b: u64(d, n - 11), slip: u16(d, n - 3) });
+  const minOut = (quoted: bigint, slip: number) => (quoted * BigInt(Math.max(0, 10_000 - slip))) / 10_000n;
+  const maxIn = (quoted: bigint, slip: number) => (quoted * BigInt(10_000 + slip)) / 10_000n;
   switch (disc) {
     case DISCRIMINATORS.route:
     case DISCRIMINATORS.routeWithTokenLedger: {
@@ -122,7 +141,7 @@ function jupiter(ix: Instruction, d: Bytes): SwapIntent | null {
         destinationAccount: opt(ix, 4) ?? userDest,
         destinationMint: acc(ix, 5),
         amountIn: t.a,
-        amountOut: t.b,
+        amountOut: minOut(t.b, t.slip),
         exactIn: true,
         slippageBps: t.slip,
         lookups: nonNull([acc(ix, 2), userDest, opt(ix, 4), acc(ix, 5)]),
@@ -141,7 +160,7 @@ function jupiter(ix: Instruction, d: Bytes): SwapIntent | null {
         destinationAccount: acc(ix, 6),
         destinationMint: acc(ix, 8),
         amountIn: t.a,
-        amountOut: t.b,
+        amountOut: minOut(t.b, t.slip),
         exactIn: true,
         slippageBps: t.slip,
         lookups: nonNull([acc(ix, 3), acc(ix, 6), acc(ix, 7), acc(ix, 8)]),
@@ -159,7 +178,7 @@ function jupiter(ix: Instruction, d: Bytes): SwapIntent | null {
         destinationAccount: opt(ix, 4) ?? userDest,
         destinationMint: acc(ix, 6),
         // Jupiter caps the input at quoted_in × (1 + slippage).
-        amountIn: (t.b * BigInt(10_000 + t.slip)) / 10_000n,
+        amountIn: maxIn(t.b, t.slip),
         amountOut: t.a,
         exactIn: false,
         slippageBps: t.slip,
@@ -176,13 +195,74 @@ function jupiter(ix: Instruction, d: Bytes): SwapIntent | null {
         sourceMint: acc(ix, 7),
         destinationAccount: acc(ix, 6),
         destinationMint: acc(ix, 8),
-        amountIn: (t.b * BigInt(10_000 + t.slip)) / 10_000n,
+        amountIn: maxIn(t.b, t.slip),
         amountOut: t.a,
         exactIn: false,
         slippageBps: t.slip,
         lookups: nonNull([acc(ix, 3), acc(ix, 6), acc(ix, 7), acc(ix, 8)]),
       };
     }
+    case DISCRIMINATORS.routeV2:
+    case DISCRIMINATORS.exactOutRouteV2: {
+      if (n < 8 + 22 + 4) return null;
+      const exactIn = disc === DISCRIMINATORS.routeV2;
+      const a = u64(d, 8);
+      const b = u64(d, 16);
+      const slip = u16(d, 24);
+      const dest = opt(ix, 7) ?? acc(ix, 2);
+      return {
+        venue: "Jupiter",
+        authority: acc(ix, 0) ?? "",
+        sourceAccount: acc(ix, 1),
+        sourceMint: acc(ix, 3),
+        destinationAccount: dest,
+        destinationMint: acc(ix, 4),
+        amountIn: exactIn ? a : maxIn(b, slip),
+        amountOut: exactIn ? minOut(b, slip) : a,
+        exactIn,
+        slippageBps: slip,
+        lookups: nonNull([acc(ix, 1), acc(ix, 2), opt(ix, 7), acc(ix, 3), acc(ix, 4)]),
+      };
+    }
+    case DISCRIMINATORS.sharedAccountsRouteV2:
+    case DISCRIMINATORS.sharedAccountsExactOutRouteV2: {
+      if (n < 8 + 1 + 22 + 4) return null;
+      const exactIn = disc === DISCRIMINATORS.sharedAccountsRouteV2;
+      const a = u64(d, 9);
+      const b = u64(d, 17);
+      const slip = u16(d, 25);
+      return {
+        venue: "Jupiter",
+        authority: acc(ix, 1) ?? "",
+        sourceAccount: acc(ix, 2),
+        sourceMint: acc(ix, 6),
+        destinationAccount: acc(ix, 5),
+        destinationMint: acc(ix, 7),
+        amountIn: exactIn ? a : maxIn(b, slip),
+        amountOut: exactIn ? minOut(b, slip) : a,
+        exactIn,
+        slippageBps: slip,
+        lookups: nonNull([acc(ix, 2), acc(ix, 5), acc(ix, 6), acc(ix, 7)]),
+      };
+    }
+  }
+  return null;
+}
+
+/** Jupiter helper instructions (not swaps): create an ATA idempotently, close the temporary wSOL account. */
+export type JupiterHelper =
+  | { kind: "create-ata"; payer: string; ata: string; owner: string; mint: string }
+  | { kind: "close-wsol"; account: string; user: string };
+
+export function decodeJupiterHelper(ix: Instruction): JupiterHelper | null {
+  if (String(ix.programAddress) !== JUPITER_V6) return null;
+  const d = (ix.data ?? new Uint8Array()) as Bytes;
+  const disc = hex8(d);
+  if (disc === DISCRIMINATORS.jupCreateIdempotentAta && (ix.accounts?.length ?? 0) >= 4) {
+    return { kind: "create-ata", payer: acc(ix, 0)!, ata: acc(ix, 1)!, owner: acc(ix, 2)!, mint: acc(ix, 3)! };
+  }
+  if (disc === DISCRIMINATORS.jupCloseWsolAccount && (ix.accounts?.length ?? 0) >= 2) {
+    return { kind: "close-wsol", account: acc(ix, 0)!, user: acc(ix, 1)! };
   }
   return null;
 }

@@ -369,21 +369,59 @@ and use `narrowed` instead of `candidates` for the rest of the function. When th
 `addressOn[networkId]`, return that address instead (ENS per-chain record). In `send`, the background re-resolves
 names: use `(hit.addressOn?.[m.networkId] ?? hit.address)`.
 
-## 5. Vault (vault-v2 stream) — requested additions
+## 5. Vault (vault-v2, merged on main)
 
-`PlatformService` codes against `PlatformVault` (`apps/extension/src/background/platform.ts`):
+`PlatformService` codes against `PlatformVault` (`apps/extension/src/background/platform.ts`) and uses the
+vault-v2 account API when present (it is, on main): `addAccount(family)`, `listAccounts(families)` (stored
+accounts with labels) and `setAccountLabel(family, index, label)`. Without them it falls back to
+`clip/account-counts` / `clip/account-labels` in KV; the `apps/extension/test/platform.test.ts` tests run
+against the real `ClipVault` and so exercise the vault-v2 path.
+
+Still requested from the vault owners (optional; there is a working fallback):
 
 ```ts
 /** Decrypt a passkey backup and import it, without the phrase leaving the vault. */
 restorePasskeyBackup?(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
-/** Allocate and persist the next account index for a family; returns the derived account. */
-addAccount?(family: Family): Promise<Account>;
 ```
 
-Both are optional: without `restorePasskeyBackup` the background decrypts with `passkeyBackup.decrypt` and
-calls `importPhrase` in the same function; without `addAccount` it derives index `count` and keeps the count in
-`clip/account-counts`. Once vault-v2 lands with either, nothing else changes. `ClipVault.addAccount` should
-return `Account` with `index` set; `PlatformService` stores `max(count, index + 1)`.
+Without it the background decrypts with `passkeyBackup.decrypt` and calls `importPhrase` in the same
+function (the path `importWallet` already takes). Add `addAccount`, `listAccounts`, `setAccountLabel` and
+`createPasskeyBackup` to `WalletVault` in `wiring.ts` (ClipVault has them).
+
+## 5b. Solana: staking and Jupiter Swap API v2 now decode — drop the features fallback
+
+`@clip-wallet/chains-solana` now describes (not blind):
+
+- **Native staking** (`src/stake.ts`): System `CreateAccountWithSeed` owned by the Stake program,
+  `Initialize`, `DelegateStake`, `Deactivate`, `Withdraw`, in both the `@solana-program/stake` 0.10 layout
+  (no sysvar accounts, what `packages/features/src/staking/solana.ts` builds) and the legacy layout with
+  Clock / StakeHistory / StakeConfig accounts. Titles: "Stake 2 SOL with validator Abcd…wxyz" (the stake
+  account's rent deposit is shown as "Opening cost", not in the staked amount), "Stop staking",
+  "Withdraw 2 SOL from staking". Withdraw to someone else / a withdraw authority that isn't you → danger;
+  lockups → caution; acting on a stake account you don't control, Split/Merge/Authorize → blind.
+- **Jupiter Swap API v2** (`api.jup.ag/swap/v2/order` → `/execute`): the v6 program's `route_v2`,
+  `exact_out_route_v2`, `shared_accounts_route_v2`, `shared_accounts_exact_out_route_v2` and its helper
+  instructions `create_idempotent_associated_token_account` / `close_wsol_token_account` (layouts from the
+  program's on-chain Anchor IDL). A typical order (create wSOL ATA → route_v2 → close wSOL) decodes to
+  "Swap 2.5 USDC for at least 0.0099 SOL on Jupiter" (`test/swaps.test.ts`). Orders that Jupiter routes
+  through **other programs** (its RFQ / third-party routers in the meta-aggregator) are not JUP6
+  instructions and stay blind; the existing features fallback didn't accept those either (it only allowed
+  JUP6 + system/token/ATA/compute-budget/memo).
+
+So in `packages/features` (features stream owns these files; apply at integration):
+
+`src/swap/jupiter.ts` — remove the `verify` line from the step and the `JUPITER_ALLOWED_PROGRAMS` export
+(and its re-export in `src/swap/index.ts`):
+
+```ts
+-        verify: (r) => onlyPrograms(r, JUPITER_ALLOWED_PROGRAMS),
+```
+
+`src/staking/solana.ts` — remove `verifyStake` and the three `verify: verifyStake,` step fields.
+
+`refineDecoded` (`src/steps.ts`) stays for the EVM 0x AllowanceHolder step, which still relies on it; the
+Solana steps now arrive with `blind: false` and simply get their plain title. `test/staking.test.ts` keeps
+its `onlyPrograms` unit test as long as `solana-verify.ts` exists; delete both if nothing else imports it.
 
 ## 6. Storage keys (chrome.storage.local)
 

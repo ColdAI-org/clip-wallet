@@ -124,12 +124,13 @@ describe("decoded swaps aren't blind", () => {
   it("Jupiter route: plain title from the instruction, input in balance changes", async () => {
     const d = await decode([jupRoute()]);
     expect(d.blind).toBe(false);
-    expect(d.title).toBe("Swap 2.5 USDC for at least 0.01 SOL on Jupiter");
+    // quoted 0.01 SOL, 0.5% slippage → at least 0.00995 SOL
+    expect(d.title).toBe("Swap 2.5 USDC for at least 0.00995 SOL on Jupiter");
     expect(d.lines).toEqual(
       expect.arrayContaining([
         { label: "Swap on", value: "Jupiter" },
         { label: "You pay", value: "2.5 USDC" },
-        { label: "You get", value: "at least 0.01 SOL" },
+        { label: "You get", value: "at least 0.00995 SOL" },
         { label: "Price can move", value: "up to 0.5%" },
       ]),
     );
@@ -180,7 +181,7 @@ describe("decoded swaps aren't blind", () => {
       ix(
         JUPITER_V6,
         [TOKEN, fake(10), ME, FIX.myUsdcAta, fake(11), fake(12), MY_BONK, USDC, BONK, JUPITER_V6, JUPITER_V6, fake(9), JUPITER_V6],
-        [...disc(DISCRIMINATORS.sharedAccountsRoute), 3, 0, 0, 0, 0, ...le(1_000_000n, 8), ...le(123_45000n, 8), ...le(30n, 2), 0],
+        [...disc(DISCRIMINATORS.sharedAccountsRoute), 3, 0, 0, 0, 0, ...le(1_000_000n, 8), ...le(123_45000n, 8), ...le(0n, 2), 0],
         [2],
       ),
     ]);
@@ -221,5 +222,45 @@ describe("decoded swaps aren't blind", () => {
     const d = await decode([jupRoute(), ix(fake(99), [ME], [1])]);
     expect(d.blind).toBe(true);
     expect(d.title).toBe("Approve an app transaction");
+  });
+});
+
+describe("Jupiter Swap API v2 transactions (route_v2 family + helper instructions)", () => {
+  const v2 = (exactIn: boolean, a: bigint, b: bigint, slip: bigint) => [
+    ...disc(exactIn ? DISCRIMINATORS.routeV2 : DISCRIMINATORS.exactOutRouteV2),
+    ...le(a, 8), ...le(b, 8), ...le(slip, 2), ...le(0n, 2), ...le(0n, 2),
+    1, 0, 0, 0, /* one RoutePlanStepV2 (opaque here) */ 7, 0, 0, 1, 0x10, 0x27,
+  ];
+
+  it("a typical order: create wSOL ATA (Jupiter helper), route_v2 USDC→SOL, close wSOL → described, not blind", async () => {
+    const createAta = ix(JUPITER_V6, [ME, MY_WSOL, ME, WSOL_MINT, "11111111111111111111111111111111", TOKEN, JUPITER_V6], [...disc(DISCRIMINATORS.jupCreateIdempotentAta)], [0]);
+    const route = ix(
+      JUPITER_V6,
+      [ME, FIX.myUsdcAta, MY_WSOL, USDC, WSOL_MINT, TOKEN, TOKEN, JUPITER_V6, fake(9), JUPITER_V6],
+      v2(true, 2_500_000n, 10_000_000n, 100n),
+      [0],
+    );
+    const close = ix(JUPITER_V6, [MY_WSOL, ME, TOKEN, "11111111111111111111111111111111"], [...disc(DISCRIMINATORS.jupCloseWsolAccount)], [1]);
+    const d = await decode([createAta, route, close]);
+    expect(d.blind).toBe(false);
+    expect(d.title).toBe("Swap 2.5 USDC for at least 0.0099 SOL on Jupiter");
+    expect(d.lines).toContainEqual({ label: "Unwraps", value: "Your wrapped SOL back to SOL" });
+    expect(d.lines).toContainEqual({ label: "Price can move", value: "up to 1%" });
+  });
+
+  it("exact_out_route_v2 caps the input", () => {
+    const s = decodeSwap(ix(JUPITER_V6, [ME, FIX.myUsdcAta, MY_WSOL, USDC, WSOL_MINT, TOKEN, TOKEN, JUPITER_V6, fake(9), JUPITER_V6], v2(false, 10_000_000n, 2_000_000n, 50n)))!;
+    expect(s).toMatchObject({ exactIn: false, amountOut: 10_000_000n, amountIn: 2_010_000n, sourceMint: USDC, destinationMint: WSOL_MINT, destinationAccount: MY_WSOL });
+  });
+
+  it("shared_accounts_route_v2 reads id + fixed args first", () => {
+    const data = [...disc(DISCRIMINATORS.sharedAccountsRouteV2), 4, ...le(1_000_000n, 8), ...le(5_000_000n, 8), ...le(0n, 2), ...le(0n, 2), ...le(0n, 2), 0, 0, 0, 0];
+    const s = decodeSwap(ix(JUPITER_V6, [fake(10), ME, FIX.myUsdcAta, fake(11), fake(12), MY_BONK, USDC, BONK, TOKEN, TOKEN, fake(9), JUPITER_V6], data))!;
+    expect(s).toMatchObject({ authority: ME, amountIn: 1_000_000n, amountOut: 5_000_000n, sourceMint: USDC, destinationMint: BONK, destinationAccount: MY_BONK });
+  });
+
+  it("other Jupiter instructions (claim etc.) stay blind", async () => {
+    const d = await decode([ix(JUPITER_V6, [ME, fake(5), "11111111111111111111111111111111"], [0x3e, 0xc6, 0xd6, 0xc1, 0xd5, 0x9f, 0x6c, 0xd2, 0], [0])]);
+    expect(d.blind).toBe(true);
   });
 });

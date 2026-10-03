@@ -28,8 +28,12 @@ export interface PlatformVault {
   createPasskeyBackup(password: string, prfOutput: Uint8Array): Promise<Uint8Array>;
   /** vault-v2 (requested): decrypt + import without the phrase leaving the vault. */
   restorePasskeyBackup?(blob: Uint8Array, prfOutput: Uint8Array, password: string): Promise<void>;
-  /** vault-v2 (requested): allocates and persists the next account index for a family. */
-  addAccount?(family: Family): Promise<Account>;
+  /** vault-v2 (ClipVault on main): allocates and persists the next account index for a family. */
+  addAccount?(family: Family, label?: string): Promise<Account>;
+  /** vault-v2: stored accounts (with labels) for these families; account 0 when none stored. */
+  listAccounts?(families?: readonly Family[]): Promise<Account[]>;
+  /** vault-v2: sets ("" clears) an account label. */
+  setAccountLabel?(family: Family, index: number, label: string): Promise<void>;
 }
 
 /** Structural match for @clip-wallet/backup-client's BackupClient (so this file needs no new dependency). */
@@ -328,8 +332,12 @@ export class PlatformService {
 
   async listAccounts(): Promise<AccountView[]> {
     await this.requireUnlocked();
-    const counts = await this.counts();
     const labels = (await this.d.kv.get<Record<string, string>>(PLATFORM_KEYS.accountLabels)) ?? {};
+    if (this.d.vault.listAccounts) {
+      const list = await this.d.vault.listAccounts(this.d.families());
+      return Promise.all(list.map((a) => this.view(a, a.label ? { ...labels, [a.id]: a.label } : labels)));
+    }
+    const counts = await this.counts();
     const out: AccountView[] = [];
     for (const f of this.d.families()) {
       const n = Math.max(1, counts[f] ?? 1);
@@ -342,7 +350,7 @@ export class PlatformService {
     await this.requireUnlocked();
     if (!this.d.families().includes(family)) throw new ClipError("This kind of account isn't available in this version yet.", "family-unavailable");
     const counts = await this.counts();
-    const n = Math.max(1, counts[family] ?? 1);
+    const n = this.d.vault.listAccounts ? (await this.d.vault.listAccounts([family])).length : Math.max(1, counts[family] ?? 1);
     if (n >= MAX_ACCOUNTS_PER_FAMILY) throw new ClipError(`You can have up to ${MAX_ACCOUNTS_PER_FAMILY} accounts of this kind.`, "accounts/limit");
     const acct = this.d.vault.addAccount ? await this.d.vault.addAccount(family) : await this.d.vault.deriveAccount(family, n);
     await this.d.kv.set(PLATFORM_KEYS.accountCounts, { ...counts, [family]: Math.max(n, acct.index + 1) });
@@ -354,8 +362,13 @@ export class PlatformService {
     const clean = label.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 32);
     if (!clean) throw new ClipError("Give the account a name.", "accounts/bad-label");
     if (!(await this.known(id))) throw new ClipError("We couldn't find that account.", "accounts/unknown");
-    const labels = (await this.d.kv.get<Record<string, string>>(PLATFORM_KEYS.accountLabels)) ?? {};
-    await this.d.kv.set(PLATFORM_KEYS.accountLabels, { ...labels, [id]: clean });
+    if (this.d.vault.setAccountLabel) {
+      const [f, i] = id.split(":");
+      await this.d.vault.setAccountLabel(f as Family, Number(i), clean);
+    } else {
+      const labels = (await this.d.kv.get<Record<string, string>>(PLATFORM_KEYS.accountLabels)) ?? {};
+      await this.d.kv.set(PLATFORM_KEYS.accountLabels, { ...labels, [id]: clean });
+    }
     this.d.changed();
   }
 
@@ -363,7 +376,9 @@ export class PlatformService {
     const m = /^([a-z]+):(\d+)$/.exec(id);
     if (!m) return false;
     const f = m[1] as Family;
-    return this.d.families().includes(f) && Number(m[2]) < Math.max(1, (await this.counts())[f] ?? 1);
+    if (!this.d.families().includes(f)) return false;
+    if (this.d.vault.listAccounts) return (await this.d.vault.listAccounts([f])).some((a) => a.id === id);
+    return Number(m[2]) < Math.max(1, (await this.counts())[f] ?? 1);
   }
 
   private async active(): Promise<StoredActive> {

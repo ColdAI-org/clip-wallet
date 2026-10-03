@@ -59,6 +59,16 @@ request is refused.
   "Wraps". Layout sources are cited at the top of `src/swaps.ts` (Jupiter IDL from jup-ag/instruction-parser and
   jupiter-cpi; raydium-amm `instruction.rs`; raydium-cp-swap / raydium-clmm `lib.rs`; orca-so/whirlpools `lib.rs`);
   Anchor discriminators are re-derived from `sha256("global:<name>")` in the tests.
+- **Jupiter Swap API v2** transactions (`api.jup.ag/swap/v2/order`): `route_v2`, `exact_out_route_v2`,
+  `shared_accounts_route_v2`, `shared_accounts_exact_out_route_v2` plus Jupiter's helper instructions
+  `create_idempotent_associated_token_account` and `close_wsol_token_account`, from the program's on-chain Anchor
+  IDL (account `C88XWfp26heEmDkmfSzeXP7Fd7GQJ2j9dDTUsyiZbUTa`). Minimum output = quoted × (1 − slippage).
+- **Native staking** (`src/stake.ts`, `@solana-program/stake` 0.10): System `CreateAccountWithSeed` owned by the
+  Stake program, `Initialize`, `DelegateStake`, `Deactivate`, `Withdraw`, with or without the legacy sysvar /
+  stake-config accounts. "Stake 2 SOL with validator Abcd…wxyz" (rent deposit of a 200-byte stake account,
+  2 282 880 lamports, shown separately), "Stop staking", "Withdraw 2 SOL from staking". Stake or withdraw
+  authority handed to someone else, or a withdraw to someone else → danger; lockup → caution; other stake
+  instructions (Split, Merge, Authorize…) or a stake account you don't control → blind.
 - First instruction `AdvanceNonceAccount` → `durable-nonce` danger ("never expires").
 - `simulateTransaction` (`sigVerify: false`, `replaceRecentBlockhash` unless durable-nonce,
   `accounts: { addresses: [me] }`). Balance changes come from pre/post balances and token balances, with the fee
