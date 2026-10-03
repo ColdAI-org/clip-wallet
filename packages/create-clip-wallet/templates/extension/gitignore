@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.output/
+.wxt/
+.env
+.env.*
+!.env.example
