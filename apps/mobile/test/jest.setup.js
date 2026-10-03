@@ -18,11 +18,21 @@ jest.mock("expo-local-authentication", () => ({
 }));
 jest.mock("expo-device", () => ({ isDevice: false, osName: "iOS" }));
 jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(async () => true) }));
-jest.mock("expo-camera", () => ({ CameraView: () => null, useCameraPermissions: () => [{ granted: false }, jest.fn()] }));
+// The camera: tests read the last CameraView's props (globalThis.__camera) to feed it scanned QR texts.
+jest.mock("expo-camera", () => ({
+  CameraView: (props) => {
+    globalThis.__camera = props;
+    return null;
+  },
+  useCameraPermissions: () => [{ granted: true }, jest.fn()],
+}));
+jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn(async () => ({ type: "dismiss" })), WebBrowserPresentationStyle: { PAGE_SHEET: "pageSheet" } }));
+jest.mock("@ledgerhq/react-native-hw-transport-ble", () => ({ __esModule: true, default: {} }));
+jest.mock("react-native-ble-plx", () => ({}));
 jest.mock("react-native-webview", () => {
   const { View } = require("react-native");
   return { WebView: View };
 });
 jest.mock("react-native-passkey", () => ({ Passkey: { isSupported: () => false } }));
-jest.mock("expo-linking", () => ({ getInitialURL: async () => null, addEventListener: () => ({ remove() {} }) }));
+jest.mock("expo-linking", () => ({ __esModule: true, getInitialURL: jest.fn(async () => null), addEventListener: () => ({ remove() {} }) }));
 jest.mock("expo-status-bar", () => ({ StatusBar: () => null }));

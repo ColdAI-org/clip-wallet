@@ -10,6 +10,11 @@ const upstream = config.resolver.resolveRequest;
 /** Native modules a dependency requires on a code path the wallet never runs (see each shim). */
 const SHIMS = {
   "react-native-fast-pbkdf2": path.join(__dirname, "src/shims/no-pbkdf2.js"),
+  // Node's crypto for hdkey (Keystone SDK → bc-ur-registry-eth), backed by @noble/hashes.
+  crypto: path.join(__dirname, "src/shims/node-crypto.js"),
+  // Node's stream for cipher-base (create-hash → bs58check → @keystonehq/bc-ur-registry): the browser build of
+  // readable-stream, which is what bundlers for the web use for the same package.
+  stream: require.resolve("readable-stream/readable-browser.js"),
 };
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {

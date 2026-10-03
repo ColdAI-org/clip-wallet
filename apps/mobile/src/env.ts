@@ -24,4 +24,6 @@ export const APP = {
   },
   /** Deep links: clipwallet://wc?uri=…, clipwallet://browse?url=… ; universal links once a domain is associated. */
   scheme: "clipwallet",
+  /** Secure Trade share links: https://<associated domain>/trade#offer=… (universal link) or clipwallet://trade#offer=…. */
+  tradeLinkBase: process.env.CLIP_ASSOCIATED_DOMAIN ? `https://${process.env.CLIP_ASSOCIATED_DOMAIN}/trade` : "clipwallet://trade",
 } as const;

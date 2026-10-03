@@ -98,3 +98,19 @@ export const IconReload = (p: P) => (
     <Path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" />
   </S>
 );
+export const IconCompass = (p: P) => (
+  <S {...p}>
+    <Circle cx={12} cy={12} r={9} />
+    <Path d="m15.5 8.5-2 5-5 2 2-5z" />
+  </S>
+);
+export const IconSwap = (p: P) => (
+  <S {...p}>
+    <Path d="M7 4 4 7l3 3M4 7h13M17 20l3-3-3-3M20 17H7" />
+  </S>
+);
+export const IconShare = (p: P) => (
+  <S {...p}>
+    <Path d="M12 3v12M8 7l4-4 4 4M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7" />
+  </S>
+);

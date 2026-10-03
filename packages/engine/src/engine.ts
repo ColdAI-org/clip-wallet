@@ -34,6 +34,7 @@ import { PlatformService, type PlatformRequest } from "./platform.js";
 import type { KV } from "./kv.js";
 import { EngineRequest, type EngineResponseMap } from "./messages.js";
 import { PasskeyCeremonies } from "./passkey-ceremonies.js";
+import type { EngineHardware } from "./hardware.js";
 import type { DappHost, Dependencies, EngineEnv, PasskeyInfoLike, PermissionStoreLike, PrfProvider } from "./types.js";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -113,6 +114,8 @@ export class WalletEngine implements DappHost {
   private ceremonies: PasskeyCeremonies;
   private readonly now: () => number;
   private features?: Pick<FeaturesService, "handle" | "refine">;
+  /** Ledger / Keystone accounts (./hardware.ts); absent = phrase accounts only. */
+  private hardware?: EngineHardware;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
   readonly platform: PlatformService;
 
@@ -169,6 +172,16 @@ export class WalletEngine implements DappHost {
   async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
     const network = this.network(request.networkId);
     return this.module(network.family).decode(request, await this.ctx(network.id, request.origin));
+  }
+
+  attachHardware(h: EngineHardware) {
+    this.hardware = h;
+    h.bind({
+      refreshAccounts: () => this.afterUnlock(),
+      broadcast: () => this.env.broadcast(),
+      isUnlocked: () => this.isUnlocked(),
+      touch: async () => this.env.armAutoLock((await this.prefs()).autoLockMinutes),
+    });
   }
 
   start() {
@@ -285,8 +298,10 @@ export class WalletEngine implements DappHost {
         return this.receiveTargets(m.assetKey);
       case "listApprovals":
         return [...this.approvals.values()].map((p) => p.view).sort((a, b) => a.createdAt - b.createdAt);
-      case "getApproval":
-        return this.approvals.get(m.id)?.view ?? null;
+      case "getApproval": {
+        const v = this.approvals.get(m.id)?.view;
+        return v ? (this.hardware?.withState(v) ?? v) : null;
+      }
       case "approve":
         return this.approve(m.id, !!m.allowBlind);
       case "reject":
@@ -361,6 +376,7 @@ export class WalletEngine implements DappHost {
   async lock() {
     await this.deps.vault.lock();
     this.accounts.clear();
+    this.hardware?.lock();
     for (const [id, p] of this.approvals) {
       this.approvals.delete(id);
       p.reject(new ClipError("Your wallet locked before you answered. Try again.", "vault/locked"));
@@ -372,7 +388,7 @@ export class WalletEngine implements DappHost {
   /** Derives account 0 for every enabled family (public data only) and caches it. */
   private async afterUnlock() {
     this.accounts.clear();
-    for (const f of this.families) this.accounts.set(f, await this.platform.activeAccount(f));
+    for (const f of this.families) this.accounts.set(f, (await this.hardware?.walletAccount(f)) ?? (await this.platform.activeAccount(f)));
     const hedera = this.deps.networks.find((n) => n.family === "hedera");
     const hAcct = this.accounts.get("hedera");
     if (hedera && hAcct) {
@@ -389,7 +405,7 @@ export class WalletEngine implements DappHost {
   private async account(family: Family): Promise<Account> {
     let a = this.accounts.get(family);
     if (!a) {
-      a = await this.platform.activeAccount(family);
+      a = (await this.hardware?.walletAccount(family)) ?? (await this.platform.activeAccount(family));
       this.accounts.set(family, a);
     }
     return a;
@@ -428,7 +444,7 @@ export class WalletEngine implements DappHost {
       account,
       fetch: this.env.fetch,
     };
-    if (network.family !== "bitcoin") return base;
+    if (network.family !== "bitcoin" || this.hardware?.owns(account.id)) return base;
     // Bitcoin change addresses (vault-v2): the same list goes to buildTransfer/decode/prepare/finalize.
     return {
       ...base,
@@ -730,14 +746,17 @@ export class WalletEngine implements DappHost {
     const mod = this.module(network.family);
     const ctx = await this.ctx(network.id, req.origin);
     let result: unknown;
+    const hw = this.hardware?.owns(ctx.account.id) ? this.hardware : undefined;
     try {
       const payloads = await mod.prepare(req, ctx, id);
-      this.deps.vault.registerApproval(id, payloads.map((x) => this.deps.hashPayload(x)), APPROVAL_TTL_MS);
+      if (hw) hw.registerApproval(id, payloads, APPROVAL_TTL_MS);
+      else this.deps.vault.registerApproval(id, payloads.map((x) => this.deps.hashPayload(x)), APPROVAL_TTL_MS);
       const sigs = [];
-      for (const payload of payloads) sigs.push(await this.deps.vault.sign(payload));
+      for (const payload of payloads) sigs.push(hw ? await hw.sign(p.view, payload, { request: req, decoded }) : await this.deps.vault.sign(payload));
       result = await mod.finalize(req, sigs, ctx);
     } catch (e) {
-      this.deps.vault.revokeApproval(id);
+      if (hw) hw.revokeApproval(id);
+      else this.deps.vault.revokeApproval(id);
       throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
     }
     this.approvals.delete(id);

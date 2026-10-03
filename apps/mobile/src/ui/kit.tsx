@@ -11,7 +11,7 @@ import * as Clipboard from "expo-clipboard";
 import type { Warning } from "@clip-wallet/core";
 import { hueFor } from "@clip-wallet/ui";
 import { TABS, useWallet, type Route } from "./context";
-import { IconAlert, IconBack, IconClock, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
+import { IconAlert, IconBack, IconCheck, IconChevron, IconClock, IconCompass, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
 
 /* ------------------------------------------------------------------ text */
 
@@ -121,6 +121,7 @@ export function Screen(props: { title?: ReactNode; back?: boolean | (() => void)
 const TAB_META: Record<(typeof TABS)[number], { label: string; Icon: typeof IconHome }> = {
   home: { label: "Home", Icon: IconHome },
   collectibles: { label: "Collectibles", Icon: IconGrid },
+  explore: { label: "Explore", Icon: IconCompass },
   activity: { label: "Activity", Icon: IconClock },
   browser: { label: "Browse", Icon: IconGlobe },
   settings: { label: "Settings", Icon: IconGear },
@@ -320,5 +321,123 @@ export function CopyButton(props: { value: string; label?: string }) {
     >
       {done ? "Copied" : props.label ?? "Copy"}
     </Button>
+  );
+}
+
+/* ------------------------------------------------------------------ choices (RN has no <select>) */
+
+/** One-of-many as tappable rows (the extension's radio list / clip-options). */
+export function Choices<V extends string | number>(props: {
+  label: string;
+  options: { value: V; title: string; hint?: string; badge?: string }[];
+  value: V | undefined;
+  onChange: (v: V) => void;
+  testID?: string;
+}) {
+  const { theme } = useWallet();
+  return (
+    <View accessibilityRole="radiogroup" accessibilityLabel={props.label} testID={props.testID} style={{ gap: 8 }}>
+      {props.options.map((o) => {
+        const on = o.value === props.value;
+        return (
+          <Pressable
+            key={String(o.value)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: on }}
+            testID={props.testID ? `${props.testID}-${o.value}` : undefined}
+            onPress={() => props.onChange(o.value)}
+            style={{ flexDirection: "row", gap: 12, alignItems: "center", padding: 14, borderRadius: theme.r.md, borderWidth: on ? 2 : 1, borderColor: on ? theme.c.accent : theme.c.border, backgroundColor: theme.c.surface }}
+          >
+            <View style={{ flex: 1, gap: 2 }}>
+              <View style={{ flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                <T style={{ fontWeight: "600", fontSize: 15 }}>{o.title}</T>
+                {o.badge ? <Chip tone="accent">{o.badge}</Chip> : null}
+              </View>
+              {o.hint ? <T v="hint">{o.hint}</T> : null}
+            </View>
+            {on ? <IconCheck color={theme.c.accent} /> : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Small one-of-many pills in a row (asset pickers, slippage, "Open for"). */
+export function Pills<V extends string | number>(props: { label: string; options: { value: V; label: string }[]; value: V | undefined; onChange: (v: V) => void; testID?: string }) {
+  const { theme } = useWallet();
+  return (
+    <View style={{ gap: 6 }}>
+      <T v="label">{props.label}</T>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" accessibilityRole="radiogroup" accessibilityLabel={props.label} contentContainerStyle={{ gap: 8 }}>
+        {props.options.map((o) => {
+          const on = o.value === props.value;
+          return (
+            <Pressable
+              key={String(o.value)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: on }}
+              accessibilityLabel={`${props.label}: ${o.label}`}
+              testID={props.testID ? `${props.testID}-${o.value}` : undefined}
+              onPress={() => props.onChange(o.value)}
+              style={{ paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, backgroundColor: on ? theme.c.accent : theme.c.surface2 }}
+            >
+              <Text style={{ color: on ? theme.c.accentText : theme.c.text, fontWeight: "600", fontSize: 14 }}>{o.label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+export function Checkbox(props: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; testID?: string }) {
+  const { theme } = useWallet();
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: props.checked, disabled: !!props.disabled }}
+      disabled={props.disabled}
+      onPress={() => props.onChange(!props.checked)}
+      testID={props.testID}
+      style={{ flexDirection: "row", gap: 10, alignItems: "center", opacity: props.disabled ? 0.5 : 1 }}
+    >
+      <View style={{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: props.checked ? theme.c.accent : theme.c.border, backgroundColor: props.checked ? theme.c.accent : "transparent", alignItems: "center", justifyContent: "center" }}>
+        {props.checked ? <IconCheck color={theme.c.accentText} size={14} /> : null}
+      </View>
+      <T style={{ flex: 1, fontSize: 15 }}>{props.label}</T>
+    </Pressable>
+  );
+}
+
+/** Numbered steps ("What you'll approve", device instructions). */
+export function Steps(props: { items: string[]; label?: string }) {
+  const { theme } = useWallet();
+  return (
+    <View accessibilityLabel={props.label} style={{ gap: 10 }}>
+      {props.items.map((s, i) => (
+        <View key={s + i} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
+          <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: theme.c.surface2, alignItems: "center", justifyContent: "center" }}>
+            <T v="hint">{i + 1}</T>
+          </View>
+          <T style={{ flex: 1, fontSize: 15 }}>{s}</T>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** A menu row that opens a screen (Settings → More / Security, Explore actions). */
+export function MenuItem(props: { title: string; hint?: string; onPress: () => void; testID?: string; icon?: ReactNode }) {
+  const { theme } = useWallet();
+  return (
+    <Pressable accessibilityRole="button" testID={props.testID} onPress={props.onPress} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12 }}>
+      {props.icon}
+      <View style={{ flex: 1, gap: 2 }}>
+        <T style={{ fontWeight: "500" }}>{props.title}</T>
+        {props.hint ? <T v="hint">{props.hint}</T> : null}
+      </View>
+      <IconChevron color={theme.c.text3} />
+    </Pressable>
   );
 }

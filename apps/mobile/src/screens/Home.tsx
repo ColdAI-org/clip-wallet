@@ -4,10 +4,10 @@
  */
 import { useMemo } from "react";
 import { Pressable, RefreshControl, ScrollView, View } from "react-native";
-import { formatFiat, formatUnits, mergeBalances, shortAddress, userMessageOf, type MergedAsset } from "@clip-wallet/ui";
+import { STAKEABLE_NOW, formatFiat, formatUnits, mergeBalances, shortAddress, userMessageOf, type MergedAsset } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Chip, Empty, ErrorNote, IconButton, Row, Screen, Spinner, T, Toggle } from "../ui/kit";
-import { IconArrowDown, IconArrowUp, IconLock } from "../ui/icons";
+import { IconArrowDown, IconArrowUp, IconLock, IconSwap } from "../ui/icons";
 import { APP } from "../env";
 
 function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => void }) {
@@ -25,6 +25,33 @@ function AssetRow(props: { asset: MergedAsset; currency: string; onOpen: () => v
       </View>
       <T style={{ fontWeight: "500", color: theme.c.text }}>{formatFiat(a.fiatValue, props.currency)}</T>
     </Pressable>
+  );
+}
+
+/** Swap / Buy / Stake, as on the extension's Home and asset screens. Stake only where a provider is live. */
+function MoreActions(props: { onSwap: () => void; onBuy: () => void; onStake?: () => void }) {
+  const { theme } = useWallet();
+  return (
+    <View style={{ flexDirection: "row", gap: 8 }} accessibilityLabel="More actions">
+      <Button variant="ghost" onPress={props.onSwap} testID="action-swap">
+        <IconSwap color={theme.c.accent} />
+        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+          Swap
+        </T>
+      </Button>
+      <Button variant="ghost" onPress={props.onBuy} testID="action-buy">
+        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+          Buy
+        </T>
+      </Button>
+      {props.onStake && (
+        <Button variant="ghost" onPress={props.onStake} testID="action-stake">
+          <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+            Stake
+          </T>
+        </Button>
+      )}
+    </View>
   );
 }
 
@@ -87,6 +114,7 @@ export function Home() {
             <T style={{ fontWeight: "600" }}>Receive</T>
           </Button>
         </View>
+        <MoreActions onSwap={() => navigate({ name: "swap" })} onBuy={() => navigate({ name: "buy" })} onStake={() => navigate({ name: "stake" })} />
 
         <ErrorNote message={error ? userMessageOf(error) : null} />
 
@@ -148,6 +176,11 @@ export function AssetDetail(props: { id: string }) {
           Receive
         </Button>
       </View>
+      <MoreActions
+        onSwap={() => navigate({ name: "swap", sell: asset.key })}
+        onBuy={() => navigate({ name: "buy", assetKey: asset.key })}
+        onStake={STAKEABLE_NOW.includes(asset.key) ? () => navigate({ name: "stake", assetKey: asset.key }) : undefined}
+      />
       {asset.parts.length > 1 || prefs?.advanced ? (
         <View style={{ gap: 8 }} testID="network-split">
           <T v="h2">Where it is</T>

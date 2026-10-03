@@ -19,6 +19,15 @@ describe("deep links", () => {
     expect(parseDeepLink(`clipwallet://browse?url=${encodeURIComponent("https://app.uniswap.org")}`, opts)).toEqual({ kind: "browse", url: "https://app.uniswap.org" });
     expect(parseDeepLink(`clipwallet://browse?url=${encodeURIComponent("javascript:alert(1)")}`, opts)).toBeNull();
   });
+  it("opens Secure Trade offers from the app scheme or the universal link", () => {
+    const offer = "eyJ2IjoxfQ";
+    expect(parseDeepLink(`clipwallet://trade#offer=${offer}`, opts)).toEqual({ kind: "trade", link: `#offer=${offer}` });
+    expect(parseDeepLink(`clipwallet://trade?offer=${offer}`, opts)).toEqual({ kind: "trade", link: `#offer=${offer}` });
+    expect(parseDeepLink(`https://clipwallet.example/trade#offer=${offer}`, opts)).toEqual({ kind: "trade", link: `#offer=${offer}` });
+    expect(parseDeepLink("clipwallet://trade?offer=<script>", opts)).toBeNull();
+    expect(parseDeepLink("clipwallet://trade", opts)).toBeNull();
+    expect(parseDeepLink(`https://evil.example/trade#offer=${offer}`, opts)).toBeNull();
+  });
   it("ignores everything else", () => {
     expect(parseDeepLink("clipwallet://wc?uri=wc:nope", opts)).toBeNull();
     expect(parseDeepLink(`https://evil.example/wc?uri=${encodeURIComponent(WC)}`, opts)).toBeNull();

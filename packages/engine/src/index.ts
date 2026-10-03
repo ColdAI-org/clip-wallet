@@ -17,3 +17,5 @@ export {
 export { publicNetworks } from "./public-networks.js";
 // Chain-package wiring (catalog, real modules) lives at "@clip-wallet/engine/wiring" so light hosts/tests skip it.
 export type * from "./types.js";
+// Ledger / Keystone accounts: construct EngineHardware from "@clip-wallet/engine/hardware" and engine.attachHardware(it).
+export type { EngineHardware, EngineHardwareDeps, HardwareHost } from "./hardware.js";

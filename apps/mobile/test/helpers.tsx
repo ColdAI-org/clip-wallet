@@ -2,13 +2,16 @@
  * A MobileWallet for screen tests: the real WalletEngine and in-process client over a fake vault and a stub
  * EVM module (packages/engine/test/fixtures.ts). No keys: the "phrase" is twelve placeholder tokens.
  */
-import { render } from "@testing-library/react-native";
+import { act, render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient } from "@clip-wallet/engine";
+import { EngineHardware, createEngineHardwareClient } from "@clip-wallet/engine/hardware";
 import type { MobileWallet } from "../src/background/host";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
 import { BASE_SEPOLIA, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../../packages/engine/test/fixtures";
+import { fakeHardwareDeps } from "../../../packages/engine/test/hardware-fixtures";
+import { FEATURE_ANSWERS, QUEUE } from "./feature-fixtures";
 
 export const WORDS = Array.from({ length: 12 }, (_, i) => `word${i + 1}`);
 
@@ -19,30 +22,72 @@ class PhraseVault extends FakeVault {
   }
 }
 
-export function testWallet(): MobileWallet & { vault: FakeVault } {
+export interface TestWallet extends MobileWallet {
+  vault: FakeVault;
+  /** Feature requests the screens made, in order (type + params). */
+  featureCalls: { type: string; [k: string]: unknown }[];
+  opened: string[];
+  releaseLedger: () => void;
+  ledgerPicked: { id: string; name: string } | null;
+}
+
+export function testWallet(answers: Partial<Record<string, (m: Record<string, unknown>) => unknown>> = {}): TestWallet {
   const events = new Events();
   const vault = new PhraseVault();
   const env = makeEnv((id) => events.emit({ type: "approval", id }));
   env.broadcast = () => events.emit({ type: "change" });
-  const engine = new WalletEngine(makeDeps(vault), new MemoryKV(), env);
+  const kv = new MemoryKV();
+  const engine = new WalletEngine(makeDeps(vault), kv, env);
   engine.start();
+  const hw = fakeHardwareDeps(kv, () => events.emit({ type: "change" }));
+  const engineHardware = new EngineHardware(hw.deps);
+  engine.attachHardware(engineHardware);
+  const featureCalls: TestWallet["featureCalls"] = [];
+  const opened: string[] = [];
   const client = createEngineClient(engine, { subscribe: (cb) => events.on((e) => e.type !== "approval" && cb()) });
-  // Feature services with sample answers (the real ones call partner APIs).
+  // Feature services with sample answers (the real ones call partner APIs). Wallet-built requests still go
+  // through the engine's real approval queue (enqueueWalletRequest), like the real StakingService/Swap/Trade.
   engine.attachFeatures({
     refine: (_r, d) => d,
-    handle: (async (m: { type: string }) => {
-      if (m.type === "featFeatured") return [{ name: "SaucerSwap", url: "https://www.saucerswap.finance/", domain: "saucerswap.finance", category: "swap", description: "Swap tokens and earn from liquidity.", family: "hedera" }];
-      if (m.type === "featStakingOverview")
-        return [{ assetKey: "ada", symbol: "ADA", name: "Cardano", wholeBalance: true, howItWorks: "", positions: [], unavailable: { code: "staking/coming-soon", message: "Staking ADA is coming soon." } }];
-      throw new Error(`not in tests: ${m.type}`);
+    handle: (async (m: { type: string; [k: string]: unknown }) => {
+      featureCalls.push(m);
+      const answer = answers[m.type] ?? FEATURE_ANSWERS[m.type];
+      if (!answer) throw new Error(`not in tests: ${m.type}`);
+      const out = await answer(m);
+      if (out === QUEUE) {
+        const { id } = await engine.enqueueWalletRequest({ id: `req-${featureCalls.length}`, origin: "wallet", via: "injected", family: "evm", networkId: SEPOLIA.id, method: "personal_sign", params: ["0x68656c6c6f"] }, "Clip Wallet");
+        return m.type === "featTradeCreate" ? { offerId: "offer-1", queued: { approvalId: id, steps: ["Sign the offer"] } } : { approvalId: id, steps: ["Approve"] };
+      }
+      return out;
     }) as never,
   });
-  const features = createEngineFeaturesClient(engine, { openExternal: async () => undefined });
-  return {
+  const features = createEngineFeaturesClient(engine, { openExternal: async (url) => void opened.push(url) });
+  let ledgerPicked: TestWallet["ledgerPicked"] = null;
+  const wallet: TestWallet = {
     vault,
+    featureCalls,
+    opened,
+    releaseLedger: hw.releaseLedger,
+    get ledgerPicked() {
+      return ledgerPicked;
+    },
     engine,
     client,
     features,
+    hardware: createEngineHardwareClient(engineHardware),
+    ledger: {
+      prepare: async () => undefined,
+      scan: (onDevice) => {
+        setTimeout(() => onDevice({ id: "AA:BB", name: "Nano X 1A2B" }), 0);
+        return () => undefined;
+      },
+      select: async (d) => void (ledgerPicked = d),
+      selected: async () => ledgerPicked,
+      forget: async () => void (ledgerPicked = null),
+    },
+    passkeyPrf: null,
+    openSheet: async (url) => void opened.push(url),
+    confirmPresence: async () => true,
     events,
     argon2: { kind: "native", fn: async () => new Uint8Array(32), selfTest: Promise.resolve(true) },
     walletConnectEnabled: false,
@@ -56,7 +101,9 @@ export function testWallet(): MobileWallet & { vault: FakeVault } {
     unlockWithPasskey: async () => undefined,
     removeUnlockMethods: async () => undefined,
   };
+  return wallet;
 }
+
 
 export function renderWith(wallet: MobileWallet, ui: ReactElement, initialRoute?: Route) {
   return render(
@@ -64,4 +111,23 @@ export function renderWith(wallet: MobileWallet, ui: ReactElement, initialRoute?
       {ui}
     </WalletProvider>,
   );
+}
+
+/** Lets pending engine promises resolve and React apply their state updates (inside act). */
+export async function settle(times = 3) {
+  for (let i = 0; i < times; i++) await act(async () => void (await new Promise((r) => setTimeout(r, 10))));
+}
+
+/** findBy* that also flushes async state updates between tries (the engine answers through promises). */
+export async function eventually<T>(get: () => T, tries = 150): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return get();
+    } catch (e) {
+      last = e;
+      await settle(1);
+    }
+  }
+  throw last;
 }

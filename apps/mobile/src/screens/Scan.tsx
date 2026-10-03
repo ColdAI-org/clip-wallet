@@ -1,15 +1,19 @@
-/** Scan a WalletConnect QR code with the camera (expo-camera). Only "wc:" URIs are accepted. */
+/**
+ * Scan a QR code with the camera (expo-camera): a WalletConnect code ("wc:") pairs; a Secure Trade link opens
+ * the offer review. Anything else is refused.
+ */
 import { useState } from "react";
 import { View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { isWalletConnectUri, userMessageOf } from "@clip-wallet/ui";
 import { useWallet } from "../ui/context";
+import { tradeOfferFrom } from "../lib/deeplinks";
 import { Button, ErrorNote, Notice, Screen, T } from "../ui/kit";
 
 export function Scan() {
-  const { client, back } = useWallet();
+  const { client, back, navigate } = useWallet();
   const [permission, request] = useCameraPermissions();
-  const [status, setStatus] = useState("Point your camera at the app's QR code.");
+  const [status, setStatus] = useState("Point your camera at the app's QR code, or a trade link.");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   if (!permission) return <Screen back title="Scan to connect">{null}</Screen>;
@@ -31,8 +35,14 @@ export function Scan() {
             busy
               ? undefined
               : async ({ data }) => {
+                  const offer = tradeOfferFrom(data);
+                  if (offer) {
+                    setBusy(true);
+                    navigate({ name: "trade-open", link: offer });
+                    return;
+                  }
                   if (!isWalletConnectUri(data)) {
-                    setErr("That QR code isn't a WalletConnect code.");
+                    setErr("That QR code isn't a connection code or a trade link.");
                     return;
                   }
                   setBusy(true);

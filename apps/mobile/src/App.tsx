@@ -17,6 +17,13 @@ import { Scan } from "./screens/Scan";
 import { Browser } from "./screens/Browser";
 import { Explore } from "./screens/Explore";
 import { ApprovalScreen } from "./screens/Approval";
+import { Stake } from "./screens/Stake";
+import { Swap } from "./screens/Swap";
+import { Buy } from "./screens/Buy";
+import { TradeCreate, TradeDetail, TradeHome, TradeReview } from "./screens/Trade";
+import { BackupHub, PasskeyBackup, RecoveryPhraseBackup } from "./screens/Backup";
+import { Accounts } from "./screens/Accounts";
+import { ConnectHardware, HardwareSettings, HardwareStep } from "./screens/Hardware";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
 
@@ -43,20 +50,49 @@ function Routes(props: { route: Route }) {
       return <Scan />;
     case "explore":
       return <Explore />;
+    case "stake":
+      return <Stake key={r.assetKey ?? ""} assetKey={r.assetKey} />;
+    case "swap":
+      return <Swap sell={r.sell} buy={r.buy} />;
+    case "buy":
+      return <Buy assetKey={r.assetKey} />;
+    case "trade":
+      return <TradeHome />;
+    case "trade-new":
+      return <TradeCreate />;
+    case "trade-open":
+      return <TradeReview key={r.link ?? ""} link={r.link} />;
+    case "trade-detail":
+      return <TradeDetail id={r.id} />;
+    case "backup":
+      return <BackupHub />;
+    case "backup-phrase":
+      return <RecoveryPhraseBackup />;
+    case "backup-passkey":
+      return <PasskeyBackup />;
+    case "accounts":
+      return <Accounts origin={r.origin} />;
+    case "hardware":
+      return <HardwareSettings />;
+    case "hardware-connect":
+      return <ConnectHardware />;
   }
 }
 
 function ApprovalSheet() {
-  const { approvalId, showApproval, client, state } = useWallet();
+  const { approvalId, showApproval, client, state, wallet } = useWallet();
   const [view, setView] = useState<ApprovalView | null>(null);
+  const [n, setN] = useState(0);
+  // Re-fetch on every change: a hardware wallet's step (Ledger confirm, Keystone QR exchange) arrives that way.
+  useEffect(() => wallet.events.on((e) => e.type === "change" && setN((x) => x + 1)), [wallet]);
   useEffect(() => {
     let live = true;
     if (!approvalId) setView(null);
-    else void client.getApproval(approvalId).then((v) => live && (v ? setView(v) : showApproval(null)));
+    else void client.getApproval(approvalId).then((v) => live && (v ? setView(v) : showApproval(null)), () => undefined);
     return () => {
       live = false;
     };
-  }, [approvalId, client, showApproval, state?.pendingApprovals]);
+  }, [approvalId, client, showApproval, state?.pendingApprovals, n]);
   const done = async () => {
     // Show the next waiting request, if any.
     const [next] = await client.listApprovals();
@@ -65,6 +101,7 @@ function ApprovalSheet() {
   return (
     <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done)}>
       {view && <ApprovalScreen key={view.id} approval={view} onDone={done} />}
+      {view?.hardware && <HardwareStep approvalId={view.id} title={view.decoded?.title ?? view.dapp.name} state={view.hardware} />}
     </Modal>
   );
 }
@@ -76,6 +113,7 @@ function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
     const l = props.pendingLink;
     props.clearLink();
     if (l.kind === "browse") navigate({ name: "browser", url: l.url });
+    else if (l.kind === "trade") navigate({ name: "trade-open", link: l.link });
     else void client.pairWalletConnect(l.uri).catch(() => navigate({ name: "settings" }));
   }, [state?.status, props.pendingLink]); // eslint-disable-line react-hooks/exhaustive-deps
 
