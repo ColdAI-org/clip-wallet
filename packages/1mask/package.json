@@ -1,0 +1,35 @@
+{
+  "name": "@clip-wallet/1mask",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./inpage": "./src/inpage/index.ts",
+    "./content": "./src/content/index.ts",
+    "./background": "./src/background/index.ts",
+    "./walletconnect": "./src/walletconnect/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "@clip-wallet/core": "workspace:*",
+    "@reown/walletkit": "^1.6.0",
+    "@solana/wallet-standard-features": "^1.5.0",
+    "@wallet-standard/base": "^1.1.1",
+    "@wallet-standard/features": "^1.1.1",
+    "@wallet-standard/wallet": "^1.1.1",
+    "@walletconnect/core": "^2.25.0",
+    "@walletconnect/types": "^2.25.0",
+    "@walletconnect/utils": "^2.25.0",
+    "zod": "^4.6.5"
+  }
+}
