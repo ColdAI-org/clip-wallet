@@ -4,4 +4,6 @@ packages:
   - templates/*
 allowBuilds:
   esbuild: true
+  keccak: false
   protobufjs: false
+  secp256k1: false
