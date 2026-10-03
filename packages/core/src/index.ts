@@ -162,6 +162,42 @@ export interface SignablePayload {
   derivationSubPath?: string;
   /** Binds the signature to the request the user approved. */
   approvalId: string;
+  /**
+   * Optional (Phase 2, hardware wallets): the full thing `bytes` was computed from, so a hardware
+   * wallet can show it on its own screen and sign it there. The vault ignores it. A hardware signer
+   * must still return a signature that verifies over `bytes`; `raw` never widens what was approved.
+   */
+  raw?: RawSignable;
+}
+
+/**
+ * Formats a chain module can attach as `SignablePayload.raw` (see docs/phase2/integration/hardware.md).
+ *  - evm-tx: unsigned serialized transaction (EIP-2718 typed or legacy RLP); bytes = keccak256(raw).
+ *  - evm-personal: the message bytes of personal_sign; bytes = EIP-191 hash.
+ *  - eip712: UTF-8 JSON of the full typed data (domain, types, primaryType, message); bytes = EIP-712 hash.
+ *  - solana-tx: the transaction message bytes (same as `bytes` for Solana).
+ *  - solana-message: off-chain message bytes as the dapp gave them (same as `bytes`).
+ *  - psbt: the whole PSBT (v0); `inputIndex` says which input this payload's sighash belongs to.
+ *  - bitcoin-message: the BIP-137 message bytes; bytes = its double-SHA256 digest.
+ *  - hedera-body: the TransactionBody protobuf bytes; bytes = keccak256(raw) for ECDSA, raw itself for Ed25519.
+ */
+export type RawFormat =
+  | "evm-tx"
+  | "evm-personal"
+  | "eip712"
+  | "solana-tx"
+  | "solana-message"
+  | "psbt"
+  | "bitcoin-message"
+  | "hedera-body";
+
+export interface RawSignable {
+  format: RawFormat;
+  bytes: Uint8Array;
+  /** psbt only: the input this payload signs. */
+  inputIndex?: number;
+  /** evm-tx only: chain id, for devices that need it next to the RLP. */
+  chainId?: number;
 }
 
 export interface Signature {

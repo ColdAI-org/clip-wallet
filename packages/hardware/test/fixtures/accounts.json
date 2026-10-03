@@ -1,0 +1,171 @@
+{
+  "evm": {
+    "accounts": [
+      {
+        "id": "hw:ledger:4418d0b4:evm:0",
+        "family": "evm",
+        "index": 0,
+        "curve": "secp256k1",
+        "derivationPath": "m/44'/60'/0'/0/0",
+        "publicKey": "0237b0bb7a8288d38ed49a524b5dc98cff3eb5ca824c9f9dc0dfdb3d9cd600f299",
+        "address": "0x9858EfFD232B4033E47d90003D41EC34EcaEda94",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "4418d0b4",
+          "path": "m/44'/60'/0'/0/0",
+          "pathStyle": "standard"
+        }
+      },
+      {
+        "id": "hw:ledger:4418d0b4:evm:1",
+        "family": "evm",
+        "index": 1,
+        "curve": "secp256k1",
+        "derivationPath": "m/44'/60'/0'/0/1",
+        "publicKey": "039fd0991d0222b4e1339c1a1a5b5f6d9f6a96672a3247b638ee6156d9ea877a2f",
+        "address": "0x6Fac4D18c912343BF86fa7049364Dd4E424Ab9C0",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "4418d0b4",
+          "path": "m/44'/60'/0'/0/1",
+          "pathStyle": "standard"
+        }
+      }
+    ],
+    "ledgerLive": [
+      {
+        "id": "hw:ledger:4418d0b4:evm:1:ledger-live",
+        "family": "evm",
+        "index": 1,
+        "curve": "secp256k1",
+        "derivationPath": "m/44'/60'/1'/0/0",
+        "publicKey": "038ccc8186e5933e845afd096cc6d3f2fdb25fbe4db4864b944619afa8e4e8bd5e",
+        "address": "0x78839F6054d7ed13918bAe0473BA31b1Ca9D7265",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "4418d0b4",
+          "path": "m/44'/60'/1'/0/0",
+          "pathStyle": "ledger-live"
+        }
+      }
+    ],
+    "accountKey": {
+      "path": "m/44'/60'/0'",
+      "publicKey": "04eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b61ed8eb62af1d433cd11b4f59923ac1f87f328c5673396ee55acc6195d92b320",
+      "chainCode": "d882718b7a42806803eeb17f7483f20620611adb88fc943c898dc5aba94c2819"
+    }
+  },
+  "solana": {
+    "accounts": [
+      {
+        "id": "hw:ledger:6c37c436:solana:0",
+        "family": "solana",
+        "index": 0,
+        "curve": "ed25519",
+        "derivationPath": "m/44'/501'/0'/0'",
+        "publicKey": "f036276246a75b9de3349ed42b15e232f6518fc20f5fcd4f1d64e81f9bd258f7",
+        "address": "HAgk14JpMQLgt6rVgv7cBQFJWFto5Dqxi472uT3DKpqk",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "6c37c436",
+          "path": "m/44'/501'/0'/0'",
+          "pathStyle": "standard"
+        }
+      },
+      {
+        "id": "hw:ledger:6c37c436:solana:1",
+        "family": "solana",
+        "index": 1,
+        "curve": "ed25519",
+        "derivationPath": "m/44'/501'/1'/0'",
+        "publicKey": "f8029acf5cbcbdd5ac46ec147f3b78a3df6e5022ef0411db2bab650d329a4cd4",
+        "address": "Hh8QwFUA6MtVu1qAoq12ucvFHNwCcVTV7hpWjeY1Hztb",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "6c37c436",
+          "path": "m/44'/501'/1'/0'",
+          "pathStyle": "standard"
+        }
+      }
+    ]
+  },
+  "hedera": {
+    "accounts": [
+      {
+        "id": "hw:ledger:3601b262:hedera:0",
+        "family": "hedera",
+        "index": 0,
+        "curve": "ed25519",
+        "derivationPath": "m/44'/3030'/0'/0'/0'",
+        "publicKey": "10fcec8c5db29aeab62272a08be39b1ec75eba50624351fba9948ff5d3d78ecf",
+        "address": "",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "3601b262",
+          "path": "m/44'/3030'/0'/0'/0'",
+          "pathStyle": "standard",
+          "keyIndex": 0
+        }
+      },
+      {
+        "id": "hw:ledger:3601b262:hedera:1",
+        "family": "hedera",
+        "index": 1,
+        "curve": "ed25519",
+        "derivationPath": "m/44'/3030'/0'/0'/1'",
+        "publicKey": "f552ad3a0eb5a1836db40d03fe751ca670b4bb4ae656bf2894aada739b5706ca",
+        "address": "",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "3601b262",
+          "path": "m/44'/3030'/0'/0'/1'",
+          "pathStyle": "standard",
+          "keyIndex": 1
+        }
+      }
+    ]
+  },
+  "bitcoin": {
+    "accounts": [
+      {
+        "id": "hw:ledger:73c5da0a:bitcoin:0",
+        "family": "bitcoin",
+        "index": 0,
+        "curve": "secp256k1",
+        "derivationPath": "m/84'/1'/0'/0/0",
+        "publicKey": "02e7ab2537b5d49e970309aae06e9e49f36ce1c9febbd44ec8e0d1cca0b4f9c319",
+        "address": "tb1q6rz28mcfaxtmd6v789l9rrlrusdprr9pqcpvkl",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "73c5da0a",
+          "path": "m/84'/1'/0'/0/0",
+          "pathStyle": "standard",
+          "accountXpub": "tpubDC8msFGeGuwnKG9Upg7DM2b4DaRqg3CUZa5g8v2SRQ6K4NSkxUgd7HsL2XVWbVm39yBA4LAxysQAm397zwQSQoQgewGiYZqrA9DsP4zbQ1M",
+          "accountPath": "m/84'/1'/0'",
+          "change": 0,
+          "addressIndex": 0
+        }
+      },
+      {
+        "id": "hw:ledger:73c5da0a:bitcoin:1",
+        "family": "bitcoin",
+        "index": 1,
+        "curve": "secp256k1",
+        "derivationPath": "m/84'/1'/0'/0/1",
+        "publicKey": "03eeed205a69022fed4a62a02457f3699b19c06bf74bf801acc6d9ae84bc16a9e1",
+        "address": "tb1qd7spv5q28348xl4myc8zmh983w5jx32cjhkn97",
+        "hardware": {
+          "kind": "ledger",
+          "fingerprint": "73c5da0a",
+          "path": "m/84'/1'/0'/0/1",
+          "pathStyle": "standard",
+          "accountXpub": "tpubDC8msFGeGuwnKG9Upg7DM2b4DaRqg3CUZa5g8v2SRQ6K4NSkxUgd7HsL2XVWbVm39yBA4LAxysQAm397zwQSQoQgewGiYZqrA9DsP4zbQ1M",
+          "accountPath": "m/84'/1'/0'",
+          "change": 0,
+          "addressIndex": 1
+        }
+      }
+    ],
+    "masterFingerprint": "73c5da0a"
+  }
+}
