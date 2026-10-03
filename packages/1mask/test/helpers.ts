@@ -1,3 +1,4 @@
+import { FAMILIES } from "../src/shared/protocol.js";
 import type { DappRequest, Family, Network } from "@clip-wallet/core";
 import { Window as HappyWindow } from "happy-dom";
 import { createOneMaskRouter, createMemoryPermissionStore, type OneMaskRouterOptions } from "../src/background/index.js";
@@ -21,6 +22,7 @@ export const BTC_ADDR = "tb1qexampleaddress0000000000000000000000";
 export const BTC_PUB = "02" + "22".repeat(32);
 
 export const ACCOUNTS: Record<Family, { address: string; publicKey?: string; purpose?: string }[]> = {
+  ...(Object.fromEntries(FAMILIES.map((f) => [f, []])) as unknown as Record<Family, never[]>),
   evm: [{ address: EVM_ADDR }],
   solana: [{ address: SOL_ADDR, publicKey: SOL_PUB }],
   bitcoin: [{ address: BTC_ADDR, publicKey: BTC_PUB, purpose: "payment" }],

@@ -29,7 +29,7 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     SOLANA_MAINNET,
     ...BITCOIN_NETWORKS.filter((n) => n.name !== "Bitcoin Signet"),
   ];
-  return all.filter((n) => families.includes(n.family) && (mainnet || n.testnet));
+  return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
 }
 
 /**

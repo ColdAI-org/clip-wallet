@@ -14,6 +14,16 @@ export const CURVE_OF: Record<Family, Curve> = {
   hedera: "secp256k1",
   solana: "ed25519",
   bitcoin: "secp256k1",
+  sui: "ed25519",
+  aptos: "ed25519",
+  cardano: "bip32-ed25519",
+  substrate: "sr25519",
+  starknet: "stark",
+  ton: "ed25519",
+  near: "ed25519",
+  stellar: "ed25519",
+  tezos: "ed25519",
+  algorand: "ed25519",
 };
 
 export interface PathOptions {
@@ -37,6 +47,8 @@ export function derivationPath(family: Family, index: number, opts: PathOptions 
       const purpose = opts.bitcoinAddressType === "p2tr" ? 86 : 84; // BIP-86 taproot / BIP-84 native segwit
       return `m/${purpose}'/${coin}'/0'/0/${index}`;
     }
+    default:
+      throw new Error(`key derivation for ${family} is not supported yet`);
   }
 }
 

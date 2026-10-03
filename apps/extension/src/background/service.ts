@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -292,8 +292,10 @@ export class WalletService implements DappHost {
     return a;
   }
 
-  private module(family: Family): Dependencies["chains"][Family] {
-    return this.deps.chains[family];
+  private module(family: Family): ChainModule {
+    const m = this.deps.chains[family];
+    if (!m) throw new ClipError("This kind of account isn't available in this version yet.", "family-unavailable");
+    return m;
   }
 
   private network(id: string): Network {

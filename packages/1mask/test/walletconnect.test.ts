@@ -12,7 +12,7 @@ import * as P from "./fixtures/proposals.js";
 import { EVM_ADDR, NETWORKS, SOL_ADDR, BTC_ADDR, tick } from "./helpers.js";
 
 const addressesFor = (chain: string, family: Family): string[] =>
-  ({ evm: [EVM_ADDR], solana: [SOL_ADDR], bitcoin: [BTC_ADDR], hedera: chain === "hedera:testnet" ? ["0.0.1234"] : [] })[family];
+  (({ evm: [EVM_ADDR], solana: [SOL_ADDR], bitcoin: [BTC_ADDR], hedera: chain === "hedera:testnet" ? ["0.0.1234"] : [] }) as Partial<Record<Family, string[]>>)[family] ?? [];
 const input = { networks: NETWORKS, addressesFor };
 
 describe("CAIP-25 namespace mapping (fixtures, no network)", () => {

@@ -88,5 +88,8 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
       return new Set<string>([...BITCOIN_METHODS_ALLOWED.local, ...BITCOIN_METHODS_ALLOWED.connect, ...BITCOIN_METHODS_ALLOWED.signing]);
     case "hedera":
       return new Set<string>();
+    default:
+      // Phase 2 families register their injected methods here as their connectors land.
+      return new Set<string>();
   }
 }

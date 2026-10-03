@@ -38,25 +38,25 @@ function assetAt(networkId: string, address?: string): AssetRef | undefined {
 
 function feeFor(network: Network): DecodedRequest["fee"] {
   // Base-units fee + sponsored flag; fiat is filled by the service's price feed.
-  const amounts: Record<Family, string> = { evm: "12000000000000", hedera: "5000000", solana: "5000", bitcoin: "800" };
-  return { asset: network.nativeAsset, amount: amounts[network.family], sponsored: network.family === "evm" };
+  const amounts: Partial<Record<Family, string>> = { evm: "12000000000000", hedera: "5000000", solana: "5000", bitcoin: "800" };
+  return { asset: network.nativeAsset, amount: amounts[network.family] ?? "0", sponsored: network.family === "evm" };
 }
 
-const ADDRESS_RE: Record<Family, RegExp> = {
+const ADDRESS_RE: Partial<Record<Family, RegExp>> = {
   evm: /^0x[0-9a-fA-F]{40}$/,
   hedera: /^0\.0\.\d{1,12}$/,
   solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
   bitcoin: /^(tb1[02-9ac-hj-np-z]{8,87}|[mn2][1-9A-HJ-NP-Za-km-z]{25,34})$/,
 };
 
-const SCHEME: Record<Family, SignablePayload["scheme"]> = {
+const SCHEME: Partial<Record<Family, SignablePayload["scheme"]>> = {
   evm: "ecdsa-secp256k1",
   hedera: "ecdsa-secp256k1",
   solana: "ed25519",
   bitcoin: "ecdsa-secp256k1",
 };
 
-const PATHS: Record<Family, (i: number) => string> = {
+const PATHS: Partial<Record<Family, (i: number) => string>> = {
   evm: (i) => `m/44'/60'/0'/0/${i}`,
   hedera: (i) => `m/44'/3030'/0'/0/${i}`,
   solana: (i) => `m/44'/501'/${i}'/0'`,
@@ -78,7 +78,7 @@ export class MockChainModule {
   }
 
   derivationPath(index: number) {
-    return PATHS[this.family](index);
+    return PATHS[this.family]!(index);
   }
 
   addressFromPublicKey(): string {
@@ -86,7 +86,7 @@ export class MockChainModule {
   }
 
   isAddress(value: string) {
-    return ADDRESS_RE[this.family].test(value.trim());
+    return ADDRESS_RE[this.family]!.test(value.trim());
   }
 
   networksForAddress(value: string, candidates: Network[]) {
@@ -187,7 +187,7 @@ export class MockChainModule {
 
   async prepare(request: DappRequest, ctx: ChainContext, approvalId: string): Promise<SignablePayload[]> {
     const digest = await sha256(utf8(JSON.stringify({ m: request.method, p: request.params, n: request.networkId })));
-    return [{ accountId: ctx.account.id, scheme: SCHEME[this.family], bytes: digest, approvalId }];
+    return [{ accountId: ctx.account.id, scheme: SCHEME[this.family]!, bytes: digest, approvalId }];
   }
 
   async finalize(_request: DappRequest, signatures: Signature[]): Promise<unknown> {
@@ -220,7 +220,7 @@ export class MockChainModule {
   }
 }
 
-export function createMockChains(): Record<Family, ChainModule> {
+export function createMockChains(): Partial<Record<Family, ChainModule>> {
   return {
     evm: new MockChainModule("evm"),
     hedera: new MockChainModule("hedera"),

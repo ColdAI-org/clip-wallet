@@ -73,6 +73,9 @@ export const defaultAddressOf: AddressOf = (family, publicKey, ctx) => {
       return ctx.bitcoinAddressType === "p2tr"
         ? p2trAddress(publicKey, ctx.bitcoinNetwork)
         : p2wpkhAddress(publicKey, ctx.bitcoinNetwork);
+    default:
+      // Phase 2 families: their address encodings are added with their derivation.
+      throw new Error(`addresses for ${family} are not supported yet`);
   }
 };
 

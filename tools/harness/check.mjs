@@ -330,7 +330,8 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
   const sources = files.filter((f) => SOURCE_EXT.test(f) && !f.endsWith(".d.ts"));
   const wordlist = loadWordlist(wordlistFrom);
 
-  // Packages that implement ChainModule: packages/chains-*, or any package whose source implements it.
+  // Chain-module packages: packages/chains-*, or a package (not an app) with a class that implements ChainModule.
+  // A type annotation like `: ChainModule` is not enough: the app background holds modules AND the vault.
   const chainPackages = new Set(files.map(packageDirOf).filter((p) => p && /^packages\/chains-/.test(p)));
   const parsed = new Map();
   for (const f of sources) {
@@ -338,7 +339,7 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
     const lexed = lex(src);
     parsed.set(f, { src, lexed });
     const pkg = packageDirOf(f);
-    if (pkg && pkg !== "packages/core" && /(?:implements\s+ChainModule\b|:\s*ChainModule\b)/.test(lexed.code)) chainPackages.add(pkg);
+    if (pkg && pkg !== "packages/core" && !pkg.startsWith("apps/") && /implements\s+ChainModule\b/.test(lexed.code)) chainPackages.add(pkg);
   }
 
   for (const [f, { src, lexed }] of parsed) {

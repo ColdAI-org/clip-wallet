@@ -1,3 +1,4 @@
+import { FAMILIES as ALL_FAMILIES } from "../shared/protocol.js";
 import type { DappRequest, Family, Network, NetworkId } from "@clip-wallet/core";
 import { randomId } from "../shared/bytes.js";
 import { ProviderRpcError, RpcErrorCode, fromRpcErrorShape, rpcError, toRpcErrorShape } from "../shared/errors.js";
@@ -92,7 +93,7 @@ export interface OneMaskRouter {
   connectedOrigins(): string[];
 }
 
-const FAMILIES: Family[] = ["evm", "hedera", "solana", "bitcoin"];
+const FAMILIES: readonly Family[] = ALL_FAMILIES;
 
 function exposeAccount(a: AccountLike): ExposedAccount & { purpose?: string; addressType?: string } {
   const out: ExposedAccount & { purpose?: string; addressType?: string } = { address: a.address };

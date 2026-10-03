@@ -81,6 +81,8 @@ const SCHEME_CURVE: Record<SignatureScheme, Curve> = {
   "ecdsa-secp256k1": "secp256k1",
   "schnorr-secp256k1": "secp256k1",
   ed25519: "ed25519",
+  sr25519: "sr25519",
+  "stark-ecdsa": "stark",
 };
 
 export class ClipVault implements Vault {
@@ -241,6 +243,8 @@ export class ClipVault implements Vault {
         }
         case "ed25519":
           return { scheme: payload.scheme, bytes: signEd25519(payload.bytes, key.privateKey), publicKey: toHex(key.publicKey) };
+        default:
+          throw VaultErrors.schemeMismatch();
       }
     } finally {
       wipe(key.privateKey);

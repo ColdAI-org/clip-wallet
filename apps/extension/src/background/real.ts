@@ -145,7 +145,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
 
 /* ------------------------------------------------------------------ route */
 
-const PLAIN_ETA: Record<Family, number> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
+const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
 
 /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
 export class RoutePlannerAdapter implements RoutePlanner {
@@ -161,7 +161,7 @@ export class RoutePlannerAdapter implements RoutePlanner {
   async plan({ decoded, balances, networks }: Parameters<RoutePlanner["plan"]>[0]): Promise<ApprovalPlan> {
     const net = networks.find((n) => n.id === decoded.networkId);
     const steps: PlanStep[] = [];
-    let readyInSeconds = PLAIN_ETA[net?.family ?? "evm"];
+    let readyInSeconds = PLAIN_ETA[net?.family ?? "evm"] ?? 30;
     let problem: string | undefined;
     let feeFiat = decoded.fee?.fiatValue;
     const shortfalls = findShortfall(decoded, balances);

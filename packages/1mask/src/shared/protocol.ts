@@ -1,3 +1,4 @@
+import type { Family } from "@clip-wallet/core";
 import { z } from "zod";
 
 /**
@@ -11,7 +12,10 @@ import { z } from "zod";
 
 export const DEFAULT_CHANNEL = "clip-wallet-1mask";
 
-export const FAMILIES = ["evm", "hedera", "solana", "bitcoin"] as const;
+export const FAMILIES = [
+  "evm", "hedera", "solana", "bitcoin",
+  "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
+] as const satisfies readonly Family[];
 export const familySchema = z.enum(FAMILIES);
 
 export const EVENTS = ["accountsChanged", "chainChanged", "disconnect", "connect"] as const;

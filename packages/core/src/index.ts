@@ -11,15 +11,40 @@
 
 /* ------------------------------------------------------------------ networks */
 
-/** Network families shipped in Phase 1. Later phases extend this union. */
-export type Family = "evm" | "hedera" | "solana" | "bitcoin";
+/** Network families. Phase 1: evm, hedera, solana, bitcoin. Phase 2 adds the rest. */
+export type Family =
+  | "evm"
+  | "hedera"
+  | "solana"
+  | "bitcoin"
+  | "sui"
+  | "aptos"
+  | "cardano"
+  | "substrate"
+  | "starknet"
+  | "ton"
+  | "near"
+  | "stellar"
+  | "tezos"
+  | "algorand";
 
-export type Curve = "secp256k1" | "ed25519";
+export const FAMILIES: readonly Family[] = [
+  "evm", "hedera", "solana", "bitcoin",
+  "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
+];
+
+/**
+ * secp256k1 / ed25519: BIP-32 and SLIP-10. bip32-ed25519: Cardano (CIP-1852, Icarus master key).
+ * sr25519: Polkadot/Substrate (Schnorrkel, substrate derivation). stark: Starknet (EIP-2645 grinding).
+ */
+export type Curve = "secp256k1" | "ed25519" | "bip32-ed25519" | "sr25519" | "stark";
 
 export type SignatureScheme =
-  | "ecdsa-secp256k1" // EVM, Hedera ECDSA, Bitcoin legacy/segwit
+  | "ecdsa-secp256k1" // EVM, Hedera ECDSA, Bitcoin legacy/segwit, Cosmos-style
   | "schnorr-secp256k1" // Bitcoin Taproot (BIP-340)
-  | "ed25519"; // Solana, Hedera Ed25519
+  | "ed25519" // Solana, Sui, Aptos, NEAR, Stellar, TON, Tezos tz1, Algorand, Hedera Ed25519; Cardano (signed with a BIP32-Ed25519 extended key, verifies as plain Ed25519)
+  | "sr25519" // Polkadot / Substrate
+  | "stark-ecdsa"; // Starknet
 
 /** CAIP-2 chain id, e.g. "eip155:8453", "hedera:testnet", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1", "bip122:000000000019d6689c085ae165831e93". */
 export type NetworkId = string;

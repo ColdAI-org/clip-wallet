@@ -139,7 +139,8 @@ export interface Dependencies {
   /** True in fixture mode (mock chains/1Mask/route; dev simulator enabled). */
   mocks: boolean;
   vault: WalletVault;
-  chains: Record<Family, ChainModule>;
+  /** Only the families this build ships; Phase 2 families register as their modules land. */
+  chains: Partial<Record<Family, ChainModule>>;
   networks: Network[];
   /** Assets each network can carry, even at zero balance (send/receive candidates). */
   assets: AssetRef[];
