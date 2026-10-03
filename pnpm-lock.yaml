@@ -596,12 +596,6 @@ importers:
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../core
-      '@hiero-ledger/proto':
-        specifier: ^2.31.0
-        version: 2.31.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1(supports-color@8.1.1))(protobufjs@8.0.1)(strip-ansi@7.1.2)
-      '@hiero-ledger/sdk':
-        specifier: ^2.89.1
-        version: 2.89.1(bn.js@5.2.3)(expo-crypto@57.0.3)(supports-color@8.1.1)
       '@noble/curves':
         specifier: ^2.4.0
         version: 2.4.0
@@ -609,6 +603,12 @@ importers:
         specifier: ^2.4.0
         version: 2.4.0
     devDependencies:
+      '@hiero-ledger/proto':
+        specifier: ^2.31.0
+        version: 2.31.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1(supports-color@8.1.1))(protobufjs@8.0.1)(strip-ansi@7.1.2)
+      '@hiero-ledger/sdk':
+        specifier: ^2.89.1
+        version: 2.89.1(bn.js@5.2.3)(expo-crypto@57.0.3)(supports-color@8.1.1)
       viem:
         specifier: ^2.57.2
         version: 2.57.2(typescript@5.9.3)(zod@4.6.5)

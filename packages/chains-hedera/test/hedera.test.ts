@@ -15,7 +15,7 @@ import {
   ScheduleSignTransaction,
   TokenAssociateTransaction,
   TokenId,
-  type Transaction,
+  Transaction,
   TransactionId,
   TransferTransaction,
 } from "@hiero-ledger/sdk";
@@ -278,7 +278,8 @@ describe("prepare / finalize", () => {
   const setup = () => {
     const submitted: Transaction[] = [];
     const m = createHederaModule({
-      submit: async (tx) => {
+      submit: async (bytes) => {
+        const tx = Transaction.fromBytes(bytes);
         submitted.push(tx);
         return { nodeId: "0.0.3", transactionHash: "00", transactionId: tx.transactionId!.toString() };
       },
@@ -436,7 +437,7 @@ describe("builders", () => {
     // The counterparty's wallet
     const bob = fixtureSigner(FIX.bobPublicKey, FIX.tradeSigsBob);
     const submitted: Transaction[] = [];
-    const bobModule = createHederaModule({ submit: async (tx) => (submitted.push(tx), { nodeId: "0.0.3", transactionHash: "", transactionId: "" }) });
+    const bobModule = createHederaModule({ submit: async (bytes) => (submitted.push(Transaction.fromBytes(bytes)), { nodeId: "0.0.3", transactionHash: "", transactionId: "" }) });
     const { fetch } = mockFetch([[r(`/accounts/${BOB}/tokens?token.id=`), { tokens: [{ token_id: "0.0.731861" }] }], ...baseRoutes()]);
     const bobCtx = ctxFor({ ...makeAccount(bob.publicKeyHex, BOB) }, fetch);
     const bobReq = req("hedera_signAndExecuteTransaction", { signerAccountId: `hedera:testnet:${BOB}`, transactionList: out.transactionList });

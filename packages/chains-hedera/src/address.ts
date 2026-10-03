@@ -1,5 +1,6 @@
-import { PublicKey } from "@hiero-ledger/sdk";
-import { fromHex } from "./util.js";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { keccak_256 } from "@noble/hashes/sha3.js";
+import { fromHex, hex } from "./util.js";
 
 /** 0.0.1234, optionally with a HIP-15 checksum (0.0.1234-abcde). */
 export const ACCOUNT_ID_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]{5}))?$/;
@@ -25,7 +26,8 @@ export function stripChecksum(value: string): string {
  */
 export function aliasAddress(publicKey: Uint8Array | string): string {
   const bytes = typeof publicKey === "string" ? fromHex(publicKey) : publicKey;
-  return `0x${PublicKey.fromBytesECDSA(bytes).toEvmAddress().toLowerCase()}`;
+  const uncompressed = secp256k1.Point.fromBytes(bytes).toBytes(false);
+  return `0x${hex(keccak_256(uncompressed.subarray(1)).subarray(12))}`;
 }
 
 /** If an EVM address is a "long-zero" address (0x000…0000<num>), the 0.0.num it stands for. */
