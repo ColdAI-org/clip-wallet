@@ -4,6 +4,8 @@ packages:
   - templates/*
   - services/*
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: true
   workerd: true
   protobufjs: false
+  unrs-resolver: false

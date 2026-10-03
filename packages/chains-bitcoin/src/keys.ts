@@ -9,7 +9,7 @@
  * internal key = account key (x-only). A vault account derived at the BIP-86 path is handled the same
  * way (its key's P2TR script matches).
  */
-import type { Account, Network } from "@clip-wallet/core";
+import type { Account, ChildAddress, Network } from "@clip-wallet/core";
 import { hex } from "@scure/base";
 import { Address, OutScript, p2pkh, p2tr, p2wpkh } from "@scure/btc-signer";
 import { equalBytes } from "@scure/btc-signer/utils.js";
@@ -43,18 +43,39 @@ export function taprootAddress(pub: Uint8Array, network: Network): string {
   return p2tr(xOnly(pub), undefined, btcNet(network)).address!;
 }
 
+/** A P2WPKH change key of the account (m/84'/c'/0'/1/n), signed by the vault via `derivationSubPath`. */
+export interface ChangeKey {
+  pubkey: Uint8Array;
+  wpkh: Uint8Array;
+  /** "1/<n>", relative to the BIP-84 account node. */
+  subPath: string;
+}
+
 export interface OwnScripts {
   pubkey: Uint8Array;
   wpkh: Uint8Array;
   tr: Uint8Array;
   /** BIP-86 output key (tweaked, x-only). */
   trOutputKey: Uint8Array;
+  /** Change keys the vault handed out to this account (ChainContext.changeAddresses). */
+  change: ChangeKey[];
 }
 
-export function ownScripts(account: Account): OwnScripts {
+const CHANGE_SUBPATH = /^1\/\d{1,10}$/;
+
+/** Validates a vault-supplied change address: sub-path "1/<n>", 33-byte key, and the address matches the key. */
+export function changeKey(c: ChildAddress, network?: Network): ChangeKey {
+  if (!CHANGE_SUBPATH.test(c.derivationSubPath)) throw new Error(`bad change sub-path ${c.derivationSubPath}`);
+  const pubkey = hex.decode(c.publicKey);
+  if (pubkey.length !== 33) throw new Error("change key must be a compressed public key");
+  if (network && segwitAddress(pubkey, network) !== c.address) throw new Error("change address doesn't match its key");
+  return { pubkey, wpkh: p2wpkh(pubkey).script, subPath: c.derivationSubPath };
+}
+
+export function ownScripts(account: Account, change: ChildAddress[] = [], network?: Network): OwnScripts {
   const pubkey = pubkeyOf(account);
   const tr = p2tr(xOnly(pubkey));
-  return { pubkey, wpkh: p2wpkh(pubkey).script, tr: tr.script, trOutputKey: tr.tweakedPubkey };
+  return { pubkey, wpkh: p2wpkh(pubkey).script, tr: tr.script, trOutputKey: tr.tweakedPubkey, change: change.map((c) => changeKey(c, network)) };
 }
 
 export type OwnKind = "wpkh" | "tr" | null;
@@ -62,7 +83,13 @@ export type OwnKind = "wpkh" | "tr" | null;
 export function ownKind(script: Uint8Array, own: OwnScripts): OwnKind {
   if (equalBytes(script, own.wpkh)) return "wpkh";
   if (equalBytes(script, own.tr)) return "tr";
+  if (own.change.some((c) => equalBytes(script, c.wpkh))) return "wpkh";
   return null;
+}
+
+/** The change key that owns this script, if it is a change output/input. */
+export function changeKeyOf(script: Uint8Array, own: OwnScripts): ChangeKey | undefined {
+  return own.change.find((c) => equalBytes(script, c.wpkh));
 }
 
 /** P2WPKH scriptCode for BIP-143: the P2PKH script of the key hash. */
@@ -96,8 +123,8 @@ export function scriptType(script: Uint8Array): "wpkh" | "tr" | "pkh" | "sh" | "
 /* ------------------------------------------------------------------ change addresses */
 
 /**
- * v1 sends change back to the account's primary P2WPKH address. Fresh change addresses (<account>/1/n)
- * need key derivation, which only the vault may do (harness rule), and a way for the vault to sign
- * with that child key. The contract can't express either today; see the report for the proposed
- * additive fields (`Account.changeAddresses` / `Vault.deriveChange`, `SignablePayload.derivationSubPath`).
+ * Change goes to a fresh P2WPKH address on the internal chain, m/84'/<coin>'/0'/1/<n>, when the background
+ * supplies `ChainContext.freshChangeAddress` (the vault's `freshChange`). Coins on change addresses the
+ * vault handed out (`ChainContext.changeAddresses`) count as the account's and are signed with
+ * `SignablePayload.derivationSubPath = "1/<n>"`. Without these, change returns to the primary address (v1).
  */

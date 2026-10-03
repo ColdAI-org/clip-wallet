@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clip test dapp</title>
+<style>
+  body { font: 16px -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; background: #fafaf9; color: #141414; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p { color: #5e5c59; margin: 0 0 16px; }
+  button { font: inherit; font-weight: 600; width: 100%; padding: 14px; border-radius: 14px; border: 0; background: #ff3c00; color: #fff; margin: 6px 0; }
+  button:disabled { opacity: .4; }
+  pre { background: #fff; border: 1px solid #e7e5e2; border-radius: 12px; padding: 12px; white-space: pre-wrap; word-break: break-all; font-size: 13px; }
+  .ok { color: #127a43; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Clip test dapp</h1>
+<p>Finds wallets with EIP-6963, connects, and asks for personal_sign. Testnets only; nothing is sent.</p>
+<pre id="wallets">Looking for wallets…</pre>
+<button id="connect" disabled>Connect</button>
+<button id="sign" disabled>Sign "hello from the test dapp"</button>
+<pre id="out">—</pre>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const found = [];
+  let provider, account;
+  window.addEventListener("eip6963:announceProvider", (e) => {
+    found.push(e.detail);
+    provider = provider || e.detail.provider;
+    $("wallets").textContent = found.map((d) => `${d.info.name} (${d.info.rdns})`).join("\n");
+    $("connect").disabled = false;
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+  setTimeout(() => { if (!found.length) $("wallets").textContent = "No EIP-6963 wallet found."; }, 1500);
+
+  $("connect").onclick = async () => {
+    try {
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      account = accounts[0];
+      const chainId = await provider.request({ method: "eth_chainId" });
+      $("out").textContent = `connected: ${account}\nchainId: ${chainId}`;
+      $("sign").disabled = false;
+    } catch (e) { $("out").textContent = `connect failed: ${e.code} ${e.message}`; }
+  };
+  $("sign").onclick = async () => {
+    const msg = "0x" + Array.from(new TextEncoder().encode("hello from the test dapp"), (b) => b.toString(16).padStart(2, "0")).join("");
+    try {
+      const sig = await provider.request({ method: "personal_sign", params: [msg, account] });
+      $("out").innerHTML = `<span class="ok">signature (${(sig.length - 2) / 2} bytes)</span>\n${sig}`;
+    } catch (e) { $("out").textContent = `sign failed: ${e.code} ${e.message}`; }
+  };
+</script>
+</body>
+</html>

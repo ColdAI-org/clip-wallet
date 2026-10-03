@@ -31,6 +31,8 @@ export const VAULT_DIRS = ["packages/vault/"];
 export const VAULT_IMPORT_ALLOW = [
   /^packages\/vault\//,
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
+  // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
+  /^apps\/mobile\/src\/background\//,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
@@ -43,6 +45,16 @@ export const PHRASE_LITERAL_ALLOW = [/^packages\/vault\/test\//, /^tools\/harnes
  * name or used as `<binding>.<symbol>` (also `<binding>.utils.<symbol>`) or destructured from a binding.
  */
 export const KEY_MATERIAL = [
+  {
+    module: /^@scure\/sr25519$/,
+    symbols: ["secretFromSeed", "sign", "getSharedSecret", "fromKeypair", "HDKD", "vrf"],
+    what: "sr25519 private-key or signing APIs (@scure/sr25519); verify is fine",
+  },
+  {
+    module: /^@scure\/starknet$/,
+    symbols: ["sign", "grindKey", "getStarkKey", "getPublicKey", "getSharedSecret", "ethSigToPrivate"],
+    what: "Stark private-key or signing APIs (@scure/starknet); verify and pedersen are fine",
+  },
   { module: /^@scure\/bip39(?:\/.*)?$/, any: true, what: "seed phrases (@scure/bip39)" },
   { module: /^@scure\/bip32(?:\/.*)?$/, any: true, what: "HD key derivation (@scure/bip32)" },
   { module: /^ed25519-hd-key$/, any: true, what: "HD key derivation (ed25519-hd-key)" },

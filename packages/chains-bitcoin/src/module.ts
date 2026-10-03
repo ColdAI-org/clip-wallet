@@ -10,6 +10,7 @@ import {
   ClipError,
   type AssetRef,
   type ChainContext,
+  type ChildAddress,
   type ChainModule,
   type DappRequest,
   type DecodedRequest,
@@ -26,7 +27,7 @@ import { Address, OutScript, SigHash, Transaction } from "@scure/btc-signer";
 import { concatBytes } from "@scure/btc-signer/utils.js";
 import { type Utxo, selectLargestFirst } from "./coinselect.js";
 import { type EsploraAddress, type EsploraUtxo, broadcast, esploraJson, feeRate } from "./esplora.js";
-import { type OwnScripts, derivationPath, ownScripts, scriptType, segwitAddress, taprootAddress, xOnly } from "./keys.js";
+import { type OwnScripts, changeKey, derivationPath, ownScripts, scriptType, segwitAddress, taprootAddress, xOnly } from "./keys.js";
 import { bip137Digest, bip322Digest, bip322MessageHash, encodeSimpleSignature } from "./message.js";
 import { BITCOIN_NETWORKS, btcNet } from "./networks.js";
 import { SMALL_UTXO_SATS, addressInscriptions, checkOutpoint } from "./ordinals.js";
@@ -68,6 +69,16 @@ const hostOf = (origin: string) => {
 export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModule & { pendingCount(): number } {
   const pending = new Map<string, Pending>();
   const built = new Map<string, string>();
+  /** Change address picked for a PSBT this module built (per request id), so decode shows it as the user's. */
+  const builtChange = new Map<string, ChildAddress>();
+
+  /** Change addresses that count as the account's for this request. */
+  function changeOf(reqId: string, ctx: ChainContext): ChildAddress[] {
+    const list = [...(ctx.changeAddresses ?? [])];
+    const extra = builtChange.get(reqId);
+    if (extra && !list.some((c) => c.derivationSubPath === extra.derivationSubPath)) list.push(extra);
+    return list;
+  }
   const newId = opts.newId ?? (() => globalThis.crypto.randomUUID());
   const ordIndex = (n: Network) => opts.ordinalsIndexUrls?.[n.id];
 
@@ -81,10 +92,12 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
 
   async function ownUtxos(ctx: ChainContext, own: OwnScripts): Promise<Utxo[]> {
     const out: Utxo[] = [];
-    for (const [kind, address, script] of [
+    const sources: [ "wpkh" | "tr", string, Uint8Array][] = [
       ["wpkh", segwitAddress(own.pubkey, ctx.network), own.wpkh],
       ["tr", taprootAddress(own.pubkey, ctx.network), own.tr],
-    ] as const) {
+      ...own.change.map((c): ["wpkh", string, Uint8Array] => ["wpkh", segwitAddress(c.pubkey, ctx.network), c.wpkh]),
+    ];
+    for (const [kind, address, script] of sources) {
       const list = await esploraJson<EsploraUtxo[]>(ctx.network, ctx.fetch, `/address/${address}/utxo`);
       for (const u of list) {
         if (!u.status.confirmed) continue; // v1: confirmed coins only
@@ -94,8 +107,21 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     return out;
   }
 
-  async function buildPsbt(ctx: ChainContext, recipients: { address: string; amount: bigint }[]): Promise<Transaction> {
-    const own = ownScripts(ctx.account);
+  /**
+   * Where change goes: the lowest handed-out change address that has never been used (so cancelled sends
+   * don't widen the gap other wallets scan), else a fresh one from the vault, else the primary address (v1).
+   */
+  async function pickChange(ctx: ChainContext): Promise<ChildAddress | undefined> {
+    const known = [...(ctx.changeAddresses ?? [])].sort((a, b) => changeIndex(a) - changeIndex(b));
+    for (const c of known.slice(-3)) {
+      const st = await esploraJson<EsploraAddress>(ctx.network, ctx.fetch, `/address/${c.address}`);
+      if ((st.chain_stats.tx_count ?? 1) === 0 && (st.mempool_stats.tx_count ?? 1) === 0) return c;
+    }
+    return ctx.freshChangeAddress ? ctx.freshChangeAddress() : undefined;
+  }
+
+  async function buildPsbt(ctx: ChainContext, recipients: { address: string; amount: bigint }[], reqId: string): Promise<Transaction> {
+    const own = ownScripts(ctx.account, ctx.changeAddresses ?? [], ctx.network);
     const outs = recipients.map((r) => {
       if (r.amount <= 0n) throw new ClipError("Enter an amount above zero.", "bad-amount");
       const script = addressScript(r.address, ctx.network);
@@ -117,8 +143,20 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       tx.addInput(input);
     }
     for (const o of outs) tx.addOutput({ script: o.script, amount: o.amount });
-    // v1: change returns to the account's primary P2WPKH address (see keys.ts, "change addresses").
-    if (sel.change > 0n) tx.addOutput({ script: own.wpkh, amount: sel.change });
+    if (sel.change > 0n) {
+      // A fresh change address when the background provides one (see keys.ts, "change addresses").
+      const picked = await pickChange(ctx);
+      let script = own.wpkh;
+      if (picked) {
+        try {
+          script = changeKey(picked, ctx.network).wpkh;
+        } catch (e) {
+          throw new ClipError("Something went wrong preparing this send. Nothing was sent.", "bad-change-address", e);
+        }
+        builtChange.set(reqId, picked);
+      }
+      tx.addOutput({ script, amount: sel.change });
+    }
     return tx;
   }
 
@@ -126,14 +164,18 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     if (op.kind === "psbt") return parsePsbt(op.psbt);
     let b = built.get(req.id);
     if (!b) {
-      b = psbtBase64(await buildPsbt(ctx, op.recipients));
+      b = psbtBase64(await buildPsbt(ctx, op.recipients, req.id));
       built.set(req.id, b);
     }
     return parsePsbt(b);
   }
 
   function checkSigners(op: BtcOp, ctx: ChainContext) {
-    const mine = new Set([segwitAddress(ownScripts(ctx.account).pubkey, ctx.network), taprootAddress(ownScripts(ctx.account).pubkey, ctx.network)]);
+    const mine = new Set([
+      segwitAddress(ownScripts(ctx.account).pubkey, ctx.network),
+      taprootAddress(ownScripts(ctx.account).pubkey, ctx.network),
+      ...(ctx.changeAddresses ?? []).map((c) => c.address),
+    ]);
     const addrs = op.kind === "psbt" ? op.signerAddresses : op.kind === "message" && op.address ? [op.address] : [];
     for (const a of addrs) if (!mine.has(a)) throw new ClipError("This request is for a different account than the one you're using.", "wrong-account", a);
   }
@@ -185,7 +227,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     }
 
     const tx = await resolvePsbt(req, ctx, op);
-    const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined);
+    const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined, changeOf(req.id, ctx));
     const external = a.outputs.filter((o) => !o.ours && !o.opReturn);
     const allOurs = a.inputs.every((x) => x.kind !== null);
     const sentOut = external.reduce((s, o) => s + o.amount, 0n);
@@ -260,7 +302,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     }
 
     const tx = await resolvePsbt(req, ctx, op);
-    const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined);
+    const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined, changeOf(req.id, ctx));
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       throw new ClipError("This would spend a coin that holds a collectible (ordinal), so Clip Wallet won't sign it.", "inscribed-utxo", ord.inscribed);
@@ -270,6 +312,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     return digests.map((g) => {
       const p: SignablePayload = { accountId: ctx.account.id, scheme: g.kind === "tr" ? "schnorr-secp256k1" : "ecdsa-secp256k1", bytes: g.digest, approvalId };
       if (g.tweak) p.options = { taprootTweak: g.tweak };
+      if (g.subPath) p.derivationSubPath = g.subPath;
       return p;
     });
   }
@@ -308,8 +351,8 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     p.digests.forEach((g, i) => {
       const sig = signatures[i]!;
       if (g.kind === "wpkh") {
-        const s = checkEcdsa(sig, g.digest, own.pubkey);
-        tx.updateInput(g.index, { partialSig: [[own.pubkey, concatBytes(s.toBytes("der"), Uint8Array.of(g.hashType))]] }, true);
+        const s = checkEcdsa(sig, g.digest, g.pubkey);
+        tx.updateInput(g.index, { partialSig: [[g.pubkey, concatBytes(s.toBytes("der"), Uint8Array.of(g.hashType))]] }, true);
       } else {
         const s = checkSchnorr(sig, g.digest, own);
         tx.updateInput(g.index, { tapKeySig: g.hashType === SigHash.DEFAULT ? s : concatBytes(s, Uint8Array.of(g.hashType)) }, true);
@@ -326,6 +369,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     const txid = await broadcast(ctx.network, ctx.fetch, hex.encode(tx.extract()));
     pending.delete(req.id);
     built.delete(req.id);
+    builtChange.delete(req.id);
     if (p.op.kind === "transfer") return { txid };
     const psbt = psbtBase64(tx);
     return p.op.reply === "wc" ? { psbt, txid } : [{ txid, psbt }];
@@ -334,9 +378,9 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
   /* ---------------------------------------------------------------- balances */
 
   async function getBalances(ctx: ChainContext): Promise<TokenBalance[]> {
-    const own = ownScripts(ctx.account);
+    const own = ownScripts(ctx.account, ctx.changeAddresses ?? [], ctx.network);
     let total = 0n;
-    for (const address of [segwitAddress(own.pubkey, ctx.network), taprootAddress(own.pubkey, ctx.network)]) {
+    for (const address of [segwitAddress(own.pubkey, ctx.network), taprootAddress(own.pubkey, ctx.network), ...own.change.map((c) => segwitAddress(c.pubkey, ctx.network))]) {
       const s = await esploraJson<EsploraAddress>(ctx.network, ctx.fetch, `/address/${address}`);
       total += BigInt(s.chain_stats.funded_txo_sum - s.chain_stats.spent_txo_sum + s.mempool_stats.funded_txo_sum - s.mempool_stats.spent_txo_sum);
     }
@@ -377,9 +421,10 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       } catch {
         throw new ClipError("Enter an amount above zero.", "bad-amount");
       }
-      const tx = await buildPsbt(ctx, [{ address: p.to, amount }]);
+      const id = newId();
+      const tx = await buildPsbt(ctx, [{ address: p.to, amount }], id);
       return {
-        id: newId(),
+        id,
         origin: "clip-wallet://send",
         via: "injected",
         family: "bitcoin",
@@ -391,6 +436,10 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     pendingCount: () => pending.size,
   };
   return mod;
+}
+
+function changeIndex(c: ChildAddress): number {
+  return Number(/^1\/(\d+)$/.exec(c.derivationSubPath)?.[1] ?? Number.MAX_SAFE_INTEGER);
 }
 
 function decodes(value: string, n: Network): boolean {
