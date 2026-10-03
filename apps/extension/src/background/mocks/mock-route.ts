@@ -1,3 +1,4 @@
+import { isWalletOrigin } from "@clip-wallet/core";
 /**
  * MOCK route planner. The real one is @clip-wallet/route (findShortfall + RouteClient.quote); this mock
  * mirrors its plain-language output: where the money comes from, funding moves, sponsored gas, ETA.
@@ -38,7 +39,7 @@ export class MockRoutePlanner implements RoutePlanner {
         detail: sponsored ? "Covered so you don't need to hold anything extra." : undefined,
       });
     }
-    const action = request.origin === "wallet" ? decoded.title : decoded.title.replace(/^Pay /, "Pay ");
+    const action = isWalletOrigin(request.origin) ? decoded.title : decoded.title.replace(/^Pay /, "Pay ");
     steps.push({ kind: "action", title: action, balanceChanges: decoded.balanceChanges });
     return {
       source: "Your balance",

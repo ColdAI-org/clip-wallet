@@ -52,6 +52,38 @@ export interface KoiosPool {
   pool_id_bech32: string;
   meta_json?: { name?: string; ticker?: string } | null;
   pool_status?: string;
+  /** Fraction (0.05 = 5 %). */
+  margin?: number | null;
+  /** Lovelace. */
+  fixed_cost?: string | null;
+  pledge?: string | null;
+  live_pledge?: string | null;
+  live_stake?: string | null;
+  active_stake?: string | null;
+  /** Percent of the saturation point (70.74 = 70.74 %). */
+  live_saturation?: number | null;
+  retiring_epoch?: number | null;
+  block_count?: number | null;
+}
+
+/** GET /pool_list row (select=pool_id_bech32,ticker,margin,fixed_cost,pledge,active_stake,retiring_epoch). */
+export interface KoiosPoolListItem {
+  pool_id_bech32: string;
+  ticker: string | null;
+  margin: number | null;
+  fixed_cost: string | null;
+  pledge: string | null;
+  active_stake: string | null;
+  retiring_epoch: number | null;
+}
+
+/** GET /epoch_info row (select=epoch_no,active_stake,total_rewards,start_time,end_time). */
+export interface KoiosEpochRewards {
+  epoch_no: number;
+  active_stake: string | null;
+  total_rewards: string | null;
+  start_time: number;
+  end_time: number;
 }
 
 /** The protocol parameters the builder needs (cli_protocol_params names). */
@@ -117,6 +149,20 @@ export class Koios {
 
   poolInfo(ids: string[]): Promise<KoiosPool[]> {
     return ids.length ? this.req("/pool_info", { _pool_bech32_ids: ids }) : Promise.resolve([]);
+  }
+
+  /**
+   * Registered pools with a ticker and a margin at or below `maxMargin` (PostgREST filters on GET /pool_list;
+   * Koios returns at most 1,000 rows per call).
+   */
+  poolList(maxMargin = 0.1): Promise<KoiosPoolListItem[]> {
+    const q = `pool_status=eq.registered&ticker=not.is.null&margin=lte.${maxMargin}&select=pool_id_bech32,ticker,margin,fixed_cost,pledge,active_stake,retiring_epoch&limit=1000`;
+    return this.req(`/pool_list?${q}`);
+  }
+
+  /** The latest epochs whose rewards are known (GET /epoch_info, newest first). */
+  epochRewards(limit = 1): Promise<KoiosEpochRewards[]> {
+    return this.req(`/epoch_info?select=epoch_no,active_stake,total_rewards,start_time,end_time&order=epoch_no.desc&total_rewards=not.is.null&limit=${limit}`);
   }
 
   /** POST /submittx with the raw CBOR. Returns the transaction id. */

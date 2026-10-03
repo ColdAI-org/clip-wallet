@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest, WALLET_ORIGIN } from "@clip-wallet/core";
 import { type SwapLeg, buildAssociate, buildAtomicSwap, buildScheduleSign, hbarAsset, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { Transaction } from "@hiero-ledger/sdk";
 import type { FeatureHost } from "../host.js";
@@ -287,7 +287,7 @@ export class SecureTradeService {
     if (p.mode === "scheduled") return buildScheduleSign(p.schedule!, ctx);
     return {
       id: crypto.randomUUID(),
-      origin: "wallet",
+      origin: WALLET_ORIGIN,
       via: "injected",
       family: "hedera",
       networkId: p.n,

@@ -46,6 +46,13 @@ export interface StakePositionView {
   statusText: string;
   pendingReward?: { amount: string; display: string };
   actions: ("unstake" | "withdraw" | "claim" | "change")[];
+  /**
+   * Choices the user must make before `claim` (Cardano: withdrawing rewards needs a vote delegation; the
+   * wallet offers "abstain" and "no confidence" in plain words). Pass the picked `id` as `choice`.
+   */
+  claimChoices?: { id: string; title: string; detail: string }[];
+  /** True when `unstake` can take a partial amount (Polkadot pools, NEAR). */
+  partialUnstake?: boolean;
   networkId: NetworkId;
 }
 
@@ -55,6 +62,8 @@ export interface StakeAssetView {
   name: string;
   /** Hedera stakes the whole balance in place (nothing moves); Solana stakes a chosen amount. */
   wholeBalance: boolean;
+  /** The amount may be left empty (Tezos: delegate only, nothing locked). */
+  amountOptional?: boolean;
   /** Plain explanation shown above the options. */
   howItWorks: string;
   /** "About 2.4% a year" when known. */

@@ -45,7 +45,8 @@ hash. Genesis hashes, SS58 formats, decimals and symbols were read on 2026-10-03
   no longer has them). The module finds pallets in metadata, so it follows wherever they are.
 - Asset keys: native `dot` / `ksm` / `wnd` / `pas`. The relay chain and its Asset Hub share the key because it's
   the same native token. Polkadot Asset Hub assets 1337 (USDC, Circle-issued) → `usdc` and 1984 (USDT) → `usdt`.
-  Other assets → `asset:<id>`, with `address` = the asset id.
+  Other assets → `asset:<id>`, with `address` = the asset id. Paseo Asset Hub's test USDC (1337) / USDT (1984)
+  share `usdc` / `usdt` (same ids as Polkadot, owner `5Evfk4MM…`, sufficient, PAS pools; read 2026-10-03).
 - `fromChainId` also accepts a full `0x` genesis hash (what `SignerPayloadJSON` and injectedWeb3 accounts carry).
 
 ## Accounts
@@ -132,9 +133,44 @@ The extrinsic is `compact(len) ‖ 0x84 ‖ MultiAddress::Id(0x00 ‖ pubkey) �
 - `buildTransfer`: `Balances.transfer_keep_alive`, or `Assets.transfer_keep_alive` when `asset.address` is an asset
   id. An address formatted for another network (prefix not this network's and not 42) is refused.
 
+## Helpers for wallet features (staking, swaps)
+
+Added for `@clip-wallet/features` (`staking/polkadot.ts`, `swap/assethub.ts`). Reads only; every transaction
+still goes through the approval path.
+
+- `module.buildCall({ pallet, call, args }, ctx)`: a `substrate_signAndSubmit` request for any call in live
+  metadata, built like `buildTransfer` (finalized head, mortal era, next nonce, mode 0). decode() describes it.
+- `connect(ctx)` → `{ rpc, rt, spec, me }`; `storageEntries` (keys paged + `state_queryStorageAt`), `constantOf`,
+  `spendableNative` (free − max(frozen − reserved, ED)), `activeEra`, `poolUnbondingEras`, `erasToText`.
+- XCM Locations for `AssetConversion`: `nativeLocation()` = `{ parents: 1, interior: Here }`,
+  `assetLocation(id)` = `{ parents: 0, interior: X2[PalletInstance(50), GeneralIndex(id)] }`, `locationAsset`.
+  Both forms are how `AssetConversion.Pools` keys pools on Westend / Paseo / Polkadot Asset Hub (read live).
+- decode() now describes `AssetConversion.swap_exact_tokens_for_tokens` / `swap_tokens_for_exact_tokens`
+  ("Swap 2 WND for at least 0.97 USDC", balance changes, a caution if `send_to` isn't you). Foreign-asset paths
+  stay `Pallet.call(args)` with a caution.
+- `Enum` is re-exported so packages without polkadot-api can build call args.
+- Fixed: `runtimeCall` sent the args as bytes (serialised as a JSON object, which nodes reject); it now sends 0x
+  hex. `getStaking` counts unbonding from `Staking.ActiveEra` (staking-async's `current_era()` returns the active
+  era; `CurrentEra` can be one ahead).
+
+Staking facts checked on 2026-10-03 (live RPC, read-only):
+
+| Asset Hub | spec | era | pool unbonding | MinJoinBond | ED |
+|---|---|---|---|---|---|
+| Polkadot | statemint 2005000 | 24 h | 2 eras (≈2 days): `AreNominatorsSlashable` false → `NominatorFastUnbondDuration` 2 (`BondingDuration` 28) | 1 DOT | 0.01 DOT |
+| Kusama | statemine 2003002 | 6 h | per the same rule | | |
+| Westend | westmint 1025001 | 6 h | 2 eras (≈12 h) | 0.1 WND | 0.001 WND |
+| Paseo | asset-hub-paseo 2005002 | 6 h | 28 eras (≈7 days), nominators slashable | 0 | 0.01 PAS |
+
+Era length was measured from `Staking.ActiveEra.start` at historical blocks. The unbonding rule is
+`nomination-pools/src/adapter.rs` (`bonding_duration()` → `nominator_bonding_duration()`) and
+`staking-async/src/pallet/impls.rs` (BondingDuration if `AreNominatorsSlashable`, else
+`NominatorFastUnbondDuration`) in paritytech/polkadot-sdk master. Swap pools: Westend Asset Hub has 111
+AssetConversion pools (community test tokens), Paseo Asset Hub 21 including PAS/USDC (1337) and PAS/USDT (1984).
+
 ## Tests
 
-`pnpm test` (21 tests) runs against real Westend Asset Hub metadata V15 (`test/fixtures`, gzipped, specVersion
+`pnpm test` (29 tests) runs against real Westend Asset Hub metadata V15 (`test/fixtures`, gzipped, specVersion
 1025001), with RPC, storage and runtime-API answers encoded through the same metadata. sr25519 signatures are
 fixtures computed once offline with a throwaway key (`test/signatures.ts`).
 

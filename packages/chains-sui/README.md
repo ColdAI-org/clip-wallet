@@ -76,6 +76,21 @@ sender must be this account, and the input `chain` must match the request's netw
 - `buildTransfer`: `Transaction` + `coinWithBalance({ type, balance })` + `transferObjects`, built over GraphQL. Shortfalls become
   "You don't have enough …". The result is a `sui:signAndExecuteTransaction` DappRequest with the built bytes.
 
+## Wallet-built DeFi transactions (`src/defi.ts`)
+
+Used by `@clip-wallet/features` (Sui staking, Aftermath swaps). Pure building and parsing with `@mysten/sui`: no keys, no network.
+Each builder returns Wallet Standard transaction JSON, which `sui:signAndExecuteTransaction` resolves and builds as above.
+
+- `buildStakeTransaction({ sender, validator, amount })`: `SplitCoins(gas, amount)` then `0x3::sui_system::request_add_stake(0x5, coin,
+  validator)`. Under 1 SUI is refused (`staking_pool.move` `MIN_STAKING_THRESHOLD = 1_000_000_000`).
+- `buildUnstakeTransaction({ sender, stakedSuiId })`: `0x3::sui_system::request_withdraw_stake(0x5, StakedSui)`. Principal and rewards
+  come straight back to the sender (`sui_system.move` transfers the withdrawn balance to `ctx.sender()`).
+- 0x5 goes in as a resolved shared reference (initial shared version 1, mutable), so no lookup is needed for it.
+- `transactionFromKind(kindB64, sender)`: an aggregator's base64 `TransactionKind` → transaction JSON with this sender (gas left to the module).
+- `inspectTransaction(source, kind?)`, `pureU64Of`, `pureAddressOf`, `normalizeCoinType`: read a transaction back for checks.
+- Sources (2026-10-03): `MystenLabs/sui` `crates/sui-framework/packages/sui-system/sources/{sui_system,staking_pool}.move`.
+- `describe.ts` already titles these "Stake 2 SUI" / "Unstake SUI"; `test/defi.test.ts` builds one offline and decodes it.
+
 ## Tests
 
 `pnpm test`: GraphQL is mocked per operation name. Signatures are fixtures (`test/signatures.ts`), computed offline by the public
@@ -88,4 +103,4 @@ sender must be this account, and the input `chain` must match the request's netw
 - No zkLogin/multisig senders. The account is a plain ed25519 key.
 - WalletConnect `sui_signPersonalMessage` treats the message as UTF-8 text. Reown's reference doesn't specify an encoding.
 - `getNfts` scans at most 4 pages (200 objects) by default (`nftPages`). Kiosk-held items aren't listed.
-- Validator names for staking aren't resolved (the address is shown).
+- Validator names aren't resolved in `decode()` (the address is shown). The features Stake screen shows names from the validator set.

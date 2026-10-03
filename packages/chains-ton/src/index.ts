@@ -8,3 +8,4 @@ export { MAX_MESSAGES, SEND_MODE, walletFor, type TonWalletVersion } from "./wal
 
 import { createTonModule } from "./module.js";
 export const tonModule = createTonModule();
+export * from "./defi.js";

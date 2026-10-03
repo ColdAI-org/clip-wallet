@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
 import { clusterOf } from "@clip-wallet/chains-solana";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -105,7 +105,7 @@ export class JupiterSwap implements SwapProvider {
     const cluster = clusterOf(ctx.network.id);
     const request = {
       id: randomId(),
-      origin: "wallet",
+      origin: WALLET_ORIGIN,
       via: "injected" as const,
       family: "solana" as const,
       networkId: ctx.network.id,

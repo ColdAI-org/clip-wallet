@@ -59,6 +59,8 @@ export interface BuildParams {
   certs?: CborValue[];
   /** Deposits taken by certificates (positive) or refunded (negative). */
   deposit?: bigint;
+  /** Reward withdrawals (body key 5). The withdrawn ADA counts as an input. */
+  withdrawals?: { rewardAddress: Uint8Array; amount: bigint }[];
   /** Vkey witnesses the final transaction will carry (for the size estimate). */
   witnesses: number;
 }
@@ -70,7 +72,10 @@ export interface Built {
   change: Value | null;
 }
 
-function bodyBytes(inputs: Utxo[], outputs: CborValue[], fee: bigint, ttl: bigint, certs: CborValue[] | undefined): Uint8Array {
+type Extra = { certs?: CborValue[] | undefined; withdrawals?: { rewardAddress: Uint8Array; amount: bigint }[] | undefined };
+
+function bodyBytes(inputs: Utxo[], outputs: CborValue[], fee: bigint, ttl: bigint, extra: Extra): Uint8Array {
+  const { certs, withdrawals } = extra;
   const sorted = [...inputs].sort((a, b) => {
     for (let i = 0; i < 32; i++) if (a.input.txHash[i] !== b.input.txHash[i]) return a.input.txHash[i]! - b.input.txHash[i]!;
     return a.input.index - b.input.index;
@@ -82,6 +87,11 @@ function bodyBytes(inputs: Utxo[], outputs: CborValue[], fee: bigint, ttl: bigin
     [3, ttl],
   ];
   if (certs?.length) entries.push([4, new CborTag(258, certs)]);
+  if (withdrawals?.length) {
+    // Canonical map order: shorter keys first, then bytewise (all reward addresses are 29 bytes).
+    const sortedW = [...withdrawals].sort((a, b) => (hexOf(a.rewardAddress) < hexOf(b.rewardAddress) ? -1 : 1));
+    entries.push([5, new CborMap(sortedW.map((w) => [w.rewardAddress, w.amount] as [CborValue, CborValue]))]);
+  }
   return encode(new CborMap(entries));
 }
 
@@ -90,6 +100,8 @@ function signedSize(body: Uint8Array, n: number): number {
   const ws = encode(new CborMap([[0, new CborTag(258, Array.from({ length: n }, () => [new Uint8Array(32), new Uint8Array(64)]))]]));
   return 1 + body.length + ws.length + 1 + 1;
 }
+
+const hexOf = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 
 export function feeFor(size: number, p: ProtocolParams): bigint {
   return BigInt(p.txFeePerByte) * BigInt(size) + BigInt(p.txFeeFixed);
@@ -114,6 +126,8 @@ export function buildTx(bp: BuildParams): Built {
   const target = emptyValue();
   for (const o of bp.outputs) addValue(target, o.value);
   target.coin += bp.deposit ?? 0n;
+  for (const w of bp.withdrawals ?? []) target.coin -= w.amount;
+  const extra: Extra = { certs: bp.certs, withdrawals: bp.withdrawals };
 
   const pool = order(bp.utxos, target);
   const selected: Utxo[] = [];
@@ -127,7 +141,8 @@ export function buildTx(bp: BuildParams): Built {
     return true;
   };
 
-  while (!covers(have, target)) {
+  // A transaction needs at least one input, even when withdrawals or refunds cover everything.
+  while (!covers(have, target) || selected.length === 0) {
     if (!take()) {
       const asset = [...target.assets].find(([u, q]) => (have.assets.get(u) ?? 0n) < q);
       throw new ClipError(asset ? "You don't have enough of that token." : "You don't have enough ADA for this.", "cardano/insufficient-funds");
@@ -138,12 +153,12 @@ export function buildTx(bp: BuildParams): Built {
     const change = cloneValue(have);
     addValue(change, target, -1n);
     // Fee with a change output.
-    let fee = feeFor(signedSize(bodyBytes(selected, outputs, 0n, bp.ttl, bp.certs), bp.witnesses) + 9, p);
+    let fee = feeFor(signedSize(bodyBytes(selected, outputs, 0n, bp.ttl, extra), bp.witnesses) + 9, p);
     for (let k = 0; k < 3; k++) {
       const c = cloneValue(change);
       c.coin -= fee;
       const outs = [...outputs, encodeOutput(bp.changeAddress, c)];
-      const next = feeFor(signedSize(bodyBytes(selected, outs, fee, bp.ttl, bp.certs), bp.witnesses), p);
+      const next = feeFor(signedSize(bodyBytes(selected, outs, fee, bp.ttl, extra), bp.witnesses), p);
       if (next <= fee) break;
       fee = next;
     }
@@ -151,13 +166,13 @@ export function buildTx(bp: BuildParams): Built {
     withChange.coin -= fee;
     if (withChange.coin >= 0n && withChange.coin >= minAda(bp.changeAddress, withChange, p)) {
       const outs = [...outputs, encodeOutput(bp.changeAddress, withChange)];
-      return { body: bodyBytes(selected, outs, fee, bp.ttl, bp.certs), fee, inputs: selected, change: withChange };
+      return { body: bodyBytes(selected, outs, fee, bp.ttl, extra), fee, inputs: selected, change: withChange };
     }
     // No room for change: if only a little ADA is left over (no tokens), it goes to the fee.
     if (change.assets.size === 0) {
-      const noChangeFee = feeFor(signedSize(bodyBytes(selected, outputs, change.coin, bp.ttl, bp.certs), bp.witnesses), p);
+      const noChangeFee = feeFor(signedSize(bodyBytes(selected, outputs, change.coin, bp.ttl, extra), bp.witnesses), p);
       if (change.coin >= noChangeFee) {
-        return { body: bodyBytes(selected, outputs, change.coin, bp.ttl, bp.certs), fee: change.coin, inputs: selected, change: null };
+        return { body: bodyBytes(selected, outputs, change.coin, bp.ttl, extra), fee: change.coin, inputs: selected, change: null };
       }
     }
     if (!take()) throw new ClipError("You don't have enough ADA to cover this and the network fee.", "cardano/insufficient-funds");

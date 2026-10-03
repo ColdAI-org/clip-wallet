@@ -864,12 +864,42 @@ importers:
 
   packages/features:
     dependencies:
+      '@clip-wallet/chains-algorand':
+        specifier: workspace:*
+        version: link:../chains-algorand
+      '@clip-wallet/chains-aptos':
+        specifier: workspace:*
+        version: link:../chains-aptos
+      '@clip-wallet/chains-cardano':
+        specifier: workspace:*
+        version: link:../chains-cardano
       '@clip-wallet/chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
+      '@clip-wallet/chains-near':
+        specifier: workspace:*
+        version: link:../chains-near
       '@clip-wallet/chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
+      '@clip-wallet/chains-starknet':
+        specifier: workspace:*
+        version: link:../chains-starknet
+      '@clip-wallet/chains-stellar':
+        specifier: workspace:*
+        version: link:../chains-stellar
+      '@clip-wallet/chains-substrate':
+        specifier: workspace:*
+        version: link:../chains-substrate
+      '@clip-wallet/chains-sui':
+        specifier: workspace:*
+        version: link:../chains-sui
+      '@clip-wallet/chains-tezos':
+        specifier: workspace:*
+        version: link:../chains-tezos
+      '@clip-wallet/chains-ton':
+        specifier: workspace:*
+        version: link:../chains-ton
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../core

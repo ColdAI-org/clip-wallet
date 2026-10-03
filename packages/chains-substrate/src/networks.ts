@@ -24,6 +24,11 @@ export interface SubstrateSpec {
   assetHub: boolean;
   /** Curated Asset Hub assets (pallet-assets ids). */
   assets?: { id: number; symbol: string; name: string; decimals: number; key: string }[];
+  /**
+   * Staking era length in hours where staking runs (Asset Hubs). Measured on 2026-10-03 from `Staking.ActiveEra`
+   * start times at historical blocks: Polkadot 24 h, Kusama 6 h, Westend 6 h, Paseo 6 h.
+   */
+  eraHours?: number;
 }
 
 export const SUBSTRATE_SPECS: SubstrateSpec[] = [
@@ -91,6 +96,7 @@ export const SUBSTRATE_SPECS: SubstrateSpec[] = [
     rpc: ["https://polkadot-asset-hub-rpc.polkadot.io"],
     explorer: "https://assethub-polkadot.subscan.io",
     assetHub: true,
+    eraHours: 24,
     assets: [
       { id: 1337, symbol: "USDC", name: "USD Coin", decimals: 6, key: "usdc" },
       { id: 1984, symbol: "USDT", name: "Tether USD", decimals: 6, key: "usdt" },
@@ -108,6 +114,7 @@ export const SUBSTRATE_SPECS: SubstrateSpec[] = [
     rpc: ["https://kusama-asset-hub-rpc.polkadot.io"],
     explorer: "https://assethub-kusama.subscan.io",
     assetHub: true,
+    eraHours: 6,
     assets: [{ id: 1984, symbol: "USDT", name: "Tether USD", decimals: 6, key: "usdt" }],
   },
   {
@@ -122,6 +129,7 @@ export const SUBSTRATE_SPECS: SubstrateSpec[] = [
     rpc: ["https://westend-asset-hub-rpc.polkadot.io"],
     explorer: "https://assethub-westend.subscan.io",
     assetHub: true,
+    eraHours: 6,
   },
   {
     slug: "paseo-asset-hub",
@@ -135,6 +143,16 @@ export const SUBSTRATE_SPECS: SubstrateSpec[] = [
     rpc: ["https://asset-hub-paseo-rpc.n.dwellir.com"],
     explorer: "https://assethub-paseo.subscan.io",
     assetHub: true,
+    eraHours: 6,
+    /*
+     * Paseo's test USDC / USDT: the same ids as on Polkadot Asset Hub, owner 5Evfk4MM…, marked sufficient (only
+     * governance can), with PAS pools in AssetConversion (read 2026-10-03). They stand in for Polkadot's USDC /
+     * USDT on the test network, so they share the wallet-wide "usdc" / "usdt" keys like other testnet USDC.
+     */
+    assets: [
+      { id: 1337, symbol: "USDC", name: "USD Coin", decimals: 6, key: "usdc" },
+      { id: 1984, symbol: "USDT", name: "Tether USD", decimals: 6, key: "usdt" },
+    ],
   },
 ];
 

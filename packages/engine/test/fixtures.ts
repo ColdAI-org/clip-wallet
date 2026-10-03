@@ -4,7 +4,7 @@
  * chain-level signature checks live in packages/chains-* with offline-precomputed fixtures).
  */
 import type { Account, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, Signature, SignablePayload } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN } from "@clip-wallet/core";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import { KnownDappRegistry, NoNameResolver, OneMaskConnector, ReferencePriceFeed } from "../src/adapters.js";
 import type { Dependencies, EngineEnv, PrfProvider, WalletConnectBridge, WalletVault } from "../src/types.js";
@@ -152,7 +152,7 @@ export function stubEvm(): ChainModule & { finalized: DappRequest[] } {
       return req.method === "personal_sign" ? `0x${"07".repeat(64)}1c` : { txHash: `0x${"ab".repeat(32)}`, sigs: sigs.length };
     },
     async buildTransfer(p, ctx) {
-      return { id: "send-1", origin: "wallet", via: "injected", family: "evm", networkId: ctx.network.id, method: "eth_sendTransaction", params: [{ from: ctx.account.address, to: p.to, value: p.amount }] };
+      return { id: "send-1", origin: WALLET_ORIGIN, via: "injected", family: "evm", networkId: ctx.network.id, method: "eth_sendTransaction", params: [{ from: ctx.account.address, to: p.to, value: p.amount }] };
     },
   };
 }

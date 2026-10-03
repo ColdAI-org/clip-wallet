@@ -76,6 +76,18 @@ not used. It never uses the SDK's `Account`/private-key classes.
 - `buildTransfer`: APT through `aptos_account::transfer`, fungible assets through `primary_fungible_store::transfer<Metadata>`, coins through
   `aptos_account::transfer_coins<T>`. The result is an `aptos:signAndSubmitTransaction` DappRequest carrying the built BCS.
 
+## Wallet-built DeFi payloads (`src/defi.ts`)
+
+Used by `@clip-wallet/features` (Aptos delegated staking, Hyperion swaps). Payloads use the wire form `aptos:signAndSubmitTransaction`
+accepts, so this module fetches the ABI, encodes, simulates and builds them like any dapp payload.
+
+- `delegationPayload("add_stake" | "unlock" | "withdraw", pool, amount)`: `0x1::delegation_pool::<action>(pool_address, amount)`.
+  `MIN_DELEGATION_OCTAS` = 1,000,000,000 (10 APT, `MIN_COINS_ON_SHARES_POOL` in `aptos-framework/sources/delegation_pool.move`, checked 2026-10-03).
+- `encodeEntryPayload(payload, abi)` runs the same SDK ABI encoder offline. `decodeEntryPayload(bytes)`, `bcsU64`, `bcsAddress` and
+  `bcsAddressVector` read the BCS back (for checks and tests).
+- Fix: `describe.ts` now reads the arguments of payloads this module built itself (typed `U64`/`AccountAddress`, not only deserialized
+  `EntryFunctionBytes`). Before, a wallet-built `add_stake` was titled "Stake APT" without the amount.
+
 ## Tests
 
 `pnpm test`: REST and indexer are mocked. Signatures are fixtures (`test/signatures.ts`), computed offline by the public "abandon … about"

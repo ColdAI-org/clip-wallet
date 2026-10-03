@@ -10,8 +10,8 @@ place to receive, or the only place a provider works. `networkId` is carried for
 
 | Area | Module | What it does |
 |---|---|---|
-| Staking | `staking/` | `StakingProvider` interface. Hedera (native, AccountUpdate `stakedNodeId`) and Solana (native delegation via seeded stake accounts). Cardano, Polkadot, NEAR and Tezos are stubs. |
-| Swaps | `swap/` | `SwapProvider` interface. Jupiter (Solana), SaucerSwap V2 (Hedera) and 0x v2 (EVM). Cross-network swaps get a CLPRouter quote only. |
+| Staking | `staking/` | `StakingProvider` interface. Hedera (native, AccountUpdate `stakedNodeId`), Solana (native delegation via seeded stake accounts), Cardano (pool delegation, reward withdrawal with the vote-delegation requirement), Polkadot (nomination pools on Asset Hub), NEAR (staking-pool contracts), Tezos (delegation + staking), Sui (native), Aptos (delegation pools), TON (Tonstakers liquid staking). |
+| Swaps | `swap/` | `SwapProvider` interface. Jupiter (Solana), SaucerSwap V2 (Hedera), 0x v2 (EVM), Minswap (Cardano; DexHunter wired off), Asset Hub AssetConversion (Polkadot), Ref Finance (NEAR), Sirius (Tezos), Aftermath (Sui), Hyperion (Aptos), AVNU (Starknet), STON.fi (TON), Stellar DEX path payments, Tinyman v2 (Algorand). Cross-network swaps get a CLPRouter quote only. |
 | On-ramp | `onramp/` | `OnRampProvider` interface. MoonPay, Banxa and C14 hosted-widget URLs. |
 | Secure Trade | `trade/` | Hedera P2P atomic swap (direct and scheduled), share links, review against the real transaction, status from the mirror node. |
 | Explore | `dapps/featured.json`, `lp/` | Curated apps per family, and read-only LP positions for SaucerSwap V2 and Uniswap v3. |
@@ -143,9 +143,45 @@ place to receive, or the only place a provider works. `networkId` is carried for
 because it is winding down. SaucerSwap's `app.` subdomain returned a TLS error, so the list uses
 `www.saucerswap.finance`.
 
+## Phase 2.5: staking and swaps for the newer families (2026-10-03)
+
+Every flow below ends in a request the family's chain module decodes in plain words; where a module can't
+(TON deposit, Sui/Aptos router calls), the step's `verify` re-checks the bytes and a clean simulation is
+required before the plain title replaces "unreadable". Third-party transactions are parsed back with the
+real SDK/codec and refused unless every contract/script/package is on the provider's allow-list, the
+amounts match the quote and the output goes to you. Wallet-built requests carry `WALLET_ORIGIN`
+(`@clip-wallet/core`). Detailed sources live in each chain package's README; the essentials:
+
+**Staking**
+
+| Coin | How | Testnet | Notes and sources |
+|---|---|---|---|
+| ADA | Pool delegation (`buildDelegate`), unstake = certificate 8 + reward withdrawal, claim = withdrawal | yes | Pools from Koios `/pool_list` + `/pool_info` (retiring, ≥100 % saturation and pledge-not-met dropped). Since Plomin, withdrawals need a vote delegation: the position offers "Abstain" / "No confidence" (`claimChoices`); the ledger checks it against the state *before* the transaction's certificates (cardano-ledger `Conway/Rules/Ledger.hs` `validateWithdrawalsDelegated`), so it is a separate first approval and step 2 waits until Koios shows it. CDDL: `conway.cddl`. |
+| DOT / KSM / WND / PAS | NominationPools join / bond_extra / unbond (partial) / withdraw_unbonded / claim_payout on Asset Hub | yes (Westend, Paseo) | One provider per native key (`polkadotStakingProviders`). Pools ranked by commission and members; unbonding read from the runtime (Polkadot ≈ 2 days, Paseo ≈ 7 days, Westend ≈ 12 h). polkadot-sdk `nomination-pools`, `staking-async`; live runtime metadata. |
+| NEAR | staking-pool `deposit_and_stake` / `unstake(_all)` / `withdraw(_all)` | yes | near/core-contracts staking-pool; validators RPC (slashed, kicked, < 95 % online, top-10 % stake dropped); positions from FastNEAR `/v1/account/{id}/staking` with an RPC fallback. Unlock ≈ 4 epochs (1–2 days). |
+| XTZ | Delegation (amount empty/0, `amountOptional`) and staking (`stake` / `unstake` / `finalize_unstake`) | yes (Shadownet) | octez docs "staking" (edge in billionths, limit in millionths); bakers from TzKT `/v1/delegates`; unstake delay 4 cycles. |
+| SUI | `0x3::sui_system::request_add_stake` / `request_withdraw_stake` | yes | sui-system `sui_system.move`, `staking_pool.move` (min 1 SUI); reads over Sui GraphQL. |
+| APT | `0x1::delegation_pool` add_stake / unlock / withdraw | yes | aptos-framework `delegation_pool.move` (min 10 APT, 14-day lockup); pools from the keyless Aptos indexer. |
+| GRAM (TON) | Tonstakers liquid staking (deposit → tsTON, unstake = tsTON burn) | yes | tonstakers-sdk constants, ton-blockchain/liquid-staking-contract op codes; pool data from tonapi.io. Nominator pools skipped (10k+ minimums / own validator). |
+
+**Swaps**
+
+| Family | Provider | Key | Testnet | How it stays safe |
+|---|---|---|---|---|
+| Cardano | Minswap aggregator (`agg-api.minswap.org`, Minswap pools only) | none | mainnet only | Returned tx parsed: our inputs only, outputs to us or allow-listed Minswap order scripts (minswap/sdk constants), datum pays us with ≥ our minimum, no certs/withdrawals/mints, fee ≤ 2 ADA. DexHunter needs a partner key and is wired off. |
+| Polkadot | Asset Hub `AssetConversion` (runtime API quotes, `swap_exact_tokens_for_tokens`) | none | yes (Paseo) | Built by the wallet; `amount_out_min` on-chain; no approvals. |
+| NEAR | Ref Finance (`smartrouter.ref.finance` route, wallet-built `ft_transfer_call`) | none | NEAR↔USDC only | Exchange/wrap contracts fixed per network; route re-checked; `min_amount_out` on-chain. 1Click skipped (key-less fee, off-chain minimum). |
+| Tezos | Sirius (protocol Liquidity Baking CPMM) | none | mainnet only | CPMM address from the node must equal the allow-listed contract; FA1.2 approve 0 → exact → swap → allowance ends at 0. 3Route is EVM-only/paid now; Plenty's API is down. |
+| Sui | Aftermath router | none | mainnet only | Returned PTB parsed; only allow-listed router packages (or deployer-verified linked ones), exactly the sell amount, all transfers to you, fee 0. Cetus needs its SDK (skipped). |
+| Aptos | Hyperion (`router_v3::swap_batch`) | none | yes (thin liquidity) | Wallet-built entry function; pools must be Hyperion `LiquidityPoolV3`. Panora needs an API key (skipped). |
+| Starknet | AVNU v3 (`/swap/v3/quotes`, `/build`) | none | off unless `avnuSepolia` | Exactly one allow-listed exchange call, recipient you, no integrator fee, min out ≥ slippage floor; the wallet adds its own exact approve. |
+| TON | STON.fi v2 (`api.ston.fi` simulate) | none | mainnet only | Messages built by the wallet per the SDK's v2 layout; routers/pTON from a 50-router snapshot; router jetton wallet checked on-chain. |
+| Stellar | Native path payments (Horizon `/paths/strict-send`) | none | yes | `PathPaymentStrictSend` to yourself with `destMin`; trustline added in the same tx when needed. |
+| Algorand | Tinyman v2 (pool state read via algod) | none | yes | Group built by the wallet (opt-in, exact transfer, `swap fixed-input` app call with min out); pool address derived from the official logic-sig template. Folks Router/Vestige/Deflex skipped (keys/404). |
+
 ## Tests
 
-`pnpm test`: 63 tests. Every network call is a mocked fetch fixture (mirror node, Solana RPC, Jupiter, 0x,
+`pnpm test`: 238 tests. Every network call is a mocked fetch fixture (mirror node, Solana RPC, Jupiter, 0x,
 contracts/call, eth_call, CoinGecko, MoonPay signer). Transactions are built and parsed back with the real SDKs.
 Nothing is signed, nothing is sent, and there is no live trading.
 
@@ -170,5 +206,11 @@ Nothing is signed, nothing is sent, and there is no live trading.
   code, so the UI falls back to sharing the link.
 - **SaucerSwap V2 LP reads assume v3-periphery ABIs** for `positions()` and `slot0()`. `slot0` reads only the
   first two words, to tolerate fork differences.
-- **Cardano, Polkadot, NEAR and Tezos staking are stubs** (`staking/stubs.ts`). Each needs its chain module
-  from the other streams.
+- **Phase 2.5 gaps.**
+  - Mainnet-only swaps on testnet builds: Minswap, Sirius, Aftermath, STON.fi (and AVNU unless `avnuSepolia`).
+  - Allow-lists that are snapshots (STON.fi routers, Aftermath packages) refuse new contracts in plain words until refreshed.
+  - Trustline/opt-in/approval and the swap are one atomic approval on Stellar, Algorand and Tezos, but the quote lists two step labels.
+  - Cardano claim without a vote choice takes two approvals; step 2 polls Koios for up to 6 minutes.
+  - Minswap orders are batcher orders with no in-wallet cancel yet. Tonstakers round-end payouts aren't listed as positions.
+  - Starknet native staking isn't built (needs a keyless pool list).
+  - Reward rates are estimates; Tezos delegation rewards depend on the baker.

@@ -40,7 +40,8 @@ export interface FeaturesClient {
   stakingOverview(): Promise<StakeAssetView[]>;
   stakingOptions(p: { assetKey: string }): Promise<StakeOptionView[]>;
   stake(p: { assetKey: string; amount?: string; optionId?: string }): Promise<QueuedApprovals>;
-  stakeAction(p: { assetKey: string; positionId: string; action: "unstake" | "withdraw" | "claim" }): Promise<QueuedApprovals>;
+  /** `amount` (human units) for a partial unstake; `choice` is one of the position's `claimChoices`. */
+  stakeAction(p: { assetKey: string; positionId: string; action: "unstake" | "withdraw" | "claim"; amount?: string; choice?: string }): Promise<QueuedApprovals>;
 
   swapStatus(): Promise<SwapProviderStatus[]>;
   swapQuote(p: { sell: string; buy: string; amount: string; slippageBps?: number }): Promise<SwapQuoteView>;

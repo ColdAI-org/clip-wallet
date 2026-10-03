@@ -5,9 +5,37 @@ import type { FeatureHost, FeaturesConfig } from "./host.js";
 import { saucerSwapPositions, uniswapPositions } from "./lp/readers.js";
 import type { FeatureRequest, FeatureResponseMap } from "./messages.js";
 import { BanxaOnRamp, C14OnRamp, MoonPayOnRamp, OnRampService } from "./onramp/index.js";
-import { HederaStaking, SolanaStaking, StakingService } from "./staking/index.js";
+import {
+  AptosStaking,
+  CardanoStaking,
+  HederaStaking,
+  NearStaking,
+  SolanaStaking,
+  StakingService,
+  SuiStaking,
+  TezosStaking,
+  TonStaking,
+  polkadotStakingProviders,
+} from "./staking/index.js";
 import { refineDecoded } from "./steps.js";
-import { type RouteQuoter, JupiterSwap, SaucerSwap, SwapService, ZeroExSwap } from "./swap/index.js";
+import {
+  type RouteQuoter,
+  AftermathSwap,
+  AssetHubSwap,
+  AvnuSwap,
+  DexHunterSwap,
+  HyperionSwap,
+  JupiterSwap,
+  MinswapSwap,
+  RefFinanceSwap,
+  SaucerSwap,
+  SiriusSwap,
+  StellarPathSwap,
+  StonfiSwap,
+  SwapService,
+  TinymanSwap,
+  ZeroExSwap,
+} from "./swap/index.js";
 import { SecureTradeService } from "./trade/index.js";
 import type { LpPositionView } from "./views.js";
 
@@ -26,10 +54,36 @@ export class FeaturesService {
     config: FeaturesConfig,
     deps: { route?: RouteQuoter } = {},
   ) {
-    this.staking = new StakingService(host, [new HederaStaking(), new SolanaStaking(config.solanaValidators)]);
+    this.staking = new StakingService(host, [
+      new HederaStaking(),
+      new SolanaStaking(config.solanaValidators),
+      new CardanoStaking(),
+      ...polkadotStakingProviders(host.networks()),
+      new NearStaking({ pools: config.nearStakingPools }),
+      new TezosStaking(),
+      new SuiStaking(),
+      new AptosStaking(),
+      new TonStaking(),
+    ]);
+    // Order matters within a family: the first available provider quotes (Minswap before DexHunter).
     this.swaps = new SwapService(
       host,
-      [new SaucerSwap(), new JupiterSwap({ apiKey: config.swap?.jupiterApiKey }), new ZeroExSwap({ apiKey: config.swap?.zeroExApiKey })],
+      [
+        new SaucerSwap(),
+        new JupiterSwap({ apiKey: config.swap?.jupiterApiKey }),
+        new ZeroExSwap({ apiKey: config.swap?.zeroExApiKey }),
+        new MinswapSwap({ partner: config.swap?.minswapPartner }),
+        new DexHunterSwap({ apiKey: config.swap?.dexhunterApiKey }),
+        new AssetHubSwap(),
+        new RefFinanceSwap(),
+        new SiriusSwap(),
+        new AftermathSwap(),
+        new HyperionSwap(),
+        new AvnuSwap({ sepolia: config.swap?.avnuSepolia }),
+        new StonfiSwap(),
+        new StellarPathSwap(),
+        new TinymanSwap(),
+      ],
       { route: deps.route, defaultSlippageBps: config.swap?.defaultSlippageBps },
     );
     this.onramp = new OnRampService(host, [new MoonPayOnRamp(config.onramp?.moonpay), new BanxaOnRamp(config.onramp?.banxa), new C14OnRamp(config.onramp?.c14)], {

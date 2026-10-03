@@ -8,3 +8,7 @@ export { RpcError, SubstrateRpc, plainSubstrateError } from "./rpc.js";
 
 import { createSubstrateModule } from "./module.js";
 export const substrateModule = createSubstrateModule();
+export { constantOf, storageEntries } from "./chain.js";
+export { type Connection, type XcmLocation, activeEra, assetLocation, connect, erasToText, existentialDeposit, locationAsset, nativeLocation, poolUnbondingEras, spendableNative } from "./defi.js";
+/** polkadot-api's enum constructor, for building call args (`Enum("Id", address)`) from packages without the dependency. */
+export { Enum } from "@polkadot-api/substrate-bindings";

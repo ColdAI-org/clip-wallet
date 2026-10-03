@@ -12,6 +12,7 @@ import {
   type SignablePayload,
   type TokenBalance,
   type Warning,
+  WALLET_ORIGIN,
 } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { type BuiltOperation, type PartialTezosOperation, ProtocolsHash, buildOperation, normalizeOperations } from "./build.js";
@@ -94,6 +95,22 @@ export function normalize(request: DappRequest, me: string): Normalized {
   }
 }
 
+/**
+ * A wallet-built `tezos_send` request (origin "clip-wallet", so its `notes` are shown on the approval screen).
+ * Goes through the normal decode → approve → prepare → finalize path like any dapp request.
+ */
+export function tezosSendRequest(ctx: ChainContext, operations: PartialTezosOperation[], notes: string[] = []): DappRequest {
+  return {
+    id: randomId(),
+    origin: WALLET_ORIGIN,
+    via: "injected",
+    family: "tezos",
+    networkId: ctx.network.id,
+    method: TEZOS_METHODS.send,
+    params: { account: ctx.account.address, operations, ...(notes.length ? { notes } : {}) },
+  };
+}
+
 const xtzText = (v: bigint) => `${formatUnits(v, 6)} XTZ`;
 const HIGH_FEE_MUTEZ = 1_000_000n;
 
@@ -106,6 +123,7 @@ export type TezosModule = ChainModule & {
     buildStake(p: { validator: string; amount: string }, ctx: ChainContext): Promise<DappRequest>;
     buildUnstake(p: { validator: string; amount: string }, ctx: ChainContext): Promise<DappRequest>;
     buildWithdraw(p: { validator: string }, ctx: ChainContext): Promise<DappRequest>;
+    buildStopDelegating(ctx: ChainContext): Promise<DappRequest>;
   };
 };
 
@@ -306,17 +324,7 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     return nftsFrom(ctx.network.id, await tokenBalances(tzktFor(ctx), meOf(ctx)), gateway);
   }
 
-  function sendRequest(ctx: ChainContext, operations: PartialTezosOperation[], notes: string[] = []): DappRequest {
-    return {
-      id: randomId(),
-      origin: "clip-wallet",
-      via: "injected",
-      family: "tezos",
-      networkId: ctx.network.id,
-      method: TEZOS_METHODS.send,
-      params: { account: meOf(ctx), operations, ...(notes.length ? { notes } : {}) },
-    };
-  }
+  const sendRequest = tezosSendRequest;
 
   async function buildTransfer(p: { asset: AssetRef; to: string; amount: string }, ctx: ChainContext): Promise<DappRequest> {
     const me = meOf(ctx);

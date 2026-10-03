@@ -128,6 +128,64 @@ describe("feature screens", () => {
     expectNoNetworkNames(container);
   });
 
+  it("Stake: collecting ADA rewards asks for a vote choice first; a partial unstake takes an amount", async () => {
+    const user = userEvent.setup();
+    const ada: StakeAssetView = {
+      assetKey: "ada",
+      symbol: "ADA",
+      name: "Cardano",
+      wholeBalance: true,
+      howItWorks: "Your ADA earns rewards where it is.",
+      positions: [
+        {
+          id: "stake_test1",
+          assetKey: "ada",
+          symbol: "ADA",
+          decimals: 6,
+          amount: "1000000",
+          amountDisplay: "1 ADA",
+          with: "CLIP pool",
+          status: "active",
+          statusText: "Earning rewards",
+          actions: ["claim"],
+          claimChoices: [
+            { id: "abstain", title: "Abstain from votes", detail: "Your stake isn't counted for or against anything." },
+            { id: "no-confidence", title: "No confidence", detail: "Your stake counts as no confidence in the current committee." },
+          ],
+          networkId: "cip34:0-1",
+        },
+      ],
+    };
+    const dot: StakeAssetView = {
+      ...STAKING[0]!,
+      assetKey: "dot",
+      symbol: "DOT",
+      positions: [{ ...STAKING[0]!.positions[0]!, id: "pool-7", assetKey: "dot", symbol: "DOT", partialUnstake: true }],
+    };
+    const f = features({ stakingOverview: vi.fn(async () => [ada, dot]) });
+    renderFeature(<StakeHome />, f);
+    await user.click(await screen.findByRole("button", { name: "Collect rewards" }));
+    expect(f.stakeAction).not.toHaveBeenCalled();
+    await user.click(screen.getByLabelText(/No confidence/));
+    await user.click(within(screen.getByRole("group")).getByRole("button", { name: "Collect rewards" }));
+    expect(f.stakeAction).toHaveBeenCalledWith({ assetKey: "ada", positionId: "stake_test1", action: "claim", choice: "no-confidence" });
+
+    await user.click(screen.getByRole("button", { name: "Unstake" }));
+    await user.type(screen.getByLabelText(/How much to unstake/), "0.5");
+    await user.click(screen.getByRole("button", { name: "Unstake 0.5 DOT" }));
+    expect(f.stakeAction).toHaveBeenLastCalledWith({ assetKey: "dot", positionId: "pool-7", action: "unstake", amount: "0.5" });
+  });
+
+  it("Stake XTZ: the amount is optional (delegate only); an amount stakes it", async () => {
+    const user = userEvent.setup();
+    const xtz: StakeAssetView = { assetKey: "xtz", symbol: "XTZ", name: "Tez", wholeBalance: false, amountOptional: true, howItWorks: "Pick a baker.", positions: [] };
+    const f = features({ stakingOverview: vi.fn(async () => [xtz]) });
+    renderFeature(<StakeAsset assetKey="xtz" />, f);
+    await screen.findByText("Picked for you");
+    await user.click(screen.getByRole("button", { name: "Stake my XTZ" }));
+    expect(f.stake).toHaveBeenCalledWith({ assetKey: "xtz", optionId: "v2", amount: undefined });
+  });
+
   it("Stake SOL: preselects the wallet's pick and stakes the amount", async () => {
     const user = userEvent.setup();
     const { f } = renderFeature(<StakeAsset assetKey="sol" />);

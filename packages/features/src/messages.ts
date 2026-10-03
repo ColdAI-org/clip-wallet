@@ -30,7 +30,7 @@ export const FEATURE_REQUESTS = [
   z.object({ type: z.literal("featStakingOverview") }),
   z.object({ type: z.literal("featStakingOptions"), assetKey }),
   z.object({ type: z.literal("featStake"), assetKey, amount: humanAmount.optional(), optionId: id.optional() }),
-  z.object({ type: z.literal("featStakeAction"), assetKey, positionId: id, action: z.enum(["unstake", "withdraw", "claim"]) }),
+  z.object({ type: z.literal("featStakeAction"), assetKey, positionId: id, action: z.enum(["unstake", "withdraw", "claim"]), amount: humanAmount.optional(), choice: id.optional() }),
   z.object({ type: z.literal("featSwapStatus") }),
   z.object({ type: z.literal("featSwapQuote"), sell: assetKey, buy: assetKey, amount: humanAmount, slippageBps: z.number().int().min(1).max(1000).optional() }),
   z.object({ type: z.literal("featSwapExecute"), quoteId: id }),

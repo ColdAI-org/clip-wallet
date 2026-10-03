@@ -91,7 +91,17 @@ export interface StakingInfo {
   /** Lovelace, decimal string. */
   rewardsAvailable: string;
   drep: string | null;
+  /** Lovelace locked by the stake key registration (refunded on deregistration), when Koios reports it. */
+  deposit?: string;
+  /** Lovelace: ADA at the address plus rewards (Koios total_balance). */
+  totalBalance?: string;
 }
+
+/**
+ * Who the stake key's voting power goes to (Conway `drep`): one of the two predefined options, or a DRep's
+ * credential (28-byte hash, hex).
+ */
+export type DrepChoice = "abstain" | "no-confidence" | { kind: "key" | "script"; hash: string };
 
 export interface CardanoModule extends ChainModule {
   /** Read-only CIP-30 calls (no approval): getUtxos, getBalance, getChangeAddress … submitTx. */
@@ -99,6 +109,19 @@ export interface CardanoModule extends ChainModule {
   getStaking(ctx: ChainContext): Promise<StakingInfo>;
   /** Registers the stake key if needed and delegates to `poolId` (bech32 "pool1…" or hex). */
   buildDelegate(p: { poolId: string }, ctx: ChainContext): Promise<DappRequest>;
+  /** Delegates the stake key's voting power (Conway vote_deleg_cert, certificate 9). Stake key must be registered. */
+  buildVoteDelegate(p: { drep: DrepChoice }, ctx: ChainContext): Promise<DappRequest>;
+  /**
+   * Withdraws all available rewards to the account's address. The ledger (protocol version 10+, since the Plomin
+   * hard fork) refuses withdrawals for key-hash stake credentials not already delegated to a DRep, judged on the
+   * state BEFORE the transaction's certificates, so the vote delegation must be a separate, earlier transaction.
+   */
+  buildWithdrawRewards(ctx: ChainContext): Promise<DappRequest>;
+  /**
+   * Stops staking: withdraws any rewards (required: the account must be empty) and unregisters the stake key with
+   * certificate 8 (unreg_cert, refunding the recorded deposit). Same DRep rule as withdrawals when rewards > 0.
+   */
+  buildDeregister(ctx: ChainContext): Promise<DappRequest>;
 }
 
 type Normalized =
@@ -463,6 +486,8 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
       rewardsAvailable: info?.rewards_available ?? "0",
       drep: info?.delegated_drep ?? null,
     };
+    if (info?.deposit != null) out.deposit = info.deposit;
+    if (info?.total_balance != null) out.totalBalance = info.total_balance;
     if (info?.delegated_pool) {
       out.pool = { id: info.delegated_pool };
       const [p] = await koios.poolInfo([info.delegated_pool]).catch(() => []);
@@ -542,6 +567,56 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
     return wrap(built.body, ctx);
   }
 
+  function stakeCred(ctx: ChainContext): CborValue {
+    const me = meOf(ctx);
+    if (me.stake?.kind !== "key") throw new ClipError("This account can't stake: its address has no staking key.", "cardano/no-stake-key");
+    return [0, me.stake.hash];
+  }
+
+  function drepCbor(d: DrepChoice): CborValue {
+    if (d === "abstain") return [2];
+    if (d === "no-confidence") return [3];
+    if (d && typeof d === "object" && (d.kind === "key" || d.kind === "script") && /^[0-9a-f]{56}$/i.test(d.hash)) return [d.kind === "key" ? 0 : 1, fromHex(d.hash)];
+    throw new ClipError("That isn't a voting choice Clip Wallet knows.", "cardano/bad-drep");
+  }
+
+  function needsVoteDelegation(): ClipError {
+    return new ClipError("Cardano needs you to choose how your voting power counts before you can take out rewards.", "cardano/needs-vote-delegation");
+  }
+
+  async function buildVoteDelegate(p: { drep: DrepChoice }, ctx: ChainContext): Promise<DappRequest> {
+    const cred = stakeCred(ctx);
+    const drep = drepCbor(p.drep);
+    const [staking, params, utxos, slot] = await Promise.all([getStaking(ctx), koiosFor(ctx).params(), myUtxos(ctx), ttl(ctx)]);
+    if (!staking.registered) throw new ClipError("Start staking first; then you can choose how your vote counts.", "cardano/not-registered");
+    const built = buildTx({ utxos, outputs: [], changeAddress: myAddress(ctx), params, ttl: slot, certs: [[9, cred, drep]], witnesses: 2 });
+    return wrap(built.body, ctx);
+  }
+
+  async function buildWithdrawRewards(ctx: ChainContext): Promise<DappRequest> {
+    stakeCred(ctx);
+    const [staking, params, utxos, slot] = await Promise.all([getStaking(ctx), koiosFor(ctx).params(), myUtxos(ctx), ttl(ctx)]);
+    if (!staking.registered) throw new ClipError("This account isn't staking.", "cardano/not-registered");
+    const amount = BigInt(staking.rewardsAvailable);
+    if (amount <= 0n) throw new ClipError("There are no rewards to take out yet.", "cardano/no-rewards");
+    if (!staking.drep) throw needsVoteDelegation();
+    const reward = myRewardAddress(ctx)!;
+    const built = buildTx({ utxos, outputs: [], changeAddress: myAddress(ctx), params, ttl: slot, withdrawals: [{ rewardAddress: reward, amount }], witnesses: 2 });
+    return wrap(built.body, ctx);
+  }
+
+  async function buildDeregister(ctx: ChainContext): Promise<DappRequest> {
+    const cred = stakeCred(ctx);
+    const [staking, params, utxos, slot] = await Promise.all([getStaking(ctx), koiosFor(ctx).params(), myUtxos(ctx), ttl(ctx)]);
+    if (!staking.registered) throw new ClipError("This account isn't staking.", "cardano/not-registered");
+    const rewards = BigInt(staking.rewardsAvailable);
+    if (rewards > 0n && !staking.drep) throw needsVoteDelegation();
+    const deposit = BigInt(staking.deposit ?? params.stakeAddressDeposit);
+    const withdrawals = rewards > 0n ? [{ rewardAddress: myRewardAddress(ctx)!, amount: rewards }] : [];
+    const built = buildTx({ utxos, outputs: [], changeAddress: myAddress(ctx), params, ttl: slot, certs: [[8, cred, deposit]], deposit: -deposit, withdrawals, witnesses: 2 });
+    return wrap(built.body, ctx);
+  }
+
   return {
     family: "cardano",
     curve: "bip32-ed25519",
@@ -573,6 +648,9 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
     read,
     getStaking,
     buildDelegate,
+    buildVoteDelegate,
+    buildWithdrawRewards,
+    buildDeregister,
   };
 }
 

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { HederaStaking, hederaApy } from "../src/staking/hedera.js";
 import { SolanaStaking, rankValidators, type VoteAccount } from "../src/staking/solana.js";
 import { StakingService } from "../src/staking/service.js";
+import { PENDING_STAKING } from "../src/staking/stubs.js";
 import { onlyPrograms, STAKE_PROGRAM, SYSTEM_PROGRAM } from "../src/solana-verify.js";
 import { refineDecoded } from "../src/steps.js";
 import { DEVNET, ME_HEDERA, ME_SOL, accountFor, fakeHost, flush, mirrorAccount, mockFetch, sol } from "./helpers.js";
@@ -226,11 +227,37 @@ describe("StakingService", () => {
     await flush();
   });
 
-  it("families from other streams show as coming soon", async () => {
+  it("a family without a provider is plainly unsupported (nothing is left 'coming soon')", async () => {
+    expect(PENDING_STAKING).toEqual([]);
     const substrate = { ...DEVNET, id: "polkadot:test", family: "substrate" as const, nativeAsset: { key: "dot", symbol: "DOT", name: "Polkadot", decimals: 10, networkId: "polkadot:test" } };
     const host = fakeHost({ networks: [substrate], fetch: mockFetch([]).fetch });
-    const view = await new StakingService(host, [new SolanaStaking()]).overview();
-    expect(view).toEqual([expect.objectContaining({ assetKey: "dot", unavailable: { code: "staking/coming-soon", message: "Staking DOT is coming soon." } })]);
-    await expect(new StakingService(host, []).stake({ assetKey: "dot", amount: "1" })).rejects.toMatchObject({ userMessage: "Staking this is coming soon." });
+    expect(await new StakingService(host, [new SolanaStaking()]).overview()).toEqual([]);
+    await expect(new StakingService(host, []).stake({ assetKey: "dot", amount: "1" })).rejects.toMatchObject({ userMessage: "This can't be staked in Clip Wallet." });
+  });
+
+  it("an optional amount (Tezos delegate-only) reaches the provider as 0; the view says so", async () => {
+    const seen: (string | undefined)[] = [];
+    const provider = {
+      family: "tezos" as const,
+      assetKey: "xtz",
+      wholeBalance: false,
+      amountOptional: true,
+      howItWorks: "x",
+      supports: (n: { family: string }) => n.family === "tezos",
+      positions: async () => [],
+      options: async () => [],
+      buildStake: async (p: { amount?: string }) => {
+        seen.push(p.amount);
+        return { steps: [{ title: "Delegate your XTZ", request: { id: "r", origin: "clip-wallet", via: "injected" as const, family: "tezos" as const, networkId: "tezos:x", method: "tezos_send", params: {} } }] };
+      },
+      buildUnstake: async () => ({ steps: [] }),
+    };
+    const tez = { ...DEVNET, id: "tezos:x", family: "tezos" as const, nativeAsset: { key: "xtz", symbol: "XTZ", name: "Tez", decimals: 6, networkId: "tezos:x" } };
+    const host = fakeHost({ networks: [tez], fetch: mockFetch([]).fetch });
+    const svc = new StakingService(host, [provider]);
+    await svc.stake({ assetKey: "xtz" });
+    await svc.stake({ assetKey: "xtz", amount: "2.5" });
+    expect(seen).toEqual(["0", "2500000"]);
+    expect((await svc.overview())[0]).toMatchObject({ assetKey: "xtz", amountOptional: true });
   });
 });

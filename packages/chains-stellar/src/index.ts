@@ -2,6 +2,7 @@ export { type Described, type DescribeContext, type TokenMeta, MIN_CREATE_ACCOUN
 export { Horizon, type HorizonAccount, type HorizonBalance, plainStellarError } from "./horizon.js";
 export * from "./module.js";
 export * from "./networks.js";
+export { MAX_PATH_LENGTH, type PathSwapCheck, type PathSwapOptions, type PathSwapParams, buildPathSwap, checkPathSwap, parseStellarTransaction, swapAsset } from "./swap.js";
 export { SorobanRpc, type SimulateResult } from "./rpc.js";
 
 import { createStellarModule } from "./module.js";
