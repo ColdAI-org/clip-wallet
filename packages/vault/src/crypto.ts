@@ -1,11 +1,11 @@
 /**
  * Encryption at rest: Argon2id (hash-wasm) -> KEK; XChaCha20-Poly1305 (@noble/ciphers) for every sealed box.
  */
-import { argon2id } from "hash-wasm";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { fromB64, randomBytes, toB64, utf8 } from "./bytes.js";
+import { hashWasmArgon2id, type Argon2idFn } from "./kdf.js";
 
 export interface Argon2Params {
   /** Memory in KiB. */
@@ -34,7 +34,8 @@ export function newKdfRecord(params: Argon2Params): KdfRecord {
   return { alg: "argon2id", salt: toB64(randomBytes(16)), ...params };
 }
 
-export async function deriveKek(password: string, kdf: KdfRecord): Promise<Uint8Array> {
+/** `impl` defaults to hash-wasm; see kdf.ts for injecting a native Argon2id. */
+export async function deriveKek(password: string, kdf: KdfRecord, impl: Argon2idFn = hashWasmArgon2id): Promise<Uint8Array> {
   if (kdf.alg !== "argon2id") throw new Error("unsupported kdf");
   if (
     kdf.memoryKiB < 8 * kdf.parallelism ||
@@ -45,15 +46,16 @@ export async function deriveKek(password: string, kdf: KdfRecord): Promise<Uint8
     kdf.parallelism > 4
   )
     throw new Error("argon2 parameters out of range");
-  return argon2id({
-    password: utf8(password.normalize("NFKC")),
+  const out = await impl({
+    password: password.normalize("NFKC"),
     salt: fromB64(kdf.salt),
-    memorySize: kdf.memoryKiB,
+    memoryKiB: kdf.memoryKiB,
     iterations: kdf.iterations,
     parallelism: kdf.parallelism,
     hashLength: 32,
-    outputType: "binary",
   });
+  if (!(out instanceof Uint8Array) || out.length !== 32) throw new Error("argon2id returned the wrong length");
+  return out;
 }
 
 export interface SealedBox {

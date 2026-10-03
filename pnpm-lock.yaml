@@ -392,6 +392,46 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.20.5)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(lightningcss@1.33.0)
 
+  packages/engine:
+    dependencies:
+      '@clip-wallet/1mask':
+        specifier: workspace:*
+        version: link:../1mask
+      '@clip-wallet/chains-bitcoin':
+        specifier: workspace:*
+        version: link:../chains-bitcoin
+      '@clip-wallet/chains-evm':
+        specifier: workspace:*
+        version: link:../chains-evm
+      '@clip-wallet/chains-hedera':
+        specifier: workspace:*
+        version: link:../chains-hedera
+      '@clip-wallet/chains-solana':
+        specifier: workspace:*
+        version: link:../chains-solana
+      '@clip-wallet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@clip-wallet/route':
+        specifier: workspace:*
+        version: link:../route
+      '@clip-wallet/ui':
+        specifier: workspace:*
+        version: link:../ui
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(lightningcss@1.33.0)
+
   packages/route:
     dependencies:
       '@clip-wallet/core':
