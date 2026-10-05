@@ -41,6 +41,8 @@ function fake(s: LinkStatusView): LinkClient & { calls: unknown[] } {
     syncNow: rec("syncNow", undefined),
     syncDelete: rec("syncDelete", undefined),
     handoffCreate: rec("handoffCreate", { link: "clipwallet://browse?url=https%3A%2F%2Fapp.example" }),
+    handoffSend: rec("handoffSend", undefined),
+    handoffOpen: rec("handoffOpen", { id: "h1", url: "https://app.example", origin: "https://app.example", verified: true, families: ["evm"], at: 1 }),
     handoffAccept: rec("handoffAccept", { url: "https://app.example" }),
     handoffDismiss: rec("handoffDismiss", undefined),
   };

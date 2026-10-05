@@ -286,6 +286,7 @@ export function Settings() {
           <MenuItem title={t("m.settings.menu.accounts")} hint={t("m.settings.menu.accountsHint")} testID="menu-accounts" onPress={() => navigate({ name: "accounts" })} />
           <MenuItem title={t("m.settings.menu.hardware")} hint={t("m.settings.menu.hardwareHint")} testID="menu-hardware" onPress={() => navigate({ name: "hardware" })} />
           <MenuItem title={t("m.settings.menu.security")} hint={t("m.settings.menu.securityHint")} testID="menu-security" onPress={() => navigate({ name: "security" })} />
+          <MenuItem title={t("m.link.title")} hint={t("m.link.lede")} testID="menu-linked-devices" onPress={() => navigate({ name: "linked-devices" })} />
         </Card>
       </View>
       <Section title={t("m.settings.social")}>

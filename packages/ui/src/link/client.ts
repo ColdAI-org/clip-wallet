@@ -22,6 +22,8 @@ export interface LinkClient {
   syncNow(): Promise<void>;
   syncDelete(): Promise<void>;
   handoffCreate(p: { url: string; families: string[] }): Promise<{ link: string }>;
+  handoffSend(p: { deviceId: string; url: string; families: string[] }): Promise<void>;
+  handoffOpen(p: { link: string }): Promise<HandoffView>;
   handoffAccept(p: { id: string }): Promise<{ url: string }>;
   handoffDismiss(p: { id: string }): Promise<void>;
   /** The page the person is on (extension: the active tab), to offer "Continue this page on your phone". */
@@ -50,6 +52,8 @@ export function createLinkClient(call: (msg: { type: string } & Record<string, u
     syncNow: () => c("linkSyncNow"),
     syncDelete: () => c("linkSyncDelete"),
     handoffCreate: (p) => c("linkHandoffCreate", p),
+    handoffSend: (p) => c("linkHandoffSend", p),
+    handoffOpen: (p) => c("linkHandoffOpen", p),
     handoffAccept: (p) => c("linkHandoffAccept", p),
     handoffDismiss: (p) => c("linkHandoffDismiss", p),
     ...extra,

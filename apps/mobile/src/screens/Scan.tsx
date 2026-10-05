@@ -8,6 +8,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { isWalletConnectUri, userMessageOf } from "@clip-wallet/ui";
 import { useWallet } from "../ui/context";
 import { tradeOfferFrom } from "../lib/deeplinks";
+import { parseOfferUri } from "@clip-wallet/link";
 import { Button, ErrorNote, Notice, Screen, T } from "../ui/kit";
 import { useMobileT } from "../i18n";
 
@@ -37,6 +38,12 @@ export function Scan() {
             busy
               ? undefined
               : async ({ data }) => {
+                  if (parseOfferUri(data)) {
+                    // A Clip Link pairing code (link a browser, or move a wallet in either direction).
+                    setBusy(true);
+                    navigate({ name: "link-pair", uri: data });
+                    return;
+                  }
                   const offer = tradeOfferFrom(data);
                   if (offer) {
                     setBusy(true);

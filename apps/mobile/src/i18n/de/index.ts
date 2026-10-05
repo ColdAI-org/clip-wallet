@@ -42,6 +42,7 @@ import stake from "./stake";
 import swap from "./swap";
 import trade from "./trade";
 import security from "./security";
+import link from "./link";
 import plugins from "./plugins";
 
 const messages: Translation<MobileMessages> = {
@@ -68,6 +69,7 @@ const messages: Translation<MobileMessages> = {
   ...swap,
   ...trade,
   ...security,
+  ...link,
   ...plugins,
 };
 export default messages;

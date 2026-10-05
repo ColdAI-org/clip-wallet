@@ -46,7 +46,10 @@ export type Route =
   | { name: "security-permissions" }
   | { name: "security-cleanup" }
   | { name: "security-protection" }
-  | { name: "plugins" };
+  | { name: "plugins" }
+  /* Settings → Linked devices (r1/connect) */
+  | { name: "linked-devices" }
+  | { name: "link-pair"; uri?: string; id?: string };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 

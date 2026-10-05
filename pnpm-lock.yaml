@@ -335,6 +335,9 @@ importers:
       '@clip-wallet/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@clip-wallet/link':
+        specifier: workspace:*
+        version: link:../../packages/link
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../../packages/names

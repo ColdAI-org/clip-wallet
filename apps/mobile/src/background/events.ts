@@ -1,5 +1,5 @@
 /** Tiny event hub between the engine (env callbacks) and React. */
-export type WalletEvent = { type: "change" } | { type: "approval"; id: string } | { type: "locked" };
+export type WalletEvent = { type: "change" } | { type: "approval"; id: string } | { type: "locked" } | { type: "open-url"; url: string };
 
 export class Events {
   private listeners = new Set<(e: WalletEvent) => void>();

@@ -9,6 +9,7 @@ import { EngineHardware, createEngineHardwareClient } from "@clip-wallet/engine/
 import { createSocial } from "@clip-wallet/engine/social";
 import type { Notice } from "@clip-wallet/social";
 import type { MobileWallet } from "../src/background/host";
+import { createLinkClient } from "@clip-wallet/ui";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
 import { BASE_SEPOLIA, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../../packages/engine/test/fixtures";
@@ -36,9 +37,13 @@ export interface TestWallet extends MobileWallet {
   notices: Notice[];
   /** sec* requests the Security screens made, in order. */
   securityCalls: { type: string; [k: string]: unknown }[];
+  /** link* requests the Linked devices screens made, in order. */
+  linkCalls: { type: string; [k: string]: unknown }[];
 }
 
 export interface TestWalletOptions {
+  /** Answers for link* requests (Linked devices); default: nothing linked, sync available. */
+  link?: Partial<Record<string, (m: Record<string, unknown>) => unknown>>;
   /** Answers for sec* requests (default: security-fixtures.ts). Return QUEUE to queue a wallet approval. */
   security?: Partial<Record<string, (m: Record<string, unknown>) => unknown>>;
   /** Clip Plugins on the engine (default: none, so the Plugins entry is hidden). */
@@ -118,7 +123,19 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
   if (opts.plugins) engine.attachPlugins(opts.plugins(engine, kv));
   const social = createEngineSocialClient(engine, { requestNotificationPermission: async () => true });
   let ledgerPicked: TestWallet["ledgerPicked"] = null;
+  const linkCalls: TestWallet["linkCalls"] = [];
+  const linkDefaults: Record<string, (m: Record<string, unknown>) => unknown> = {
+    linkStatus: () => ({ platform: "mobile", devices: [], sync: { available: true, enabled: false }, signer: { deviceId: null, online: false, waiting: [] }, pairings: [], handoffs: [], capabilities: { relay: true, desktop: false, sync: true } }),
+  };
+  const link = createLinkClient(async (m) => {
+    linkCalls.push(m);
+    const answer = opts.link?.[m.type] ?? linkDefaults[m.type];
+    return answer ? answer(m) : undefined;
+  });
   const wallet: TestWallet = {
+    link,
+    linkService: null as never,
+    linkCalls,
     vault,
     featureCalls,
     opened,
