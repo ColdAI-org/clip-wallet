@@ -1,0 +1,684 @@
+{
+  "rainbowkit": {
+    "id": "rainbowkit",
+    "ecosystem": "EVM",
+    "picker": "RainbowKit 2.2.11 ConnectButton",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "rainbowkit.png"
+    ],
+    "at": "2026-10-05T16:26:48.913Z",
+    "detail": {
+      "library": "@rainbow-me/rainbowkit 2.2.11 (wagmi 2)",
+      "config": "getDefaultConfig, placeholder WalletConnect project id (injected path only)",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.63,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "connectkit": {
+    "id": "connectkit",
+    "ecosystem": "EVM",
+    "picker": "ConnectKit 1.9.2 ConnectKitButton",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "connectkit.png"
+    ],
+    "at": "2026-10-05T16:28:53.351Z",
+    "detail": {
+      "library": "connectkit 1.9.2 (wagmi 2)",
+      "config": "getDefaultConfig, no WalletConnect project id",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.58,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "appkit": {
+    "id": "appkit",
+    "ecosystem": "EVM",
+    "picker": "Reown AppKit 1.8.24 <appkit-button>",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "appkit.png"
+    ],
+    "at": "2026-10-05T16:29:09.317Z",
+    "detail": {
+      "library": "@reown/appkit 1.8.24 + appkit-adapter-wagmi (wagmi 2)",
+      "config": "placeholder project id (injected path only)",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.62,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "solana": {
+    "id": "solana",
+    "ecosystem": "Solana",
+    "picker": "@solana/wallet-adapter-react-ui 0.9.40 WalletMultiButton / WalletModal",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "solana.png"
+    ],
+    "at": "2026-10-05T16:15:54.596Z",
+    "detail": {
+      "library": "@solana/wallet-adapter-react-ui 0.9.40 (wallet-adapter-react 0.15.40)",
+      "config": "devnet, wallets: [] (Wallet Standard detection), autoConnect",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.63,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "sui": {
+    "id": "sui",
+    "ecosystem": "Sui",
+    "picker": "@mysten/dapp-kit 1.1.17 ConnectButton / ConnectModal",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "sui.png"
+    ],
+    "at": "2026-10-05T16:16:08.112Z",
+    "detail": {
+      "library": "@mysten/dapp-kit 1.1.17 (@mysten/sui 2)",
+      "config": "testnet, WalletProvider autoConnect",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.61,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0x610339995017916d583f600d0796603136f24fcb271cde2ddecb50db9a6fc5f9"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "aptos": {
+    "id": "aptos",
+    "ecosystem": "Aptos",
+    "picker": "@aptos-labs/wallet-adapter-ant-design 5.3.19 WalletSelector",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "aptos.png"
+    ],
+    "at": "2026-10-05T16:16:21.230Z",
+    "detail": {
+      "library": "@aptos-labs/wallet-adapter-ant-design 5.3.19 (wallet-adapter-react 8.3.3)",
+      "config": "testnet, autoConnect",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.61,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0xf250c99c6586caefd617a38b184dff03ca467ce35268563c907b0d71489d2de9"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "cardano-stock": {
+    "id": "cardano-stock",
+    "ecosystem": "Cardano",
+    "picker": "cardano-connect-with-wallet 0.2.22 ConnectWalletButton, stock",
+    "kind": "stock-ui",
+    "notes": [
+      "supportedWallets defaults to the library's wallet registry (wallets.ts); window.cardano wallets outside it are not shown"
+    ],
+    "shots": [
+      "cardano-stock.png"
+    ],
+    "at": "2026-10-05T16:16:36.134Z",
+    "detail": {
+      "library": "@cardano-foundation/cardano-connect-with-wallet 0.2.22",
+      "config": "limitNetwork TESTNET, default supportedWallets"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "cardano-clip": {
+    "id": "cardano-clip",
+    "ecosystem": "Cardano",
+    "picker": "cardano-connect-with-wallet 0.2.22 ConnectWalletButton, supportedWallets + \"clipwallet\"",
+    "kind": "stock-ui",
+    "notes": [
+      "listed as \"Clipwallet\": wallets outside the library's registry are shown by their window.cardano key, capitalised (\"Clipwallet\"); window.cardano.clipwallet.name is not used"
+    ],
+    "shots": [
+      "cardano-clip.png"
+    ],
+    "at": "2026-10-05T16:16:57.365Z",
+    "detail": {
+      "library": "@cardano-foundation/cardano-connect-with-wallet 0.2.22",
+      "config": "limitNetwork TESTNET, supportedWallets: [...defaults, \"clipwallet\"]",
+      "name": "Clipwallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.64,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "mesh": {
+    "id": "mesh",
+    "ecosystem": "Cardano",
+    "picker": "Mesh @meshsdk/react 2.0.0-beta.2 CardanoWallet",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "mesh.png"
+    ],
+    "at": "2026-10-05T16:17:26.779Z",
+    "detail": {
+      "library": "@meshsdk/react 2.0.0-beta.2 CardanoWallet",
+      "config": "persist",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.61,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "talisman-stock": {
+    "id": "talisman-stock",
+    "ecosystem": "Polkadot",
+    "picker": "Talisman Connect 1.1.9 WalletSelect, stock",
+    "kind": "stock-ui",
+    "notes": [
+      "getWallets() is a fixed list of nine wallet classes in @talismn/connect-wallets"
+    ],
+    "shots": [
+      "talisman-stock.png"
+    ],
+    "at": "2026-10-05T16:18:00.225Z",
+    "detail": {
+      "library": "@talismn/connect-components 1.1.9 (connect-wallets 1.2.8)",
+      "config": "default wallet list"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "talisman-clip": {
+    "id": "talisman-clip",
+    "ecosystem": "Polkadot",
+    "picker": "Talisman Connect 1.1.9 WalletSelect, walletList + Clip entry",
+    "kind": "stock-ui",
+    "notes": [
+      "reload: the page keeps the selected account in memory only (Talisman Connect has no session restore of its own)"
+    ],
+    "shots": [
+      "talisman-clip.png"
+    ],
+    "at": "2026-10-05T16:18:21.239Z",
+    "detail": {
+      "library": "@talismn/connect-components 1.1.9 (connect-wallets 1.2.8)",
+      "config": "walletList: [...getWallets(), Clip entry]",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.65,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "n/a"
+  },
+  "dotconnect": {
+    "id": "dotconnect",
+    "ecosystem": "Polkadot",
+    "picker": "DOT Connect 0.31.0 <dc-connection-button> (ReactiveDOT)",
+    "kind": "stock-ui",
+    "notes": [
+      "listed as \"clip-wallet\": DOT Connect names an injectedWeb3 extension by its key unless the extension is in DOT Connect's own wallet list; the Polkadot{.js} extension interface has no name or icon field",
+      "icon: generic wallet glyph, for the same reason"
+    ],
+    "shots": [
+      "dotconnect.png"
+    ],
+    "at": "2026-10-05T16:19:09.645Z",
+    "detail": {
+      "library": "dot-connect 0.31.0 (@reactive-dot/core 0.72.0)",
+      "config": "wallets: [new InjectedWalletProvider()]",
+      "name": "clip-wallet",
+      "icon": {
+        "ok": false,
+        "loaded": true,
+        "sameAsAnnounced": false,
+        "orange": 0,
+        "src": "(inline svg)",
+        "size": "32x32"
+      },
+      "account": "15fPCgeELtTW6Xdx3XsqCpKq5AtHyWP2FakuRFuw44FiTjT1"
+    },
+    "listed": "pass",
+    "icon": "fail",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "starknetkit-stock": {
+    "id": "starknetkit-stock",
+    "ecosystem": "Starknet",
+    "picker": "starknetkit 3.4.3 connect() modal, default connectors",
+    "kind": "stock-ui",
+    "notes": [
+      "connect() without connectors uses a fixed list (Ready/Argent X, Braavos, Cartridge Controller, and MetaMask/Fordefi/Keplr/Xverse when injected); other window.starknet_* wallets are not shown"
+    ],
+    "shots": [
+      "starknetkit-stock.png"
+    ],
+    "at": "2026-10-05T16:19:38.295Z",
+    "detail": {
+      "library": "starknetkit 3.4.3",
+      "config": "default connectors; modalMode \"alwaysAsk\" (button) / \"neverAsk\" (on load)"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "starknetkit-clip": {
+    "id": "starknetkit-clip",
+    "ecosystem": "Starknet",
+    "picker": "starknetkit 3.4.3 connect() modal + InjectedConnector({ id: \"clipwallet\" })",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "starknetkit-clip.png"
+    ],
+    "at": "2026-10-05T16:19:59.419Z",
+    "detail": {
+      "library": "starknetkit 3.4.3",
+      "config": "connectors: ArgentX, Braavos, InjectedConnector(clipwallet); modalMode \"alwaysAsk\" (button) / \"neverAsk\" (on load)",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.63,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "satsconnect": {
+    "id": "satsconnect",
+    "ecosystem": "Bitcoin",
+    "picker": "sats-connect 4.2.1 wallet selector (@sats-connect/ui)",
+    "kind": "stock-ui",
+    "notes": [
+      "the selector lists only sats-connect's built-in adapters (DefaultAdaptersInfo); it reads neither the Wallet Standard nor WBIP-004 btc_providers"
+    ],
+    "shots": [
+      "satsconnect.png"
+    ],
+    "at": "2026-10-05T16:20:26.986Z",
+    "detail": {
+      "library": "sats-connect 4.2.1 (@sats-connect/ui selector)",
+      "config": "default selector config"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "near-stock": {
+    "id": "near-stock",
+    "ecosystem": "NEAR",
+    "picker": "NEAR Wallet Selector 10.1.4 modal-ui, stock modules",
+    "kind": "stock-ui",
+    "notes": [
+      "Wallet Selector lists only the modules the dapp passes; there is no injected-wallet discovery"
+    ],
+    "shots": [
+      "near-stock.png"
+    ],
+    "at": "2026-10-05T16:20:48.067Z",
+    "detail": {
+      "library": "@near-wallet-selector/modal-ui 10.1.4",
+      "config": "modules: MyNearWallet, Meteor (stock)"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "near-clip": {
+    "id": "near-clip",
+    "ecosystem": "NEAR",
+    "picker": "NEAR Wallet Selector 10.1.4 modal-ui + @clip-wallet/kit-modules/near",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "near-clip.png"
+    ],
+    "at": "2026-10-05T16:27:14.978Z",
+    "detail": {
+      "library": "@near-wallet-selector/modal-ui 10.1.4",
+      "config": "modules: MyNearWallet, Meteor, @clip-wallet/kit-modules/near",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.62,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "stellar-stock": {
+    "id": "stellar-stock",
+    "ecosystem": "Stellar",
+    "picker": "Stellar Wallets Kit 2.7.0 button + auth modal, defaultModules()",
+    "kind": "stock-ui",
+    "notes": [
+      "the kit lists only its modules; defaultModules() has no injected-wallet discovery"
+    ],
+    "shots": [
+      "stellar-stock.png"
+    ],
+    "at": "2026-10-05T16:21:23.159Z",
+    "detail": {
+      "library": "@creit.tech/stellar-wallets-kit 2.7.0",
+      "config": "modules: defaultModules(), TESTNET"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "stellar-clip": {
+    "id": "stellar-clip",
+    "ecosystem": "Stellar",
+    "picker": "Stellar Wallets Kit 2.7.0 + @clip-wallet/kit-modules/stellar ClipWalletModule",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "stellar-clip.png"
+    ],
+    "at": "2026-10-05T16:27:29.019Z",
+    "detail": {
+      "library": "@creit.tech/stellar-wallets-kit 2.7.0",
+      "config": "modules: defaultModules() + ClipWalletModule, TESTNET",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.47,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "algorand-stock": {
+    "id": "algorand-stock",
+    "ecosystem": "Algorand",
+    "picker": "use-wallet-ui-react 1.2.1 WalletButton, Pera/Defly/Exodus",
+    "kind": "stock-ui",
+    "notes": [
+      "use-wallet v5 lists only the adapters the dapp passes; there is no injected-wallet discovery"
+    ],
+    "shots": [
+      "algorand-stock.png"
+    ],
+    "at": "2026-10-05T16:21:59.418Z",
+    "detail": {
+      "library": "@txnlab/use-wallet-ui-react 1.2.1 (use-wallet-react 5.0.1)",
+      "config": "wallets: pera, defly, exodus, TestNet"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "algorand-clip": {
+    "id": "algorand-clip",
+    "ecosystem": "Algorand",
+    "picker": "use-wallet-ui-react 1.2.1 WalletButton + @clip-wallet/kit-modules/algorand clipWallet()",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "algorand-clip.png"
+    ],
+    "at": "2026-10-05T16:27:44.233Z",
+    "detail": {
+      "library": "@txnlab/use-wallet-ui-react 1.2.1 (use-wallet-react 5.0.1)",
+      "config": "wallets: pera, defly, exodus + clipWallet(), TestNet",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.63,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "ton-stock": {
+    "id": "ton-stock",
+    "ecosystem": "TON",
+    "picker": "@tonconnect/ui 3.0.2 modal, official wallets list",
+    "kind": "stock-ui",
+    "notes": [
+      "the modal shows wallets from the official wallets list (config.ton.org/wallets-v2.json); Clip isn't in it"
+    ],
+    "shots": [
+      "ton-stock.png"
+    ],
+    "at": "2026-10-05T16:22:33.472Z",
+    "detail": {
+      "library": "@tonconnect/ui 3.0.2",
+      "config": "official wallets list"
+    },
+    "listed": "expected-no",
+    "icon": "n/a",
+    "connects": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "ton-clip": {
+    "id": "ton-clip",
+    "ecosystem": "TON",
+    "picker": "@tonconnect/ui 3.0.2 modal + walletsListConfiguration.includeWallets (Clip entry)",
+    "kind": "stock-ui",
+    "notes": [],
+    "shots": [
+      "ton-clip.png"
+    ],
+    "at": "2026-10-05T16:22:54.889Z",
+    "detail": {
+      "library": "@tonconnect/ui 3.0.2",
+      "config": "includeWallets: [Clip Wallet, jsBridgeKey clipwallet]",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.62,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "0:500497c69df5f15b35518416aea52c716d91fcd624809523f0ed8759368a5a69"
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "reconnect": "pass",
+    "reload": "pass"
+  },
+  "tezos": {
+    "id": "tezos",
+    "ecosystem": "Tezos",
+    "picker": "Beacon 4.8.1 pairing modal (DAppClient.requestPermissions)",
+    "kind": "stock-ui",
+    "notes": [
+      "Beacon lists Clip (it answers Beacon's postMessage ping), but in beacon-ui 4.8 the tile of an unlisted Chromium extension does nothing: \"Use Extension\" is only offered for wallets in Beacon's extension list or on Firefox",
+      "clicking Clip in the stock modal did nothing (no wallet approval, no account), as documented"
+    ],
+    "shots": [
+      "tezos.png"
+    ],
+    "at": "2026-10-05T16:23:09.998Z",
+    "detail": {
+      "library": "@airgap/beacon-dapp 4.8.1 (beacon-ui)",
+      "config": "shadownet",
+      "name": "Clip Wallet",
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.36,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": ""
+    },
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "fail",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "hedera": {
+    "id": "hedera",
+    "ecosystem": "Hedera",
+    "picker": "@hashgraph/hedera-wallet-connect 2.1.3 DAppConnector extension discovery (HashConnect v3 path)",
+    "kind": "stock-ui",
+    "notes": [
+      "WALLETCONNECT_PROJECT_ID is not set in .env.dapp-matrix: the Hedera DAppConnector / HashConnect path needs a real WalletConnect project id (then run `pnpm --filter @clip-wallet/extension pickers`, which builds the wallet with it)."
+    ],
+    "shots": [],
+    "at": "2026-10-05T16:23:49.472Z",
+    "listed": "skip",
+    "icon": "skip",
+    "connects": "skip",
+    "reconnect": "skip",
+    "reload": "skip"
+  }
+}

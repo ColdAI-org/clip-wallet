@@ -1,5 +1,7 @@
 # Testnet dapp matrix
 
+Stock wallet-picker UIs and real hosted testnet dapps: [picker-matrix.md](picker-matrix.md).
+
 The real extension build (real vault, real chain modules, real 1Mask) against each family's public testnet. Playwright
 drives a dapp page that finds Clip through that ecosystem's own discovery and talks to it through that ecosystem's own
 dapp library. There is no Clip SDK on the dapp side.

@@ -135,3 +135,34 @@ describe("use-wallet v5 adapter", () => {
     expect(wallet.isConnected).toBe(false);
   });
 });
+
+describe("picker identity (picker matrix: modules show what the wallet announces)", () => {
+  const ACME = { name: "Acme Wallet", icon: "data:image/png;base64,QUNNRQ==" as const, rdns: "com.example.acme" };
+  const transport = { request: async () => null, onEvent: () => () => {}, destroy: () => {} };
+
+  it("a kit-built wallet appears under its own name and icon in every dapp-side module", async () => {
+    installed = installP2Providers(window, ACME, NETWORKS, transport as never, { globalKey: "acmewallet" });
+    const near = (await setupClipWallet({ globalKey: "acmewallet" })({ options: { network: { networkId: "testnet" } } as never }))!;
+    expect(near.metadata.name).toBe("Acme Wallet");
+    expect(near.metadata.iconUrl).toBe(ACME.icon);
+    const stellar = new ClipWalletModule({ globalKey: "acmewallet" });
+    expect([stellar.productName, stellar.productIcon]).toEqual(["Acme Wallet", ACME.icon]);
+    const algo = clipWallet({ globalKey: "acmewallet" });
+    expect(algo.metadata).toMatchObject({ name: "Acme Wallet", icon: ACME.icon });
+  });
+
+  it("explicit options still win over the announcement", async () => {
+    installed = installP2Providers(window, ACME, NETWORKS, transport as never, { globalKey: "acmewallet" });
+    const near = (await setupClipWallet({ globalKey: "acmewallet", iconUrl: "data:image/png;base64,T1dO" })({ options: { network: { networkId: "testnet" } } as never }))!;
+    expect(near.metadata.iconUrl).toBe("data:image/png;base64,T1dO");
+    expect(new ClipWalletModule({ globalKey: "acmewallet", productName: "Mine" }).productName).toBe("Mine");
+    expect(clipWallet({ globalKey: "acmewallet", metadata: { name: "Mine", icon: "x" } }).metadata).toMatchObject({ name: "Mine", icon: "x" });
+  });
+
+  it("falls back to Clip Wallet's identity when nothing is announced", () => {
+    const stellar = new ClipWalletModule({ globalKey: "nobody" });
+    expect(stellar.productName).toBe("Clip Wallet");
+    expect(stellar.productIcon).toMatch(/^data:image\/svg\+xml;base64,/);
+    expect(clipWallet({ globalKey: "nobody" }).metadata.name).toBe("Clip Wallet");
+  });
+});

@@ -23,9 +23,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import type { BrowserContext, Page } from "@playwright/test";
-import { extensionTest, expect, openPage, importWallet, REAL_BUILD } from "./fixtures";
+import { extensionTest, expect, REAL_BUILD } from "./fixtures";
 import { matrixPhrase, walletConnectProjectId } from "./matrix/env";
 import { verifyInNode } from "./matrix/verify";
+import { answer, approvalPages, walletWithMatrixPhrase } from "./matrix/wallet";
 import { TARGETS, addressOf, balanceOf, confirmTx, explorerTx, formatAmount, moduleAddress, publicKeyOf, type Target } from "./matrix/chain";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -147,28 +148,6 @@ const run = (page: Page, step: string, arg?: unknown): Promise<RunResult> =>
   );
 const dappInfo = (page: Page) => page.evaluate(() => (window as unknown as { __matrix: { info: { dapp: string; why: string; sign?: string | null } } }).__matrix.info);
 
-const approvalPages = (context: BrowserContext) => context.pages().filter((p) => !p.isClosed() && p.url().includes("/approval.html"));
-
-/** Clicks `button` in the approval window that offers it (polls: the previous window may still be closing). */
-async function answer(context: BrowserContext, button: string, timeoutMs = 90_000) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    for (const w of approvalPages(context)) {
-      try {
-        const b = w.getByRole("button", { name: button, exact: true });
-        if ((await b.count()) > 0 && (await b.isEnabled())) {
-          await b.click({ timeout: 5_000 });
-          return;
-        }
-      } catch {
-        /* closed under us */
-      }
-    }
-    await new Promise((r) => setTimeout(r, 250));
-  }
-  throw new Error(`No approval window offered "${button}"`);
-}
-
 interface ApprovalText {
   title: string;
   network: string;
@@ -226,12 +205,6 @@ async function readApproval(context: BrowserContext, shot: string, timeoutMs = 9
     await new Promise((r) => setTimeout(r, 300));
   }
   return { error: "no transaction approval window appeared" };
-}
-
-async function walletWithMatrixPhrase(context: BrowserContext, extensionId: string, phrase: string) {
-  const page = await openPage(context, extensionId, "popup.html");
-  await importWallet(page, phrase);
-  return page;
 }
 
 /** Per target: what the dapp sends for L3/L4 and what the approval must say. */

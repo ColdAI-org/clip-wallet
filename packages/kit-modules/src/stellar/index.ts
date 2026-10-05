@@ -12,7 +12,7 @@
  * package doesn't pull the kit's dependency tree; `moduleType` is the enum's string value.
  */
 import { CLIP_WALLET_GLOBAL } from "../index.js";
-import { CLIP_ICON, injected } from "../shared.js";
+import { CLIP_ICON, announcedIdentity, injected } from "../shared.js";
 
 export const CLIP_WALLET_STELLAR_ID = "clip-wallet";
 
@@ -98,10 +98,12 @@ export class ClipWalletModule implements SwkModuleInterface {
   readonly #globalKey: string;
 
   constructor(params: ClipWalletStellarParams = {}) {
-    this.productName = params.productName ?? "Clip Wallet";
-    this.productUrl = params.productUrl ?? "https://coldai.org/clip-wallet";
-    this.productIcon = params.productIcon ?? CLIP_ICON;
     this.#globalKey = params.globalKey ?? CLIP_WALLET_GLOBAL;
+    // Explicit options, then what the installed wallet announces, then Clip Wallet's own identity.
+    const announced = announcedIdentity(this.#globalKey);
+    this.productName = params.productName ?? announced.name ?? "Clip Wallet";
+    this.productUrl = params.productUrl ?? "https://coldai.org/clip-wallet";
+    this.productIcon = params.productIcon ?? announced.icon ?? CLIP_ICON;
   }
 
   #provider(): ClipStellarInjected {

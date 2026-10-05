@@ -29,7 +29,8 @@ describe("Hedera extension discovery (DAppConnector / HashConnect)", () => {
   it("answers hedera-extension-query with the wallet's id, name and icon", async () => {
     const { win, found } = setup();
     win.postMessage({ type: "hedera-extension-query" }, "*");
-    await tick(10);
+    // Two postMessage hops; under a loaded `pnpm -r test` 10 ms wasn't always enough, so wait for the answer.
+    await vi.waitFor(() => expect(found).toHaveLength(1), { timeout: 2_000 });
     expect(found).toEqual([{ id: "ocigbgcllgmmaecjccgiiodahdlngklb", name: "Clip Wallet", icon: IDENTITY.icon }]);
   });
 

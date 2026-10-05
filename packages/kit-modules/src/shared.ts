@@ -23,3 +23,16 @@ export function injected<T>(globalKey: string, family: string): T | undefined {
   const p = (window as unknown as Record<string, Record<string, unknown> | undefined>)[globalKey]?.[family] as { isClipWallet?: boolean } | undefined;
   return p && p.isClipWallet ? (p as T) : undefined;
 }
+
+/**
+ * The identity the wallet announces at `window[globalKey].info` ({ name, icon, rdns }, set by 1Mask next to the
+ * NEAR/Stellar/Algorand providers). Modules show it in pickers, so a kit-built wallet appears under its own name and
+ * icon, and Clip Wallet's entry always matches what its other connectors announce.
+ */
+export function announcedIdentity(globalKey: string): { name?: string; icon?: string } {
+  if (typeof window === "undefined") return {};
+  const info = (window as unknown as Record<string, { info?: { name?: unknown; icon?: unknown } } | undefined>)[globalKey]?.info;
+  const name = typeof info?.name === "string" && info.name.trim() ? info.name : undefined;
+  const icon = typeof info?.icon === "string" && /^data:image\/(?:svg\+xml|png|webp|gif);base64,/.test(info.icon) ? info.icon : undefined;
+  return { ...(name ? { name } : {}), ...(icon ? { icon } : {}) };
+}

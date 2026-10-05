@@ -4,6 +4,8 @@ packages:
   - packages/*
   - apps/*
   - services/*
+  # Stock wallet-picker UIs for the extension's picker e2e (own peer versions: wagmi 2, React 18). Private.
+  - apps/extension/e2e/pickers/dapps
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
@@ -21,9 +23,19 @@ allowBuilds:
   keccak: false
   # Reown AppKit's postinstall is a version-check notice; used by the extension's compat e2e suite as a dapp-side library.
   '@reown/appkit': false
+  # Optional native add-ons pulled in by picker-dapps libraries (apps/extension/e2e/pickers/dapps); the JS paths are used.
+  cbor-extract: false
+  chacha-native: false
 # Internal audit 2026-10 (SUP-01): patched transitive versions for advisories that reach shipped code.
 #   axios: @ledgerhq/hw-app-eth -> axios 1.13.x (GHSA prototype-pollution / SSRF / credential-leak advisories), fixed in 1.20.0
 #   http-cache-semantics: @aptos-labs/ts-sdk -> got (ReDoS advisory), fixed in 4.3.0
 overrides:
   axios@<1.20.0: ">=1.20.0 <2"
   http-cache-semantics@<4.3.0: ">=4.3.0 <5"
+# @bitcoinerlab/descriptors 1.x (ledger-bitcoin → packages/hardware) requires bip174/src/lib/converter/varint without
+# declaring bip174; it only resolved through pnpm's hoisting, which picks bip174 3 (no such export) once enough
+# packages depend on 3.x. Declare the 2.x it was written against.
+packageExtensions:
+  "@bitcoinerlab/descriptors@1":
+    dependencies:
+      bip174: ^2.1.1

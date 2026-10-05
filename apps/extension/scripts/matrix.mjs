@@ -3,6 +3,8 @@
  * The testnet dapp matrix (e2e/matrix.spec.ts, docs/r1/dapp-matrix.md), in one command:
  *
  *   pnpm --filter @clip-wallet/extension matrix [-- <playwright args, e.g. -g hedera>]
+ *   pnpm --filter @clip-wallet/extension pickers [-- <playwright args>]   the picker matrix (docs/r1/picker-matrix.md):
+ *                                                                         stock picker UIs + hosted testnet dapps
  *
  * Reads WALLETCONNECT_PROJECT_ID from the git-excluded .env.dapp-matrix (see e2e/matrix/env.ts) and, when it is set,
  * builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID so the Hedera WalletConnect / HashConnect path can run. Then runs
@@ -41,5 +43,10 @@ const run = (cmd, args) => {
   const r = spawnSync(cmd, args, { cwd: app, env, stdio: "inherit" });
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
+const args = process.argv.slice(2);
+const pickers = args[0] === "--pickers";
+const rest = pickers ? args.slice(1) : args;
+// A spec path in the args (e.g. e2e/hosted-dapps.spec.ts) narrows the picker run to that file.
+const specs = pickers ? (rest.some((a) => a.endsWith(".spec.ts")) ? [] : ["e2e/pickers.spec.ts", "e2e/hosted-dapps.spec.ts"]) : ["e2e/matrix.spec.ts"];
 run("npx", ["wxt", "build"]);
-run("npx", ["playwright", "test", "e2e/matrix.spec.ts", ...process.argv.slice(2)]);
+run("npx", ["playwright", "test", ...specs, ...rest]);

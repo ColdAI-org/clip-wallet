@@ -1,0 +1,238 @@
+{
+  "polkadot-js": {
+    "id": "polkadot-js",
+    "ecosystem": "Polkadot (Westend)",
+    "picker": "polkadot.js apps",
+    "kind": "hosted-dapp",
+    "url": "https://polkadot.js.org/apps/?rpc=wss://westend-rpc.polkadot.io#/accounts",
+    "notes": [
+      "apps lists injected accounts (name and source), not wallets: there is no wallet icon to show",
+      "apps shows \"1 extension that needs to be updated with the latest chain properties\": Clip's metadata.provide() refuses dapp-supplied metadata by design (it reads metadata from the network)"
+    ],
+    "detail": {
+      "signature": {
+        "sig": "0x018034a7708f8641…",
+        "crypto": "sr25519",
+        "isWrapped": false,
+        "valid": true
+      }
+    },
+    "shots": [
+      "hosted-polkadot-js-accounts.png",
+      "hosted-polkadot-js-signed.png"
+    ],
+    "at": "2026-10-05T16:12:38.837Z",
+    "listed": "pass",
+    "icon": "n/a",
+    "connects": "pass",
+    "reconnect": "n/a",
+    "reload": "n/a",
+    "signed": "pass"
+  },
+  "solana-wallet-adapter-example": {
+    "id": "solana-wallet-adapter-example",
+    "ecosystem": "Solana (devnet)",
+    "picker": "Solana wallet-adapter example (anza-xyz.github.io)",
+    "kind": "hosted-dapp",
+    "url": "https://anza-xyz.github.io/wallet-adapter/example/",
+    "notes": [
+      "connect is Sign In With Solana (solana:signIn): approved in the wallet's sign-in window"
+    ],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "account": "G1zR..dxzk",
+      "signature": "Message signature: 5Sn3Rutn8jVEQTvMsEe88"
+    },
+    "shots": [
+      "hosted-solana-example-picker.png",
+      "hosted-solana-example-signed.png"
+    ],
+    "at": "2026-10-05T16:13:04.532Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "signed": "pass",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "aptos-explorer": {
+    "id": "aptos-explorer",
+    "ecosystem": "Aptos (testnet)",
+    "picker": "Aptos Explorer (explorer.aptoslabs.com, testnet)",
+    "kind": "hosted-dapp",
+    "url": "https://explorer.aptoslabs.com/?network=testnet",
+    "notes": [
+      "the explorer has no free signing action (its writes are transactions)"
+    ],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.63,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      }
+    },
+    "shots": [
+      "hosted-aptos-explorer-picker.png",
+      "hosted-aptos-explorer-connected.png"
+    ],
+    "at": "2026-10-05T16:13:33.517Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "signed": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "suiscan": {
+    "id": "suiscan",
+    "ecosystem": "Sui (testnet)",
+    "picker": "Suiscan (suiscan.xyz/testnet)",
+    "kind": "hosted-dapp",
+    "url": "https://suiscan.xyz/testnet/home",
+    "notes": [
+      "Suiscan has no free signing action"
+    ],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.64,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      }
+    },
+    "shots": [
+      "hosted-suiscan-picker.png",
+      "hosted-suiscan-connected.png"
+    ],
+    "at": "2026-10-05T16:13:42.298Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "signed": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "hashscan": {
+    "id": "hashscan",
+    "ecosystem": "Hedera (testnet, EVM injected)",
+    "picker": "HashScan (hashscan.io/testnet)",
+    "kind": "hosted-dapp",
+    "url": "https://hashscan.io/testnet/",
+    "notes": [
+      "connect not attempted: after picking Clip, HashScan requires AGREE on a third-party-wallet disclaimer (a terms acceptance), so the run cancels there"
+    ],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.61,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      }
+    },
+    "shots": [
+      "hosted-hashscan-picker.png",
+      "hosted-hashscan-disclaimer.png"
+    ],
+    "at": "2026-10-05T16:13:54.188Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "skip",
+    "signed": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "appkit-lab": {
+    "id": "appkit-lab",
+    "ecosystem": "EVM (Sepolia)",
+    "picker": "Reown AppKit Lab (lab.reown.com, wagmi)",
+    "kind": "hosted-dapp",
+    "url": "https://lab.reown.com/appkit/?name=wagmi",
+    "notes": [],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.65,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      },
+      "result": "Signing Succeeded"
+    },
+    "shots": [
+      "hosted-appkit-lab-picker.png",
+      "hosted-appkit-lab-signed.png"
+    ],
+    "at": "2026-10-05T16:14:01.593Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "pass",
+    "signed": "pass",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "tezos-faucet": {
+    "id": "tezos-faucet",
+    "ecosystem": "Tezos (shadownet)",
+    "picker": "Tezos Shadownet Faucet (faucet.shadownet.teztnets.com), Beacon modal",
+    "kind": "hosted-dapp",
+    "url": "https://faucet.shadownet.teztnets.com/",
+    "notes": [
+      "Beacon lists Clip but its tile does nothing usable for an unlisted Chromium extension (no \"Use Extension\"), as in part 1; the faucet's captcha-gated request was not used"
+    ],
+    "detail": {
+      "icon": {
+        "ok": true,
+        "loaded": true,
+        "sameAsAnnounced": true,
+        "orange": 0.35,
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My…(674 chars)",
+        "size": "128x128"
+      }
+    },
+    "shots": [
+      "hosted-tezos-faucet-picker.png"
+    ],
+    "at": "2026-10-05T16:14:27.126Z",
+    "listed": "pass",
+    "icon": "pass",
+    "connects": "fail",
+    "signed": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  },
+  "cardano-connect-demo": {
+    "id": "cardano-connect-demo",
+    "ecosystem": "Cardano",
+    "picker": "Cardano Foundation cardano-connect-with-wallet storybook, Testnet Button story",
+    "kind": "hosted-dapp",
+    "url": "https://cardano-foundation.github.io/cardano-connect-with-wallet/react-storybook/iframe.html?id=components-connectwalletbutton--testnet-button&viewMode=story",
+    "notes": [
+      "the demo uses the library's default supportedWallets (its wallet registry); Clip isn't in it (part 1 shows it works once listed)"
+    ],
+    "detail": {},
+    "shots": [
+      "hosted-cardano-connect-demo-picker.png"
+    ],
+    "at": "2026-10-05T16:14:50.440Z",
+    "listed": "expected-no",
+    "connects": "n/a",
+    "signed": "n/a",
+    "reconnect": "n/a",
+    "reload": "n/a"
+  }
+}

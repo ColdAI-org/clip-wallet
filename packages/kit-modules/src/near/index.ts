@@ -22,7 +22,7 @@ import type {
 import { najActionToInternal } from "@near-wallet-selector/core";
 import { PublicKey } from "@near-js/crypto";
 import { CLIP_WALLET_GLOBAL } from "../index.js";
-import { CLIP_ICON, b64, fromB64 } from "../shared.js";
+import { CLIP_ICON, announcedIdentity, b64, fromB64 } from "../shared.js";
 
 export const CLIP_WALLET_NEAR_ID = "clip-wallet";
 
@@ -193,14 +193,15 @@ export function setupClipWallet(params: ClipWalletNearParams = {}): WalletModule
   const globalKey = params.globalKey ?? CLIP_WALLET_GLOBAL;
   return async ({ options }) => {
     const provider = providerAt(globalKey);
+    const announced = announcedIdentity(globalKey);
     const available = !!provider && provider.supportedNetworks.includes(options.network.networkId);
     return {
       id: CLIP_WALLET_NEAR_ID,
       type: "injected",
       metadata: {
-        name: provider?.name ?? "Clip Wallet",
+        name: provider?.name ?? announced.name ?? "Clip Wallet",
         description: "Non-custodial wallet for every CLPR network.",
-        iconUrl: params.iconUrl ?? CLIP_ICON,
+        iconUrl: params.iconUrl ?? provider?.icon ?? announced.icon ?? CLIP_ICON,
         downloadUrl: params.downloadUrl ?? "https://coldai.org/clip-wallet",
         deprecated: params.deprecated ?? false,
         available,

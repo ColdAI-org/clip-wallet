@@ -28,7 +28,7 @@ import {
   type WalletTransaction,
 } from "@txnlab/use-wallet/adapter";
 import { CLIP_WALLET_GLOBAL } from "../index.js";
-import { CLIP_ICON, injected } from "../shared.js";
+import { CLIP_ICON, announcedIdentity, injected } from "../shared.js";
 
 export const CLIP_WALLET_ALGORAND_ID = "clip-wallet";
 /** use-wallet third-party adapter contract: export a WALLET_ID constant. */
@@ -134,9 +134,11 @@ export class ClipWalletAdapter extends BaseWallet<ClipAlgorandOptions> {
 /** use-wallet v5 factory: `new WalletManager({ wallets: [clipWallet()] })`. */
 export function clipWallet(options: ClipAlgorandOptions & WalletFactoryOptions = {}): WalletAdapterConfig {
   const { metadata, ...adapterOptions } = options;
+  // Explicit metadata, then what the installed wallet announces, then Clip Wallet's own identity.
+  const announced = announcedIdentity(adapterOptions.globalKey ?? CLIP_WALLET_GLOBAL);
   return {
     id: CLIP_WALLET_ALGORAND_ID,
-    metadata: { ...ClipWalletAdapter.defaultMetadata, ...metadata },
+    metadata: { ...ClipWalletAdapter.defaultMetadata, ...announced, ...metadata },
     Adapter: ClipWalletAdapter as unknown as WalletAdapterConfig["Adapter"],
     options: Object.keys(adapterOptions).length > 0 ? adapterOptions : undefined,
     // Testnet-only builds simply won't enable on mainnet; the provider answers 4200 there.

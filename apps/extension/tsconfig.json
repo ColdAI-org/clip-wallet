@@ -10,5 +10,7 @@
     // Workspace packages resolve to their TypeScript source in the monorepo.
     "customConditions": ["development"]
   },
-  "include": [".wxt/wxt.d.ts", "src", "e2e", "passkey-bridge", "clip.config.ts", "wxt.config.ts", "playwright.config.ts"]
+  "include": [".wxt/wxt.d.ts", "src", "e2e", "passkey-bridge", "clip.config.ts", "wxt.config.ts", "playwright.config.ts"],
+  // The stock picker pages are their own package (React 18, wagmi 2) with their own tsconfig.
+  "exclude": ["e2e/pickers/dapps"]
 }
