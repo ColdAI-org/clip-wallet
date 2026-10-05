@@ -39,6 +39,8 @@ jobs:
     env:
       # Public build-time values only (src/shared/app-config.ts); unset = WalletConnect says it isn't switched on.
       CLIP_WC_PROJECT_ID: ${{ vars.CLIP_WC_PROJECT_ID }}
+      # Chromium extension ids allowed to use Clip Desktop over native messaging (store ids, comma-separated).
+      CLIP_EXTENSION_IDS: ${{ vars.CLIP_EXTENSION_IDS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -117,6 +119,7 @@ jobs:
             apps/desktop/release/*.exe
             apps/desktop/release/*.AppImage
             apps/desktop/release/*.deb
+            apps/desktop/release/*.tar.gz
           retention-days: 14
 
       - uses: actions/upload-artifact@v4

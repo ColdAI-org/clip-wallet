@@ -23,13 +23,15 @@ import {
   session,
   shell,
   systemPreferences,
+  Tray,
+  nativeImage,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
   type MenuItemConstructorOptions,
   type WebContents,
 } from "electron";
 import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
@@ -48,11 +50,27 @@ import { DappBrowser } from "./browser/browser";
 import { isNavigable } from "./browser/url-policy";
 import { deepLinkFromArgv, parseDeepLink } from "./deeplink";
 import { startAutoUpdate, updatesEnabled } from "./updater";
+import { defaultSocketPath } from "@clip-wallet/link/node";
+import { startDesktopLink } from "./host/link";
+import { allowedOrigins, connectorStatus, installConnector, parseExtensionIds, removeConnector, type ConnectorEnv } from "./native-hosts";
+
+declare const __CLIP_EXTENSION_IDS__: string;
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const PRELOAD_APP = join(here, "../preload/wallet.cjs");
 const PRELOAD_DAPP = join(here, "../preload/dapp.cjs");
 const RENDERER_ROOT = join(here, "../renderer");
+// The native-messaging host program runs from outside app.asar (electron-builder asarUnpack).
+const NATIVE_HOST = join(here, "../native-host/clip-native-host.cjs").replace(/app\.asar([\\/])/, "app.asar.unpacked$1");
+/** Dev / tests only (ignored when packaged): where manifests go, the socket, and extra extension ids to trust. */
+const DEV_NM_HOME = !app.isPackaged ? process.env.CLIP_DESKTOP_NM_HOME : undefined;
+const DEV_SOCKET = !app.isPackaged ? process.env.CLIP_DESKTOP_SOCKET : undefined;
+const DEV_EXT_IDS = !app.isPackaged ? process.env.CLIP_DESKTOP_EXTENSION_IDS : undefined;
+/**
+ * Tests and smoke runs (honoured in packaged builds too, because it only switches things OFF): no browser-connector
+ * registration, no link socket, no clipwallet:// registration, so a test never touches this machine's browsers.
+ */
+const NO_SYSTEM_INTEGRATION = process.env.CLIP_DESKTOP_NO_SYSTEM_INTEGRATION === "1";
 const DEV_URL = !app.isPackaged ? process.env.ELECTRON_RENDERER_URL : undefined;
 const DEV_ORIGIN = DEV_URL ? new URL(DEV_URL).origin : undefined;
 
@@ -96,7 +114,7 @@ async function main() {
 
   await app.whenReady();
   // macOS registers clipwallet:// from Info.plist (CFBundleURLTypes); Windows and Linux need it at run time.
-  if (app.isPackaged && process.platform !== "darwin" && !app.isDefaultProtocolClient(DESKTOP.scheme)) app.setAsDefaultProtocolClient(DESKTOP.scheme);
+  if (app.isPackaged && !NO_SYSTEM_INTEGRATION && process.platform !== "darwin" && !app.isDefaultProtocolClient(DESKTOP.scheme)) app.setAsDefaultProtocolClient(DESKTOP.scheme);
   handleAppScheme(RENDERER_ROOT, walletCsp(DESKTOP.config.services.mediaProxyUrl));
 
   /* ---------------------------------------------------------------- state */
@@ -149,6 +167,8 @@ async function main() {
       if (new URL(url).protocol === "https:") await shell.openExternal(url);
     },
     ...(DESKTOP.wcProjectId ? { wcProjectId: DESKTOP.wcProjectId } : {}),
+    linkChanged: () => void surfacePairings(),
+    platformLabel: process.platform === "darwin" ? "macOS" : process.platform === "win32" ? "Windows" : "Linux",
     ...(process.env.CLIP_DESKTOP_KNOWN_DAPPS && !app.isPackaged ? { knownDapps: JSON.parse(process.env.CLIP_DESKTOP_KNOWN_DAPPS) as Record<string, string> } : {}),
   });
 
@@ -157,6 +177,54 @@ async function main() {
     replyChannel: CH.onemaskToPage,
     onActivity: () => browser?.push(),
   });
+
+  /* ---------------------------------------------------------------- linked devices: extension connector */
+
+  // Extension ids this build trusts: CLIP_EXTENSION_IDS at build time (store ids, plus the unpacked dev id while
+  // testing); Firefox's add-on id is fixed by the extension's gecko id (wallet@<reversed rdns>).
+  const chromiumIds = parseExtensionIds(`${typeof __CLIP_EXTENSION_IDS__ === "string" ? __CLIP_EXTENSION_IDS__ : ""},${DEV_EXT_IDS ?? ""}`);
+  const firefoxIds = [`wallet@${DESKTOP.config.rdns.split(".").reverse().join(".")}`];
+  const socketPath = DEV_SOCKET ?? defaultSocketPath();
+  const connector: ConnectorEnv = {
+    os: process.platform as ConnectorEnv["os"],
+    rdns: DESKTOP.config.rdns,
+    home: DEV_NM_HOME ?? homedir(),
+    ...(process.env.LOCALAPPDATA && !DEV_NM_HOME ? { appData: process.env.LOCALAPPDATA } : DEV_NM_HOME ? { appData: join(DEV_NM_HOME, "AppData", "Local") } : {}),
+    launcherDir: join(app.getPath("userData"), "native-host"),
+    execPath: process.execPath,
+    scriptPath: NATIVE_HOST,
+    chromiumExtensionIds: chromiumIds,
+    firefoxAddonIds: firefoxIds,
+    ...(DEV_SOCKET ? { socketOverride: DEV_SOCKET } : {}),
+  };
+  // Packaged builds (re)register on first run and after every update; dev builds only when asked (Settings).
+  if (app.isPackaged && !NO_SYSTEM_INTEGRATION && (await wallet.kv.get<string>("clip-desktop/connector-version")) !== app.getVersion()) {
+    try {
+      installConnector(connector);
+      await wallet.kv.set("clip-desktop/connector-version", app.getVersion());
+    } catch {
+      /* Settings → Linked devices shows what's missing and offers "Set up again" */
+    }
+  }
+  let linkServer: Awaited<ReturnType<typeof startDesktopLink>> | null = null;
+  try {
+    if (NO_SYSTEM_INTEGRATION && !DEV_SOCKET) throw new Error("system integration off");
+    linkServer = await startDesktopLink(wallet.link, { socketPath, allowedOrigins: allowedOrigins(chromiumIds, firefoxIds) });
+  } catch {
+    linkServer = null; // the socket couldn't be created: the extension says "Clip Desktop isn't running"
+  }
+
+  /** Pairings already brought to the front (a native pairing from the extension, a scanned code). */
+  const surfaced = new Set<string>();
+  async function surfacePairings() {
+    const st = await wallet.link.status().catch(() => null);
+    for (const p of st?.pairings ?? []) {
+      if (surfaced.has(p.id) || !["connecting", "compare"].includes(p.state)) continue;
+      if (p.purpose !== "desktop" && p.state !== "compare") continue;
+      surfaced.add(p.id);
+      showWallet(`/settings/devices/pair/${encodeURIComponent(p.id)}`);
+    }
+  }
 
   const channel = `clip-${randomUUID()}`;
   const boot: OneMaskBoot = {
@@ -225,6 +293,9 @@ async function main() {
   }
 
   function openApproval(id: string) {
+    // A request may come from the browser extension (Clip Desktop as its signer) while another app is in front:
+    // the approval must be where the person is looking.
+    if (process.platform === "darwin") app.focus({ steal: true });
     if (alive(approvalWin)) {
       approvalWin.show();
       approvalWin.focus();
@@ -254,6 +325,7 @@ async function main() {
   async function broadcast() {
     for (const w of [walletWin, approvalWin]) if (alive(w)) w.webContents.send(CH.walletChanged);
     browser.push();
+    if (pendingHandoff && (await wallet.engine.deps.vault.status()) === "unlocked") void openHandoff(pendingHandoff.link, pendingHandoff.url);
     // Language and theme follow Settings.
     const prefs = await wallet.engine.prefs().catch(() => null);
     if (prefs) {
@@ -263,6 +335,7 @@ async function main() {
         locale = next;
         t = desktopT(locale);
         buildMenu();
+        buildTray();
       }
     }
   }
@@ -349,8 +422,9 @@ async function main() {
   /* ---------------------------------------------------------------- IPC */
 
   const toEnvelope = (e: unknown): Envelope => {
-    const u = e as { userMessage?: unknown; code?: unknown } | null;
-    if (u && typeof u.userMessage === "string" && typeof u.code === "string") return { ok: false, error: { userMessage: u.userMessage, code: u.code } };
+    const u = e as { userMessage?: unknown; code?: unknown; msg?: unknown } | null;
+    if (u && typeof u.userMessage === "string" && typeof u.code === "string")
+      return { ok: false, error: { userMessage: u.userMessage, code: u.code, ...(u.msg !== undefined ? { msg: u.msg } : {}) } };
     return { ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "internal" } };
   };
   const denied: Envelope = { ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "bus/forbidden" } };
@@ -403,6 +477,16 @@ async function main() {
         case "bioEvaluate":
           await wallet.bioEvaluate(c.ceremonyId, c.credentialId, c.prfInput, t("d.bio.unlock", { name: DESKTOP.config.name }));
           return { ok: true };
+        case "connectorStatus":
+          return { ok: true, data: connectorStatus(connector) };
+        case "connectorRepair": {
+          if (NO_SYSTEM_INTEGRATION && !DEV_NM_HOME) return invalid;
+          const v = installConnector(connector);
+          await wallet.kv.set("clip-desktop/connector-version", app.getVersion());
+          return { ok: true, data: v };
+        }
+        case "connectorRemove":
+          return { ok: true, data: removeConnector(connector) };
         case "closeSelf":
           BrowserWindow.fromWebContents(e.sender)?.close();
           return { ok: true };
@@ -508,12 +592,61 @@ async function main() {
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
 
+  /**
+   * "Continue on this device": the token can only be checked with the unlocked wallet, so a locked wallet asks to
+   * unlock first and the handoff waits. Linked devices then shows "Continue on <site>"; one tap restores the
+   * connection for that site and opens it in the built-in browser.
+   */
+  let pendingHandoff: { link: string; url: string } | null = null;
+  async function openHandoff(raw: string, url: string) {
+    if ((await wallet.engine.deps.vault.status()) !== "unlocked") {
+      pendingHandoff = { link: raw, url };
+      showWallet();
+      return;
+    }
+    pendingHandoff = null;
+    try {
+      await wallet.link.handoffOpen(raw);
+      showWallet("/settings/devices");
+    } catch {
+      browser.newTab(url);
+    }
+  }
+
+  /* tray / menu bar: open the wallet or the browser, lock, quit */
+  let tray: Tray | null = null;
+  function buildTray() {
+    const name = DESKTOP.config.name;
+    if (!tray) {
+      const icon = nativeImage.createFromPath(join(RENDERER_ROOT, "tray", process.platform === "darwin" ? "trayTemplate.png" : "tray.png"));
+      if (process.platform === "darwin") icon.setTemplateImage(true);
+      tray = new Tray(icon);
+      tray.setToolTip(name);
+      tray.on("click", () => showWallet());
+    }
+    tray.setContextMenu(
+      Menu.buildFromTemplate([
+        { label: t("d.tray.open", { name }), click: () => showWallet() },
+        { label: t("d.menu.browser"), click: () => (browser.window ? browser.focus() : browser.newTab()) },
+        { type: "separator" },
+        { label: t("d.menu.lock"), click: () => void wallet.lock() },
+        { label: t("d.menu.quit", { name }), role: "quit" },
+      ]),
+    );
+  }
+
   function flushLinks() {
     while (pendingLinks.length) {
       const link = parseDeepLink(pendingLinks.shift());
       if (!link) continue;
       if (link.kind === "browse") browser.newTab(link.url);
       else if (link.kind === "trade") showWallet(link.route);
+      else if (link.kind === "handoff") void openHandoff(link.link, link.url);
+      else if (link.kind === "pair")
+        void wallet.link.scan(link.uri).then(
+          (p) => (surfaced.add(p.id), showWallet(`/settings/devices/pair/${encodeURIComponent(p.id)}`)),
+          () => showWallet("/settings/devices"),
+        );
       else {
         showWallet();
         void wallet.pairWalletConnect(link.uri).catch(() => showWallet("/scan"));
@@ -525,10 +658,14 @@ async function main() {
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
   });
-  app.on("before-quit", () => wallet.dispose());
+  app.on("before-quit", () => {
+    wallet.dispose();
+    void linkServer?.stop();
+  });
 
   await broadcast().catch(() => undefined);
   buildMenu();
+  buildTray();
   showWallet();
   flushLinks();
   void startAutoUpdate();

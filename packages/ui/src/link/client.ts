@@ -7,6 +7,12 @@ import type { HandoffView, LinkStatusView, PairingView } from "@clip-wallet/link
 
 export type { HandoffView, LinkStatusView, LinkedDeviceView, PairingView, PairingState, SignerModeView, SyncStatusView, WaitingRequestView } from "@clip-wallet/link/views";
 
+/** Clip Desktop: which browsers can reach this app over native messaging (manifests registered for this user). */
+export interface BrowserConnectorView {
+  available: boolean;
+  browsers: { browser: "chrome" | "chromium" | "edge" | "brave" | "firefox"; installed: boolean }[];
+}
+
 export interface LinkClient {
   status(): Promise<LinkStatusView>;
   pairStart(p: { purpose: "signer" | "device-add"; direction?: "send" | "receive" }): Promise<PairingView>;
@@ -30,12 +36,14 @@ export interface LinkClient {
   currentPage?(): Promise<{ url: string; families: string[] } | null>;
   /** Opens a URL (a continued page). */
   openUrl?(url: string): void;
+  /** Clip Desktop only: register / repair / remove the browser-extension connector (native-messaging host). */
+  browserConnector?: { status(): Promise<BrowserConnectorView>; repair(): Promise<BrowserConnectorView>; remove(): Promise<BrowserConnectorView> };
   /** Re-fetch when the background says something changed. */
   onChange?(cb: () => void): () => void;
 }
 
 /** Builds a LinkClient from a request function (the bus or an in-process LinkService.handle). */
-export function createLinkClient(call: (msg: { type: string } & Record<string, unknown>) => Promise<unknown>, extra: Pick<LinkClient, "currentPage" | "openUrl" | "onChange"> = {}): LinkClient {
+export function createLinkClient(call: (msg: { type: string } & Record<string, unknown>) => Promise<unknown>, extra: Pick<LinkClient, "currentPage" | "openUrl" | "onChange" | "browserConnector"> = {}): LinkClient {
   const c = <T,>(type: string, p: Record<string, unknown> = {}) => call({ type, ...p }) as Promise<T>;
   return {
     status: () => c("linkStatus"),

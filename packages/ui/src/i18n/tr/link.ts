@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "Cüzdanın taşınıyor…",
   "link.transfer.sent": "Cüzdanın artık {device} cihazında.",
   "link.transfer.received": "Cüzdanın bu cihazda.",
+  "link.connector.title": "Tarayıcı uzantısı",
+  "link.connector.hint": "Chrome, Edge, Brave veya Firefox'taki {name} uzantısının isteklerini incelemen için buraya göndermesini sağlar. Anahtarların bu bilgisayarda kalır.",
+  "link.connector.ready": "{browsers} için kuruldu.",
+  "link.connector.none": "Hiçbir tarayıcıda kurulu değil.",
+  "link.connector.repair": "Yeniden kur",
+  "link.connector.remove": "Tarayıcılardan kaldır",
 } satisfies Record<keyof typeof en, string>;

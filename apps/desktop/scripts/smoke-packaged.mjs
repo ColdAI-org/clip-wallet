@@ -12,7 +12,8 @@ if (!exe) {
 }
 const home = mkdtempSync(join(tmpdir(), "clip-smoke-"));
 // Packaged builds ignore CLIP_DESKTOP_USER_DATA; --user-data-dir keeps the runner's profile clean.
-const app = await electron.launch({ executablePath: exe, args: [`--user-data-dir=${home}`], timeout: 60_000 });
+// No system integration: the smoke run must not register native-messaging hosts or a socket on the runner/user.
+const app = await electron.launch({ executablePath: exe, args: [`--user-data-dir=${home}`], env: { ...process.env, CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" }, timeout: 60_000 });
 try {
   const win = await app.firstWindow();
   await win.waitForURL(/^clip-app:\/\/wallet\/wallet\//, { timeout: 30_000 });

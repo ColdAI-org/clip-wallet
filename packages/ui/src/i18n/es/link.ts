@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "Moviendo tu billetera…",
   "link.transfer.sent": "Tu billetera ya está en {device}.",
   "link.transfer.received": "Tu billetera está en este dispositivo.",
+  "link.connector.title": "Extensión del navegador",
+  "link.connector.hint": "Permite que la extensión {name} en Chrome, Edge, Brave o Firefox envíe aquí sus solicitudes para que las revises. Tus claves se quedan en este ordenador.",
+  "link.connector.ready": "Configurada para {browsers}.",
+  "link.connector.none": "No está configurada en ningún navegador.",
+  "link.connector.repair": "Configurar de nuevo",
+  "link.connector.remove": "Quitar de los navegadores",
 } satisfies Record<keyof typeof en, string>;

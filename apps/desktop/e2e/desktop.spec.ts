@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverMessageAddress } from "viem";
 import { startDapps, type Dapps } from "./dapp/server";
+import { onboard } from "./helpers";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const SHOTS = join(root, "screenshots");
@@ -30,7 +31,7 @@ test.beforeAll(async () => {
   app = await electron.launch({
     args: ["."],
     cwd: root,
-    env: { ...process.env, CLIP_DESKTOP_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: "0" },
+    env: { ...process.env, CLIP_DESKTOP_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: "0", CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" },
   });
 });
 
@@ -135,27 +136,7 @@ test("desktop: onboarding, browser + 1Mask connect/sign, isolation, RTL", async 
   /* ------------------------------------------------------------ onboarding (real vault, testnets) */
   const wallet = await pageWhere((u) => u.startsWith("clip-app://wallet/wallet/"));
   await wallet.setViewportSize({ width: 440, height: 760 }).catch(() => undefined);
-  await expect(wallet.getByRole("heading", { name: "Clip Wallet" })).toBeVisible();
-  await wallet.getByRole("button", { name: "Create a new wallet" }).click();
-  await wallet.getByLabel("Password", { exact: true }).fill(PASSWORD);
-  await wallet.getByLabel("Type it again").fill(PASSWORD);
-  await wallet.getByRole("button", { name: "Create wallet" }).click();
-  await expect(wallet.getByRole("heading", { name: "Your recovery phrase" })).toBeVisible({ timeout: 60_000 });
-  await wallet.getByRole("button", { name: "Show my phrase" }).click();
-  const words = await wallet.locator(".clip-phrase__w").allTextContents();
-  expect(words.length).toBeGreaterThanOrEqual(12);
-  await wallet.getByRole("checkbox", { name: "I wrote these words down" }).check();
-  await wallet.getByRole("button", { name: "Continue" }).click();
-  for (const label of await wallet.locator(".clip-field__label").allTextContents()) {
-    const n = Number(label.replace("Word #", ""));
-    await wallet.getByLabel(label, { exact: true }).fill(words[n - 1]!);
-  }
-  words.length = 0;
-  await wallet.getByRole("button", { name: "Confirm" }).click();
-  await expect(wallet.getByRole("heading", { name: "Unlock with Face ID or Touch ID?" })).toBeVisible();
-  await wallet.getByRole("button", { name: "Not now" }).click();
-  await wallet.getByRole("button", { name: "Open my wallet" }).click();
-  await expect(wallet.getByTestId("total")).toHaveText(/\$\d/, { timeout: 60_000 });
+  await onboard(wallet);
   // Networks stay invisible on Home.
   await expect(wallet.getByText(/Sepolia|Testnet|Devnet/)).toHaveCount(0);
   await wallet.waitForTimeout(500);

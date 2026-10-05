@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "ウォレットを移しています…",
   "link.transfer.sent": "ウォレットは{device}に移りました。",
   "link.transfer.received": "ウォレットはこのデバイスにあります。",
+  "link.connector.title": "ブラウザ拡張機能",
+  "link.connector.hint": "Chrome、Edge、Brave、Firefox の {name} 拡張機能からのリクエストを、ここで確認できるようにします。鍵はこのコンピュータから出ません。",
+  "link.connector.ready": "{browsers} で設定済みです。",
+  "link.connector.none": "どのブラウザにも設定されていません。",
+  "link.connector.repair": "設定し直す",
+  "link.connector.remove": "ブラウザから削除",
 } satisfies Record<keyof typeof en, string>;

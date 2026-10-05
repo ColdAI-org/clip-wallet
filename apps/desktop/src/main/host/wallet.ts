@@ -21,9 +21,11 @@ import { COINGECKO_IDS } from "@clip-wallet/features";
 import { RecipientLog, SecurityService } from "@clip-wallet/security";
 import type { Notifier } from "@clip-wallet/social";
 import type { RouterPort } from "@clip-wallet/1mask/background";
+import { LINK_LOCKED_OK, LinkRequest, isLinkRequest, withRemoteSigner, type LinkService } from "@clip-wallet/link";
 import { DESKTOP } from "../../shared/app-config";
 import { FileKV, SafeVaultStorage, storagePaths, type SafeStorageLike, type StorageProtection } from "../storage";
 import { TouchIdPrf } from "../biometric";
+import { createDesktopLink } from "./link";
 
 /** Vault backstop; the engine arms the user's (shorter) auto-lock. */
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
@@ -51,6 +53,10 @@ export interface DesktopHostEnv {
   wcProjectId?: string;
   /** Extra verified dapp domains (dev: the local test dapp). */
   knownDapps?: Record<string, string>;
+  /** Linked devices changed (pairing progress, a device came online, sync ran). */
+  linkChanged(): void;
+  /** "Clip Desktop (macOS, …)": how paired devices name this one. */
+  platformLabel: string;
 }
 
 /** @walletconnect/core storage (IKeyValueStorage) over the app's KV, so nothing lands in the working directory. */
@@ -76,6 +82,8 @@ function walletConnectStorage(kv: KV) {
 export interface DesktopWallet {
   engine: WalletEngine;
   kv: KV;
+  /** Linked devices: extension signer over native messaging, phone as signer, sync, handoff (host/link.ts). */
+  link: LinkService;
   /** One untrusted message from a wallet renderer (engine, features, social, security or hardware). */
   handle(msg: { type: string } & Record<string, unknown>): Promise<unknown>;
   /** Touch ID: the main process runs the PRF and finishes the vault's ceremony itself. */
@@ -112,6 +120,23 @@ export function createDesktopWallet(env: DesktopHostEnv): DesktopWallet {
     kv,
     ...(env.knownDapps ? { knownDapps: env.knownDapps } : {}),
   });
+
+  // Linked devices. Built before the engine: while a phone is chosen as the signer, the built-in browser's 1Mask
+  // requests go there (withRemoteSigner wraps the dapp connector); requests from a paired extension are served by
+  // this engine (signerHost) and show in this app's approval window.
+  const link = createDesktopLink({
+    kv,
+    vault,
+    engine: () => engine,
+    ...(DESKTOP.config.services.linkRelayUrl ? { relayUrl: DESKTOP.config.services.linkRelayUrl } : {}),
+    ...(DESKTOP.config.services.backupUrl ? { syncUrl: DESKTOP.config.services.backupUrl } : {}),
+    onChange: () => {
+      env.broadcast();
+      env.linkChanged();
+    },
+    platformLabel: env.platformLabel,
+  });
+  deps.dapps = withRemoteSigner(deps.dapps, link);
 
   /* auto-lock: a timer while unlocked; the OS lock / sleep also locks (index.ts powerMonitor) */
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -248,6 +273,18 @@ export function createDesktopWallet(env: DesktopHostEnv): DesktopWallet {
 
   const handle = async (msg: { type: string } & Record<string, unknown>): Promise<unknown> => {
     if (msg.type.startsWith("hw")) return hardware.handleUntrusted(msg);
+    if (isLinkRequest(msg)) {
+      const m = LinkRequest.safeParse(msg);
+      if (!m.success) throw new ClipError("Something went wrong. Please try again.", "bus/invalid");
+      if (!LINK_LOCKED_OK.has(m.data.type) && (await vault.status()) !== "unlocked") throw new ClipError("Your wallet is locked. Unlock it to continue.", "vault/locked");
+      if (m.data.type === "linkHandoffCreate") {
+        // Only the sites this wallet actually connected travel with the page (as the extension does).
+        const origin = new URL(m.data.url).origin;
+        const families = (await Promise.all(engine.families.map(async (f) => ((await engine.permissions.has(origin, f)) ? f : null)))).filter((f): f is NonNullable<typeof f> => !!f);
+        return link.handle({ ...m.data, families });
+      }
+      return link.handle(m.data);
+    }
     if (msg.type === "passkeyFinish") {
       const id = (msg.result as { id?: unknown } | undefined)?.id;
       if (typeof id === "string" && hostFinished.delete(id)) return undefined;
@@ -258,6 +295,7 @@ export function createDesktopWallet(env: DesktopHostEnv): DesktopWallet {
   return {
     engine,
     kv,
+    link,
     handle,
     async bioEnroll(ceremonyId, prfInput, reason) {
       return { credentialId: await finishCeremony(ceremonyId, () => bio.enroll(fromB64url(prfInput), reason)) };

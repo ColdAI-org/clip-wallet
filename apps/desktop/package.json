@@ -11,8 +11,8 @@
   "main": "out/main/index.mjs",
   "scripts": {
     "inpage": "node scripts/build-inpage.mjs",
-    "build": "node scripts/build-inpage.mjs && electron-vite build",
-    "dev": "node scripts/build-inpage.mjs && electron-vite dev",
+    "build": "node scripts/build-inpage.mjs && electron-vite build && node scripts/build-native-host.mjs",
+    "dev": "node scripts/build-inpage.mjs && node scripts/build-native-host.mjs && electron-vite dev",
     "start": "electron .",
     "typecheck": "node scripts/build-inpage.mjs && tsc -p tsconfig.json --noEmit",
     "test": "node scripts/build-inpage.mjs && vitest run",
@@ -31,6 +31,7 @@
     "@clip-wallet/features": "workspace:*",
     "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
     "@clip-wallet/security": "workspace:*",
     "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
@@ -53,8 +54,8 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.0",
     "viem": "^2.57.2",
+    "vite": "^7.1.0",
     "vitest": "^2.1.9",
     "zod": "^4.6.5"
   }

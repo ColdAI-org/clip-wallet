@@ -3,12 +3,15 @@
  * the same contracts the extension's pages use over chrome.runtime messages, so packages/ui runs unchanged.
  */
 import {
+  createLinkClient,
   createSocialClient,
   PasskeyError,
   b64urlDecode,
   b64urlEncode,
   type FeaturesClient,
+  type BrowserConnectorView,
   type FullHardwareClient,
+  type LinkClient,
   type PasskeyFactory,
   type SecurityClient,
   type SocialClient,
@@ -129,6 +132,19 @@ export function createHardwareClient(): FullHardwareClient {
     keystoneAnswer: (id, ur) => call({ type: "hwKeystoneAnswer", id, ur }),
     hardwareCancel: (id) => call({ type: "hwCancel", id }),
   };
+}
+
+/**
+ * Linked devices (r1/connect): pairing, phone as signer, sync, handoff, plus the desktop-only browser-extension
+ * connector. A continued page ("Continue on <site>") opens in the built-in browser.
+ */
+export function createLinkBridgeClient(): LinkClient {
+  const connector = (op: "connectorStatus" | "connectorRepair" | "connectorRemove") => async () => unwrap<BrowserConnectorView>(await desktop().desktop({ op }));
+  return createLinkClient((msg) => callWallet(msg as Msg), {
+    openUrl: (url) => void openInBrowser(url).catch(() => undefined),
+    onChange: (cb) => desktop().onChange(cb),
+    browserConnector: { status: connector("connectorStatus"), repair: connector("connectorRepair"), remove: connector("connectorRemove") },
+  });
 }
 
 export async function desktopInfo(): Promise<DesktopInfo | null> {

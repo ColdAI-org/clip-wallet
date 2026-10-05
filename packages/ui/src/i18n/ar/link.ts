@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "جارٍ نقل محفظتك…",
   "link.transfer.sent": "أصبحت محفظتك الآن على ⁨{device}⁩.",
   "link.transfer.received": "محفظتك على هذا الجهاز.",
+  "link.connector.title": "إضافة المتصفح",
+  "link.connector.hint": "تتيح لإضافة ⁨{name}⁩ في Chrome أو Edge أو Brave أو Firefox إرسال طلباتها إلى هنا لتراجعها. تبقى مفاتيحك على هذا الكمبيوتر.",
+  "link.connector.ready": "مُعدّة لـ ⁨{browsers}⁩.",
+  "link.connector.none": "غير مُعدّة في أي متصفح.",
+  "link.connector.repair": "الإعداد من جديد",
+  "link.connector.remove": "الإزالة من المتصفحات",
 } satisfies Record<keyof typeof en, string>;

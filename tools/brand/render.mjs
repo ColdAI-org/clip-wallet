@@ -78,6 +78,15 @@ const JOBS = [
   ["apps/mobile/assets/adaptive-monochrome.png", 1024, 1024, centered(GLYPH_WHITE, 600, 1024, 1024)],
   // Splash: white glyph on the orange background set in the expo-splash-screen plugin.
   ["apps/mobile/assets/splash-icon.png", 1024, 1024, centered(GLYPH_WHITE, 1024, 1024, 1024)],
+  // Clip Desktop (electron-builder). macOS: the mark inside Apple's 824 px icon grid on a transparent 1024 canvas;
+  // Windows / Linux: the mark full size. Tray: a black glyph template image on macOS (the menu bar tints it), the
+  // small-size mark elsewhere; @2x for HiDPI.
+  ["apps/desktop/build/icon-mac.png", 1024, 1024, centered(MARK, 824, 1024, 1024)],
+  ["apps/desktop/build/icon.png", 1024, 1024, centered(MARK, 1024, 1024, 1024)],
+  ["apps/desktop/src/renderer/public/tray/trayTemplate.png", 16, 16, centered(svgUri("brand/clip-glyph-ink.svg"), 16, 16, 16)],
+  ["apps/desktop/src/renderer/public/tray/trayTemplate@2x.png", 32, 32, centered(svgUri("brand/clip-glyph-ink.svg"), 32, 32, 32)],
+  ["apps/desktop/src/renderer/public/tray/tray.png", 16, 16, centered(MARK_SMALL, 16, 16, 16)],
+  ["apps/desktop/src/renderer/public/tray/tray@2x.png", 32, 32, centered(MARK_SMALL, 32, 32, 32)],
   // Review sheet (not shipped).
   ["brand/preview.png", 1200, 560, `
     <div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;font:500 13px Inter">
@@ -117,13 +126,13 @@ try {
 }
 
 // The vector mark is what the wallet announces to dapps (EIP-6963 / Wallet Standard) and what configs point at.
-for (const dest of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg"]) copyFileSync(join(ROOT, "brand/clip-mark.svg"), join(ROOT, dest));
-console.log("icon.svg copied to apps/extension and apps/mobile/assets");
+for (const dest of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg", "apps/desktop/src/renderer/public/icon.svg"]) copyFileSync(join(ROOT, "brand/clip-mark.svg"), join(ROOT, dest));
+console.log("icon.svg copied to apps/extension, apps/mobile/assets and apps/desktop");
 
 // The same mark as a data URI wherever code needs it inline (1Mask's default identity, the dApp-side kit modules,
 // the mobile in-app browser). tools/harness/test/brand.test.mjs checks they stay equal to brand/clip-mark.svg.
 const DATA_URI = `data:image/svg+xml;base64,${Buffer.from(read("brand/clip-mark.svg")).toString("base64")}`;
-for (const file of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts"]) {
+for (const file of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts", "apps/desktop/src/shared/app-config.ts"]) {
   const src = read(file);
   const next = src.replace(/"data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+"/, JSON.stringify(DATA_URI));
   if (next === src && !src.includes(DATA_URI)) throw new Error(`${file}: no inline icon found to replace`);

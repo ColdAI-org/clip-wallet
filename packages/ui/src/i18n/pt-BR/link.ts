@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "Movendo sua carteira…",
   "link.transfer.sent": "Sua carteira agora está em {device}.",
   "link.transfer.received": "Sua carteira está neste dispositivo.",
+  "link.connector.title": "Extensão do navegador",
+  "link.connector.hint": "Permite que a extensão {name} no Chrome, Edge, Brave ou Firefox envie as solicitações para cá para você revisar. Suas chaves ficam neste computador.",
+  "link.connector.ready": "Configurada para {browsers}.",
+  "link.connector.none": "Não configurada em nenhum navegador.",
+  "link.connector.repair": "Configurar de novo",
+  "link.connector.remove": "Remover dos navegadores",
 } satisfies Record<keyof typeof en, string>;

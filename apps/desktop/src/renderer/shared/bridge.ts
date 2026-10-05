@@ -17,6 +17,8 @@ export class BridgeError extends Error {
   constructor(
     public readonly userMessage: string,
     public readonly code: string,
+    /** The translatable version (ClipError.msg), checked by the UI before use. */
+    public readonly msg?: unknown,
   ) {
     super(`${code}: ${userMessage}`);
   }
@@ -26,7 +28,7 @@ export class BridgeError extends Error {
 export function unwrap<T>(raw: unknown): T {
   const env = Envelope.safeParse(raw);
   if (!env.success) throw new BridgeError("Something went wrong. Please try again.", "bus/bad-reply");
-  if (!env.data.ok) throw new BridgeError(env.data.error.userMessage, env.data.error.code);
+  if (!env.data.ok) throw new BridgeError(env.data.error.userMessage, env.data.error.code, env.data.error.msg);
   return env.data.data as T;
 }
 

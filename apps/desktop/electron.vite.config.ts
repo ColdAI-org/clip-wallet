@@ -6,6 +6,7 @@
  * Build-time switches (public values only; never secrets):
  *   CLIP_WC_PROJECT_ID   Reown project id for WalletConnect (unset: WalletConnect says it isn't switched on)
  *   CLIP_UPDATES=1       turn electron-updater on (only for signed release builds, see src/main/updater.ts)
+ *   CLIP_EXTENSION_IDS   Chromium extension ids allowed to use Clip Desktop over native messaging (Firefox's is fixed)
  */
 import { defineConfig } from "electron-vite";
 import react from "@vitejs/plugin-react";
@@ -20,11 +21,13 @@ out.moveCursor ??= () => true;
 
 const WC = JSON.stringify(process.env.CLIP_WC_PROJECT_ID?.trim() || "");
 const UPDATES = JSON.stringify(process.env.CLIP_UPDATES === "1");
+// Chromium extension ids the desktop trusts for native messaging (comma-separated; store ids + the dev id).
+const EXTENSION_IDS = JSON.stringify(process.env.CLIP_EXTENSION_IDS?.trim() || "");
 const empty = fileURLToPath(new URL("./src/renderer/shared/empty-module.ts", import.meta.url));
 
 export default defineConfig({
   main: {
-    define: { __CLIP_WC_PROJECT_ID__: WC, __CLIP_UPDATES__: UPDATES },
+    define: { __CLIP_WC_PROJECT_ID__: WC, __CLIP_UPDATES__: UPDATES, __CLIP_EXTENSION_IDS__: EXTENSION_IDS },
     build: {
       outDir: "out/main",
       externalizeDeps: false,

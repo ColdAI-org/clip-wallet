@@ -6,7 +6,7 @@ import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { ApprovalWindowApp, WalletApp, type UiOptions } from "@clip-wallet/ui";
 import { DESKTOP } from "../../shared/app-config";
-import { createFeaturesClient, createHardwareClient, createSecurityClient, createSocialBridgeClient, createWalletClient, desktopInfo, touchIdFactory } from "./clients";
+import { createFeaturesClient, createHardwareClient, createLinkBridgeClient, createSecurityClient, createSocialBridgeClient, createWalletClient, desktopInfo, touchIdFactory } from "./clients";
 import { desktop } from "./bridge";
 import { startHidAgent } from "./hid-agent";
 
@@ -35,6 +35,7 @@ export async function mountWallet() {
       hardware={createHardwareClient()}
       social={createSocialBridgeClient()}
       security={createSecurityClient()}
+      link={createLinkBridgeClient()}
     />,
   );
 }

@@ -35,6 +35,8 @@ export const VAULT_IMPORT_ALLOW = [
   /^apps\/mobile\/src\/background\//,
   // The desktop app's main-process host (it builds the vault for @clip-wallet/engine; renderers and preloads never may).
   /^apps\/desktop\/src\/main\/host\//,
+  // The desktop e2e's stand-in for the browser extension: an EMPTY vault, used only for ephemeral pairing keys.
+  /^apps\/desktop\/e2e\/mock-extension\.ts$/,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];

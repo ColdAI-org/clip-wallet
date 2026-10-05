@@ -108,6 +108,8 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "packages/ui/src/screens/onboarding/Create.tsx",
     "apps/mobile/src/background/host.ts",
     "apps/desktop/src/main/host/wallet.ts",
+    "apps/desktop/src/main/host/link.ts",
+    "apps/desktop/e2e/mock-extension.ts",
   ]) assert.ok(allowed(f), f);
   for (const f of [
     "packages/ui/src/screens/Send.tsx",
@@ -123,5 +125,9 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "apps/desktop/src/preload/wallet.ts",
     "apps/desktop/src/renderer/shared/clients.ts",
     "apps/desktop/src/main/hostile/wallet.ts",
+    "apps/desktop/src/main/native-hosts.ts",
+    "apps/desktop/e2e/desktop.spec.ts",
+    "apps/desktop/e2e/link.spec.ts",
+    "apps/desktop/e2e/mock-extension.tsx",
   ]) assert.ok(!allowed(f), f);
 });

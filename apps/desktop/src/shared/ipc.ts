@@ -43,7 +43,8 @@ export type WalletCall = z.infer<typeof WalletCall>;
 
 export const Envelope = z.union([
   z.object({ ok: z.literal(true), data: z.unknown().optional() }),
-  z.object({ ok: z.literal(false), error: z.object({ userMessage: z.string(), code: z.string() }) }),
+  // `msg`: the translatable form of the error (ClipError.msg, @clip-wallet/core); the UI checks it before use.
+  z.object({ ok: z.literal(false), error: z.object({ userMessage: z.string(), code: z.string(), msg: z.unknown().optional() }) }),
 ]);
 export type Envelope = z.infer<typeof Envelope>;
 
@@ -74,6 +75,10 @@ export const DesktopCall = z.discriminatedUnion("op", [
   /** Touch ID PRF for the vault's passkey slot: the main process finishes the ceremony itself (biometric.ts). */
   z.object({ op: z.literal("bioEnroll"), ceremonyId: z.string().min(1).max(200), prfInput: b64url.min(1) }),
   z.object({ op: z.literal("bioEvaluate"), ceremonyId: z.string().min(1).max(200), credentialId: b64url.min(1), prfInput: b64url.min(1) }),
+  /** Settings → Linked devices → Browser extension: native-messaging host registration (main/native-hosts.ts). */
+  z.object({ op: z.literal("connectorStatus") }),
+  z.object({ op: z.literal("connectorRepair") }),
+  z.object({ op: z.literal("connectorRemove") }),
   /** Closes the window that sent this (the approval window when its queue is empty). */
   z.object({ op: z.literal("closeSelf") }),
 ]);

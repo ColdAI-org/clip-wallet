@@ -3,7 +3,7 @@
  *
  *   macOS    dmg + zip, arm64 and x64; hardened runtime with build/entitlements.mac*.plist.
  *   Windows  NSIS installer + zip, x64 and arm64.
- *   Linux    AppImage + deb, x64 and arm64.
+ *   Linux    AppImage + deb + tar.gz, x64 and arm64.
  *
  * Signing and notarization read the standard electron-builder environment variables and are skipped when absent
  * (local and CI builds without secrets produce unsigned artifacts):
@@ -24,10 +24,15 @@ const updates = env.CLIP_UPDATES === "1";
 module.exports = {
   appId: "org.coldai.clipwallet.desktop",
   productName: "Clip Wallet",
+  // The workspace package is "@clip-wallet/desktop"; packaged apps get a name that is safe in file paths (deb package,
+  // Linux executable, NSIS archives). The app's display name stays productName.
+  extraMetadata: { name: "clip-wallet-desktop" },
   copyright: "Copyright © 2026 ColdAI",
   directories: { output: "release", buildResources: "build" },
   files: ["out/**/*", "package.json", "!out/**/*.map"],
   asar: true,
+  // The native-messaging host program runs with ELECTRON_RUN_AS_NODE from a plain file path (src/main/native-hosts.ts).
+  asarUnpack: ["out/native-host/**"],
   npmRebuild: false,
   nodeGypRebuild: false,
   // Chromium UI locales kept (the app ships 12 languages). macOS names them pt_BR / zh_CN, Windows and Linux pt-BR / zh-CN.
@@ -36,7 +41,8 @@ module.exports = {
   artifactName: "Clip-Wallet-${version}-${os}-${arch}.${ext}",
   mac: {
     category: "public.app-category.finance",
-    icon: "build/icon.png",
+    // Rendered from brand/clip-mark.svg by tools/brand/render.mjs (Apple's 824 px icon grid on a 1024 canvas).
+    icon: "build/icon-mac.png",
     target: [
       { target: "dmg", arch: ["arm64", "x64"] },
       { target: "zip", arch: ["arm64", "x64"] },
@@ -67,11 +73,14 @@ module.exports = {
   linux: {
     icon: "build/icon.png",
     category: "Finance",
+    executableName: "clip-wallet",
     synopsis: "A calm, non-custodial wallet with a built-in dapp browser. Test networks only.",
     maintainer: "ColdAI <shayan@coldai.org>",
     target: [
       { target: "AppImage", arch: ["x64", "arm64"] },
       { target: "deb", arch: ["x64", "arm64"] },
+      // Portable archive; also the only Linux format that builds on an Apple-silicon Mac without Rosetta.
+      { target: "tar.gz", arch: ["x64", "arm64"] },
     ],
   },
   // safeStorage uses libsecret (GNOME keyring / KWallet) when present: the deb asks for it.
