@@ -47,16 +47,18 @@ all 12 languages, Arabic values in FSI/PDI isolates.
 
 ## Testnet defaults
 
-`SETTLE_DEPLOYMENTS` (`packages/route/src/phase3.ts`): order book `0xB7C875E6EB4a9D470BBccFecbA6256342676e895`
-(Hedera testnet, chain 296), `SettleDeposit` `0x249f83524D0827840237e751981B804D99bB5bD6` on Sepolia, Connector
+`SETTLE_DEPLOYMENTS` (`packages/route/src/phase3.ts`): order book `0x28c14e4BAd929e27902149674CCe79b34E5b8B1f`
+(Hedera testnet, chain 296), `SettleDeposit` `0x86ED95936E516742cC4d54657f66831775282875` on Sepolia, Connector
 `0x316323692104293b58366e6Bc66a796B919108E7` ("Clip testnet Connector") at `http://127.0.0.1:8787` (the reference
 service, CLPRouter `script/deploy/settle-connector.sh serve`). Addresses and transactions: CLPRouter
-`deployments/README.md`, "Settle on Hedera (testnet)".
+`deployments/README.md`, "Settle on Hedera (testnet)". These are the v2 contracts (2026-10-05), bound to the v2 Channel
+`0x6446fdef…c05d` that is kept on the current Sepolia sync committee; the first deployment (order book `0xB7C8…e895`)
+was bound to the v1 Channel, which can't rotate, and is retired.
 
 Checked live (2026-10-05): `SettleClient` reads the bond (5 HBAR, all free) from the mirror node, and verifies the
 running service's signed quote (order id, signer, owed-on-default, capacity) up to the source check, where it drops
 it with "payments on the source network can't be proven to Hedera yet": the Sepolia source becomes active
-2026-10-06 06:20 UTC.
+2026-10-06 07:22 UTC (v2 source).
 
 ## Fixture mode
 
