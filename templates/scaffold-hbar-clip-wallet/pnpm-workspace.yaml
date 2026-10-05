@@ -1,0 +1,19 @@
+packages:
+  - packages/*
+
+# Dependency install scripts this project allows (pnpm asks before running any others). esbuild ships its binary
+# through an install script; the native add-ons below have pure-JS fallbacks, so they stay off.
+allowBuilds:
+  esbuild: true
+  '@parcel/watcher': false
+  bufferutil: false
+  keccak: false
+  protobufjs: false
+  secp256k1: false
+  unrs-resolver: false
+  utf-8-validate: false
+
+overrides:
+  # The Scaffold-HBAR nextjs package is tested with @coinbase/cdp-sdk 1.44 (its yarn.lock); newer releases import
+  # optional x402 packages that Next.js then can't resolve.
+  '@coinbase/cdp-sdk': 1.44.1

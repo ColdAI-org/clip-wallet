@@ -1,6 +1,6 @@
 /**
  * Paying through a bonded Connector ("settle on Hedera"), host side. Shared by the mobile engine (./engine.ts) and the
- * extension's background (apps/extension/src/background/service.ts) so both run the same steps:
+ * extension's background (packages/extension-kit/src/background/service.ts) so both run the same steps:
  *
  *   1. Approve on a payment whose plan has `funding` (stage "offer"): build the exact-amount approve + deposit
  *      requests (@clip-wallet/route SettleFunding.order) and sign/send each through the host's normal path, in that

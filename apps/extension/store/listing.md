@@ -201,7 +201,7 @@ purpose; not used or transferred to determine creditworthiness or for lending.
 - [ ] Legal review of `docs/legal/privacy-policy.md` and `docs/legal/terms-of-use.md`; publish both and put the
       URLs above and in the store forms.
 - [ ] Replace the placeholder `externally_connectable` origin (`passkey.clipwallet.example`, from
-      `apps/extension/src/app-settings.ts`) or drop the entry.
+      `packages/extension-kit/src/app-settings.ts`) or drop the entry.
 - [ ] Decide on Clip Plugins in the store build (see "Remote code").
 - [ ] Testnet-only listing: Chrome and Edge allow unlisted items; AMO can be "unlisted" (self-distributed,
       signed). A public listing should wait for a mainnet build and its own review.

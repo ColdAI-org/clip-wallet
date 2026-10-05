@@ -10,9 +10,17 @@
     "build": "pnpm -r --filter './packages/**' build && pnpm --filter @clip-wallet/extension build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "harness": "node tools/harness/check.mjs && node --test tools/harness/test/*.test.mjs"
+    "harness": "node tools/harness/check.mjs && node --test tools/harness/test/*.test.mjs && node tools/release/check-manifests.mjs && node tools/release/sync-template.mjs --check",
+    "pack-all": "node tools/release/pack-all.mjs",
+    "kit:e2e": "node tools/kit/e2e.mjs",
+    "kit:e2e:scaffold-hbar": "node tools/kit/scaffold-hbar-e2e.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version && node tools/release/sync-template.mjs && pnpm install --lockfile-only",
+    "release": "pnpm pack-all && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   }

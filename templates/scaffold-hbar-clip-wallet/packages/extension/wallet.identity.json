@@ -1,0 +1,6 @@
+{
+  "name": "My Wallet",
+  "description": "My Wallet: a non-custodial wallet built on the Clip Wallet kit.",
+  "rdns": "com.example.mywallet",
+  "icon": "./icon.svg"
+}

@@ -1,12 +1,55 @@
 {
   "name": "@clip-wallet/media-client",
   "version": "0.1.0",
+  "description": "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/media-client#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/media-client"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "exports": { ".": "./src/index.ts" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },

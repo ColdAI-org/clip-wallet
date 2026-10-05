@@ -1,6 +1,6 @@
 /**
  * Hardware accounts (Ledger, Keystone) for any engine host. The same behaviour as the extension's background
- * (apps/extension/src/background/service.ts, docs/phase2/integration/hardware.md §4), moved out of the
+ * (packages/extension-kit/src/background/service.ts, docs/phase2/integration/hardware.md §4), moved out of the
  * orchestration class so WalletEngine only needs a few hooks:
  *
  *   walletAccount(family)  a hardware account picked for a family replaces the phrase account

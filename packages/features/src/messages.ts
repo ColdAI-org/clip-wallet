@@ -14,7 +14,7 @@ import type {
 
 /**
  * Bus messages for the feature screens, zod-validated in the background like every other page message.
- * The integration step spreads FEATURE_REQUESTS into apps/extension/src/shared/messages.ts `Request` and
+ * The integration step spreads FEATURE_REQUESTS into packages/extension-kit/src/shared/messages.ts `Request` and
  * merges FeatureResponseMap into `ResponseMap` (see docs/phase2/integration/features.md).
  */
 const assetKey = z.string().min(1).max(100);

@@ -1,0 +1,20 @@
+name: clip-wallet-smoke
+server:
+  command: pnpm next:serve
+  url: http://localhost:3000
+  timeoutMs: 180000
+defaults:
+  timeoutMs: 60000
+  hydrationTimeoutMs: 60000
+  # Wallet libraries in the Scaffold-HBAR shell log unrelated console errors; the contract checks behaviour.
+  failOnConsoleError: false
+routes:
+  - name: home
+    path: /
+  - name: debug
+    path: /debug
+forbidden:
+  visibleText:
+    - Application error
+    - Unhandled Runtime Error
+    - Build Error

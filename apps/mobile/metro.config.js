@@ -5,6 +5,8 @@ const { getDefaultConfig } = require("expo/metro-config");
 const path = require("node:path");
 
 const config = getDefaultConfig(__dirname);
+// Workspace packages export their TypeScript source under the "development" condition (dist/ is for npm).
+config.resolver.unstable_conditionNames = ["development", ...(config.resolver.unstable_conditionNames ?? ["require", "import"])];
 const upstream = config.resolver.resolveRequest;
 
 /** Native modules a dependency requires on a code path the wallet never runs (see each shim). */

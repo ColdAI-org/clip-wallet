@@ -1,15 +1,68 @@
 {
   "name": "@clip-wallet/chains-tezos",
   "version": "0.1.0",
+  "description": "Tezos ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "tezos",
+    "chain-module"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/chains-tezos#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/chains-tezos"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./networks": "./src/networks.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./networks": {
+      "development": "./src/networks.ts",
+      "types": "./dist/networks.d.ts",
+      "import": "./dist/networks.js",
+      "default": "./dist/networks.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./networks": {
+        "types": "./dist/networks.d.ts",
+        "import": "./dist/networks.js",
+        "default": "./dist/networks.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },
@@ -19,6 +72,5 @@
     "@noble/hashes": "^2.4.0",
     "@scure/base": "^2.4.0",
     "@taquito/local-forging": "^25.0.0"
-  },
-  "sideEffects": false
+  }
 }

@@ -1,6 +1,6 @@
 /**
  * The phone's "background": builds the vault (this folder is the only place in apps/mobile allowed to import
- * @clip-wallet/vault, like apps/extension/src/background) and the shared @clip-wallet/engine on React Native
+ * @clip-wallet/vault, like packages/extension-kit/src/background) and the shared @clip-wallet/engine on React Native
  * storage, crypto, timers and fetch. Screens talk to it only through the WalletClient (createEngineClient) and
  * the few mobile-only calls exported here (biometric/passkey unlock, browser bridge, deep links).
  */

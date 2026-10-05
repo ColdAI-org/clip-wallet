@@ -8,7 +8,7 @@ What a coding agent reads before changing Clip Wallet, and what it must pass aft
 | `prd.md` | User stories and the three usability tasks every release is tested against |
 | `../AGENTS.md` | Rules and recipes (rebrand, networks, tokens, routing, screens, chain modules) |
 | `../llms.txt` | Map of packages, the core contract and commands |
-| `../tools/harness/check.mjs` | The mechanical checks (`pnpm harness`) |
+| `../tools/harness/check.mjs` | The mechanical checks (`pnpm harness`); copied into the Scaffold-HBAR template |
 
 ## The checks
 
@@ -20,19 +20,33 @@ What a coding agent reads before changing Clip Wallet, and what it must pass aft
    argon2 from `hash-wasm`, `viem/accounts` key accounts, `ethers` wallets, Hedera SDK `PrivateKey`/`Mnemonic` or
    Solana `Keypair`. Verification and public-key maths (`verify`, `Point`) are fine anywhere.
 2. **vault-import-not-allowed**: `@clip-wallet/vault` is imported outside the vault, the extension background
-   (`apps/extension/**/background*`) and the onboarding screen (`packages/ui/src/screens/Onboarding.tsx` or an
+   (`apps/extension/**/background*`, `packages/extension-kit/src/background/`), the mobile background and the onboarding screen (`packages/ui/src/screens/Onboarding.tsx` or an
    `onboarding/` folder in the UI or extension). Type-only imports are fine.
 3. **chain-module-imports-vault**: a ChainModule package (`packages/chains-*`, or any package that implements
    `ChainModule`) imports `@clip-wallet/vault` anywhere, tests included, or lists it in `package.json`.
 4. **logs-secret**: `console.*` prints an identifier named like phrase, mnemonic, seed, privateKey or secret.
 5. **phrase-literal**: a string that is a BIP-39 phrase appears outside `packages/vault/test`.
-6. **env-tracked**: git tracks a `.env` or `.env.*` file (`.env.example` is fine).
+6. **env-tracked**: git tracks a `.env` or `.env.*` file (`.env.example` is fine). **key-file-tracked**: git tracks a
+   `*.pem` file or anything under a `.keys/` folder (create-clip-wallet keeps the extension's private key there).
 7. **vault-kat-missing**: `packages/vault` has no test containing the public "abandon ×11 about" vector
    (a warning, not a failure, when `packages/vault` is absent).
 
+In a **kit-built wallet** (a project with `packages/extension/clip.config.ts` and no `packages/vault`, as made by
+create-clip-wallet or the Scaffold-HBAR template, which ships this same file) it also checks:
+
+8. **kit-identity**: `packages/extension/wallet.identity.json` exists, holds no private key and isn't Clip Wallet's
+   identity (`org.coldai.*`, "Clip Wallet"); a warning while the placeholder identity is still there.
+9. **kit-security**: `wxt.config.ts` builds through `clipWallet()` from `@clip-wallet/extension-kit/wxt`; nothing sets
+   `openLists: false` or defines `__CLIP_SECURITY__`.
+10. **kit-mainnet**: mainnet on in `clip.config.ts` means no open `- [ ]` box in `packages/extension/MAINNET.md`.
+11. **kit-pinned**: `@clip-wallet/*` and `create-clip-wallet` dependencies are exact versions.
+
+`pnpm harness` in this repo also runs `tools/release/check-manifests.mjs` (published manifests and declared runtime
+imports) and `tools/release/sync-template.mjs --check` (the template's pins and harness copy).
+
 The checks are lexical: comments are ignored, strings are understood, imports are matched with their bindings.
 Tests: `node --test tools/harness/test/*.test.mjs` (fixture trees in `tools/harness/test/fixtures`, which the
-real run skips).
+real run skips, and the real template for the kit rules).
 
 ## When a check is wrong
 

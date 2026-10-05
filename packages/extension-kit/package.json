@@ -1,0 +1,187 @@
+{
+  "name": "@clip-wallet/extension-kit",
+  "version": "0.1.0",
+  "description": "Build a branded Clip Wallet browser extension with WXT: background, pages, 1Mask wiring and the security floor, configured by clip.config.ts",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
+  "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/extension-kit#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/extension-kit"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./wxt": {
+      "development": "./src/wxt.ts",
+      "types": "./dist/wxt.d.ts",
+      "import": "./dist/wxt.js",
+      "default": "./dist/wxt.js"
+    },
+    "./background": {
+      "development": "./src/entries/background.ts",
+      "types": "./dist/entries/background.d.ts",
+      "import": "./dist/entries/background.js",
+      "default": "./dist/entries/background.js"
+    },
+    "./content": {
+      "development": "./src/entries/content.ts",
+      "types": "./dist/entries/content.d.ts",
+      "import": "./dist/entries/content.js",
+      "default": "./dist/entries/content.js"
+    },
+    "./inpage": {
+      "development": "./src/entries/inpage.ts",
+      "types": "./dist/entries/inpage.d.ts",
+      "import": "./dist/entries/inpage.js",
+      "default": "./dist/entries/inpage.js"
+    },
+    "./pages": {
+      "development": "./src/entries/pages.ts",
+      "types": "./dist/entries/pages.d.ts",
+      "import": "./dist/entries/pages.js",
+      "default": "./dist/entries/pages.js"
+    },
+    "./plugin-host": {
+      "development": "./src/entries/plugin-host.ts",
+      "types": "./dist/entries/plugin-host.d.ts",
+      "import": "./dist/entries/plugin-host.js",
+      "default": "./dist/entries/plugin-host.js"
+    },
+    "./plugin-sandbox": {
+      "development": "./src/entries/plugin-sandbox.ts",
+      "types": "./dist/entries/plugin-sandbox.d.ts",
+      "import": "./dist/entries/plugin-sandbox.js",
+      "default": "./dist/entries/plugin-sandbox.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./wxt": {
+        "types": "./dist/wxt.d.ts",
+        "import": "./dist/wxt.js",
+        "default": "./dist/wxt.js"
+      },
+      "./background": {
+        "types": "./dist/entries/background.d.ts",
+        "import": "./dist/entries/background.js",
+        "default": "./dist/entries/background.js"
+      },
+      "./content": {
+        "types": "./dist/entries/content.d.ts",
+        "import": "./dist/entries/content.js",
+        "default": "./dist/entries/content.js"
+      },
+      "./inpage": {
+        "types": "./dist/entries/inpage.d.ts",
+        "import": "./dist/entries/inpage.js",
+        "default": "./dist/entries/inpage.js"
+      },
+      "./pages": {
+        "types": "./dist/entries/pages.d.ts",
+        "import": "./dist/entries/pages.js",
+        "default": "./dist/entries/pages.js"
+      },
+      "./plugin-host": {
+        "types": "./dist/entries/plugin-host.d.ts",
+        "import": "./dist/entries/plugin-host.js",
+        "default": "./dist/entries/plugin-host.js"
+      },
+      "./plugin-sandbox": {
+        "types": "./dist/entries/plugin-sandbox.d.ts",
+        "import": "./dist/entries/plugin-sandbox.js",
+        "default": "./dist/entries/plugin-sandbox.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/backup-client": "workspace:*",
+    "@clip-wallet/chains-algorand": "workspace:*",
+    "@clip-wallet/chains-aptos": "workspace:*",
+    "@clip-wallet/chains-bitcoin": "workspace:*",
+    "@clip-wallet/chains-cardano": "workspace:*",
+    "@clip-wallet/chains-evm": "workspace:*",
+    "@clip-wallet/chains-hedera": "workspace:*",
+    "@clip-wallet/chains-near": "workspace:*",
+    "@clip-wallet/chains-solana": "workspace:*",
+    "@clip-wallet/chains-starknet": "workspace:*",
+    "@clip-wallet/chains-stellar": "workspace:*",
+    "@clip-wallet/chains-substrate": "workspace:*",
+    "@clip-wallet/chains-sui": "workspace:*",
+    "@clip-wallet/chains-tezos": "workspace:*",
+    "@clip-wallet/chains-ton": "workspace:*",
+    "@clip-wallet/config": "workspace:*",
+    "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/engine": "workspace:*",
+    "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/kit-modules": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
+    "@clip-wallet/names": "workspace:*",
+    "@clip-wallet/plugins": "workspace:*",
+    "@clip-wallet/route": "workspace:*",
+    "@clip-wallet/security": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
+    "@clip-wallet/ui": "workspace:*",
+    "@clip-wallet/vault": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "buffer": "^6.0.3",
+    "viem": "^2.57.1",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "@wxt-dev/module-react": "^1.2.0",
+    "wxt": "^0.21.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@wxt-dev/module-react": "^1.2.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9",
+    "wxt": "^0.21.4"
+  }
+}

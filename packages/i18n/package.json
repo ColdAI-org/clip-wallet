@@ -1,16 +1,77 @@
 {
   "name": "@clip-wallet/i18n",
   "version": "0.1.0",
+  "description": "Clip Wallet's translation layer: a small ICU message subset over Intl, 11 languages, optional React bindings",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/i18n#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/i18n"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./react": "./src/react.tsx",
-    "./qa": "./src/qa/index.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "development": "./src/react.tsx",
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
+    },
+    "./qa": {
+      "development": "./src/qa/index.ts",
+      "types": "./dist/qa/index.d.ts",
+      "import": "./dist/qa/index.js",
+      "default": "./dist/qa/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./react": {
+        "types": "./dist/react.d.ts",
+        "import": "./dist/react.js",
+        "default": "./dist/react.js"
+      },
+      "./qa": {
+        "types": "./dist/qa/index.d.ts",
+        "import": "./dist/qa/index.js",
+        "default": "./dist/qa/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },
@@ -18,7 +79,9 @@
     "react": "^19.0.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true }
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",

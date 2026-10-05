@@ -3,7 +3,7 @@ import type { ApprovalsOverviewView, CleanupOverviewView, CleanupSummaryView, Se
 
 /**
  * Bus messages for the security screens, zod-validated in the background like every page message.
- * The integration step spreads SECURITY_REQUESTS into apps/extension/src/shared/messages.ts `Request` and
+ * The integration step spreads SECURITY_REQUESTS into packages/extension-kit/src/shared/messages.ts `Request` and
  * merges SecurityResponseMap into `ResponseMap` (docs/phase25/integration/security.md).
  */
 const id = z.string().min(1).max(400);
