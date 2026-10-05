@@ -27,6 +27,15 @@ describe("Approval screen", () => {
     expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
   });
 
+  it("an EIP-5792 batch says its steps run one after another; a single request doesn't", () => {
+    const { unmount } = renderUi(<TransactionApproval approval={payApproval({ batch: { count: 2 } }, { title: "2 steps for magiceden.io" })} />);
+    expect(screen.getByRole("heading", { level: 1, name: "2 steps for magiceden.io" })).toBeInTheDocument();
+    expect(screen.getByTestId("batch-sequential")).toHaveTextContent("These steps run one after another.");
+    unmount();
+    renderUi(<TransactionApproval approval={payApproval()} />);
+    expect(screen.queryByTestId("batch-sequential")).not.toBeInTheDocument();
+  });
+
   it("reveals numbered steps with simulated balance changes and the settlement note behind Details", async () => {
     const user = userEvent.setup();
     renderUi(<TransactionApproval approval={payApproval()} />);

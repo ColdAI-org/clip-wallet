@@ -81,6 +81,12 @@
       "types": "./dist/plugins.d.ts",
       "import": "./dist/plugins.js",
       "default": "./dist/plugins.js"
+    },
+    "./calls-batch": {
+      "development": "./src/calls-batch.ts",
+      "types": "./dist/calls-batch.d.ts",
+      "import": "./dist/calls-batch.js",
+      "default": "./dist/calls-batch.js"
     }
   },
   "files": [
@@ -141,6 +147,11 @@
         "types": "./dist/plugins.d.ts",
         "import": "./dist/plugins.js",
         "default": "./dist/plugins.js"
+      },
+      "./calls-batch": {
+        "types": "./dist/calls-batch.d.ts",
+        "import": "./dist/calls-batch.js",
+        "default": "./dist/calls-batch.js"
       }
     }
   },

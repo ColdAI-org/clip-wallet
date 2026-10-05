@@ -40,22 +40,31 @@ function callObject(tx: TxParams): Record<string, Hex> {
   return c;
 }
 
-export async function simulate(ctx: ChainContext, tx: TxParams): Promise<SimulationResult> {
+/**
+ * `prior`: earlier calls of the same EIP-5792 batch. They run first in the same simulated block, so this call is
+ * previewed on the state they leave (an approve before a swap). Without eth_simulateV1 a batch call after the first
+ * can't be previewed reliably: it reports "couldn't preview" rather than a revert that may not happen.
+ */
+export async function simulate(ctx: ChainContext, tx: TxParams, prior: TxParams[] = []): Promise<SimulationResult> {
   try {
-    return await simulateV1(ctx, tx);
+    return await simulateV1(ctx, tx, prior);
   } catch {
+    if (prior.length > 0) return { simulated: false, reverts: false, balanceChanges: [], nftMoves: [], unavailable: true };
     return fallback(ctx, tx);
   }
 }
 
-async function simulateV1(ctx: ChainContext, tx: TxParams): Promise<SimulationResult> {
+async function simulateV1(ctx: ChainContext, tx: TxParams, prior: TxParams[] = []): Promise<SimulationResult> {
   const res = await rpc<{ calls: { status: Hex; gasUsed: Hex; logs?: SimLog[]; error?: { message?: string } }[] }[]>(
     ctx.network,
     ctx.fetch,
     "eth_simulateV1",
-    [{ blockStateCalls: [{ calls: [callObject(tx)] }], traceTransfers: true, validation: false }, "latest"],
+    [{ blockStateCalls: [{ calls: [...prior.map(callObject), callObject(tx)] }], traceTransfers: true, validation: false }, "latest"],
   );
-  const call = res?.[0]?.calls?.[0];
+  const calls = res?.[0]?.calls ?? [];
+  // An earlier call of the batch fails on its own: this one can't be previewed on top of it.
+  if (calls.slice(0, prior.length).some((c) => c.status !== "0x1")) throw new Error("an earlier batch call reverts");
+  const call = calls[prior.length];
   if (!call) throw new Error("empty simulateV1 result");
   const gasUsed = hexToBigInt(call.gasUsed);
   if (call.status !== "0x1") {

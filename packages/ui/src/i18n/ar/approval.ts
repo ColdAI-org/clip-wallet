@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "تغييرات الرصيد بالمحاكاة",
   "approval.expectedChanges": "تغييرات الرصيد المتوقعة",
   "approval.estimated": "هذه التغييرات تقديرية؛ لا تستطيع هذه الشبكة معاينتها مسبقًا.",
+  "approval.batch.sequential": "تُنفَّذ هذه الخطوات واحدة تلو الأخرى. إذا فشلت إحداها، فلن تُنفَّذ الخطوات التي تليها.",
   "approval.network": "الشبكة",
   "approval.networkValue": "\u2068{name}\u2069 (\u2068{id}\u2069)",
   "approval.via": "عبر",

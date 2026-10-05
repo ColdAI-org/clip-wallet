@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Simulierte Guthabenänderungen",
   "approval.expectedChanges": "Erwartete Guthabenänderungen",
   "approval.estimated": "Diese Änderungen sind geschätzt; dieses Netzwerk kann sie nicht vorab anzeigen.",
+  "approval.batch.sequential": "Diese Schritte laufen nacheinander. Schlägt einer fehl, laufen die folgenden nicht mehr.",
   "approval.network": "Netzwerk",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "Über",

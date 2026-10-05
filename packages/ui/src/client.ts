@@ -193,6 +193,8 @@ export interface ApprovalView {
   recipient?: { address: string; family: Family };
   /** Set while a hardware wallet is signing this request (see packages/ui/src/hardware). */
   hardware?: import("./hardware/types").HardwareApprovalState;
+  /** Additive: an EIP-5792 batch (wallet_sendCalls) of `count` calls, run one after another after one Approve. */
+  batch?: { count: number };
 }
 
 export type RecipientResolution =
@@ -280,7 +282,7 @@ export interface WalletClient extends PlatformClient {
   /* shell */
   openFullTab(route?: string): Promise<void>;
   /** Dev-flag builds only: inject a fixture dapp request. */
-  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late"): Promise<string>;
+  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late" | "send-calls"): Promise<string>;
 }
 
 /** Thrown by client implementations; screens show `userMessage` only. */

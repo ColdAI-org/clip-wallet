@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "अधिकतम नेटवर्क शुल्क",
   "bg.label.whatTheTransactionDoes": "ट्रांज़ैक्शन क्या करता है",
   "bg.label.hostUnverified": "{host} (सत्यापित नहीं)",
+  "bg.req.batchSteps": "{host} के लिए {count} स्टेप",
+  "bg.label.appSaysNeeds": "ऐप के हिसाब से ज़रूरत",
+  "bg.act.batch": "{app} पर {count} स्टेप",
+  "bg.act.batchStopped": "{app} पर {count} स्टेप, स्टेप {n} पर रुके",
+  "bg.err.batchHardware": "एक ही मंज़ूरी में कई स्टेप अभी हार्डवेयर वॉलेट के लिए उपलब्ध नहीं हैं। ऐप से इन्हें एक-एक करके भेजने को कहें।",
 };
 export default messages;

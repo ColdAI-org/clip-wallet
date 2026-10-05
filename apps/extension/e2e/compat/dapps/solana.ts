@@ -26,7 +26,7 @@ const steps: Record<string, () => Promise<unknown>> = {
     return { connected: adapter!.connected, publicKey: adapter!.publicKey?.toBase58().length ? "base58" : "none" };
   },
   signMessage: async () => {
-    const sig = await adapter!.signMessage(new TextEncoder().encode("Hello from an unmodified Solana dapp"));
+    const sig = await adapter!.signMessage!(new TextEncoder().encode("Hello from an unmodified Solana dapp"));
     return { bytes: sig.length };
   },
 };

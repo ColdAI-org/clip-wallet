@@ -15,6 +15,8 @@ import {
   type WcNamespaceKey,
 } from "./namespaces.js";
 import { assessVerify, type Verification, type VerifyContextLike } from "./verify.js";
+import { CALLS_METHODS, CallsErrorCode, callsError, chainCapabilities, isCallsMethod, parseSendCalls, type CallsHost, type Hex, type SendCallsParams } from "../shared/calls.js";
+import { rpcError } from "../shared/errors.js";
 
 /* ------------------------------------------------------------------ SDK error codes */
 
@@ -98,7 +100,7 @@ type JsonRpcResponse =
 /** The subset of Reown WalletKit (@reown/walletkit) 1Mask uses. Tests inject a fake. */
 export interface WalletKitLike {
   pair(p: { uri: string }): Promise<void>;
-  approveSession(p: { id: number; namespaces: Record<string, SessionNamespace> }): Promise<{ topic: string }>;
+  approveSession(p: { id: number; namespaces: Record<string, SessionNamespace>; scopedProperties?: Record<string, unknown> }): Promise<{ topic: string }>;
   rejectSession(p: { id: number; reason: { code: number; message: string } }): Promise<void>;
   respondSessionRequest(p: { topic: string; response: JsonRpcResponse }): Promise<void>;
   disconnectSession(p: { topic: string; reason: { code: number; message: string } }): Promise<void>;
@@ -158,6 +160,12 @@ export interface WalletConnectWalletOptions {
   isKnownScam?(origin: string): boolean;
   /** Request expired on the relay: close the approval window. */
   cancel?(requestId: string): void;
+  /**
+   * EIP-5792 Wallet Call API (+ ERC-7682 auxiliaryFunds) over WalletConnect. Opt-in: with it, eip155 sessions also
+   * serve wallet_getCapabilities / wallet_sendCalls / wallet_getCallsStatus / wallet_showCallsStatus when the app asks
+   * for them, and the approved session carries each chain's capabilities in CAIP-25 `scopedProperties`.
+   */
+  calls?: CallsHost;
   /** Extra @walletconnect/core options (relayUrl, storage, customStoragePrefix...). */
   coreOptions?: Record<string, unknown>;
   /** Test seam: build the WalletKit client. Default: Core + WalletKit.init. */
@@ -216,11 +224,21 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
   const registry = new Set(opts.networks.map((n) => n.id));
   const inflight = new Map<number, string>();
 
+  const extraMethods = opts.calls ? { eip155: CALLS_METHODS } : undefined;
   const mapProposal: WalletConnectWallet["mapProposal"] = (p) =>
     mapProposalNamespaces(p, {
       networks: opts.networks,
       addressesFor: (chain) => opts.addressesFor(chain, familyFor(chain)),
+      ...(extraMethods ? { extraMethods } : {}),
     });
+
+  /** CAIP-25 scopedProperties: EIP-5792 capabilities per approved eip155 chain (docs.walletconnect.com wallets/web/eip5792). */
+  const scopedProperties = async (namespaces: Record<string, SessionNamespace>): Promise<Record<string, unknown> | undefined> => {
+    const chains = namespaces.eip155?.chains ?? [];
+    if (!opts.calls || chains.length === 0) return undefined;
+    const aux = await opts.calls.auxiliaryFunds(chains);
+    return Object.fromEntries(chains.map((c) => [c, chainCapabilities(aux[c])]));
+  };
 
   /* -------------------------------------------------------------- session_proposal */
   const onProposal = async (ev: WcProposalEvent) => {
@@ -255,7 +273,8 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
         await kit.rejectSession({ id, reason: WC_ERRORS.USER_REJECTED });
         return;
       }
-      await kit.approveSession({ id, namespaces: mapping.namespaces });
+      const scoped = await scopedProperties(mapping.namespaces).catch(() => undefined);
+      await kit.approveSession({ id, namespaces: mapping.namespaces, ...(scoped ? { scopedProperties: scoped } : {}) });
     } catch {
       await kit.rejectSession({ id, reason: WC_ERRORS.USER_REJECTED }).catch(() => {});
     }
@@ -306,6 +325,61 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
     return undefined;
   };
 
+  /**
+   * EIP-5792 over a session: capabilities and status are answered here; wallet_sendCalls is validated and forwarded to
+   * `handle` (one approval) on the chain named in its params, which must be a chain of this session.
+   */
+  const answerCalls = async (
+    session: WcSessionLike,
+    chainId: string,
+    origin: string,
+    method: string,
+    params: unknown,
+  ): Promise<{ result: unknown } | { forward: { method: string; params: unknown; networkId: string } }> => {
+    const calls = opts.calls!;
+    const list = Array.isArray(params) ? params : [params];
+    const sessionChains = session.namespaces.eip155?.chains ?? [];
+    const accountsOn = (c: string) => sessionAccounts(session, c).map((a) => a.toLowerCase());
+    switch (method) {
+      case "wallet_getCapabilities": {
+        const address = typeof list[0] === "string" ? list[0].toLowerCase() : "";
+        if (!sessionChains.some((c) => accountsOn(c).includes(address))) throw rpcError.unauthorized("That account is not connected to this app.");
+        const wanted = Array.isArray(list[1]) ? list[1].map((c) => parseChainId(c)).filter((n): n is number => !!n).map((n) => `eip155:${n}`) : sessionChains;
+        const chains = wanted.filter((c) => sessionChains.includes(c) && registry.has(c));
+        const aux = await calls.auxiliaryFunds(chains);
+        return { result: Object.fromEntries(chains.map((c) => [toHexChainId(Number(c.slice(7))), chainCapabilities(aux[c])])) };
+      }
+      case "wallet_getCallsStatus":
+      case "wallet_showCallsStatus": {
+        const batchId = typeof list[0] === "string" ? list[0] : "";
+        if (method === "wallet_getCallsStatus") {
+          const status = batchId ? await calls.status(origin, batchId) : undefined;
+          if (!status) throw callsError(CallsErrorCode.UnknownBundle, "Clip Wallet doesn't know that batch.");
+          return { result: status };
+        }
+        if (!batchId || !(await calls.show(origin, batchId))) throw callsError(CallsErrorCode.UnknownBundle, "Clip Wallet doesn't know that batch.");
+        return { result: null };
+      }
+      default: {
+        const raw = list[0] as { chainId?: unknown } | undefined;
+        const n = parseChainId(raw?.chainId);
+        const target = n ? `eip155:${n}` : undefined;
+        if (n && (!target || !sessionChains.includes(target) || !registry.has(target))) {
+          throw callsError(CallsErrorCode.UnsupportedChain, `Clip Wallet is not connected to chain ${String(raw?.chainId).slice(0, 20)} for this app.`);
+        }
+        const aux = target ? (await calls.auxiliaryFunds([target]))[target] : undefined;
+        const p = parseSendCalls(raw, { auxiliaryFunds: !!aux?.supported });
+        const accounts = accountsOn(target ?? chainId);
+        const from = (p.from ?? sessionAccounts(session, target ?? chainId)[0]) as Hex | undefined;
+        if (!from || !accounts.includes(from.toLowerCase())) throw rpcError.unauthorized("That account is not connected to this app.");
+        if (p.atomicRequired) throw callsError(CallsErrorCode.AtomicityNotSupported, "Clip Wallet can't run these calls as one all-or-nothing transaction.");
+        const normalized: SendCallsParams = { ...p, from, chainId: toHexChainId(n!) as Hex };
+        // The calls go to the chain their params name (EIP-5792), which may differ from the request's scope chain.
+        return { forward: { method, params: [normalized], networkId: target! } };
+      }
+    }
+  };
+
   const onRequest = async (ev: WcRequestEvent) => {
     const { id, topic, params } = ev;
     const { chainId, request } = params;
@@ -320,7 +394,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       if (!ns.methods.includes(request.method)) {
         throw { code: RpcErrorCode.Unauthorized, message: `${request.method} was not approved for this session.` };
       }
-      if (!isServedMethod(nsKey, request.method)) {
+      if (!isServedMethod(nsKey, request.method, extraMethods)) {
         // Listed only so the session conformed to the app's required namespaces (e.g. eth_sign).
         throw { code: RpcErrorCode.UnsupportedMethod, message: `Clip Wallet does not support ${request.method}.` };
       }
@@ -329,14 +403,22 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
 
       const peer = session.peer.metadata;
       const verify = assessVerify(ev.verifyContext, peer.url, opts.isKnownScam);
+      let method = request.method;
+      let reqParams = request.params;
+      let networkId = chainId;
+      if (opts.calls && nsKey === "eip155" && isCallsMethod(method)) {
+        const answered = await answerCalls(session, chainId, verify.origin, method, request.params);
+        if ("result" in answered) return void (await respond(topic, id, answered));
+        ({ method, params: reqParams, networkId } = answered.forward);
+      }
       const req: DappRequest = {
         id: newId(),
         origin: verify.origin,
         via: "walletconnect",
-        family: familyFor(chainId),
-        networkId: chainId,
-        method: request.method,
-        params: request.params,
+        family: familyFor(networkId),
+        networkId,
+        method,
+        params: reqParams,
       };
       inflight.set(id, req.id);
       try {

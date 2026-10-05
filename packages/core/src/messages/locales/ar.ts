@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "الحد الأقصى لرسوم الشبكة",
   "bg.label.whatTheTransactionDoes": "ما تفعله المعاملة",
   "bg.label.hostUnverified": "\u2068{host}\u2069 (غير موثّق)",
+  "bg.req.batchSteps": "{count, plural, zero {\u2068#\u2069 خطوة} one {خطوة واحدة} two {خطوتان} few {\u2068#\u2069 خطوات} many {\u2068#\u2069 خطوة} other {\u2068#\u2069 خطوة}} لـ \u2068{host}\u2069",
+  "bg.label.appSaysNeeds": "يقول التطبيق إنه يحتاج إلى",
+  "bg.act.batch": "{count, plural, zero {\u2068#\u2069 خطوة} one {خطوة واحدة} two {خطوتان} few {\u2068#\u2069 خطوات} many {\u2068#\u2069 خطوة} other {\u2068#\u2069 خطوة}} على \u2068{app}\u2069",
+  "bg.act.batchStopped": "{count, plural, zero {\u2068#\u2069 خطوة} one {خطوة واحدة} two {خطوتان} few {\u2068#\u2069 خطوات} many {\u2068#\u2069 خطوة} other {\u2068#\u2069 خطوة}} على \u2068{app}\u2069، توقفت عند الخطوة \u2068{n}\u2069",
+  "bg.err.batchHardware": "تنفيذ عدة خطوات بموافقة واحدة غير متاح بعد في المحافظ العتادية. اطلب من التطبيق إرسالها واحدة تلو الأخرى.",
 };
 export default messages;

@@ -35,3 +35,5 @@ export {
   type StarknetTonOptions,
   type TonAddrItem,
 } from "./starknet-ton.js";
+export { createCallsDispatch, type CallsRouterHelpers } from "./eip5792.js";
+export * from "../shared/calls.js";

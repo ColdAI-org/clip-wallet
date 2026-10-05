@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Cambios de saldo simulados",
   "approval.expectedChanges": "Cambios de saldo previstos",
   "approval.estimated": "Estos cambios son estimados; esta red no permite simularlos.",
+  "approval.batch.sequential": "Estos pasos se ejecutan uno tras otro. Si uno falla, los siguientes no se ejecutan.",
   "approval.network": "Red",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "A través de",

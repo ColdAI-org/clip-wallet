@@ -17,3 +17,4 @@ export {
   type PortResponse,
   type PortEvent,
 } from "./shared/protocol.js";
+export * from "./shared/calls.js";

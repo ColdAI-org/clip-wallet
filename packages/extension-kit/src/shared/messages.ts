@@ -135,7 +135,7 @@ export const Request = z.discriminatedUnion("type", [
   z.object({ type: z.literal("disconnect"), id }),
   z.object({ type: z.literal("pairWalletConnect"), uri: z.string().startsWith("wc:").max(1000) }),
   z.object({ type: z.literal("openFullTab"), route: z.string().max(200).optional() }),
-  z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all", "settle", "settle-late"]) }),
+  z.object({ type: z.literal("devSimulateRequest"), kind: z.enum(["pay", "connect", "blind", "approval-for-all", "settle", "settle-late", "send-calls"]) }),
   ...FEATURE_REQUESTS,
   ...SOCIAL_REQUESTS,
   ...SECURITY_REQUESTS,

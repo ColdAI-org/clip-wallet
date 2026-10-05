@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "최대 네트워크 수수료",
   "bg.label.whatTheTransactionDoes": "트랜잭션이 하는 일",
   "bg.label.hostUnverified": "{host} (확인 안 됨)",
+  "bg.req.batchSteps": "{host}의 {count}단계",
+  "bg.label.appSaysNeeds": "앱이 말하는 필요 금액",
+  "bg.act.batch": "{app}에서 {count}단계",
+  "bg.act.batchStopped": "{app}에서 {count}단계, {n}단계에서 멈춤",
+  "bg.err.batchHardware": "여러 단계를 한 번에 승인하는 기능은 아직 하드웨어 지갑에서 쓸 수 없어요. 앱에 하나씩 보내 달라고 요청하세요.",
 };
 export default messages;

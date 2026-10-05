@@ -183,6 +183,11 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
             <span>{problem}</span>
           </div>
         )}
+        {a.batch && a.batch.count > 1 && (
+          <p className="clip-notice clip-notice--info" data-testid="batch-sequential">
+            {t("approval.batch.sequential")}
+          </p>
+        )}
         <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
         <PluginInsights insights={(d as { pluginInsights?: PluginInsightView[] }).pluginInsights} />
         {d.blind && advanced && (

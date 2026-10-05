@@ -138,7 +138,9 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
   d.lines.push({ label: "Requested by", value: host });
 
   // Simulation and fee
-  const sim = await simulate(ctx, tx);
+  // EIP-5792 batch: preview this call after the batch's earlier calls (core DappRequest.batch).
+  const prior = (req.batch?.prior ?? []).map((p) => parseTx({ ...req, params: [p] }, ctx));
+  const sim = await simulate(ctx, tx, prior);
   if (sim.simulated && !sim.reverts) {
     d.simulated = true;
     d.balanceChanges = sim.balanceChanges;

@@ -132,4 +132,6 @@ export default {
   "bg.req.removeProxies": "Remove every account that can act for you",
   "bg.req.claimHandle": "Claim the handle @{handle}",
   "bg.req.giveUpHandle": "Give up your handle",
+  // EIP-5792 wallet_sendCalls: several calls in one approval (count is always 2 or more)
+  "bg.req.batchSteps": "{count} steps for {host}",
 } as const;

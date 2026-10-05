@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import { ClipError, msg, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -45,6 +45,8 @@ import { chromeOffscreen, createPlugins, type BackgroundPlugins, type OffscreenA
 import { SettleFundingRun, claimedTitle, txHashOf } from "@clip-wallet/engine/settle-funding";
 import { formatUnits } from "@clip-wallet/route";
 import { settleFixture } from "./mocks/mock-settle";
+import { BackgroundCalls } from "./calls";
+import { SEND_CALLS, batchPlan, mergeBatchDecoded, requiredAssetChanges, sendCallsParams, splitSendCalls } from "@clip-wallet/engine/calls-batch";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -98,6 +100,8 @@ interface Pending {
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
   /** Paying through a bonded Connector (@clip-wallet/engine/settle-funding), once Approve started it. */
   settle?: SettleFundingRun;
+  /** EIP-5792 wallet_sendCalls: the calls and what each decoded to (./calls.ts). */
+  batch?: { calls: DappRequest[]; decoded: DecodedRequest[] };
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
 }
@@ -150,6 +154,8 @@ function domainOf(origin: string): string {
 export class WalletService implements DappHost {
   private accounts = new Map<Family, Account>();
   private approvals = new Map<string, Pending>();
+  /** EIP-5792 / ERC-7682 for 1Mask and WalletConnect (DappHost.calls). */
+  readonly calls: BackgroundCalls;
   private cache = new Map<string, { at: number; balances: TokenBalance[]; nfts?: Nft[] }>();
   private ceremonies: PasskeyCeremonies;
   private features?: Pick<FeaturesService, "handle" | "refine">;
@@ -173,6 +179,17 @@ export class WalletService implements DappHost {
     private readonly env: Env,
   ) {
     this.ceremonies = new PasskeyCeremonies(() => env.passkey());
+    this.calls = new BackgroundCalls({
+      kv,
+      mocks: deps.mocks,
+      networks: () => deps.networks,
+      assets: () => deps.assets,
+      sources: () => deps.auxiliaryFundsSources ?? [],
+      rpc: (n, m, params) => this.rpc(n, m, params),
+      sendCall: (call, approvalId) => this.sendBatchCall(call, approvalId),
+      activity: async (e) => (await this.addActivity(e), env.broadcast()),
+      openActivity: () => env.openTab("/activity"),
+    });
     this.hw = new HardwareSignHost(() => this.deps.hardware, () => env.broadcast());
     this.plugins = createPlugins(kv, () => this.prefs(), env.pluginHost === undefined ? chromeOffscreen() : env.pluginHost);
     deps.pluginNames.lookup = (n) => this.plugins.resolveName(n);
@@ -734,13 +751,8 @@ export class WalletService implements DappHost {
     return { name: displaySafe(reg.verified ? reg.name : name ?? reg.name).slice(0, 80), origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
   }
 
-  private async enqueueTransaction(
-    request: DappRequest,
-    dapp: DappInfo,
-    extra: { recipient?: string; warnings?: Warning[] } = {},
-  ): Promise<{ id: string; promise: Promise<unknown> }> {
-    const network = this.network(request.networkId);
-    const ctx = await this.ctx(network.id, request.origin);
+  /** Module decode plus every refinement (features, social, security). The caller attaches msgs and the rest. */
+  private async decodeRefined(request: DappRequest, network: Network, ctx: ChainContext, extra: { recipient?: string }): Promise<DecodedRequest> {
     let decoded: DecodedRequest;
     try {
       decoded = attachMsgs(await this.module(network.family).decode(request, ctx));
@@ -764,6 +776,31 @@ export class WalletService implements DappHost {
         recipients: extra.recipient ? [extra.recipient] : [],
       });
     }
+    return decoded;
+  }
+
+  private async enqueueTransaction(
+    request: DappRequest,
+    dapp: DappInfo,
+    extra: { recipient?: string; warnings?: Warning[] } = {},
+  ): Promise<{ id: string; promise: Promise<unknown> }> {
+    const network = this.network(request.networkId);
+    const ctx = await this.ctx(network.id, request.origin);
+    let decoded: DecodedRequest;
+    let batch: Pending["batch"];
+    if (request.method === SEND_CALLS) {
+      // EIP-5792: every call goes through the full decode pipeline, then one approval shows them all.
+      const p = sendCallsParams(request);
+      await this.calls.store.assertNewId(request.origin, p.id);
+      const calls = splitSendCalls(request);
+      const parts: DecodedRequest[] = [];
+      for (const c of calls) parts.push(sanitizeDecoded(attachMsgs(await this.decodeRefined(c, network, ctx, extra))));
+      const needs = requiredAssetChanges(p, this.deps.assets, parts.flatMap((d) => d.balanceChanges), network.id);
+      decoded = mergeBatchDecoded(request, parts, needs);
+      batch = { calls, decoded: parts };
+    } else {
+      decoded = await this.decodeRefined(request, network, ctx, extra);
+    }
     decoded = attachMsgs(decoded);
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
@@ -783,7 +820,8 @@ export class WalletService implements DappHost {
     // Audit DISP-01: token names, NFT names and memos from chains can't disguise what the screen says.
     decoded = sanitizeDecoded(decoded);
     const { balances } = await this.portfolio();
-    const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
+    const planned = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
+    const plan = planned && batch ? batchPlan(planned, batch.decoded) : planned;
 
     const id = crypto.randomUUID();
     const view: ApprovalView = {
@@ -797,6 +835,7 @@ export class WalletService implements DappHost {
       fiatValue,
       plan,
       raw: JSON.stringify({ method: request.method, params: request.params }, null, 2).slice(0, 4000),
+      ...(batch ? { batch: { count: batch.calls.length } } : {}),
       ...(extra.recipient ? { recipient: { address: extra.recipient, family: network.family } } : {}),
     };
     let resolve!: (v: unknown) => void;
@@ -805,7 +844,7 @@ export class WalletService implements DappHost {
       resolve = res;
       reject = rej;
     });
-    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve, reject });
+    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve, reject, ...(batch ? { batch } : {}) });
     // Real sends feed the look-alike check (security's RecipientLog), once they go through.
     if (extra.recipient && this.recipients) {
       const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
@@ -901,6 +940,7 @@ export class WalletService implements DappHost {
         "approval/blind-blocked",
       );
     }
+    if (p.batch) return this.approveBatch(id, p);
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
     const ctx = await this.ctx(network.id, req.origin);
@@ -933,6 +973,39 @@ export class WalletService implements DappHost {
     await this.addActivity(this.activityFor(p.view, result));
     p.resolve(result);
     this.env.broadcast();
+  }
+
+  /** EIP-5792 batch: call 1 now, the rest in order once each one before it is mined (./calls.ts). */
+  private async approveBatch(id: string, p: Pending): Promise<void> {
+    const req = p.request!;
+    const ctx = await this.ctx(req.networkId, req.origin);
+    if (p.accountId !== undefined && ctx.account.id !== p.accountId) {
+      throw new ClipError("The account for this request changed after it arrived. Reject it and ask the app to send it again.", "approval/account-changed");
+    }
+    if (this.deps.hardware.owns(ctx.account.id)) throw new ClipError(msg("bg.err.batchHardware"), "batch/hardware");
+    const result = await this.calls.start(req, id, p.batch!.decoded, { name: p.view.dapp.name, origin: p.view.dapp.origin });
+    this.approvals.delete(id);
+    p.settle?.stop();
+    this.cache.clear();
+    p.resolve(result);
+    this.env.broadcast();
+  }
+
+  /** One call of an approved batch: prepared now (its gas sees the calls before it), signed for exactly that call. */
+  private async sendBatchCall(call: DappRequest, approvalId: string): Promise<string> {
+    const network = this.network(call.networkId);
+    const mod = this.module(network.family);
+    const ctx = await this.ctx(network.id, call.origin);
+    const payloads = await mod.prepare(call, ctx, approvalId);
+    this.deps.vault.registerApproval(approvalId, payloads.map((x) => hashSignablePayload(x)), APPROVAL_TTL_MS);
+    try {
+      const sigs = [];
+      for (const payload of payloads) sigs.push(await this.deps.vault.sign(payload));
+      return txHashOf(await mod.finalize(call, sigs, ctx));
+    } catch (e) {
+      this.deps.vault.revokeApproval(approvalId);
+      throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
+    }
   }
 
   /** Hardware sign: the approval window runs the device (it shows the step), the host verifies the answer. */
@@ -969,7 +1042,8 @@ export class WalletService implements DappHost {
       replan: async () => {
         this.cache.clear();
         const { balances } = await this.portfolio(true);
-        return this.deps.route.plan({ request: req, decoded: p.view.decoded!, balances, networks: this.deps.networks, account: ctx.account.address });
+        const plan = await this.deps.route.plan({ request: req, decoded: p.view.decoded!, balances, networks: this.deps.networks, account: ctx.account.address });
+        return plan && p.batch ? batchPlan(plan, p.batch.decoded) : plan;
       },
       changed: () => this.env.broadcast(),
       pollMs: this.deps.mocks ? 300 : 5000,
@@ -1197,9 +1271,10 @@ export class WalletService implements DappHost {
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */
 
-  private async simulate(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late"): Promise<string> {
+  private async simulate(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late" | "send-calls"): Promise<string> {
     // Settle on Hedera: the same 25 USDC payment, funded by the mock Connector (delivers, or misses its deadline).
-    settleFixture.mode = kind === "settle" ? "deliver" : kind === "settle-late" ? "late" : "off";
+    // "send-calls": EIP-5792 batch of two USDC payments (10 + 15) with 12 USDC on Base: the Connector brings the rest.
+    settleFixture.mode = kind === "settle" || kind === "send-calls" ? "deliver" : kind === "settle-late" ? "late" : "off";
     if (kind === "settle" || kind === "settle-late") kind = "pay";
     const evm = await this.account("evm");
     const base = "eip155:84532";
@@ -1224,6 +1299,23 @@ export class WalletService implements DappHost {
       case "pay":
         out = await this.enqueueTransaction(
           mk("https://magiceden.io", "eth_sendTransaction", [{ from: evm.address, to: usdc.address, data: transfer(25_000_000n) }]),
+          this.dappInfo("https://magiceden.io"),
+        );
+        break;
+      case "send-calls":
+        out = await this.enqueueTransaction(
+          mk("https://magiceden.io", "wallet_sendCalls", [
+            {
+              version: "2.0.0",
+              from: evm.address,
+              chainId: "0x14a34",
+              atomicRequired: false,
+              calls: [
+                { to: usdc.address, data: transfer(10_000_000n), value: "0x0" },
+                { to: usdc.address, data: transfer(15_000_000n), value: "0x0" },
+              ],
+            },
+          ]),
           this.dappInfo("https://magiceden.io"),
         );
         break;

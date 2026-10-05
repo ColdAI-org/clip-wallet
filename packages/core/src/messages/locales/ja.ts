@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "ネットワーク手数料の上限",
   "bg.label.whatTheTransactionDoes": "取引の内容",
   "bg.label.hostUnverified": "{host}（未確認）",
+  "bg.req.batchSteps": "{host}の{count}ステップ",
+  "bg.label.appSaysNeeds": "アプリが必要とする金額",
+  "bg.act.batch": "{app}で{count}ステップ",
+  "bg.act.batchStopped": "{app}で{count}ステップ（ステップ{n}で停止）",
+  "bg.err.batchHardware": "複数のステップを1回の承認で行う機能は、ハードウェアウォレットではまだ使えません。アプリに1つずつ送るよう依頼してください。",
 };
 export default messages;

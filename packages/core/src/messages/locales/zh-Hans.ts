@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "最高网络手续费",
   "bg.label.whatTheTransactionDoes": "交易的实际内容",
   "bg.label.hostUnverified": "{host}（未验证）",
+  "bg.req.batchSteps": "{host} 的 {count} 个步骤",
+  "bg.label.appSaysNeeds": "应用表示需要",
+  "bg.act.batch": "在 {app} 上的 {count} 个步骤",
+  "bg.act.batchStopped": "在 {app} 上的 {count} 个步骤，在第 {n} 步停止",
+  "bg.err.batchHardware": "硬件钱包暂不支持在一次批准中完成多个步骤。请让应用逐个发送。",
 };
 export default messages;

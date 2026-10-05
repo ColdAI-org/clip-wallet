@@ -256,6 +256,12 @@ export interface DappRequest {
   /** Family-native method: "eth_sendTransaction", "solana:signAndSendTransaction", "hedera_signAndExecuteTransaction", "signPsbt"... */
   method: string;
   params: unknown;
+  /**
+   * Additive (EIP-5792 wallet_sendCalls): this request is call `index` of a `count`-call batch the user approves as
+   * one. `prior` holds the earlier calls' transaction params (in order), so a module can preview this call on top of
+   * them (EVM: eth_simulateV1 with every earlier call in the same block). Absent for ordinary requests.
+   */
+  batch?: { index: number; count: number; prior: unknown[] };
 }
 
 export interface BalanceChange {

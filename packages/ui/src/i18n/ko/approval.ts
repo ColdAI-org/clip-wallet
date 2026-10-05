@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "시뮬레이션된 잔액 변화",
   "approval.expectedChanges": "예상 잔액 변화",
   "approval.estimated": "이 변화는 추정치예요. 이 네트워크는 미리 보기를 지원하지 않아요.",
+  "approval.batch.sequential": "이 단계들은 차례대로 실행돼요. 하나가 실패하면 그 뒤의 단계는 실행되지 않아요.",
   "approval.network": "네트워크",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "경유",
