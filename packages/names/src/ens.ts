@@ -110,11 +110,24 @@ export class EnsBackend implements Backend {
     const coinType = (ENS_L2_CHAIN_IDS as readonly number[]).includes(chainId) ? toCoinType(chainId) : undefined;
     try {
       const n = await this.client.getEnsName(coinType === undefined ? { address: getAddress(address) } : { address: getAddress(address), coinType });
-      if (n) return n;
+      if (n) return normalizedOrNull(n);
       // L2 primary names fall back to the default (mainnet) primary name.
-      return coinType === undefined ? null : await this.client.getEnsName({ address: getAddress(address) });
+      return coinType === undefined ? null : normalizedOrNull(await this.client.getEnsName({ address: getAddress(address) }));
     } catch {
       return null;
     }
+  }
+}
+
+/**
+ * Audit NAME-01: a primary name that isn't in ENSIP-15 normal form (zero-width joiners, look-alike scripts the
+ * normaliser rejects) was registered on chain but can't be typed or trusted; show the address instead.
+ */
+function normalizedOrNull(n: string | null): string | null {
+  if (!n) return null;
+  try {
+    return normalize(n) === n ? n : null;
+  } catch {
+    return null;
   }
 }

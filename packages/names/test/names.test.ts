@@ -192,3 +192,17 @@ describe("plugin names (Clip Plugins)", () => {
     expect(await plugin.resolve("x.label")).toBeNull();
   });
 });
+
+describe("audit NAME-01: names that can pass for others", () => {
+  it("an ENS primary name not in normal form isn't shown", async () => {
+    const ens = new EnsBackend({ client: fakeEns({}, { [`${ALICE}|60`]: "vitalik‍.eth", [`${ALICE_BASE}|60`]: "Alice.eth" }) });
+    expect(await ens.reverse(ALICE, "evm")).toBeNull();
+    expect(await ens.reverse(ALICE_BASE, "evm")).toBeNull(); // upper case: normalises to alice.eth
+  });
+
+  it("an SNS name with invisible or direction-changing characters isn't a name", async () => {
+    const { isSnsName } = await import("../src/sns.js");
+    expect(isSnsName("toly.sol")).toBe(true);
+    for (const n of ["toly​.sol", "toly‮.sol", "to﻿ly.sol"]) expect(isSnsName(n)).toBe(false);
+  });
+});
