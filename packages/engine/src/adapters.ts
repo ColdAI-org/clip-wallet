@@ -11,7 +11,7 @@ import { P2_CONNECT_METHODS } from "@clip-wallet/1mask/background/p2";
 import type { createStarknetModule } from "@clip-wallet/chains-starknet";
 import type { createTonModule } from "@clip-wallet/chains-ton";
 import type { WalletConnectWalletOptions } from "@clip-wallet/1mask/walletconnect";
-import { createRouteClient, findShortfall, settleFundingOption, type RouteClient, type SettleOnHederaClient } from "@clip-wallet/route";
+import { createRouteClient, findShortfall, type RouteClient, type SettleFunding } from "@clip-wallet/route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./types.js";
 
 /** Connect methods of every family's connector (same set as the extension's). */
@@ -222,7 +222,7 @@ export class RoutePlannerAdapter implements RoutePlanner {
     private readonly prices: PriceFeed,
     private readonly currency: () => Promise<string>,
     /** Phase 3 "settle on Hedera" (config route.settleOnHedera + a known deployment); null = off. */
-    private readonly settle: SettleOnHederaClient | null = null,
+    private readonly settle: SettleFunding | null = null,
   ) {
     this.client = createRouteClient({ network: "testnet" });
   }
@@ -234,7 +234,13 @@ export class RoutePlannerAdapter implements RoutePlanner {
     let problem: string | undefined;
     let feeFiat = decoded.fee?.fiatValue;
     const shortfalls = findShortfall(decoded, balances);
-    for (const s of shortfalls) {
+    // Phase 3: a bonded Connector pays the shortfall from the user's money on another network (settle on Hedera).
+    const funded = this.settle ? await this.settle.plan(shortfalls, account, networks) : null;
+    if (funded) {
+      steps.push({ kind: "funding", title: funded.step.title, detail: funded.step.detail });
+      readyInSeconds = Math.max(readyInSeconds, funded.info.etaSeconds);
+    }
+    for (const s of funded ? [] : shortfalls) {
       try {
         const [quote] = await this.client.quote({
           to: decoded.networkId,
@@ -253,9 +259,6 @@ export class RoutePlannerAdapter implements RoutePlanner {
       } catch (e) {
         problem = e instanceof ClipError ? e.userMessage : `You don't have enough ${s.asset.symbol} for this.`;
       }
-      // A bonded Connector's offer, shown beside the route in Details (Phase 3; display only, never blocks).
-      const alt = this.settle ? await settleFundingOption(this.settle, s, account, networks) : null;
-      if (alt) steps.push({ kind: "funding", title: alt.title, detail: alt.detail });
     }
     const sponsored = !!decoded.fee?.sponsored;
     if (decoded.fee) steps.push({ kind: "gas", title: sponsored ? "Network fee paid for you" : "Network fee" });
@@ -266,10 +269,13 @@ export class RoutePlannerAdapter implements RoutePlanner {
       sponsored,
       readyInSeconds,
       steps,
-      settlement: shortfalls.length
-        ? "Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you."
-        : "If it fails, nothing leaves your balance.",
+      settlement: funded
+        ? "If the money doesn't arrive in time, you're paid back from the Connector's bond on Hedera."
+        : shortfalls.length
+          ? "Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you."
+          : "If it fails, nothing leaves your balance.",
       problem,
+      ...(funded ? { funding: funded.info } : {}),
     };
   }
 }

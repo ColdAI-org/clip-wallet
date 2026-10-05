@@ -119,6 +119,43 @@ export interface ApprovalPlan {
   settlement: string;
   /** Plain-words reason this can't be approved as planned (e.g. not enough money anywhere). Blocks Approve. */
   problem?: string;
+  /**
+   * Phase 3 (additive): the money comes from a bonded Connector ("settle on Hedera"). Approve pays the Connector
+   * on the other network; the screen then follows the order (see SettleFundingView.stage).
+   */
+  funding?: SettleFundingView;
+}
+
+/** Base units of an asset, with how to show them. */
+export interface SettleAmountView {
+  amount: string;
+  symbol: string;
+  decimals: number;
+}
+
+/** Same shape as @clip-wallet/route's SettleFundingInfo (the UI words every sentence from it). */
+export interface SettleFundingView {
+  orderId: string;
+  stage: "offer" | "paying" | "waiting" | "opened" | "delivered" | "closed" | "late" | "claiming" | "claimed" | "rejected";
+  /** Connector name (a proper name). */
+  provider: string;
+  pay: SettleAmountView;
+  receive: SettleAmountView;
+  fee: SettleAmountView;
+  /** Cover + penalty paid on Hedera if the Connector is late. */
+  payback: SettleAmountView;
+  /** An exact-amount allowance comes before the payment (tokens). */
+  approveFirst: boolean;
+  etaSeconds: number;
+  /** Unix seconds. */
+  deadline: number;
+  claimableFrom?: number;
+  /** The money arrived: the original request can be approved now. */
+  arrived?: boolean;
+  /** The app stopped waiting for its request while the order was under way. */
+  appGone?: boolean;
+  depositTx?: string;
+  claimTx?: string;
 }
 
 export interface ConnectView {
@@ -235,7 +272,7 @@ export interface WalletClient extends PlatformClient {
   /* shell */
   openFullTab(route?: string): Promise<void>;
   /** Dev-flag builds only: inject a fixture dapp request. */
-  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all"): Promise<string>;
+  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late"): Promise<string>;
 }
 
 /** Thrown by client implementations; screens show `userMessage` only. */

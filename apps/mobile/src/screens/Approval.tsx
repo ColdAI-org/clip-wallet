@@ -16,6 +16,7 @@ import { IconAlert, IconChevron, IconShield } from "../ui/icons";
 import { APP } from "../env";
 import { useMobileT, type MobileMessageId } from "../i18n";
 import { ContactAvatar } from "./Contacts";
+import { SettleProgress, settleBusy, settleSteps } from "./SettleFunding";
 import { PluginInsights } from "./Plugins";
 
 /** readyInMessage's ids, in the mobile catalog ("common.readyIn.x" → "m.common.readyIn.x"). */
@@ -154,7 +155,11 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
       setBusy(false);
     }
   };
-  const steps = a.plan?.steps ?? [{ kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges, detail: undefined }];
+  // Money from a bonded Connector (settle on Hedera): its steps replace the English funding step; after the first
+  // Approve the order's progress replaces Approve / Reject until the money arrives or the cover can be claimed.
+  const funding = a.plan?.funding;
+  const planSteps = a.plan?.steps ?? [{ kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges, detail: undefined }];
+  const steps = funding ? [...settleSteps(funding, t).map((s) => ({ ...s, kind: "funding" as const, balanceChanges: undefined })), ...planSteps.filter((s) => s.kind !== "funding")] : planSteps;
 
   return (
     <Shell
@@ -169,14 +174,17 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
           <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
           {d.blind && advanced && <Toggle label={t("m.approval.blindToggle")} description={t("m.approval.blindToggleHint")} checked={blindOk} onChange={setBlindOk} />}
           <ErrorNote message={err} />
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
-              {t("m.approval.reject")}
-            </Button>
-            <Button onPress={() => act(true)} disabled={busy || blocked} testID="approve">
-              {busy ? t("m.approval.approving") : t("m.approval.approve")}
-            </Button>
-          </View>
+          {funding && (funding.arrived || funding.stage !== "offer") && <SettleProgress funding={funding} app={a.dapp.name} busy={busy} act={() => void act(true)} />}
+          {!settleBusy(funding) && (
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
+                {t("m.approval.reject")}
+              </Button>
+              <Button onPress={() => act(true)} disabled={busy || blocked} testID="approve">
+                {busy ? t("m.approval.approving") : t("m.approval.approve")}
+              </Button>
+            </View>
+          )}
         </>
       }
     >
@@ -189,7 +197,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
       </View>
       {a.recipient && <RecipientCheck address={a.recipient.address} family={a.recipient.family} />}
       <Card style={{ gap: 0 }}>
-        {movesMoney && <Row label={t("m.approval.from")} value={a.plan?.source ?? t("m.approval.yourBalance")} />}
+        {movesMoney && <Row label={t("m.approval.from")} value={funding ? t("m.settle.from", { provider: funding.provider }) : (a.plan?.source ?? t("m.approval.yourBalance"))} />}
         {d.fee && <Row label={t("m.approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("m.approval.feeCovered") : undefined} />}
         {(movesMoney || d.fee) && <Row label={t("m.approval.ready")} value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
         {d.lines.map((l) => (
@@ -222,7 +230,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
               </View>
             </View>
           ))}
-          {a.plan?.settlement ? <T v="hint">{a.plan.settlement}</T> : null}
+          {a.plan?.settlement ? <T v="hint">{funding ? t("m.settle.settlement", { provider: funding.provider }) : a.plan.settlement}</T> : null}
           {!d.simulated && !d.blind && <T v="hint">{t("m.approval.estimated")}</T>}
           {advanced && (
             <Card>

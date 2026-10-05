@@ -8,6 +8,7 @@ import { walletNetworks } from "./src/shared/catalog";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
 import type { SecurityConfig } from "@clip-wallet/security";
+import { SETTLE_DEPLOYMENTS } from "@clip-wallet/route";
 import pkg from "./package.json" with { type: "json" };
 
 /** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
@@ -94,6 +95,8 @@ export default defineConfig({
         ...(plugins ? ["https://registry.npmjs.org/*"] : []),
         // Blockaid scanning, only in builds that set a key.
         ...(BLOCKAID_KEY ? ["https://api.blockaid.io/*"] : []),
+        // Settle on Hedera (testnet builds with route.settleOnHedera): the Connectors' quote APIs.
+        ...(clipConfig.route.settleOnHedera && !clipConfig.mainnet ? SETTLE_DEPLOYMENTS.filter((d) => d.network === "testnet").flatMap((d) => d.connectors.map((c) => `${new URL(c.url).origin}/*`)) : []),
         // Optional hosted services from clip.config (unset by default).
         ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],

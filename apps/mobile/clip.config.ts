@@ -22,5 +22,7 @@ export default defineConfig({
   passkeys: { enabled: true },
   walletConnect: {},
   services: MAINNET ? {} : TESTNET_SERVICES,
+  // Settle on Hedera (bonded Connectors, @clip-wallet/route SETTLE_DEPLOYMENTS): testnet builds only.
+  route: { settleOnHedera: !MAINNET },
   mainnet: MAINNET,
 });

@@ -44,6 +44,8 @@ import type { EngineHardware } from "./hardware.js";
 import type { EnginePlugins } from "./plugins.js";
 import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
 import type { DappHost, Dependencies, EngineEnv, PasskeyInfoLike, PermissionStoreLike, PrfProvider } from "./types.js";
+import { SettleFundingRun, claimedTitle, txHashOf } from "./settle-funding.js";
+import { formatUnits } from "@clip-wallet/route";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -71,6 +73,8 @@ interface Pending {
   view: ApprovalView;
   request?: DappRequest;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
+  /** Paying through a bonded Connector (./settle-funding.ts), once Approve started it. */
+  settle?: SettleFundingRun;
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
 }
@@ -850,6 +854,12 @@ export class WalletEngine implements DappHost {
 
     const req = p.request!;
     const decoded = p.view.decoded!;
+    // Money from a bonded Connector: the first Approve pays it, a late order's Approve claims the cover.
+    if (p.view.plan?.funding && this.deps.settleFunding) {
+      const next = await (p.settle ??= await this.settleRun(p)).approve();
+      if (next === "handled") return;
+      if (next !== "sign") return this.closeSettled(id, p, next);
+    }
     if (p.view.plan?.problem) throw new ClipError(p.view.plan.problem, "approval/not-payable");
     if (decoded.blind && !((await this.prefs()).advanced && allowBlind)) {
       throw new ClipError("This request can't be read, so it was blocked. Only Advanced mode can override that.", "approval/blind-blocked");
@@ -872,9 +882,79 @@ export class WalletEngine implements DappHost {
       throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
     }
     this.approvals.delete(id);
+    p.settle?.stop();
     this.cache.clear();
     await this.addActivity(this.activityFor(p.view, result));
     p.resolve(result);
+    this.env.broadcast();
+  }
+
+  /* ------------------------------------------------------------------ settle on Hedera (./settle-funding.ts) */
+
+  private async settleRun(p: Pending): Promise<SettleFundingRun> {
+    const req = p.request!;
+    const origin = req.origin;
+    const ctx = await this.ctx(req.networkId, origin);
+    return new SettleFundingRun(this.deps.settleFunding!, p.view, ctx.account.address, {
+      send: (r, approvalId) => this.sendInternal(r, approvalId, origin),
+      waitMined: (networkId, hash) => this.waitMined(networkId, hash),
+      balance: async (asset) => {
+        const c = await this.ctx(asset.networkId, origin);
+        const bals = await this.module(c.network.family).getBalances(c);
+        const addr = (asset.address ?? "").toLowerCase();
+        return bals.filter((b) => b.asset.networkId === asset.networkId && (b.asset.address ?? "").toLowerCase() === addr).reduce((t, b) => t + BigInt(b.amount), 0n);
+      },
+      replan: async () => {
+        this.cache.clear();
+        const { balances } = await this.portfolio(true);
+        return this.deps.route.plan({ request: req, decoded: p.view.decoded!, balances, networks: this.deps.networks, account: ctx.account.address });
+      },
+      changed: () => this.env.broadcast(),
+      pollMs: this.deps.mocks ? 300 : 5000,
+    });
+  }
+
+  /** A request the wallet built (Connector payment, claim): readable, signed by the vault under its own approval id. */
+  private async sendInternal(req: DappRequest, approvalId: string, origin: string): Promise<string> {
+    const network = this.network(req.networkId);
+    const mod = this.module(network.family);
+    const ctx = await this.ctx(network.id, origin);
+    if (this.hardware?.owns(ctx.account.id)) throw new ClipError("Paying through a Connector isn't available for hardware wallets yet.", "settle/hardware");
+    const decoded = await mod.decode(req, ctx);
+    if (decoded.blind || decoded.warnings.some((w) => w.level === "danger")) {
+      throw new ClipError("We couldn't check this payment step, so nothing was sent.", "settle/unreadable");
+    }
+    const payloads = await mod.prepare(req, ctx, approvalId);
+    this.deps.vault.registerApproval(approvalId, payloads.map((x) => this.deps.hashPayload(x)), APPROVAL_TTL_MS);
+    try {
+      const sigs = [];
+      for (const payload of payloads) sigs.push(await this.deps.vault.sign(payload));
+      return txHashOf(await mod.finalize(req, sigs, ctx));
+    } catch (e) {
+      this.deps.vault.revokeApproval(approvalId);
+      throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
+    }
+  }
+
+  private async waitMined(networkId: string, hash: string): Promise<void> {
+    if (this.deps.mocks) return;
+    for (let i = 0; i < 90; i++) {
+      const r = (await this.rpc(networkId, "eth_getTransactionReceipt", [hash]).catch(() => null)) as { status?: string } | null;
+      if (r?.status === "0x1") return;
+      if (r?.status === "0x0") throw new ClipError("Your payment couldn't be sent. Nothing left your balance.", "settle/tx-failed");
+      await new Promise((res) => setTimeout(res, 2000));
+    }
+    throw new ClipError("The network is slow to confirm. Try again in a minute.", "settle/tx-slow");
+  }
+
+  private async closeSettled(id: string, p: Pending, kind: "claimed" | "dismiss"): Promise<void> {
+    this.approvals.delete(id);
+    p.settle?.stop();
+    const f = p.view.plan?.funding;
+    if (kind === "claimed" && f) {
+      await this.addActivity({ id, title: claimedTitle(f, formatUnits), kind: "receive", timestamp: this.now(), status: "done", legs: [] });
+    }
+    p.reject(new ClipError("Your payment didn't arrive in time, so this request was cancelled.", "settle/late"));
     this.env.broadcast();
   }
 
@@ -910,6 +990,8 @@ export class WalletEngine implements DappHost {
   private async reject(id: string): Promise<void> {
     const p = this.approvals.get(id);
     if (!p) return;
+    if (p.settle?.inFlight) throw new ClipError("Your money is on its way. This stays open until it arrives or you can claim it back.", "settle/in-flight");
+    p.settle?.stop();
     this.approvals.delete(id);
     p.reject(new ClipError("You declined this request.", "user-rejected"));
     this.env.broadcast();
@@ -1010,6 +1092,12 @@ export class WalletEngine implements DappHost {
   cancel(requestId: string) {
     for (const [id, p] of this.approvals) {
       if (id === requestId || p.request?.id === requestId) {
+        // A Connector order under way stays on screen (arrival or claim); only the app's request ends.
+        if (p.settle?.inFlight) {
+          p.settle.appGone();
+          p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
+          continue;
+        }
         this.approvals.delete(id);
         p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
         this.env.broadcast();

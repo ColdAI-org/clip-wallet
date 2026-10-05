@@ -14,6 +14,7 @@
     "./social-signin": "./src/social-signin.ts",
     "./hardware": "./src/hardware.ts",
     "./social": "./src/social.ts",
+    "./settle-funding": "./src/settle-funding.ts",
     "./plugins": "./src/plugins.ts"
   },
   "scripts": {

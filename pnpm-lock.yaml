@@ -277,6 +277,9 @@ importers:
       react-dom:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
+      viem:
+        specifier: ^2.57.1
+        version: 2.57.2(typescript@5.9.3)(zod@4.6.5)
       zod:
         specifier: ^4.6.5
         version: 4.6.5

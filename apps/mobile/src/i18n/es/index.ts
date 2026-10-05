@@ -46,6 +46,7 @@ import swap from "./swap";
 import trade from "./trade";
 import security from "./security";
 import plugins from "./plugins";
+import settle from "./settle";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -72,5 +73,6 @@ const messages: Translation<MobileMessages> = {
   ...trade,
   ...security,
   ...plugins,
+  ...settle,
 };
 export default messages;

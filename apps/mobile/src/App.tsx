@@ -122,7 +122,7 @@ function ApprovalSheet() {
     showApproval(next?.id ?? null);
   };
   return (
-    <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done)}>
+    <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done, () => showApproval(null))}>
       {view && <ApprovalScreen key={view.id} approval={view} onDone={done} />}
       {view?.hardware && <HardwareStep approvalId={view.id} title={view.decoded?.title ?? view.dapp.name} state={view.hardware} />}
     </Modal>

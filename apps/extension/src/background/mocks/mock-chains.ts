@@ -18,11 +18,16 @@ import type {
   Warning,
 } from "@clip-wallet/core";
 import { ClipError, FAMILIES, WALLET_ORIGIN, isWalletOrigin } from "@clip-wallet/core";
+import { SETTLE_DEPOSIT_ABI, SETTLE_DEPOSIT_SELECTOR } from "@clip-wallet/route";
+import { decodeFunctionData, toFunctionSelector } from "viem";
 import { MOCK_BALANCES, MOCK_NFTS } from "./fixtures";
 import { knownAssets, MOCK_NETWORKS } from "./networks";
 
 const ERC20_TRANSFER = "a9059cbb";
 const SET_APPROVAL_FOR_ALL = "a22cb465";
+const ERC20_APPROVE = "095ea7b3";
+const SETTLE_DEPOSIT = SETTLE_DEPOSIT_SELECTOR.slice(2);
+const CLAIM_DEFAULT = toFunctionSelector("claimDefault(bytes32)").slice(2);
 
 async function sha256(data: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", data as Uint8Array<ArrayBuffer>));
@@ -189,6 +194,31 @@ export class MockChainModule {
             blind: false,
           };
         }
+      }
+      // Settle on Hedera (requests the wallet builds itself): exact allowance, Connector payment, claim.
+      if (data.startsWith(ERC20_APPROVE) && data.length >= 8 + 128) {
+        const token = assetAt(request.networkId, tx?.to);
+        if (token) {
+          const human = Number(BigInt(`0x${data.slice(8 + 64, 8 + 128)}`)) / 10 ** token.decimals;
+          return { ...base, title: `Allow exactly ${human} ${token.symbol} for this payment`, balanceChanges: [], fee, simulated: true, blind: false };
+        }
+      }
+      if (data.startsWith(SETTLE_DEPOSIT)) {
+        const { args } = decodeFunctionData({ abi: SETTLE_DEPOSIT_ABI, data: `0x${data}` });
+        const q = args[0] as { assetIn: string; amountIn: bigint };
+        const token = assetAt(request.networkId, BigInt(q.assetIn) === 0n ? undefined : `0x${q.assetIn.slice(-40)}`);
+        const human = token ? Number(q.amountIn) / 10 ** token.decimals : 0;
+        return {
+          ...base,
+          title: `Pay ${human} ${token?.symbol ?? ""} to a Connector`.replace("  ", " "),
+          balanceChanges: token ? [{ asset: token, delta: `-${q.amountIn}` }] : [],
+          fee,
+          simulated: true,
+          blind: false,
+        };
+      }
+      if (data.startsWith(CLAIM_DEFAULT)) {
+        return { ...base, title: "Claim a late payment back", balanceChanges: [], fee, simulated: true, blind: false };
       }
       if (data.startsWith(SET_APPROVAL_FOR_ALL)) {
         return {

@@ -1377,3 +1377,12 @@ textarea.clip-input {
   color: var(--clip-text);
   resize: vertical;
 }
+
+/* Settle on Hedera: an order's progress and its one action (screens/SettleFunding.tsx). */
+.clip-settle {
+  display: grid;
+  gap: var(--clip-space-3);
+}
+.clip-settle .clip-step.is-done .clip-step__n {
+  color: var(--clip-positive);
+}
