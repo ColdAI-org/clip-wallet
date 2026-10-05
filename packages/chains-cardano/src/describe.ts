@@ -273,7 +273,14 @@ export function describeTx(
   }
   if (unknownInputs) {
     lines.push({ label: "Unknown inputs", value: `${unknownInputs} input${unknownInputs > 1 ? "s" : ""} couldn't be looked up` });
-    warnings.push({ level: "caution", code: "simulation-failed", message: "Some coins this transaction spends couldn't be looked up, so the amounts may be incomplete." });
+    if (payment) {
+      // Audit ADA-01: your payment key signs the whole body, so any input that couldn't be looked up may be one of
+      // your coins; what leaves your wallet can't be shown. That is blind signing, not a caution.
+      blind = true;
+      warnings.push({ level: "danger", code: "blind-signing", message: "Some coins this spends couldn't be looked up and may be yours, so Clip Wallet can't show what leaves your wallet." });
+    } else {
+      warnings.push({ level: "caution", code: "simulation-failed", message: "Some coins this transaction spends couldn't be looked up, so the amounts may be incomplete." });
+    }
   }
 
   if (!title) {
