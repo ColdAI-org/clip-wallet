@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "Deine Daten",
+  "privacy.title": "Deine Daten",
+  "privacy.lede": "{name} hat kein Konto für dich. Deine Wiederherstellungsphrase und deine Schlüssel bleiben auf diesem Gerät, gesperrt mit deinem Passwort. Wir sehen sie nie.",
+  "privacy.device.title": "Bleibt auf diesem Gerät",
+  "privacy.device.body": "Deine Wiederherstellungsphrase, privaten Schlüssel, dein Passwort, deine Kontakte, Einstellungen und Aktivität. Nichts davon wird an uns gesendet.",
+  "privacy.network.title": "Was das Wallet nachschlägt",
+  "privacy.network.body": "Um Guthaben anzuzeigen und Zahlungen zu senden, fragt das Wallet öffentliche Netzwerkdienste (Nodes und Indexer) nach deinen öffentlichen Adressen. Preise kommen von CoinGecko und DEX Screener.",
+  "privacy.scam.title": "Betrugsprüfungen",
+  "privacy.scam.body": "Offene Betrugslisten werden auf dieses Gerät geladen und hier geprüft, so erfahren sie nie, welche Seiten du besuchst. Ist in dieser Version Blockaid eingeschaltet, sieht Blockaid die Seite, die Anfrage und deine Adresse.",
+  "privacy.partners.title": "Nur wenn du sie nutzt",
+  "privacy.partners.body": "Tauschen, Kaufen und Staken senden deine Adresse und den Betrag an den Anbieter, den du wählst. Es gilt dessen eigene Datenschutzerklärung.",
+  "privacy.backup.title": "Passkey-Backup, wenn du es einschaltest",
+  "privacy.backup.body": "Unser Backup-Dienst speichert eine gesperrte Kopie, die nur dein Passkey öffnen kann, und einen Hash mit Schlüssel aus deiner E-Mail oder deines Google- oder Apple-Kontos, damit du sie wiederfindest. Du kannst sie jederzeit löschen.",
+  "privacy.media.title": "Bilder von Sammlerstücken",
+  "privacy.media.body": "Bilder laden über unseren Medien-Proxy, so sehen die Seiten, die sie hosten, dein Gerät nie. Wir speichern nicht, wer gefragt hat.",
+  "privacy.never.title": "Niemals",
+  "privacy.never.body": "Keine Analyse, keine Werbung, kein Tracking, und wir verkaufen niemals Daten.",
+} satisfies Record<keyof typeof en, string>;

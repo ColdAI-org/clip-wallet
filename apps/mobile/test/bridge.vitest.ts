@@ -122,3 +122,13 @@ describe("in-app browser: 1Mask in a WebView, origin from the native side", () =
     expect(webOrigin("javascript:alert(1)")).toBeNull();
   });
 });
+
+describe("audit MOB-01: plain http only for real LAN addresses", () => {
+  it("accepts private IP literals and refuses public names that merely start like one", () => {
+    expect(webOrigin("http://10.0.0.2:3000/")).toBe("http://10.0.0.2:3000");
+    expect(webOrigin("http://192.168.1.20/")).toBe("http://192.168.1.20");
+    expect(webOrigin("http://10.evil.com/")).toBeNull();
+    expect(webOrigin("http://192.168.1.1.attacker.net/")).toBeNull();
+    expect(webOrigin("http://printer.local/")).toBeNull();
+  });
+});

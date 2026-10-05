@@ -14,6 +14,8 @@
  *   GET|POST /v1/auth/oidc/callback  (from Google / Apple)  → 303 returnTo#state=…&handoff=…
  *   POST   /v1/auth/oidc/finish { state, handoff, verifier } → 200 { session, expiresAt, provider }
  *   GET    /v1/health                                   → 200
+ *   GET    /v1/sync/changes?since=  POST /v1/sync/push  DELETE /v1/sync   settings sync, signed with the device's
+ *          Ed25519 sync key (no account); ciphertext only (src/sync.ts, @clip-wallet/link/sync-server)
  */
 import {
   type BackupMeta,
@@ -30,6 +32,7 @@ import { EmailUnavailableError, UnconfiguredEmailSender, signInEmail, type Email
 import { PROVIDERS, oidcCallback, oidcFinish, oidcStart, providerEnabled, type OidcEnv } from "./oidc.js";
 import { RULES, cleanupWindows, enforce } from "./ratelimit.js";
 import { HttpError, hmacHex, randomToken, readJson, safeEqual, sha256Hex } from "./util.js";
+import { cleanupSync, syncRoute } from "./sync.js";
 
 export interface Env extends OidcEnv {
   DB: D1Database;
@@ -272,7 +275,12 @@ export function createApp(deps: AppDeps = {}) {
     const url = new URL(req.url);
     const p = url.pathname.replace(/\/+$/, "");
     const m = req.method;
-    if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: emailEnabled(env) });
+    if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: emailEnabled(env), sync: true });
+    if (p === "/v1/sync" || p.startsWith("/v1/sync/")) {
+      const res = await syncRoute(req, env, now, clientIp(req));
+      for (const [k, v] of Object.entries(BASE_HEADERS)) res.headers.set(k, v);
+      return res;
+    }
     if (m === "GET" && p === "/v1/auth/providers") {
       return json(200, { email: emailEnabled(env), ...Object.fromEntries(PROVIDERS.map((x) => [x, providerEnabled(env, x)])) });
     }
@@ -323,6 +331,7 @@ export function createApp(deps: AppDeps = {}) {
         env.DB.prepare("DELETE FROM oidc_states WHERE expires_at < ?1").bind(t - 60 * 60_000),
       ]);
       await cleanupWindows(env.DB, t);
+      await cleanupSync(env.DB, t);
     },
   };
 }

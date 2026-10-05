@@ -3,14 +3,22 @@
  *   clipwallet://wc?uri=<encoded wc: URI>          WalletConnect pairing (what dapps open on mobile)
  *   clipwallet://browse?url=<encoded https URL>     open a dapp in the in-app browser
  *   clipwallet://trade#offer=… or ?offer=…          a Secure Trade offer (opens the review; Accept still asks)
+ *   clipwallet://link?v=1&c=…&k=…                   a Clip Link pairing code (both screens still show a code to compare)
+ *   clipwallet://browse?url=…&h=…                   "continue elsewhere" from a device with this wallet (h opens only there)
  *   https://<associated domain>/wc?uri=…, /trade#offer=…   universal links (placeholder until a domain is associated)
  *   wc:…                                            a bare WalletConnect URI (some apps hand it over as-is)
  * Anything else is ignored. Pairing still requires the user to approve the connection.
  */
 import { isWalletConnectUri } from "@clip-wallet/ui";
 import { webOrigin } from "../browser/bridge";
+import { parseOfferUri } from "@clip-wallet/link";
 
-export type DeepLink = { kind: "wc"; uri: string } | { kind: "browse"; url: string } | { kind: "trade"; link: string } | null;
+export type DeepLink =
+  | { kind: "wc"; uri: string }
+  | { kind: "browse"; url: string; handoff?: string }
+  | { kind: "trade"; link: string }
+  | { kind: "link"; uri: string }
+  | null;
 
 /** Same payload shape and limit @clip-wallet/features' decodeOffer accepts (it does the real checks). */
 const OFFER = /(?:^|[#&?])offer=([A-Za-z0-9_-]{1,16000})(?:$|&)/;
@@ -41,7 +49,11 @@ export function parseDeepLink(raw: string | null | undefined, opts: { scheme: st
   }
   if (action === "browse") {
     const url = u.searchParams.get("url");
-    return url && webOrigin(url) ? { kind: "browse", url } : null;
+    if (!url || !webOrigin(url)) return null;
+    return u.searchParams.get("h") && isApp ? { kind: "browse", url, handoff: s } : { kind: "browse", url };
+  }
+  if (action === "link" && isApp) {
+    return parseOfferUri(s) ? { kind: "link", uri: s } : null;
   }
   return null;
 }

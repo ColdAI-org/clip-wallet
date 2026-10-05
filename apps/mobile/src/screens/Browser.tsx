@@ -7,7 +7,7 @@ import { Keyboard, TextInput, View } from "react-native";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWallet } from "../ui/context";
-import { IconButton, TabBar, T } from "../ui/kit";
+import { IconButton, LinkButton, TabBar, T } from "../ui/kit";
 import { IconBack, IconChevron, IconReload, IconShield } from "../ui/icons";
 import { createWebViewBridge, webOrigin } from "../browser/bridge";
 import { INPAGE_JS } from "../browser/inpage.generated";
@@ -60,6 +60,15 @@ export function Browser(props: { url?: string }) {
     setNav({ canGoBack: s.canGoBack, canGoForward: s.canGoForward, title: s.title, loading: s.loading });
   };
   const secure = typed.startsWith("https://");
+  // Continue elsewhere (r1/connect): send this page to a linked browser, already connected there.
+  const [linked, setLinked] = useState<{ id: string; name: string; online: boolean } | null>(null);
+  const [sent, setSent] = useState<string | null>(null);
+  useEffect(() => {
+    void wallet.link
+      .status()
+      .then((s) => setLinked(s.devices.find((d) => d.online) ?? null))
+      .catch(() => setLinked(null));
+  }, [wallet, url]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.c.bg, paddingTop: insets.top }}>
@@ -94,6 +103,21 @@ export function Browser(props: { url?: string }) {
           <IconReload color={theme.c.text} />
         </IconButton>
       </View>
+      {linked && secure && (
+        <View style={{ paddingHorizontal: 12, paddingBottom: 4 }}>
+          <LinkButton
+            testID="continue-elsewhere"
+            onPress={() =>
+              void wallet.link
+                .handoffSend({ deviceId: linked.id, url: typed, families: [] })
+                .then(() => setSent(t("m.link.handoff.sent", { device: linked.name })))
+                .catch(() => setSent(null))
+            }
+          >
+            {sent ?? t("m.link.handoff.send", { device: linked.name })}
+          </LinkButton>
+        </View>
+      )}
       <WebView
         ref={web}
         testID="webview"

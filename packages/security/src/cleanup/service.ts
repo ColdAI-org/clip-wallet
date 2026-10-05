@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance, say } from "@clip-wallet/core";
 import { looksLikeSpam } from "@clip-wallet/chains-evm";
 import { buildDissociate, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { formatUnits, queueSteps, type Step } from "@clip-wallet/features";
@@ -49,6 +49,9 @@ export const HIDE_NOTE =
 import { hideKey } from "../hide.js";
 export { hideKey };
 
+/** A URL, a domain-like ending or a Telegram link in a token's name or symbol (audit SEC-04). */
+const LINK_IN_NAME = /https?:\/\/|\bwww\.|t\.me\/|\.(com|io|org|net|xyz|app|site|top|gift|claims?|vip|cc|me|link|pro|live)\b/i;
+
 export class CleanupService {
   private last = new Map<string, Item>();
 
@@ -82,7 +85,7 @@ export class CleanupService {
             items.push(...hides);
           }
         } catch {
-          partial.push({ code: "cleanup/unreachable", network: n.name, message: `Couldn't check ${n.name} right now. Try again in a moment.` });
+          partial.push({ code: "cleanup/unreachable", network: n.name, message: say("bg.security.couldntCheck", { name: n.name }) });
         }
       }),
     );
@@ -123,13 +126,22 @@ export class CleanupService {
         out.push({ solana: a, view: { ...base, balance: "0", reasonCode: "empty-account", action: "close", reason: `Empty ${symbol} account. Closing it gives you back its ${reclaim.display} deposit.`, spam: false, preselected: true, reclaim } });
         continue;
       }
-      const spam = !!nft?.spam || !!asset?.spam || this.spam(ctx.network.id, a.mint, balances, symbol, name);
+      // Audit SEC-04: a name that merely looks spammy (non-Latin text, "reward", a URL) is set by whoever created
+      // the token, so it can make a real asset look like spam. Destroying is preselected only on a verdict from the
+      // wallet's token data (indexer/list flags) and never for anything with a price; heuristics only list it.
+      const flagged = !!nft?.spam || !!asset?.spam;
+      const spam = flagged || this.spam(ctx.network.id, a.mint, balances, symbol, name);
       if (!spam) continue;
+      const priced = balances.some((x) => x.asset.networkId === ctx.network.id && x.asset.address === a.mint && (x.fiatValue ?? 0) > 0);
+      // A link in the name ("claim at x.com", t.me/…) is what spam tokens exist to advertise; other heuristics
+      // (non-Latin text, "reward", "free") also match real assets, so they never preselect a burn.
+      const advertises = LINK_IN_NAME.test(`${symbol} ${name}`);
+      const preselectBurn = (flagged || advertises) && !priced;
       const balance = isNft ? "1 NFT" : `${formatUnits(a.amount, a.decimals)} ${symbol}`;
       if (frozen) {
         out.push({ solana: a, view: { ...base, id: hideKey(ctx.network.id, a.mint), balance, reasonCode: "spam-locked", action: "hide", reason: "Spam that can't be destroyed (it's locked by its creator), so Clip Wallet hides it.", spam, preselected: true } });
       } else {
-        out.push({ solana: a, view: { ...base, balance, reasonCode: "spam-burn", action: "burn-close", reason: `Spam. Destroying it and closing its account gives you back ${reclaim.display}.`, spam, preselected: true, reclaim } });
+        out.push({ solana: a, view: { ...base, balance, reasonCode: "spam-burn", action: "burn-close", reason: `Spam. Destroying it and closing its account gives you back ${reclaim.display}.`, spam, preselected: preselectBurn, reclaim } });
       }
     }
     return out;

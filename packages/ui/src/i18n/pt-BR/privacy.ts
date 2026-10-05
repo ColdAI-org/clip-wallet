@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "Seus dados",
+  "privacy.title": "Seus dados",
+  "privacy.lede": "{name} não tem uma conta sua. Sua frase de recuperação e suas chaves ficam neste dispositivo, trancadas com sua senha. Nós nunca as vemos.",
+  "privacy.device.title": "Fica neste dispositivo",
+  "privacy.device.body": "Sua frase de recuperação, chaves privadas, senha, contatos, configurações e atividade. Nada disso é enviado para nós.",
+  "privacy.network.title": "O que a carteira consulta",
+  "privacy.network.body": "Para mostrar saldos e enviar pagamentos, a carteira consulta serviços públicos de rede (nós e indexadores) sobre seus endereços públicos. Os preços vêm do CoinGecko e do DEX Screener.",
+  "privacy.scam.title": "Verificações contra golpes",
+  "privacy.scam.body": "Listas abertas de golpes são baixadas para este dispositivo e verificadas aqui, então elas nunca sabem quais sites você visita. Se esta versão tiver a Blockaid ligada, a Blockaid vê o site, o pedido e o seu endereço.",
+  "privacy.partners.title": "Só quando você usa",
+  "privacy.partners.body": "Trocar, comprar e fazer staking enviam seu endereço e o valor ao provedor que você escolher, e vale a política de privacidade dele.",
+  "privacy.backup.title": "Backup por chave de acesso, se você ligar",
+  "privacy.backup.body": "Nosso serviço de backup guarda uma cópia trancada que só sua chave de acesso abre, e um hash com chave do seu e-mail ou da sua conta Google ou Apple para você encontrá-la de novo. Apague quando quiser.",
+  "privacy.media.title": "Imagens de colecionáveis",
+  "privacy.media.body": "As imagens carregam pelo nosso proxy de mídia, então os sites que as hospedam nunca veem o seu dispositivo. Não guardamos registro de quem pediu.",
+  "privacy.never.title": "Nunca",
+  "privacy.never.body": "Sem análises, sem anúncios, sem rastreamento, e nunca vendemos dados.",
+} satisfies Record<keyof typeof en, string>;

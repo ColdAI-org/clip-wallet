@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "Vos données",
+  "privacy.title": "Vos données",
+  "privacy.lede": "{name} n'a pas de compte pour vous. Votre phrase de récupération et vos clés restent sur cet appareil, verrouillées par votre mot de passe. Nous ne les voyons jamais.",
+  "privacy.device.title": "Reste sur cet appareil",
+  "privacy.device.body": "Votre phrase de récupération, vos clés privées, votre mot de passe, vos contacts, vos réglages et votre activité. Rien de tout cela ne nous est envoyé.",
+  "privacy.network.title": "Ce que le portefeuille consulte",
+  "privacy.network.body": "Pour afficher vos soldes et envoyer des paiements, le portefeuille interroge des services réseau publics (nœuds et indexeurs) sur vos adresses publiques. Les prix viennent de CoinGecko et DEX Screener.",
+  "privacy.scam.title": "Contrôles anti-arnaque",
+  "privacy.scam.body": "Les listes ouvertes d'arnaques sont téléchargées sur cet appareil et vérifiées ici : elles ne savent jamais quels sites vous visitez. Si Blockaid est activé dans cette version, Blockaid voit le site, la demande et votre adresse.",
+  "privacy.partners.title": "Seulement quand vous les utilisez",
+  "privacy.partners.body": "Échanger, acheter et staker envoient votre adresse et le montant au fournisseur que vous choisissez, et sa propre politique de confidentialité s'applique.",
+  "privacy.backup.title": "Sauvegarde par clé d'accès, si vous l'activez",
+  "privacy.backup.body": "Notre service de sauvegarde conserve une copie verrouillée que seule votre clé d'accès peut ouvrir, et une empreinte à clé de votre e-mail ou de votre compte Google ou Apple pour que vous la retrouviez. Supprimez-la quand vous voulez.",
+  "privacy.media.title": "Images des objets de collection",
+  "privacy.media.body": "Les images passent par notre proxy média : les sites qui les hébergent ne voient jamais votre appareil. Nous ne gardons aucune trace de qui les a demandées.",
+  "privacy.never.title": "Jamais",
+  "privacy.never.body": "Pas de statistiques, pas de publicité, pas de pistage, et nous ne vendons jamais de données.",
+} satisfies Record<keyof typeof en, string>;

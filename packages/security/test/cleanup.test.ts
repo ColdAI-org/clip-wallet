@@ -68,6 +68,15 @@ describe("Solana cleanup", () => {
     expect(view.items.some((i) => i.symbol === "USDC")).toBe(false);
   });
 
+  it("audit SEC-04: a burn is never preselected from a name that merely looks unusual, or for anything with a price", async () => {
+    const renamed: TokenBalance[] = [BALANCES[0]!, { ...BALANCES[1]!, asset: { ...BALANCES[1]!.asset, symbol: "報酬", name: "報酬パス" } }];
+    const a = await new CleanupService(fakeHost({ networks: [DEVNET], fetch: solanaRpc().fetch, balances: renamed, nfts: NFTS })).scan();
+    expect(a.items.find((i) => i.symbol === "報酬")).toMatchObject({ action: "burn-close", preselected: false });
+    const priced: TokenBalance[] = [BALANCES[0]!, { ...BALANCES[1]!, fiatValue: 12 }];
+    const b = await new CleanupService(fakeHost({ networks: [DEVNET], fetch: solanaRpc().fetch, balances: priced, nfts: NFTS })).scan();
+    expect(b.items.find((i) => i.symbol === "CLAIM-USDC.COM")).toMatchObject({ action: "burn-close", preselected: false });
+  });
+
   it("previews 'Get back ~… SOL' and queues close and burn+close transactions", async () => {
     const host = fakeHost({ networks: [DEVNET], fetch: solanaRpc().fetch, balances: BALANCES, nfts: NFTS });
     const svc = new CleanupService(host);

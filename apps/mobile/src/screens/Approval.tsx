@@ -7,15 +7,16 @@
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { BalanceChange } from "@clip-wallet/core";
+import { finalMsg, knownMsg, type BalanceChange } from "@clip-wallet/core";
 import type { Family } from "@clip-wallet/core";
-import { formatFiat, formatUnits, hueFor, readyInMessage, userMessageOf, type ApprovalView, type PluginInsightView, formatLocale } from "@clip-wallet/ui";
+import { formatFiat, formatUnits, hueFor, readyInMessage, useBgText, userMessageOf, type ApprovalView, type PluginInsightView, formatLocale } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Notice, Row, T, Toggle, Warnings } from "../ui/kit";
 import { IconAlert, IconChevron, IconShield } from "../ui/icons";
 import { APP } from "../env";
 import { useMobileT, type MobileMessageId } from "../i18n";
 import { ContactAvatar } from "./Contacts";
+import { SettleProgress, settleBusy, settleSteps } from "./SettleFunding";
 import { PluginInsights } from "./Plugins";
 
 /** readyInMessage's ids, in the mobile catalog ("common.readyIn.x" → "m.common.readyIn.x"). */
@@ -119,6 +120,7 @@ function Shell(props: { children: React.ReactNode; footer: React.ReactNode }) {
 }
 
 export function TransactionApproval(props: { approval: ApprovalView; onDone: (approved: boolean) => void }) {
+  const bg = useBgText();
   const { client, state, theme } = useWallet();
   const t = useMobileT();
   const readyIn = useReadyIn();
@@ -154,7 +156,11 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
       setBusy(false);
     }
   };
-  const steps = a.plan?.steps ?? [{ kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges, detail: undefined }];
+  // Money from a bonded Connector (settle on Hedera): its steps replace the English funding step; after the first
+  // Approve the order's progress replaces Approve / Reject until the money arrives or the cover can be claimed.
+  const funding = a.plan?.funding;
+  const planSteps = a.plan?.steps ?? [{ kind: "action" as const, title: d.title, titleMsg: d.titleMsg, balanceChanges: d.balanceChanges, detail: undefined }];
+  const steps = funding ? [...settleSteps(funding, t).map((s) => ({ ...s, kind: "funding" as const, balanceChanges: undefined })), ...planSteps.filter((s) => s.kind !== "funding")] : planSteps;
 
   return (
     <Shell
@@ -169,37 +175,40 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
           <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
           {d.blind && advanced && <Toggle label={t("m.approval.blindToggle")} description={t("m.approval.blindToggleHint")} checked={blindOk} onChange={setBlindOk} />}
           <ErrorNote message={err} />
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
-              {t("m.approval.reject")}
-            </Button>
-            <Button onPress={() => act(true)} disabled={busy || blocked} testID="approve">
-              {busy ? t("m.approval.approving") : t("m.approval.approve")}
-            </Button>
-          </View>
+          {funding && (funding.arrived || funding.stage !== "offer") && <SettleProgress funding={funding} app={a.dapp.name} busy={busy} act={() => void act(true)} />}
+          {!settleBusy(funding) && (
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Button variant="secondary" onPress={() => act(false)} disabled={busy} testID="reject">
+                {t("m.approval.reject")}
+              </Button>
+              <Button onPress={() => act(true)} disabled={busy || blocked} testID="approve">
+                {busy ? t("m.approval.approving") : t("m.approval.approve")}
+              </Button>
+            </View>
+          )}
         </>
       }
     >
       <DappHeader approval={a} advanced={advanced} />
       <View style={{ alignItems: "center", gap: 6, paddingVertical: theme.s(3) }}>
         <T v="h1" style={{ textAlign: "center" }} testID="approval-title">
-          {d.blind ? t("m.approval.unreadable") : d.title}
+          {d.blind ? t("m.approval.unreadable") : bg.title(d)}
         </T>
         {a.fiatValue !== undefined && !d.blind && <T v="display">{formatFiat(a.fiatValue, currency)}</T>}
       </View>
       {a.recipient && <RecipientCheck address={a.recipient.address} family={a.recipient.family} />}
       <Card style={{ gap: 0 }}>
-        {movesMoney && <Row label={t("m.approval.from")} value={a.plan?.source ?? t("m.approval.yourBalance")} />}
+        {movesMoney && <Row label={t("m.approval.from")} value={funding ? t("m.settle.from", { provider: funding.provider }) : (a.plan?.source ?? t("m.approval.yourBalance"))} />}
         {d.fee && <Row label={t("m.approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("m.approval.feeCovered") : undefined} />}
         {(movesMoney || d.fee) && <Row label={t("m.approval.ready")} value={readyIn(a.plan?.readyInSeconds ?? 10)} />}
         {d.lines.map((l) => (
-          <Row key={l.label} label={l.label} value={l.value} />
+          <Row key={l.label} label={bg.label(l)} value={bg.value(l)} />
         ))}
       </Card>
       {/* Clip Plugins' notes: their own "From <plugin>" cards, never mixed into the wallet's lines or warnings. */}
       <PluginInsights insights={(d as { pluginInsights?: PluginInsightView[] }).pluginInsights} />
       <Pressable onPress={() => setOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+        <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
           {t("m.approval.details")}
         </T>
         <View style={{ transform: [{ rotate: open ? "90deg" : "0deg" }] }}>
@@ -214,7 +223,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
                 <T v="hint">{i + 1}</T>
               </View>
               <View style={{ flex: 1, gap: 2 }}>
-                <T style={{ fontWeight: "500" }}>{s.title}</T>
+                <T style={{ fontWeight: "500" }}>{bg.title(s)}</T>
                 {s.detail ? <T v="hint">{s.detail}</T> : null}
                 {(s.balanceChanges ?? []).map((c, j) => (
                   <ChangeLine key={j} change={c} />
@@ -222,7 +231,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
               </View>
             </View>
           ))}
-          {a.plan?.settlement ? <T v="hint">{a.plan.settlement}</T> : null}
+          {a.plan?.settlement ? <T v="hint">{funding ? t("m.settle.settlement", { provider: funding.provider }) : a.plan.settlement}</T> : null}
           {!d.simulated && !d.blind && <T v="hint">{t("m.approval.estimated")}</T>}
           {advanced && (
             <Card>
@@ -240,7 +249,9 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
 export function ConnectApproval(props: { approval: ApprovalView; onDone: (approved: boolean) => void }) {
   const { client, state, theme } = useWallet();
   const t = useMobileT();
+  const bg = useBgText();
   const a = props.approval;
+  const unknownSite = t("m.approval.connect.unknown", { name: APP.config.name, domain: a.dapp.domain });
   const advanced = !!state?.prefs.advanced;
   const phishing = !!a.connect?.warnings?.some((w) => w.level === "danger");
   const [busy, setBusy] = useState(false);
@@ -265,7 +276,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
           {/* Phishing lists and WalletConnect Verify (security stream); a danger finding makes this "Connect anyway". */}
           <Warnings warnings={a.connect?.warnings ?? []} />
           {!a.dapp.verified && !a.connect?.warnings?.some((w) => w.code === "domain-mismatch") && (
-            <Warnings warnings={[{ level: "caution", code: "domain-mismatch", message: t("m.approval.connect.unknown", { name: APP.config.name, domain: a.dapp.domain }) }]} />
+            <Warnings warnings={[{ level: "caution", code: "domain-mismatch", message: unknownSite, msg: finalMsg(unknownSite) }]} />
           )}
           <ErrorNote message={err} />
           <View style={{ flexDirection: "row", gap: 12 }}>
@@ -286,7 +297,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone: (approv
       </View>
       <Card>
         {(a.connect?.permissions ?? []).map((p) => (
-          <T key={p}>{`•  ${p}`}</T>
+          <T key={p}>{`•  ${bg.msg(knownMsg(p), p)}`}</T>
         ))}
       </Card>
       {advanced && a.connect && <Row label={t("m.approval.connect.address")} value={<T v="mono">{a.connect.address}</T>} />}

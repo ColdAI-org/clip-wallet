@@ -6,6 +6,7 @@ import { Chip, Empty, ErrorNote, Screen, Spinner } from "../components";
 import { IconArrowDown, IconArrowUp, IconCheck, IconChevron, IconClock } from "../components/icons";
 import { formatFiat, relativeTime, shortAddress } from "../lib/format";
 import { useUiT } from "../i18n";
+import { useBgText } from "../i18n/bg";
 
 function KindIcon(props: { kind: ActivityEntry["kind"] }) {
   if (props.kind === "receive") return <IconArrowDown />;
@@ -15,6 +16,7 @@ function KindIcon(props: { kind: ActivityEntry["kind"] }) {
 
 export function ActivityItem(props: { entry: ActivityEntry; currency: string; networkName: (id: string) => string; advanced: boolean }) {
   const t = useUiT();
+  const bg = useBgText();
   const e = props.entry;
   const [open, setOpen] = useState(false);
   const hasLegs = e.legs.length > 0;
@@ -25,7 +27,7 @@ export function ActivityItem(props: { entry: ActivityEntry; currency: string; ne
           <KindIcon kind={e.kind} />
         </span>
         <span className="clip-activity__text">
-          <span className="clip-activity__title">{e.title}</span>
+          <span className="clip-activity__title">{bg.title(e)}</span>
           <span className="clip-activity__meta">
             {e.status === "pending" ? (
               <Chip tone="accent">
@@ -47,7 +49,7 @@ export function ActivityItem(props: { entry: ActivityEntry; currency: string; ne
         <ol className="clip-legs">
           {e.legs.map((l, i) => (
             <li key={i}>
-              <span>{l.title}</span>
+              <span>{bg.title(l)}</span>
               {props.advanced && (
                 <span className="clip-legs__adv">
                   {props.networkName(l.networkId)}

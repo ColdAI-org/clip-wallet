@@ -95,7 +95,7 @@ describe("coins on change addresses", () => {
   it("are spendable: prepare asks the vault for the change key via derivationSubPath", async () => {
     const { c, mod, req } = await spend();
     const d = await mod.decode(req, c);
-    expect(d.lines).toContainEqual({ label: "Your coin 1", value: "0.002 BTC" });
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Your coin 1", value: "0.002 BTC" }));
     const payloads = await mod.prepare(req, c, "ap");
     expect(payloads).toHaveLength(1);
     expect(payloads[0]).toMatchObject({ accountId: "bitcoin:0", scheme: "ecdsa-secp256k1", derivationSubPath: "1/1", approvalId: "ap" });

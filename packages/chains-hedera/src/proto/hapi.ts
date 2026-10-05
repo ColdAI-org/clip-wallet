@@ -228,7 +228,18 @@ export interface BodyP {
  */
 export function decodeBody(b: Uint8Array, schedulable = false): BodyP {
   const body: BodyP = { kind: 0, data: new Uint8Array() };
+  // Audit 2026-10 (HED-02): protobuf merges a repeated message field and lets the last oneof case win, so a body
+  // with two `cryptoTransfer`s (or two data cases) could be shown as one and executed as another. Refuse repeats.
+  const seen = new Set<number>();
   eachField(b, (f, w, r) => {
+    // Singular header fields and the data oneof (one key for every case); genuinely repeated fields
+    // (e.g. max_custom_fees = 1001) are left alone.
+    const dataCase = w === WIRE_LEN && (schedulable ? SCHEDULABLE_TO_BODY.has(f) : BODY_NAME.has(f));
+    const key = dataCase ? -1 : f <= 6 ? f : undefined;
+    if (key !== undefined) {
+      if (seen.has(key)) throw new Error("transaction body repeats a field");
+      seen.add(key);
+    }
     if (schedulable) {
       if (f === 1) body.fee = r.varint();
       else if (f === 2 && w === WIRE_LEN) body.memo = utf8(r.bytes());

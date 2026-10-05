@@ -4,6 +4,7 @@ import { setFormatLocale, type WalletClient, type WalletState } from "@clip-wall
 import type { Family } from "@clip-wallet/core";
 import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
 import { LocaleProvider } from "@clip-wallet/i18n/react";
+import { BgTextProvider } from "@clip-wallet/ui";
 import { deviceLanguages } from "../i18n/device";
 import type { MobileWallet } from "../background/host";
 import { APP } from "../env";
@@ -46,7 +47,11 @@ export type Route =
   | { name: "security-permissions" }
   | { name: "security-cleanup" }
   | { name: "security-protection" }
-  | { name: "plugins" };
+  | { name: "plugins" }
+  | { name: "data-use" }
+  /* Settings → Linked devices (r1/connect) */
+  | { name: "linked-devices" }
+  | { name: "link-pair"; uri?: string; id?: string };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 
@@ -119,7 +124,9 @@ export function WalletProvider(props: { wallet: MobileWallet; children: ReactNod
   return (
     <WalletCtx.Provider value={value}>
       <LocaleProvider locale={locale}>
-        <View style={{ flex: 1, direction: dir }}>{props.children}</View>
+        <BgTextProvider>
+          <View style={{ flex: 1, direction: dir }}>{props.children}</View>
+        </BgTextProvider>
       </LocaleProvider>
     </WalletCtx.Provider>
   );

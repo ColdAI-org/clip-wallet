@@ -16,6 +16,7 @@ import type { ParsedTransaction } from "./tx.js";
 import { abs, b64encode, formatUnits, joinWords, short } from "./util.js";
 import { type SwapIntent, WSOL_MINT, decodeJupiterHelper, decodeSwap } from "./swaps.js";
 import { STAKE_PROGRAM, type StakeAction, decodeStake, decodeStakeAccountFunding } from "./stake.js";
+import { msg, type Msg, say } from "@clip-wallet/core";
 
 export interface Line {
   label: string;
@@ -24,6 +25,7 @@ export interface Line {
 
 export interface Described {
   title: string;
+  titleMsg?: Msg;
   lines: Line[];
   balanceChanges: BalanceChange[];
   warnings: Warning[];
@@ -242,11 +244,11 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
           const supply = mint ? BigInt(mints.get(mint)?.supply ?? "0") : 0n;
           if (amount === U64_MAX || (supply > 0n && amount >= supply)) {
             lines.push({ label: "Permission", value: `${short(delegate)} can spend unlimited ${sym}` });
-            warnings.push({ level: "danger", code: "unlimited-approval", message: `${short(delegate)} could take all your ${sym} at any time, without asking again.` });
+            warnings.push({ level: "danger", code: "unlimited-approval", message: say("bg.hedera.couldTakeAll", { spender: short(delegate), symbol: sym }) });
           } else {
             const shown = asset ? amountText(asset, amount) : `${amount} units`;
             lines.push({ label: "Permission", value: `${short(delegate)} can spend up to ${shown}` });
-            warnings.push({ level: "caution", code: "unlimited-approval", message: `${short(delegate)} can spend up to ${shown} from your account without asking again.` });
+            warnings.push({ level: "caution", code: "unlimited-approval", message: say("bg.hedera.canSpendUpToFromAccount", { spender: short(delegate), amount: shown }) });
           }
           break;
         }
@@ -379,7 +381,7 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
     const outOwner = sw.destinationAccount ? ownerOfTokenAccount(sw.destinationAccount) : null;
     if (sw.destinationAccount && outOwner && outOwner !== dc.me) {
       lines.push({ label: "Sends what you get to", value: outOwner });
-      warnings.push({ level: "danger", code: "new-recipient", message: `The tokens from this swap go to ${short(outOwner)}, not to you.` });
+      warnings.push({ level: "danger", code: "new-recipient", message: say("bg.warn.swapGoesTo", { who: short(outOwner) }) });
     } else if (sw.destinationAccount && !outOwner && outAsset) {
       warnings.push({ level: "caution", code: "new-recipient", message: "We couldn't confirm the swapped tokens land in your account. Check the balance changes." });
     }
@@ -406,7 +408,7 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
       if (st.recipient === dc.me) moves.push({ asset: sol(dc.networkId), amount: st.lamports, counterparty: "stake" });
       else {
         lines.push({ label: "Sends it to", value: st.recipient });
-        warnings.push({ level: "danger", code: "new-recipient", message: `This sends your staked SOL to ${short(st.recipient)}, not to you.` });
+        warnings.push({ level: "danger", code: "new-recipient", message: say("bg.warn.stakeGoesTo", { to: short(st.recipient) }) });
       }
     }
   }
@@ -445,6 +447,9 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   for (const m of ins) lines.unshift({ label: "From", value: `${m.counterparty} sends ${amountText(m.asset, m.amount)}` });
 
   let title: string;
+  let titleMsg: Msg | undefined;
+  /** A list of amounts as one value only when it has one item ("1 SOL and 2 USDC" has an English "and"). */
+  const one = (list: string[]) => (list.length === 1 ? list[0]! : undefined);
   const blind = undescribed.length > 0;
   const approvals = lines.filter((l) => l.label === "Permission");
   if (blind) {
@@ -458,33 +463,61 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
     if (spent.length && got.length) {
       const t = (cs: BalanceChange[]) => joinWords(cs.map((c) => amountText(c.asset, BigInt(c.delta))));
       title = `Swap ${t(spent)} for ${t(got)} on ${venues}`;
+      const pay = one(spent.map((c) => amountText(c.asset, BigInt(c.delta))));
+      const get = one(got.map((c) => amountText(c.asset, BigInt(c.delta))));
+      if (pay && get && !venues.includes(" and ")) titleMsg = msg("bg.req.swapOn", { pay, get, app: venues }, title);
     } else if (swapTexts.length === 1) {
       title = `Swap ${swapTexts[0]!.pay} for ${swapTexts[0]!.get} on ${venues}`;
+      titleMsg = msg("bg.req.swapOn", { pay: swapTexts[0]!.pay, get: swapTexts[0]!.get, app: venues });
     } else {
       title = `Swap tokens on ${venues}`;
+      if (!venues.includes(" and ")) titleMsg = msg("bg.req.swapTokensOn", { app: venues });
     }
   } else if (stakes.some((x) => x.kind !== "initialize") && !outs.length && !ins.length) {
     const solAmt = (v: bigint) => amountText(sol(dc.networkId), v);
     const parts: string[] = [];
+    const partMsgs: Msg[] = [];
     for (const st of stakes) {
       if (st.kind === "delegate") {
         const funded = stakeFunded.get(st.stake);
         // The funding includes the stake account's rent deposit (returned on withdraw); show the staked part.
         const staked = funded != null && funded > STAKE_ACCOUNT_RENT_LAMPORTS ? funded - STAKE_ACCOUNT_RENT_LAMPORTS : funded;
         if (funded != null && staked !== funded) lines.push({ label: "Opening cost", value: `≈${solAmt(STAKE_ACCOUNT_RENT_LAMPORTS)}, returned when you withdraw` });
-        parts.push(staked != null ? `Stake ${solAmt(staked)} with validator ${short(st.vote)}` : `Stake with validator ${short(st.vote)}`);
-      } else if (st.kind === "deactivate") parts.push("Stop staking");
-      else if (st.kind === "withdraw") parts.push(`Withdraw ${solAmt(st.lamports)} from staking${st.recipient === dc.me ? "" : ` to ${short(st.recipient)}`}`);
+        const m =
+          staked != null ? msg("bg.solana.stakeWithValidator", { amount: solAmt(staked), validator: short(st.vote) }) : msg("bg.solana.stakeWithValidatorOnly", { validator: short(st.vote) });
+        parts.push(m.fallback);
+        partMsgs.push(m);
+      } else if (st.kind === "deactivate") {
+        parts.push("Stop staking");
+        partMsgs.push(msg("bg.solana.stopStaking"));
+      } else if (st.kind === "withdraw") {
+        const m =
+          st.recipient === dc.me
+            ? msg("bg.solana.withdrawFromStaking", { amount: solAmt(st.lamports) })
+            : msg("bg.solana.withdrawFromStakingTo", { amount: solAmt(st.lamports), to: short(st.recipient) });
+        parts.push(m.fallback);
+        partMsgs.push(m);
+      }
     }
     title = [...new Set(parts)].join(", then ");
+    const uniq = partMsgs.filter((m, i) => partMsgs.findIndex((x) => x.fallback === m.fallback) === i);
+    if (uniq.length === 1) titleMsg = uniq[0];
+    else if (uniq.length === 2) titleMsg = msg("bg.solana.thenStep", { first: uniq[0]!, then: uniq[1]! }, title);
   } else if (outs.length && !ins.length) {
     const ps = parties(outs);
     title = `Send ${names(outs)} to ${ps.length === 1 ? short(ps[0]!) : `${ps.length} addresses`}`;
+    const amount = one(mergeText(outs));
+    if (amount) titleMsg = ps.length === 1 ? msg("bg.req.sendTo", { amount, to: short(ps[0]!) }) : msg("bg.req.sendToMany", { amount, count: ps.length });
   } else if (ins.length && !outs.length) {
     const ps = parties(ins);
     title = `Receive ${names(ins)} from ${ps.length === 1 ? short(ps[0]!) : `${ps.length} addresses`}`;
+    const amount = one(mergeText(ins));
+    if (amount) titleMsg = ps.length === 1 ? msg("bg.req.receiveFrom", { amount, from: short(ps[0]!) }) : msg("bg.solana.receiveFromMany", { amount, count: ps.length });
   } else if (ins.length && outs.length) {
     title = `Trade ${names(outs)} for ${names(ins)}`;
+    const give = one(mergeText(outs));
+    const get = one(mergeText(ins));
+    if (give && get) titleMsg = msg("bg.req.trade", { give, get });
   } else if (approvals.length === 1) {
     title = `Allow ${approvals[0]!.value.replace(" can ", " to ")}`;
   } else if (lines.some((l) => l.label === "Also")) {
@@ -493,7 +526,7 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
     title = "Approve a transaction";
   }
 
-  return { title, lines, balanceChanges, warnings, blind, simulated: !!sim?.ok, fee };
+  return { title, ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges, warnings, blind, simulated: !!sim?.ok, fee };
 }
 
 function mergeText(list: Movement[]): string[] {

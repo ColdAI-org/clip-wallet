@@ -80,7 +80,9 @@ export function tokenAsset(networkId: NetworkId, chainId: number, address: strin
   const symbol = (meta.symbol ?? "").trim() || "token";
   const name = (meta.name ?? "").trim() || symbol;
   const a: AssetRef = { key: contractKey(networkId, address), symbol, name, decimals: meta.decimals ?? 0, networkId, address: getAddress(address) };
-  if (looksLikeSpam(symbol, name)) a.spam = true;
+  // Not curated (that returned above): a USDC/ETH/… ticker here is an impersonation (audit TOK-01). Passing options
+  // turns that check on, as the portfolio path already did; approvals and simulations now see it too.
+  if (looksLikeSpam(symbol, name, {})) a.spam = true;
   return a;
 }
 
@@ -94,6 +96,7 @@ const SPAM_PATTERNS = [
   /\b(claim|visit|reward|airdrop|voucher|bonus|redeem|giveaway|free)\b/i,
   /[Ѐ-ӿͰ-Ͽ]/, // Cyrillic / Greek lookalikes in a ticker
   /[^\x20-\x7E]{2,}/, // runs of non-printable / exotic characters
+  /[\p{Cc}\p{Cf}]/u, // any invisible or direction-changing character (audit TOK-01)
 ];
 
 /** Symbols that scam tokens copy. A token using one of these that is not the curated contract is spam. */

@@ -16,11 +16,13 @@ import { withFixtureFeatures } from "./mocks/mock-features";
 import { chromeNotifier, startSocial } from "./social";
 import { COINGECKO_IDS } from "@clip-wallet/features";
 import { RecipientLog, SecurityService } from "@clip-wallet/security";
+import { isLinkRequest, withRemoteSigner } from "@clip-wallet/link";
+import { handleLink, startLink } from "./link";
 
 const AUTOLOCK_ALARM = "clip-autolock";
 
 export function toEnvelope(e: unknown): Envelope {
-  if (e instanceof ClipError) return { ok: false, error: { userMessage: e.userMessage, code: e.code } };
+  if (e instanceof ClipError) return { ok: false, error: { userMessage: e.userMessage, code: e.code, ...(e.msg ? { msg: e.msg } : {}) } };
   // Plain-words errors from packages that don't depend on core's class (e.g. PluginsUserError): same shape.
   const u = e as { userMessage?: unknown; code?: unknown } | null;
   if (u && typeof u.userMessage === "string" && typeof u.code === "string") return { ok: false, error: { userMessage: u.userMessage, code: u.code } };
@@ -79,6 +81,20 @@ export function startBackground() {
         }
       : {}),
   };
+
+  // Linked devices: phone / Clip Desktop as signer, sync, moving a wallet, handoffs (r1/connect). While the person
+  // signs on another device, 1Mask's connects and requests go there instead of to this vault.
+  const link = startLink({
+    kv,
+    vault: deps.vault as never,
+    rdns: config.rdns,
+    ...(config.services.linkRelayUrl ? { relayUrl: config.services.linkRelayUrl } : {}),
+    ...(config.services.backupUrl ? { syncUrl: config.services.backupUrl } : {}),
+    grant: (origin, family) => service!.permissions.grant(origin, family),
+    notifier: chromeNotifier(browser.runtime.getURL("/icon/128.png")),
+    broadcast: () => env.broadcast(),
+  });
+  deps.dapps = withRemoteSigner(deps.dapps as never, link) as never;
 
   service = new WalletService(deps, kv, env);
   service.start();
@@ -183,6 +199,12 @@ export function startBackground() {
     const parsed = Request.safeParse(msg);
     if (!parsed.success) {
       return Promise.resolve<Envelope>({ ok: false, error: { userMessage: "Something went wrong. Please try again.", code: "bus/invalid" } });
+    }
+    if (isLinkRequest(parsed.data)) {
+      return handleLink(link, kv, parsed.data).then(
+        (data): Envelope => ({ ok: true, data }),
+        (e): Envelope => toEnvelope(e),
+      );
     }
     return svc.handle(parsed.data).then(
       (data): Envelope => ({ ok: true, data }),

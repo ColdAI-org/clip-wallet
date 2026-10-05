@@ -103,7 +103,7 @@ export interface DappConnector {
   start(host: DappHost): void;
   /** `senderOrigin` must come from the browser / WebView, never from the page. */
   attachPort?(port: RouterPort, senderOrigin?: string): void;
-  disconnected(origin: string): void;
+  disconnected(origin: string, family?: Family): void | Promise<void>;
   accountsChanged?(): void;
 }
 
@@ -158,6 +158,8 @@ export interface Dependencies {
    * the settle-on-Hedera client's claim / withdraw, only when route.settleOnHedera is on.
    */
   requestNetworks?: Network[];
+  /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
+  settleFunding?: import("@clip-wallet/route").SettleFunding | null;
 }
 
 /** Side effects the engine needs from its host. */

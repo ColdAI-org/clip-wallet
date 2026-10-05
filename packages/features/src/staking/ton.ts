@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   cellFromBase64,
   cellToB64,
@@ -222,7 +222,7 @@ export class TonStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Stake ${formatUnits(amount, 9)} GRAM`,
+          ...titled(msg("bg.req.stake", { amount: `${formatUnits(amount, 9)} GRAM` })),
           lines: [
             { label: "With", value: "Tonstakers" },
             { label: "You get about", value: `${formatUnits(expectTs, 9, 4)} tsTON` },
@@ -270,7 +270,7 @@ export class TonStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Unstake ${formatUnits(gram, 9, 4)} GRAM`,
+          ...titled(msg("bg.req.unstake", { amount: `${formatUnits(gram, 9, 4)} GRAM` })),
           lines: [
             { label: "Gives back", value: `${formatUnits(ts, 9, 4)} tsTON` },
             { label: "When", value: "Right away if Tonstakers has enough on hand, otherwise when the current round ends (about 18 hours)" },

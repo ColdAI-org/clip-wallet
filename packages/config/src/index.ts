@@ -186,6 +186,8 @@ export const clipConfigSchema = z
       .object({
         backupUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/backup deployment, like https://backup.example.com").optional(),
         mediaProxyUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/media-proxy deployment, like https://media.example.com").optional(),
+        /** services/link-relay: phone as signer and moving a wallet between devices. Unset = those are hidden. Sync uses backupUrl. */
+        linkRelayUrl: z.string().regex(HTTPS_BASE, "use the https base URL of your services/link-relay deployment, like https://relay.example.com").optional(),
         /** ClipHandles on Hedera (contracts/handles). Unset = handles say they aren't switched on yet. */
         clipHandles: z
           .object({

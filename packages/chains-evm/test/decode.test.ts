@@ -101,6 +101,10 @@ describe("decode eth_sendTransaction", () => {
     const d = await decode(tx({ to: SEPOLIA_USDC, data }));
     expect(d.title).toBe("Allow Uniswap to spend all your USDC");
     expect(d.warnings.find((w) => w.code === "unlimited-approval")?.level).toBe("danger");
+    // Translatable: same English as the fallback, values are data.
+    expect(d.titleMsg).toEqual({ id: "bg.req.allowSpendAll", values: { spender: "Uniswap", symbol: "USDC" }, fallback: d.title });
+    const w = d.warnings.find((x) => x.code === "unlimited-approval")!;
+    expect(w.msg).toMatchObject({ id: "bg.warn.letsTakeAll", fallback: w.message });
   });
 
   it("limited approve and revoke", async () => {

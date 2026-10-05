@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import { aptosNetworkOf } from "@clip-wallet/chains-aptos";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -137,7 +137,7 @@ export class HyperionSwap implements SwapProvider {
     const me = long(ctx.account.address);
     return [
       {
-        title: `Swap ${quote.sell.symbol} for ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: quote.sell.symbol, get: quote.buy.symbol })),
         request: {
           id: randomId(),
           origin: WALLET_ORIGIN,

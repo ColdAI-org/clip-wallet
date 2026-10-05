@@ -4,6 +4,7 @@ import { formatUnits, type Step } from "@clip-wallet/features";
 import { spenderName } from "../labels.js";
 import { chunk } from "../solana.js";
 import { type ApprovalScanner, type Grant, type RevokeSpec, type ScanOptions, type ScanResult, grantId, risksFor } from "./types.js";
+import { msg, titled } from "@clip-wallet/core";
 
 /**
  * Hedera allowances (HIP-336): CryptoApproveAllowance grants HBAR, fungible-token and NFT allowances.
@@ -140,7 +141,7 @@ export class HederaApprovals implements ApprovalScanner {
           id: grantId(ctx.network.id, spec),
           kind: "hts-nft-all",
           family: "hedera",
-          title: `${b.who} can move every NFT you hold in ${coll}`,
+          ...titled(msg("bg.req.canMoveEveryNft", { spender: b.who, collection: coll })),
           asset: { symbol: info?.symbol || coll, name: coll, address: a.token_id },
           spender: b.spender,
           amount: `Every NFT in ${coll}`,

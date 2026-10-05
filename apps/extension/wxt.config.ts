@@ -1,6 +1,6 @@
 import { defineConfig } from "wxt";
 import clipConfig from "./clip.config";
-import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
@@ -8,11 +8,18 @@ import { walletNetworks } from "./src/shared/catalog";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
 import type { SecurityConfig } from "@clip-wallet/security";
+import { SETTLE_DEPLOYMENTS } from "@clip-wallet/route";
 import pkg from "./package.json" with { type: "json" };
 
 /** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
 const MOCKS = process.env.CLIP_MOCKS === "1";
-const CHANNEL = `clip-${randomUUID()}`;
+/**
+ * postMessage channel between the inpage script and the content script. It is visible to every page (the inpage
+ * script runs in the page's world), so it is a namespace, not a secret: the content script still checks source,
+ * schema and size, and the background adds the origin. Derived from the version and SOURCE_DATE_EPOCH so two
+ * builds of the same commit are byte-identical (scripts/repro-check.sh).
+ */
+const CHANNEL = `clip-${createHash("sha256").update(`${pkg.version}:${process.env.SOURCE_DATE_EPOCH ?? "dev"}`).digest("hex").slice(0, 16)}`;
 const ICON = `data:image/svg+xml;base64,${readFileSync(new URL("./icon.svg", import.meta.url)).toString("base64")}`;
 const PUBLIC_NETWORKS = walletNetworks(clipConfig).map((n) => ({ ...n, rpcUrls: n.rpcUrls.slice(0, 1) }));
 /**
@@ -68,9 +75,11 @@ export default defineConfig({
       name: clipConfig.name,
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       // offscreen: the plugin host document; identity: Google / Apple sign-in for backups (launchWebAuthFlow).
-      permissions: ["storage", "alarms", "identity", ...(plugins ? ["offscreen"] : [])],
+      // activeTab: "Continue this page on your phone" reads the current tab's URL when the person opens the popup.
+      permissions: ["storage", "alarms", "identity", "activeTab", ...(plugins ? ["offscreen"] : [])],
       // Asked for when the user turns notifications on (Settings → Notifications), never at install.
-      optional_permissions: ["notifications"],
+      // nativeMessaging: asked for when the person taps "Use Clip Desktop" (Settings → Linked devices).
+      optional_permissions: ["notifications", "nativeMessaging"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
       host_permissions: [
         ...rpHost,
@@ -94,8 +103,10 @@ export default defineConfig({
         ...(plugins ? ["https://registry.npmjs.org/*"] : []),
         // Blockaid scanning, only in builds that set a key.
         ...(BLOCKAID_KEY ? ["https://api.blockaid.io/*"] : []),
+        // Settle on Hedera (testnet builds with route.settleOnHedera): the Connectors' quote APIs.
+        ...(clipConfig.route.settleOnHedera && !clipConfig.mainnet ? SETTLE_DEPLOYMENTS.filter((d) => d.network === "testnet").flatMap((d) => d.connectors.map((c) => `${new URL(c.url).origin}/*`)) : []),
         // Optional hosted services from clip.config (unset by default).
-        ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
+        ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl, clipConfig.services.linkRelayUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
@@ -106,7 +117,21 @@ export default defineConfig({
       ...(plugins ? { sandbox: { pages: [SANDBOX_PAGE] } } : {}),
       // Lets the passkey web-bridge page hand back a PRF result (Chromium; Firefox lacks externally_connectable).
       ...(browser !== "firefox" ? { externally_connectable: { matches: [`${bridgeOrigin}/*`] } } : {}),
-      ...(browser === "firefox" ? { browser_specific_settings: { gecko: { id: `wallet@${clipConfig.rdns.split(".").reverse().join(".")}`, strict_min_version: "128.0" } } } : {}),
+      // Firefox built-in data consent (required for new AMO listings since 2025-11-03; Firefox 140+):
+      // https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/
+      // Required: addresses and signed transactions go to network nodes and indexers (the wallet can't work
+      // without that). Optional: the email address for passkey backup, only if the user turns backup on.
+      ...(browser === "firefox"
+        ? {
+            browser_specific_settings: {
+              gecko: {
+                id: `wallet@${clipConfig.rdns.split(".").reverse().join(".")}`,
+                strict_min_version: "140.0",
+                data_collection_permissions: { required: ["financialAndPaymentInfo"], optional: ["personallyIdentifyingInfo"] },
+              },
+            },
+          }
+        : {}),
     };
   },
   vite: () => ({

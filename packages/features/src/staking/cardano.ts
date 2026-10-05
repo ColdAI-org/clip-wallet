@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled, say } from "@clip-wallet/core";
 import {
   type CardanoModule,
   type DrepChoice,
@@ -140,7 +140,7 @@ function poolTitle(c: { ticker?: string; pool: KoiosPool }): string {
 
 function poolDetail(c: PoolChoice): string {
   const parts: string[] = [];
-  if (c.apy !== undefined) parts.push(`Earns about ${percent(c.apy, 1)} a year`);
+  if (c.apy !== undefined) parts.push(say("bg.staking.earnsAbout", { percent: percent(c.apy, 1) }));
   parts.push(`${parts.length ? "keeps" : "Keeps"} ${percent(c.margin * 100)} of rewards`);
   parts.push(`${formatUnits(c.fixedCost, 6, 0)} ADA fixed fee`);
   parts.push(c.saturation < 1 ? "under 1% full" : `${percent(c.saturation, 0)} full`);
@@ -263,7 +263,7 @@ export class CardanoStaking implements StakingProvider {
     const lines = [{ label: "With", value: name }];
     if (!staking.registered) lines.push({ label: "Deposit", value: "2 ADA, returned when you stop staking" });
     lines.push({ label: "Your ADA", value: "Stays in your wallet. Spend it any time" });
-    return { steps: [{ title: staking.pool ? `Move your stake to ${name}` : `Stake your ADA with ${name}`, lines, request }] };
+    return { steps: [{ title: staking.pool ? say("bg.staking.moveStakeTo", { name }) : say("bg.staking.stakeAdaWith", { name }), lines, request }] };
   }
 
   private async mine(ctx: ChainContext, positionId: string): Promise<StakingInfo> {
@@ -281,7 +281,7 @@ export class CardanoStaking implements StakingProvider {
   private voteStep(choice: DrepChoice, ctx: ChainContext, why: string): Step {
     const label = choice === "abstain" ? "Abstain from votes" : "No confidence";
     return {
-      title: `Set your voting choice: ${label}`,
+      ...titled(msg("bg.req.setVotingChoice", { choice: label })),
       lines: [{ label: "Why", value: why }],
       request: () => this.module.buildVoteDelegate({ drep: choice }, ctx),
     };
@@ -305,7 +305,7 @@ export class CardanoStaking implements StakingProvider {
     const rewards = BigInt(s.rewardsAvailable || "0");
     if (rewards <= 0n) throw new ClipError("There are no rewards to claim yet.", "staking/no-rewards");
     const claim: Step = {
-      title: `Move ${ada(rewards)} rewards to your balance`,
+      ...titled(msg("bg.req.moveRewardsBack", { amount: ada(rewards) })),
       request: s.drep
         ? await this.module.buildWithdrawRewards(ctx)
         : async () => {

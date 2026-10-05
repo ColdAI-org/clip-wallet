@@ -9,6 +9,7 @@ import { relativeTime } from "../lib/format";
 import { useFeaturesOptional } from "../features/context";
 import { useHardwareOptional } from "../hardware/context";
 import { useSecurityOptional } from "../security/context";
+import { useLinkOptional } from "../link/context";
 import { useSocialOptional } from "../social/context";
 import { useUiT } from "../i18n";
 import { LOCALES, localeInfo, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
@@ -166,6 +167,7 @@ export function Settings() {
   const hardware = useHardwareOptional();
   const security = useSecurityOptional();
   const social = useSocialOptional();
+  const link = useLinkOptional();
   if (!state) return null;
   const prefs = state.prefs;
   const setPrefs = async (p: Partial<Prefs>) => {
@@ -284,6 +286,14 @@ export function Settings() {
               {t("settings.security")}
             </button>
           )}
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/privacy")}>
+            {t("privacy.menu")}
+          </button>
+          {link && (
+            <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/devices")}>
+              {t("link.title")}
+            </button>
+          )}
         </nav>
         <Button
           variant="secondary"
@@ -319,7 +329,7 @@ export function Settings() {
         <Section title={t("settings.dev.title")} id="developer-mock-data">
           <p className="clip-hint">{t("settings.dev.hint")}</p>
           <div className="clip-dev-buttons">
-            {(["pay", "connect", "blind", "approval-for-all"] as const).map((k) => (
+            {(["pay", "connect", "blind", "approval-for-all", "settle", "settle-late"] as const).map((k) => (
               <Button
                 key={k}
                 variant="secondary"

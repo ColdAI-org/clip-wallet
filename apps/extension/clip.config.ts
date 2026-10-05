@@ -8,6 +8,7 @@ const MAINNET = false;
 const TESTNET_SERVICES = {
   backupUrl: "https://clip-backup.doyoka-platform.workers.dev",
   mediaProxyUrl: "https://clip-media-proxy.doyoka-platform.workers.dev",
+  linkRelayUrl: "https://clip-link-relay.doyoka-platform.workers.dev",
 };
 
 // Clip Wallet's own brand. Every setting is documented in @clip-wallet/config.
@@ -23,5 +24,7 @@ export default defineConfig({
   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
   passkeys: { enabled: true },
   services: MAINNET ? {} : TESTNET_SERVICES,
+  // Settle on Hedera (bonded Connectors, @clip-wallet/route SETTLE_DEPLOYMENTS): testnet builds only.
+  route: { settleOnHedera: !MAINNET },
   mainnet: MAINNET,
 });

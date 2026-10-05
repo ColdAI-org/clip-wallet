@@ -14,6 +14,7 @@ import type { Horizon, HorizonAccount } from "./horizon.js";
 import { USDC_ISSUERS, assetOf, netOf, sep41Asset, xlmAsset } from "./networks.js";
 import type { SimulateResult, SorobanRpc } from "./rpc.js";
 import { b64encode, baseAccount, formatUnits, hex, joinWords, short, toStroops } from "./util.js";
+import { say } from "@clip-wallet/core";
 
 export interface Line {
   label: string;
@@ -188,7 +189,7 @@ async function describeOp(op: Operation, source: string, dc: DescribeContext): P
     case "createAccount": {
       const amt = toStroops(op.startingBalance);
       const xlm = xlmAsset(dc.networkId);
-      return out(`Send ${amountText(xlm, amt)} to ${who(op.destination)} and open their account`, [
+      return out(say("bg.stellar.sendAndOpen", { amount: amountText(xlm, amt), to: who(op.destination) }), [
         ...on,
         { label: "To", value: op.destination },
         { label: "Also", value: "This also opens their Stellar account; it needs at least 1 XLM." },
@@ -200,7 +201,7 @@ async function describeOp(op: Operation, source: string, dc: DescribeContext): P
       const changes: BalanceChange[] = [];
       if (mine && !toMe(op.destination)) changes.push(ch(op.asset, -amt));
       if (!mine && toMe(op.destination)) changes.push(ch(op.asset, amt));
-      const title = !mine && toMe(op.destination) ? `Receive ${amountText(asset, amt)} from ${who(source)}` : `Send ${amountText(asset, amt)} to ${who(op.destination)}`;
+      const title = !mine && toMe(op.destination) ? say("bg.req.receiveFrom", { amount: amountText(asset, amt), from: who(source) }) : say("bg.req.sendTo", { amount: amountText(asset, amt), to: who(op.destination) });
       const lines = [...on, { label: "To", value: op.destination }, { label: "Asset", value: assetLabel(op.asset) }];
       const warnings = asset.spam ? [caution("known-scam", `This ${asset.symbol} isn't from its usual issuer. It may be a copy with no value.`)] : [];
       return out(title, lines, { changes, warnings, memoCheck: op.destination, destCheck: { address: op.destination, asset: op.asset } });
@@ -212,7 +213,7 @@ async function describeOp(op: Operation, source: string, dc: DescribeContext): P
       const dMin = toStroops(op.destMin);
       const self = toMe(op.destination) && mine;
       const title = self
-        ? `Swap ${amountText(send, sAmt)} for at least ${amountText(dest, dMin)}`
+        ? say("bg.near.swapAtLeast", { pay: amountText(send, sAmt), get: amountText(dest, dMin) })
         : `Swap ${amountText(send, sAmt)} for at least ${amountText(dest, dMin)}, sent to ${who(op.destination)}`;
       const changes: BalanceChange[] = [];
       if (mine) changes.push(ch(op.sendAsset, -sAmt));
@@ -304,11 +305,11 @@ async function describeOp(op: Operation, source: string, dc: DescribeContext): P
       const a = op.line as Asset;
       const ref = assetOf(dc.networkId, a);
       const lines: Line[] = [...on, { label: "Asset", value: assetLabel(a) }];
-      if (remove) return out(`Remove ${ref.symbol} from your account`, [...lines, { label: "Also", value: "This frees the 0.5 XLM it set aside." }]);
+      if (remove) return out(say("bg.req.removeFromYourAccount", { symbol: ref.symbol }), [...lines, { label: "Also", value: "This frees the 0.5 XLM it set aside." }]);
       lines.push({ label: "Also", value: `This sets aside 0.5 XLM of your balance while ${ref.symbol} is added.` });
       if (op.limit !== MAX_LIMIT) lines.push({ label: "Most you can hold", value: `${op.limit} ${ref.symbol}` });
       const warnings = ref.spam ? [caution("known-scam", `This ${ref.symbol} isn't from its usual issuer. It may be a copy with no value.`)] : [];
-      return out(`Add ${ref.symbol} to your account`, lines, { warnings });
+      return out(say("bg.req.addToYourAccount", { symbol: ref.symbol }), lines, { warnings });
     }
     case "allowTrust":
       return out(`Change whether ${who(op.trustor)} can hold ${op.assetCode}`, [...on, { label: "Account", value: op.trustor }, { label: "Allowed", value: String(op.authorize) }]);
@@ -413,8 +414,8 @@ async function describeInvoke(op: Operation.InvokeHostFunction, mine: boolean, d
       const fn = call.functionName().toString();
       const args = call.args();
       lines.push({ label: "Contract", value: contract }, { label: "Function", value: fn });
-      args.forEach((a, i) => lines.push({ label: `Argument ${i + 1}`, value: formatScVal(a) }));
-      title = `Use ${fn} on contract ${short(contract)}`;
+      args.forEach((a, i) => lines.push({ label: say("bg.label.argumentN", { n: i + 1 }), value: formatScVal(a) }));
+      title = say("bg.req.useFnOnContract", { fn, contract: short(contract) });
       // SEP-41 transfer(from, to, amount)
       if (fn === "transfer" && args.length === 3) {
         try {
@@ -423,7 +424,7 @@ async function describeInvoke(op: Operation.InvokeHostFunction, mine: boolean, d
           const amount = BigInt(scValToNative(args[2]!) as bigint);
           if (from === dc.me) {
             const asset = await tokenAsset(contract, null, dc);
-            title = `Send ${amountText(asset, amount)} to ${who(to)}`;
+            title = say("bg.req.sendTo", { amount: amountText(asset, amount), to: who(to) });
           }
         } catch {
           /* not a token transfer */
@@ -460,7 +461,7 @@ function summarizeInvocation(inv: xdr.SorobanAuthorizedInvocation): string {
     const f = i.function();
     if (f.switch().name === "sorobanAuthorizedFunctionTypeContractFn") {
       const c = f.contractFn();
-      parts.push(`${c.functionName().toString()} on ${short(addressOf(c.contractAddress()))}`);
+      parts.push(say("bg.req.actionOnApp", { action: c.functionName().toString(), app: short(addressOf(c.contractAddress())) }));
     } else parts.push("create a contract");
     i.subInvocations().forEach(walk);
   };
@@ -577,7 +578,7 @@ export async function describeTransaction(tx: Transaction | FeeBumpTransaction, 
   let changes = outs.flatMap((o) => o.changes);
 
   if (outs.length === 1) lines.push(...outs[0]!.lines);
-  else outs.forEach((o, i) => lines.push({ label: `Action ${i + 1}`, value: o.title }, ...o.lines));
+  else outs.forEach((o, i) => lines.push({ label: say("bg.label.actionN", { n: i + 1 }), value: o.title }, ...o.lines));
 
   const memo = memoText(inner.memo);
   if (memo !== null) lines.push({ label: "Memo", value: memo });
@@ -616,6 +617,7 @@ export async function describeTransaction(tx: Transaction | FeeBumpTransaction, 
 
   // Soroban: simulate for token movements.
   if (isSorobanTx(tx)) {
+    let unsimulated = false;
     if (dc.simulate && dc.rpc) {
       try {
         const sim = await dc.rpc.simulate(tx.toEnvelope().toXDR("base64"));
@@ -627,10 +629,16 @@ export async function describeTransaction(tx: Transaction | FeeBumpTransaction, 
           if (sim.minResourceFee) lines.push({ label: "Smart contract resources", value: `${formatUnits(BigInt(sim.minResourceFee), 7)} XLM (included in the fee)` });
         }
       } catch {
-        warnings.push(caution("simulation-failed", "Couldn't test-run this smart contract call, so its effects aren't shown."));
+        unsimulated = true;
       }
     } else {
-      warnings.push(caution("simulation-failed", "Couldn't test-run this smart contract call, so its effects aren't shown."));
+      unsimulated = true;
+    }
+    // Audit STL-01: a contract call's sub-calls are shown by name only (no arguments); without a test run nothing
+    // shows what moves, so this is blind signing rather than a caution.
+    if (unsimulated) {
+      blind = true;
+      warnings.push(danger("blind-signing", "Couldn't test-run this smart contract call, so Clip Wallet can't show what it moves. Only sign it if you trust the app."));
     }
   }
 

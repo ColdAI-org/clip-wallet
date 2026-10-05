@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import { clusterOf } from "@clip-wallet/chains-solana";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -79,6 +79,16 @@ export class JupiterSwap implements SwapProvider {
     u.searchParams.set("slippageBps", String(req.slippageBps));
     const o = await fetchJson<OrderResponse>(ctx.fetch, u.toString(), "Jupiter", { headers: this.headers() });
     if (!o.transaction) throw plainOrderError(o);
+    // Audit FEAT-01: the order must be the one asked for (mints and amount); the transaction itself is described by
+    // the Solana module and lands only after the user approves what that shows.
+    const mismatch =
+      o.inputMint !== (req.sell.address ?? NATIVE_SOL_MINT) ||
+      o.outputMint !== (req.buy.address ?? NATIVE_SOL_MINT) ||
+      o.inAmount !== req.amount ||
+      !/^\d+$/.test(o.otherAmountThreshold ?? "") ||
+      !/^\d+$/.test(o.outAmount ?? "") ||
+      BigInt(o.otherAmountThreshold) > BigInt(o.outAmount);
+    if (mismatch) throw new ClipError("This swap quote doesn't match what you asked for, so Clip Wallet stopped it.", "swap/quote-mismatch");
     const labels = (o.routePlan ?? []).map((r) => r.swapInfo?.label).filter((l): l is string => !!l);
     const q: SwapQuote = {
       providerId: this.id,
@@ -114,7 +124,7 @@ export class JupiterSwap implements SwapProvider {
     };
     return [
       {
-        title: `Swap ${quote.sell.symbol} for ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: quote.sell.symbol, get: quote.buy.symbol })),
         request,
         finish: async (result) => {
           const signed = Array.isArray(result) ? (result[0] as { signedTransaction?: string } | undefined)?.signedTransaction : undefined;

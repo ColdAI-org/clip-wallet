@@ -1,5 +1,5 @@
 import type { AssetRef, DappRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, say } from "@clip-wallet/core";
 import { decodeEventLog, decodeFunctionResult, encodeEventTopics, encodeFunctionData, getAddress, isAddress, keccak256 } from "viem";
 import type { Address, Hex } from "viem";
 import { hederaRecipientToEvm } from "./client.js";
@@ -532,7 +532,7 @@ export class SettleClient implements SettleOnHederaClient {
       to: req.to.networkId,
       receive: { asset: req.to.asset, amount: q.amountOut.toString(), recipient: ctx.recipient },
       cover: { asset: cover.asset, amount: q.coverAmount.toString(), owedOnDefault: owed.toString() },
-      title: `Get ${receive} for ${deposit}`,
+      title: say("bg.route.getFor", { receive, deposit }),
       display: {
         deposit,
         fee: show(feeAmount, feeAsset),

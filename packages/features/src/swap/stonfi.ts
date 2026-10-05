@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   addressFromCellHex,
   cellFromBase64,
@@ -338,7 +338,7 @@ export class StonfiSwap implements SwapProvider {
     const expect: StonfiExpect = { me, kind: d.kind, router: d.router, ptonWallet: d.ptonWallet, askJettonWallet: d.askJettonWallet, sellMaster: quote.sell.address, sellAmount, minOut };
     return [
       {
-        title: `Swap ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
         lines: [
           { label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}` },
           { label: "Through", value: "STON.fi" },

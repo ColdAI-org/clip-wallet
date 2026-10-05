@@ -170,6 +170,7 @@ describe("decode", () => {
       .addTokenTransfer("0.0.731861", ME, 1_000_000);
     const d = await m.decode(signAndExec(tx), ctx);
     expect(d.title).toBe("Trade 5 HBAR for 1 SAUCE with 0.0.1234");
+    expect(d.titleMsg).toEqual({ id: "bg.req.tradeWith", values: { give: "5 HBAR", get: "1 SAUCE", who: "0.0.1234" }, fallback: d.title });
     expect(d.lines).toContainEqual({ label: "Paid from an allowance", value: BOB });
   });
 
@@ -429,7 +430,8 @@ describe("builders", () => {
 
   it("Secure Trade (direct): maker signs bytes, taker's wallet sees both legs, adds its signature", async () => {
     const { m, ctx } = setup([[r(`/accounts/${ME}/tokens?token.id=`), { tokens: [{ token_id: "0.0.731861" }] }]]);
-    const request = req(SIGN_TRANSACTION_BYTES, { signerAccountId: `hedera:testnet:${ME}`, transactionList: FIX.tradeList });
+    // The builder's own origin (builders.ts requestFor): sites can't call this method (audit HED-03).
+    const request = { ...req(SIGN_TRANSACTION_BYTES, { signerAccountId: `hedera:testnet:${ME}`, transactionList: FIX.tradeList }), origin: "clip-wallet" };
     expect((await m.decode(request, ctx)).title).toBe("Trade 10 HBAR for 5 SAUCE with 0.0.1234");
     const payloads = await m.prepare(request, ctx, "a");
     const out = (await m.finalize(request, payloads.map((p) => signer.sign(p)), ctx)) as { transactionList: string };

@@ -1,4 +1,4 @@
-import { ClipError, type Network } from "@clip-wallet/core";
+import { ClipError, type Network, say, recallMsg, knownMsg } from "@clip-wallet/core";
 import type { FeatureHost } from "../host.js";
 import { queueSteps } from "../steps.js";
 import { parseUnits } from "../util.js";
@@ -64,7 +64,7 @@ export class StakingService {
         wholeBalance: false,
         howItWorks: "",
         positions: [],
-        unavailable: { code: "staking/coming-soon", message: `Staking ${native?.symbol ?? pending.assetKey.toUpperCase()} is coming soon.` },
+        unavailable: { code: "staking/coming-soon", message: say("bg.staking.comingSoon", { symbol: native?.symbol ?? pending.assetKey.toUpperCase() }) },
       });
     }
     return out;
@@ -72,7 +72,12 @@ export class StakingService {
 
   async options(assetKey: string): Promise<StakeOptionView[]> {
     const { provider, network } = await this.pick(assetKey);
-    return provider.options(await this.host.ctx(network.id));
+    // Option titles ("Validator Everstake") as translatable Msgs, from what the provider said.
+    return (await provider.options(await this.host.ctx(network.id))).map((o) => {
+      const titleMsg = o.titleMsg ?? recallMsg(o.title) ?? knownMsg(o.title);
+      const detailMsg = o.detailMsg ?? recallMsg(o.detail) ?? knownMsg(o.detail);
+      return { ...o, ...(titleMsg ? { titleMsg } : {}), ...(detailMsg ? { detailMsg } : {}) };
+    });
   }
 
   async stake(p: { assetKey: string; amount?: string; optionId?: string }): Promise<QueuedApprovals> {

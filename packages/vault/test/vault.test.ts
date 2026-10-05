@@ -299,6 +299,39 @@ describe("approval binding and signing", () => {
     await vault.unlock(PW);
     expect(await code(vault.sign(p!))).toBe("vault/no-approval");
   });
+
+  // Audit 2026-10 (VAULT-01): the vault must read a payload once, so the bytes it hashes for the approval check
+  // are the bytes it signs, even if the object handed in changes underneath it (getters, shared buffers).
+  it("signs exactly the bytes it checked against the approval (payload read once)", async () => {
+    const acct = await vault.deriveAccount("evm", 0);
+    const approvedDigest = sha256(new TextEncoder().encode("approved"));
+    const evilDigest = sha256(new TextEncoder().encode("never approved"));
+    const [p] = approve(vault, "appr-toctou", [{ accountId: "evm:0", scheme: "ecdsa-secp256k1", bytes: approvedDigest }]);
+    let reads = 0;
+    const shifty = {
+      ...p!,
+      get bytes() {
+        reads++;
+        // Honest for every read up to and including the approval hash, then swaps.
+        return reads <= 4 ? approvedDigest : evilDigest;
+      },
+    } as SignablePayload;
+    const sig = await vault.sign(shifty);
+    expect(reads).toBe(1);
+    expect(secp256k1.verify(sig.bytes, approvedDigest, fromHex(acct.publicKey), { prehash: false })).toBe(true);
+    expect(secp256k1.verify(sig.bytes, evilDigest, fromHex(acct.publicKey), { prehash: false })).toBe(false);
+  });
+
+  it("the caller's buffer can't change what gets signed after the approval check", async () => {
+    // A derivationSubPath makes sign() await before it hashes, which is when a shared buffer could change.
+    const acct = await vault.deriveAccount("cardano", 0);
+    const msg = new TextEncoder().encode("approved message");
+    const [p] = approve(vault, "appr-buf", [{ accountId: "cardano:0", scheme: "ed25519", bytes: msg.slice(), derivationSubPath: "0/0" }]);
+    const sigP = vault.sign(p!);
+    p!.bytes.fill(0); // mutate after handing it over
+    const sig = await sigP;
+    expect(ed25519.verify(sig.bytes, msg, fromHex(acct.publicKey))).toBe(true);
+  });
 });
 
 describe("auto-lock", () => {
@@ -391,6 +424,13 @@ describe("passkeyBackup (Phase 2)", () => {
     const tampered = blob.slice();
     tampered[10]! ^= 1; // header (salt) is authenticated
     expect(() => passkeyBackup.decrypt(tampered, prfOut)).toThrow();
+  });
+
+  // Audit 2026-10 (VAULT-03): decrypt applies the same PRF-length floor as encrypt.
+  it("refuses a short PRF output on decrypt as on encrypt", () => {
+    const prfOut = randomBytes(32);
+    const blob = passkeyBackup.encrypt(ABANDON, prfOut);
+    expect(() => passkeyBackup.decrypt(blob, prfOut.subarray(0, 16))).toThrow(/at least 32 bytes/);
   });
 
   it("vault.restorePasskeyBackup imports a backup into an empty vault without returning the phrase", async () => {

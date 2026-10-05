@@ -1,4 +1,4 @@
-import { type AssetRef, ClipError, type Network, type Warning } from "@clip-wallet/core";
+import { type AssetRef, ClipError, type Network, type Warning, msg, type Msg, say } from "@clip-wallet/core";
 import type { FeatureHost } from "../host.js";
 import { queueSteps } from "../steps.js";
 import { formatUnits, parseUnits, percent } from "../util.js";
@@ -67,7 +67,7 @@ export class SwapService {
       const amount = parseUnits(p.amount, sell.decimals);
       if (amount <= 0n) throw new ClipError("Enter an amount above zero.", "swap/bad-amount");
       if (held(n.id) < amount) {
-        lastError = new ClipError(`You don't have enough ${sell.symbol} for this swap.`, "swap/insufficient");
+        lastError = new ClipError(msg("bg.err.notEnoughForSwap", { symbol: sell.symbol }), "swap/insufficient");
         continue;
       }
       try {
@@ -117,7 +117,7 @@ export class SwapService {
       warnings.push({
         level: q.priceImpactPct >= 5 ? "danger" : "caution",
         code: "high-fee",
-        message: `This swap moves the price by ${percent(q.priceImpactPct)}. You'd get noticeably less than the market price. Try a smaller amount.`,
+        message: say("bg.swap.priceImpact", { percent: percent(q.priceImpactPct) }),
       });
     }
     // Value check from prices (catches thin pools when the provider reports no price impact).
@@ -128,16 +128,17 @@ export class SwapService {
       const outUsd = (Number(q.buyAmount) / 10 ** q.buy.decimals) * pb;
       const loss = inUsd > 0 ? (1 - outUsd / inUsd) * 100 : 0;
       if (loss >= 5 && !warnings.length) {
-        warnings.push({ level: loss >= 15 ? "danger" : "caution", code: "high-fee", message: `You'd get about ${percent(loss, 0)} less value than you put in.` });
+        warnings.push({ level: loss >= 15 ? "danger" : "caution", code: "high-fee", message: say("bg.swap.valueLoss", { percent: percent(loss, 0) }) });
       }
     }
     if (q.slippageBps > HIGH_SLIPPAGE_BPS) {
-      warnings.push({ level: "caution", code: "high-fee", message: `You allow the price to move up to ${percent(q.slippageBps / 100)} before the swap stops. That's high.` });
+      warnings.push({ level: "caution", code: "high-fee", message: say("bg.swap.highSlippage", { percent: percent(q.slippageBps / 100) }) });
     }
-    const steps: string[] = [];
-    if (q.association) steps.push(`Add ${q.association.symbol} to your account`);
-    if (q.approval) steps.push(`Allow ${q.approval.spenderName} to use exactly ${formatUnits(q.approval.amount, q.sell.decimals)} ${q.sell.symbol}`);
-    steps.push("Swap");
+    const stepMsgs: Msg[] = [];
+    if (q.association) stepMsgs.push(msg("bg.req.addToYourAccount", { symbol: q.association.symbol }));
+    if (q.approval) stepMsgs.push(msg("bg.req.allowUseExactly", { spender: q.approval.spenderName, amount: `${formatUnits(q.approval.amount, q.sell.decimals)} ${q.sell.symbol}` }));
+    stepMsgs.push(msg("bg.swap.swapStep"));
+    const steps = stepMsgs.map((m) => m.fallback);
     const v: SwapQuoteView = {
       id,
       provider: q.provider,
@@ -148,6 +149,7 @@ export class SwapService {
       slippageBps: q.slippageBps,
       route: `Via ${q.route.join(" → ")}`,
       steps,
+      stepMsgs,
       warnings,
       executable: true,
       expiresAt: q.expiresAt,

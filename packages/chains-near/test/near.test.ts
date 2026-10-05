@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type DappRequest, attachMsgs } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base58 } from "@scure/base";
@@ -268,6 +268,8 @@ describe("decode", () => {
     const { ctx } = chain();
     const d = await near.decode(send([{ type: "Transfer", params: { deposit: (15n * NEAR / 10n).toString() } }]), ctx);
     expect(d.title).toBe("Send 1.5 NEAR to bob.testnet");
+    // Built as a string through the action list; the background attaches the Msg by that exact text.
+    expect(attachMsgs(d).titleMsg).toEqual({ id: "bg.req.sendTo", values: { amount: "1.5 NEAR", to: "bob.testnet" }, fallback: d.title });
     expect(d.balanceChanges).toEqual([{ asset: nearAsset("near:testnet"), delta: (-15n * NEAR / 10n).toString() }]);
     expect(d.fee).toEqual({ asset: nearAsset("near:testnet"), amount: (700_000_000_000n * 100_000_000n).toString() });
     expect(d.lines.find((l) => l.label === "Network fee")?.value).toBe("about 0.00007 NEAR");
@@ -540,6 +542,18 @@ describe("WalletConnect", () => {
     const r = req(NEAR_METHODS.wcSignTransactions, { transactions: [asObj(b64decode(FIX.wcTx.txBase64)), [...b64decode(FIX.wcTx2.txBase64)]] }, "https://x.example", "walletconnect");
     const { result } = await roundTrip(r, ctx);
     expect(result).toEqual([[...b64decode(FIX.wcTx.signedBase64)], [...b64decode(FIX.wcTx2.signedBase64)]]);
+  });
+
+  it("audit NEAR-01: refuses a dapp-built transaction whose block hash isn't on this network", async () => {
+    const { ctx } = chain({
+      block: (p: Record<string, unknown>) => {
+        if (p.block_id !== undefined) throw new RpcFail("UNKNOWN_BLOCK", "DB Not Found Error: BLOCK HEIGHT");
+        return { header: { hash: FIX.blockHash, height: 271356934 } };
+      },
+    });
+    const r = req(NEAR_METHODS.wcSignTransaction, { transaction: [...b64decode(FIX.wcTx.txBase64)] }, "https://guest-book.example", "walletconnect");
+    await rejects(near.decode(r, ctx), "near/wrong-network");
+    await rejects(near.prepare(r, ctx, "a"), "near/wrong-network");
   });
 
   it("refuses transactions for another key and unreadable bytes", async () => {

@@ -15,6 +15,7 @@ import {
 import { spenderName } from "../labels.js";
 import { JsonRpcError, fetchJson, mapLimit, randomId, rpcCall, shortAddress } from "../util.js";
 import { type ApprovalScanner, type Grant, type RevokeSpec, type ScanOptions, type ScanResult, grantId, risksFor } from "./types.js";
+import { msg, titled, say } from "@clip-wallet/core";
 
 /**
  * EVM standing permissions.
@@ -259,7 +260,7 @@ export class EvmApprovals implements ApprovalScanner {
       const r = await rpcLogs(ctx, owner, opts.evm.lookbackBlocks, opts.evm.maxBlockRange);
       logs = r.logs;
       if (!r.complete) {
-        partial.push({ code: "approvals/recent-only", network: ctx.network.name, message: `On ${ctx.network.name} only recent permissions could be checked. Older ones may still be there.` });
+        partial.push({ code: "approvals/recent-only", network: ctx.network.name, message: say("bg.security.recentOnly", { network: ctx.network.name }) });
       }
     }
     const pairs = pairsFromLogs(logs, owner);
@@ -314,7 +315,7 @@ export class EvmApprovals implements ApprovalScanner {
           id: grantId(ctx.network.id, spec),
           kind: "nft-all",
           family: "evm",
-          title: `${who} can move every NFT you hold in ${coll}`,
+          ...titled(msg("bg.req.canMoveEveryNft", { spender: who, collection: coll })),
           asset: { symbol: coll, name: coll, address: p.contract },
           spender,
           amount: `Every NFT in ${coll}`,
@@ -370,9 +371,9 @@ export class EvmApprovals implements ApprovalScanner {
       const s = g.revoke;
       const who = g.view.spender.name ?? shortAddress(g.view.spender.address);
       if (s.kind === "erc20") {
-        steps.push({ title: `Stop ${who} from spending your ${g.view.asset.symbol}`, request: mk(s.token, encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [getAddress(s.spender), 0n] })) });
+        steps.push({ ...titled(msg("bg.req.stopSpending", { spender: who, symbol: g.view.asset.symbol })), request: mk(s.token, encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [getAddress(s.spender), 0n] })) });
       } else if (s.kind === "nft-all") {
-        steps.push({ title: `Stop ${who} from moving your ${g.view.asset.symbol} NFTs`, request: mk(s.collection, encodeFunctionData({ abi: NFT_ABI, functionName: "setApprovalForAll", args: [getAddress(s.operator), false] })) });
+        steps.push({ ...titled(msg("bg.req.stopMovingNfts", { spender: who, collection: g.view.asset.symbol })), request: mk(s.collection, encodeFunctionData({ abi: NFT_ABI, functionName: "setApprovalForAll", args: [getAddress(s.operator), false] })) });
       } else if (s.kind === "permit2") {
         permit2.push({ token: getAddress(s.token), spender: getAddress(s.spender) });
       }

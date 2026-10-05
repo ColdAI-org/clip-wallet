@@ -11,6 +11,8 @@
     "build:firefox": "wxt build -b firefox --mv3",
     "build:fixtures": "CLIP_MOCKS=1 wxt build",
     "zip": "wxt zip",
+    "package": "node scripts/package.mjs",
+    "store:shots": "CLIP_MOCKS=1 wxt build && STORE_SHOTS=1 playwright test e2e/store.spec.ts",
     "typecheck": "wxt prepare && tsc -p . --noEmit",
     "test": "vitest run",
     "e2e": "wxt build && CLIP_MOCKS=1 wxt build && playwright test"
@@ -39,6 +41,7 @@
     "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/kit-modules": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/plugins": "workspace:*",
     "@clip-wallet/route": "workspace:*",
@@ -50,6 +53,7 @@
     "buffer": "^6.0.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "viem": "^2.57.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

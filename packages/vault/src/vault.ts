@@ -53,6 +53,7 @@ import { passkeyBackup, passkeyWrapKey, type PasskeyPrf } from "./passkey.js";
 import { entropyToPhrase, newPhrase, phraseToEntropy, phraseToSeed, type PhraseLength } from "./phrase.js";
 import { signBip32Ed25519, signEcdsa, signEd25519, signSchnorr, signSr25519, signStark } from "./sign.js";
 import { systemClock, type Clock, type VaultStorage } from "./storage.js";
+import { PairingKeys, TRANSFER_INFO, openTransfer, sealTransfer, syncKeyHandle, type PairingKeyHandle, type SyncKeyHandle } from "./link.js";
 
 export interface ClipVaultOptions {
   storage: VaultStorage;
@@ -172,6 +173,8 @@ export class ClipVault implements Vault {
   private entropy: Uint8Array | null = null;
   private lastActivity = 0;
   private timer: unknown = undefined;
+  /** Clip Link: ephemeral X25519 keys for pairings in progress (link.ts). Usable while locked or empty. */
+  private readonly pairings: PairingKeys;
 
   constructor(opts: ClipVaultOptions) {
     this.storage = opts.storage;
@@ -191,6 +194,7 @@ export class ClipVault implements Vault {
     this.storageKey = opts.storageKey ?? "clip-wallet/vault/v1";
     this.minPasswordLength = opts.minPasswordLength ?? 8;
     this.approvals = new ApprovalRegistry(() => this.clock.now());
+    this.pairings = new PairingKeys(() => this.clock.now());
   }
 
   /* ------------------------------------------------------------ lifecycle */
@@ -233,6 +237,7 @@ export class ClipVault implements Vault {
   /** Removes the vault from storage. The app must confirm with the user first. */
   async reset(): Promise<void> {
     this.lockSync();
+    this.pairings.clear();
     await this.storage.remove(this.storageKey);
   }
 
@@ -386,6 +391,66 @@ export class ClipVault implements Vault {
     }
   }
 
+  /* ------------------------------------------------------------ Clip Link (settings sync, pairing, moving a wallet) */
+
+  /**
+   * Settings-sync keys derived from the seed (label "clip/sync/v1", see link.ts): the Ed25519 public key, the
+   * XChaCha20 data key and the record-id key. The Ed25519 secret stays here; `sign` only signs sync requests and
+   * needs the wallet unlocked at call time. Never exposes the seed.
+   */
+  async syncKeys(): Promise<SyncKeyHandle> {
+    const seed = this.requireSeed();
+    this.touch();
+    return syncKeyHandle(seed, () => this.requireSeed());
+  }
+
+  /** A fresh ephemeral X25519 key for one pairing (QR or one-time code). Works locked or empty (a new device). */
+  pairingKey(): PairingKeyHandle {
+    return this.pairings.create();
+  }
+
+  /**
+   * Moving this wallet to another device: re-checks the password, then encrypts the BIP-39 entropy under a key
+   * derived from this pairing's X25519 secret and transcript (link.ts). Call only after both people confirmed the
+   * matching code. The phrase never leaves the vault in the clear.
+   */
+  async exportToDevice(password: string, pairingId: string, peerPublicKey: Uint8Array, transcriptHash: Uint8Array): Promise<SealedBox> {
+    const rec = await this.requireRecord();
+    const vek = await this.unwrapWithPassword(rec, password);
+    let entropy: Uint8Array | undefined;
+    let k: Uint8Array | undefined;
+    try {
+      entropy = this.openBlob(rec, vek);
+      k = this.pairings.derive(pairingId, peerPublicKey, transcriptHash, TRANSFER_INFO);
+      return sealTransfer(k, entropy);
+    } catch (e) {
+      if (e instanceof Error && "userMessage" in e) throw e;
+      throw VaultErrors.transferFailed(e);
+    } finally {
+      wipe(vek, entropy, k);
+    }
+  }
+
+  /** The receiving side of exportToDevice: opens the box with this pairing's key and imports it into an EMPTY vault. */
+  async importFromDevice(pairingId: string, peerPublicKey: Uint8Array, transcriptHash: Uint8Array, box: SealedBox, password: string): Promise<void> {
+    if (await this.load()) throw VaultErrors.exists();
+    this.assertPassword(password);
+    let entropy: Uint8Array | undefined;
+    let k: Uint8Array | undefined;
+    let phrase: string;
+    try {
+      k = this.pairings.derive(pairingId, peerPublicKey, transcriptHash, TRANSFER_INFO);
+      entropy = openTransfer(k, box);
+      phrase = entropyToPhrase(entropy);
+    } catch (e) {
+      throw VaultErrors.transferFailed(e);
+    } finally {
+      wipe(entropy, k);
+    }
+    this.pairings.drop(pairingId);
+    await this.initialise(phrase, password);
+  }
+
   /* ------------------------------------------------------------ approvals + signing */
 
   /**
@@ -402,7 +467,10 @@ export class ClipVault implements Vault {
     this.approvals.revoke(approvalId);
   }
 
-  async sign(payload: SignablePayload): Promise<Signature> {
+  async sign(input: SignablePayload): Promise<Signature> {
+    // Read the caller's object exactly once (audit 2026-10, VAULT-01): what is hashed for the approval check
+    // must be what gets signed, even if `input` uses getters or its buffers change while sign() awaits.
+    const payload = snapshotPayload(input);
     const src = this.requireKeys();
     const { family, index } = parseAccountId(payload.accountId);
     if (!FAMILY_SCHEMES[family].includes(payload.scheme)) throw VaultErrors.schemeMismatch();
@@ -789,7 +857,28 @@ export class ClipVault implements Vault {
 
 function cleanLabel(label: string): string {
   if (typeof label !== "string") throw new TypeError("label must be a string");
-  return label.normalize("NFC").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, MAX_LABEL);
+  // Audit VAULT-04: format characters too (U+202E, zero-width), so a label can't impersonate another account's.
+  return label.normalize("NFC").replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, "").trim().slice(0, MAX_LABEL);
+}
+
+/** A private copy of everything sign() uses from a payload; each field is read once. */
+function snapshotPayload(input: SignablePayload): SignablePayload {
+  if (!input || typeof input !== "object") throw VaultErrors.badPayload("no payload");
+  const { accountId, scheme, bytes, options, derivationSubPath, approvalId } = input;
+  if (typeof accountId !== "string" || typeof scheme !== "string" || typeof approvalId !== "string")
+    throw VaultErrors.badPayload("malformed payload");
+  if (!(bytes instanceof Uint8Array)) throw VaultErrors.badPayload("empty bytes");
+  if (derivationSubPath !== undefined && typeof derivationSubPath !== "string") throw VaultErrors.badPayload("malformed sub-path");
+  const tweak = options?.taprootTweak;
+  if (tweak !== undefined && !(tweak instanceof Uint8Array)) throw VaultErrors.badPayload("malformed taproot tweak");
+  return {
+    accountId,
+    scheme,
+    bytes: bytes.slice(),
+    approvalId,
+    ...(tweak !== undefined ? { options: { taprootTweak: tweak.slice() } } : {}),
+    ...(derivationSubPath !== undefined ? { derivationSubPath } : {}),
+  };
 }
 
 export function parseAccountId(id: string): { family: Family; index: number } {

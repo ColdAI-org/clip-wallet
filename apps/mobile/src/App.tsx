@@ -27,11 +27,13 @@ import { ConnectHardware, HardwareSettings, HardwareStep } from "./screens/Hardw
 import { Contacts } from "./screens/Contacts";
 import { ContactEdit } from "./screens/ContactEdit";
 import { Notifications } from "./screens/Notifications";
+import { DataUse } from "./screens/DataUse";
 import { useNotificationBridge } from "./ui/notifications";
 import { Cleanup, Permissions, Protection, SecurityHome } from "./screens/Security";
 import { PluginSettings } from "./screens/Plugins";
 import { PluginSandboxes } from "./plugins/PluginSandboxes";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
+import { LinkPair, LinkedDevices } from "./screens/LinkedDevices";
 import { APP } from "./env";
 
 function Routes(props: { route: Route }) {
@@ -99,6 +101,12 @@ function Routes(props: { route: Route }) {
       return <Protection />;
     case "plugins":
       return <PluginSettings />;
+    case "data-use":
+      return <DataUse />;
+    case "linked-devices":
+      return <LinkedDevices />;
+    case "link-pair":
+      return <LinkPair key={r.id ?? r.uri ?? ""} uri={r.uri} id={r.id} />;
   }
 }
 
@@ -122,7 +130,7 @@ function ApprovalSheet() {
     showApproval(next?.id ?? null);
   };
   return (
-    <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done)}>
+    <Modal visible={!!approvalId && !!view && state?.status === "unlocked"} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => view && void client.reject(view.id).then(done, () => showApproval(null))}>
       {view && <ApprovalScreen key={view.id} approval={view} onDone={done} />}
       {view?.hardware && <HardwareStep approvalId={view.id} title={view.decoded?.title ?? view.dapp.name} state={view.hardware} />}
     </Modal>
@@ -130,13 +138,29 @@ function ApprovalSheet() {
 }
 
 function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
-  const { state, refresh, route, navigate, client, theme } = useWallet();
+  const { state, refresh, route, navigate, client, theme, wallet } = useWallet();
+  // "Continue" on a handoff opens the page in the in-app browser.
+  useEffect(() => wallet.events.on((e) => e.type === "open-url" && navigate({ name: "browser", url: e.url })), [wallet]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A pairing code opened as a link pairs right away (it still needs the matching code on both screens).
+  useEffect(() => {
+    if (!props.pendingLink || props.pendingLink.kind !== "link") return;
+    const uri = props.pendingLink.uri;
+    props.clearLink();
+    navigate({ name: "link-pair", uri });
+  }, [props.pendingLink]); // eslint-disable-line react-hooks/exhaustive-deps
   useNotificationBridge(!!state && state.status !== "empty");
   useEffect(() => {
     if (state?.status !== "unlocked" || !props.pendingLink) return;
     const l = props.pendingLink;
     props.clearLink();
-    if (l.kind === "browse") navigate({ name: "browser", url: l.url });
+    if (l.kind === "link") return;
+    if (l.kind === "browse" && l.handoff) {
+      // From a device with this wallet: offer "Continue" (restores the connection) in Linked devices.
+      void wallet.link.handoffOpen({ link: l.handoff }).then(
+        () => navigate({ name: "linked-devices" }),
+        () => navigate({ name: "browser", url: l.url }),
+      );
+    } else if (l.kind === "browse") navigate({ name: "browser", url: l.url });
     else if (l.kind === "trade") navigate({ name: "trade-open", link: l.link });
     else void client.pairWalletConnect(l.uri).catch(() => navigate({ name: "settings" }));
   }, [state?.status, props.pendingLink]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -151,7 +175,10 @@ function Shell(props: { pendingLink: DeepLink; clearLink: () => void }) {
   return (
     <>
       <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
-      {state.status === "empty" ? (
+      {state.status === "empty" && (route.name === "link-pair" || route.name === "scan") ? (
+        // Copying a wallet from another device runs while this phone is still empty.
+        <Routes route={route} />
+      ) : state.status === "empty" ? (
         <Onboarding onFinished={() => (navigate({ name: "home" }), void refresh())} />
       ) : state.status === "locked" ? (
         <Unlock onUnlocked={() => void refresh()} />

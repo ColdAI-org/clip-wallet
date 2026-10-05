@@ -9,7 +9,7 @@ import Svg, { Rect } from "react-native-svg";
 import QRCode from "qrcode";
 import * as Clipboard from "expo-clipboard";
 import type { Warning } from "@clip-wallet/core";
-import { hueFor } from "@clip-wallet/ui";
+import { hueFor, useBgText } from "@clip-wallet/ui";
 import { TABS, useWallet, type Route } from "./context";
 import { IconAlert, IconBack, IconCheck, IconChevron, IconClock, IconCompass, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
 import { useMobileT, type MobileMessageId } from "../i18n";
@@ -75,7 +75,7 @@ export function LinkButton(props: { children: string; onPress: () => void; testI
   const { theme } = useWallet();
   return (
     <Pressable onPress={props.onPress} accessibilityRole="button" testID={props.testID} hitSlop={8}>
-      <Text style={{ color: theme.c.accent, fontSize: 14, fontWeight: "600" }}>{props.children}</Text>
+      <Text style={{ color: theme.c.accentInk, fontSize: 14, fontWeight: "600" }}>{props.children}</Text>
     </Pressable>
   );
 }
@@ -138,7 +138,7 @@ export function TabBar() {
       {TABS.map((name) => {
         const { label, Icon } = TAB_META[name];
         const active = route.name === name;
-        const color = active ? theme.c.accent : theme.c.text3;
+        const color = active ? theme.c.accentInk : theme.c.text3;
         return (
           <Pressable key={name} testID={`tab-${name}`} accessibilityRole="tab" accessibilityState={{ selected: active }} onPress={() => navigate({ name } as Route)} style={{ flex: 1, alignItems: "center", gap: 2, paddingVertical: 4 }}>
             <Icon color={color} size={22} />
@@ -170,7 +170,7 @@ export function Row(props: { label: ReactNode; value: ReactNode; hint?: ReactNod
 export function Chip(props: { children: ReactNode; tone?: "neutral" | "accent" | "muted"; testID?: string }) {
   const { theme } = useWallet();
   const bg = props.tone === "accent" ? theme.c.accentSoft : theme.c.surface2;
-  const fg = props.tone === "accent" ? theme.c.accent : theme.c.text2;
+  const fg = props.tone === "accent" ? theme.c.accentInk : theme.c.text2;
   return (
     <View testID={props.testID} style={{ backgroundColor: bg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start" }}>
       <Text style={{ color: fg, fontSize: 12, fontWeight: "500" }}>{props.children}</Text>
@@ -236,15 +236,19 @@ export function Notice(props: { level: Warning["level"]; children: ReactNode; te
 }
 
 export function Warnings(props: { warnings: Warning[] }) {
+  const bg = useBgText();
   if (!props.warnings.length) return null;
   const sorted = [...props.warnings].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
   return (
     <View style={{ gap: 8 }}>
-      {sorted.map((w) => (
-        <Notice key={w.code + w.message} level={w.level} testID={`warning-${w.code}`}>
-          {w.message}
-        </Notice>
-      ))}
+      {sorted.map((w) => {
+        const { text, detail } = bg.warning(w);
+        return (
+          <Notice key={w.code + w.message} level={w.level} testID={`warning-${w.code}`}>
+            {detail ? `${text}\n${detail}` : text}
+          </Notice>
+        );
+      })}
     </View>
   );
 }

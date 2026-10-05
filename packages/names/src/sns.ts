@@ -18,8 +18,12 @@ const BASE58_32 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 /** Labels: lower-case letters, digits, '-', '_' and non-ASCII (SNS allows emoji), up to 63 chars. Subdomains allowed. */
 const SNS_NAME = /^([a-z0-9_\-\u0080-￿]{1,63}\.){1,2}sol$/u;
 
+/** Invisible / direction-changing characters can make one name look like another (audit NAME-01). */
+const INVISIBLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\u115F\u1160\u3164\uFFA0]/u;
+
 export function isSnsName(name: string): boolean {
-  return SNS_NAME.test(name.trim().toLowerCase());
+  const n = name.trim().toLowerCase();
+  return SNS_NAME.test(n) && !INVISIBLE.test(n);
 }
 
 export class SnsBackend implements Backend {

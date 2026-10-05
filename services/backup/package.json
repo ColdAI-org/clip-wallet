@@ -10,7 +10,8 @@
     "dev": "wrangler dev --local"
   },
   "dependencies": {
-    "@clip-wallet/backup-client": "workspace:*"
+    "@clip-wallet/backup-client": "workspace:*",
+    "@clip-wallet/link": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.22.0",

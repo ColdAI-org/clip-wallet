@@ -10,7 +10,7 @@ import {
   setTransactionMessageFeePayer,
   setTransactionMessageLifetimeUsingBlockhash,
 } from "@solana/kit";
-import { decodeFunctionData, encodeFunctionResult, erc20Abi, parseAbi } from "viem";
+import { decodeFunctionData, encodeFunctionData, encodeFunctionResult, erc20Abi, parseAbi } from "viem";
 import { describe, expect, it } from "vitest";
 import { JUPITER_V6_PROGRAM, TOKEN_PROGRAM } from "../src/solana-verify.js";
 import { refineDecoded } from "../src/steps.js";
@@ -97,11 +97,23 @@ describe("Jupiter (Swap API V2 /order + /execute)", () => {
     expect((exec.init!.headers as Record<string, string>)["x-api-key"]).toBe("portal-key");
   });
 
+  it("audit FEAT-01: refuses an order for other tokens or another amount than asked", async () => {
+    const j = new JupiterSwap();
+    const tx = txCalling([JUPITER_V6_PROGRAM]);
+    const ask = { sell: sol(SOL_MAIN.id), buy: usdcSol(SOL_MAIN.id), amount: "1000000000", slippageBps: 50 };
+    const quote = (over: Record<string, unknown>) => j.quote(ask, ctx(mockFetch([[/order/, { ...ORDER(tx), ...over }]]).fetch));
+    await expect(quote({ outputMint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" })).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(quote({ inAmount: "5000000000" })).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(quote({ otherAmountThreshold: "999999999999" })).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(quote({})).resolves.toMatchObject({ sellAmount: "1000000000" });
+  });
+
   it("a transaction chains-solana can't read stays blind (no wallet-side override)", async () => {
     const tx = txCalling([JUPITER_V6_PROGRAM, "Stake11111111111111111111111111111111111111"]);
     const { fetch } = mockFetch([[/order/, ORDER(tx)]]);
     const j = new JupiterSwap();
-    const [step] = await j.build(await j.quote({ sell: sol(SOL_MAIN.id), buy: usdcSol(SOL_MAIN.id), amount: "1", slippageBps: 50 }, ctx(fetch)), ctx(fetch));
+    // The order's inAmount (1 SOL) is what is asked for: Jupiter quotes are checked against the request (audit FEAT-01).
+    const [step] = await j.build(await j.quote({ sell: sol(SOL_MAIN.id), buy: usdcSol(SOL_MAIN.id), amount: "1000000000", slippageBps: 50 }, ctx(fetch)), ctx(fetch));
     const blind = { requestId: "", title: "Unreadable request", lines: [], balanceChanges: [], simulated: true, blind: true, warnings: [], networkId: SOL_MAIN.id };
     expect(refineDecoded(step!.request as never, blind).blind).toBe(true);
   });
@@ -206,6 +218,14 @@ describe("SaucerSwap V2 (quote via mirror contracts/call, swap via ContractExecu
 
 /* ------------------------------------------------------------------ 0x */
 
+/** A well-formed AllowanceHolder.exec(settler, USDC, 100 USDC, settler, actions) (audit FEAT-01 checks it). */
+const SETTLER = "0x0000000000000000000000000000000000005e77";
+const execData = (token: string, amount: bigint, operator = SETTLER, target = SETTLER) =>
+  encodeFunctionData({
+    abi: parseAbi(["function exec(address operator, address token, uint256 amount, address target, bytes data) payable returns (bytes)"]),
+    args: [operator as `0x${string}`, token as `0x${string}`, amount, target as `0x${string}`, "0x1fff991f"],
+  });
+
 const ZX = (over: Record<string, unknown> = {}) => ({
   liquidityAvailable: true,
   buyAmount: "25000000000000000",
@@ -213,7 +233,7 @@ const ZX = (over: Record<string, unknown> = {}) => ({
   sellAmount: "100000000",
   issues: { allowance: { actual: "0", spender: ALLOWANCE_HOLDER_CANCUN }, balance: null },
   route: { fills: [{ source: "Uniswap_V3", proportionBps: "10000" }] },
-  transaction: { to: ALLOWANCE_HOLDER_CANCUN, data: "0x2213bc0b00", value: "0", gas: "210000", gasPrice: "1" },
+  transaction: { to: ALLOWANCE_HOLDER_CANCUN, data: execData(usdcEvm(BASE_MAINNET).address!, 100_000_000n), value: "0", gas: "210000", gasPrice: "1" },
   ...over,
 });
 
@@ -248,6 +268,19 @@ describe("0x Swap API v2 (AllowanceHolder)", () => {
     expect(steps[1]!.verify!(swap as never)).toBe(true);
   });
 
+  it("audit FEAT-01: refuses a quote whose transaction doesn't match the request", async () => {
+    const z = new ZeroExSwap({ apiKey: "k" });
+    const ask = { sell: usdcEvm(BASE_MAINNET), buy: ethOn(BASE_MAINNET), amount: "100000000", slippageBps: 50 };
+    const bad = async (over: Record<string, unknown>) => z.quote(ask, ctx(mockFetch([[/quote/, ZX(over)]]).fetch));
+    const tx = (data: string, value = "0") => ({ transaction: { to: ALLOWANCE_HOLDER_CANCUN, data, value } });
+    await expect(bad({ sellAmount: "999999999" })).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(bad(tx(execData(usdcEvm(BASE_MAINNET).address!, 100_000_000n), "1"))).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(bad(tx(execData(usdcEvm(BASE_MAINNET).address!, 10n ** 30n)))).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(bad(tx(execData("0x000000000000000000000000000000000000beef", 100_000_000n)))).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(bad(tx(execData(usdcEvm(BASE_MAINNET).address!, 100_000_000n, SETTLER, "0x000000000000000000000000000000000000dEaD")))).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+    await expect(bad(tx("0xdeadbeef"))).rejects.toMatchObject({ code: "swap/quote-mismatch" });
+  });
+
   it("refuses a quote that sends the swap or the permission anywhere but AllowanceHolder", async () => {
     const evil = "0x000000000000000000000000000000000000dEaD";
     const a = mockFetch([[/quote/, ZX({ transaction: { to: evil, data: "0x", value: "0" } })]]);
@@ -279,7 +312,9 @@ describe("SwapService", () => {
     expect(v.warnings.map((w) => w.level)).toEqual(["danger", "caution"]);
     expect(v.warnings[0]!.message).toBe("You'd get about 80% less value than you put in.");
     const queued = await svc.execute(v.id);
-    expect(queued).toEqual({ approvalId: "approval-1", steps: ["Add SAUCE to your account", "Swap 1 HBAR for ~5 SAUCE"] });
+    expect(queued).toMatchObject({ approvalId: "approval-1", steps: ["Add SAUCE to your account", "Swap 1 HBAR for ~5 SAUCE"] });
+    expect(queued.stepMsgs?.map((m) => m?.id)).toEqual(["bg.req.addToYourAccount", "bg.req.swap"]);
+    expect(queued.stepMsgs?.[1]?.values).toEqual({ pay: "1 HBAR", get: "~5 SAUCE" });
     // The swap is queued only after the association went through.
     expect(host.enqueued).toHaveLength(1);
     host.enqueued[0]!.resolve({ transactionId: "0.0.1001@1.1" });
@@ -289,6 +324,8 @@ describe("SwapService", () => {
     // Refine leads with the plain title on a readable decode.
     const d = refineDecoded(host.enqueued[1]!.request, { requestId: "", title: "Swap", lines: [{ label: "Contract", value: "0.0.1414040" }], balanceChanges: [], simulated: false, blind: false, warnings: [], networkId: "" });
     expect(d.title).toBe("Swap 1 HBAR for ~5 SAUCE");
+    // Audit FEAT-02: what the chain module read stays on screen next to the provider-derived title.
+    expect(d.lines).toContainEqual({ label: "What the transaction does", value: "Swap" });
     await expect(svc.execute(v.id)).rejects.toMatchObject({ code: "swap/quote-expired" });
   });
 

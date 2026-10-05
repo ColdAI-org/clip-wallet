@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
-import { encodeFunctionData, erc20Abi, getAddress, isAddressEqual, toHex } from "viem";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { decodeFunctionData, encodeFunctionData, erc20Abi, getAddress, isAddressEqual, parseAbi, toHex } from "viem";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { formatUnits, randomId } from "../util.js";
@@ -37,6 +37,33 @@ export const ZEROX_CHAINS: Record<number, string> = {
   59144: ALLOWANCE_HOLDER_CANCUN,
   534352: ALLOWANCE_HOLDER_CANCUN,
 };
+
+/** AllowanceHolder's entry point (0x-settler src/allowanceholder/IAllowanceHolder.sol). */
+const ALLOWANCE_HOLDER_ABI = parseAbi(["function exec(address operator, address token, uint256 amount, address target, bytes data) payable returns (bytes)"]);
+
+/**
+ * Audit FEAT-01: what the API returns is checked against what the user asked for before it becomes a request: the
+ * amount, the value sent, and the AllowanceHolder call's token and amount (the allowance it may pull). The
+ * recipient and minimum output live inside the Settler actions and are left to the EVM module's simulation.
+ */
+function checkTransaction(q: ZeroExQuote, req: SwapQuoteRequest): void {
+  const stop = (why: string) => {
+    throw new ClipError("This swap quote doesn't match what you asked for, so Clip Wallet stopped it.", "swap/quote-mismatch", why);
+  };
+  const tx = q.transaction!;
+  if (q.sellAmount !== undefined && q.sellAmount !== req.amount) stop("sellAmount");
+  const value = BigInt(tx.value || "0");
+  if (req.sell.address ? value !== 0n : value !== BigInt(req.amount)) stop("value");
+  let call;
+  try {
+    call = decodeFunctionData({ abi: ALLOWANCE_HOLDER_ABI, data: tx.data as `0x${string}` });
+  } catch {
+    return stop("calldata");
+  }
+  const [operator, token, amount, target] = call.args;
+  if (!isAddressEqual(operator, target)) stop("operator");
+  if (req.sell.address && (!isAddressEqual(token, getAddress(req.sell.address)) || amount !== BigInt(req.amount))) stop("token/amount");
+}
 
 interface ZeroExQuote {
   liquidityAvailable: boolean;
@@ -80,7 +107,7 @@ export class ZeroExSwap implements SwapProvider {
     if (!q.liquidityAvailable || !q.buyAmount || !q.transaction) {
       throw new ClipError("There's no way to swap these two right now. Try a smaller amount or another token.", "swap/no-route");
     }
-    if (q.issues?.balance) throw new ClipError(`You don't have enough ${req.sell.symbol} for this swap.`, "swap/insufficient");
+    if (q.issues?.balance) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: req.sell.symbol }), "swap/insufficient");
     const holder = ZEROX_CHAINS[chainId]!;
     // Safety: the swap must go to 0x's AllowanceHolder, and any permission must be for it.
     if (!isAddressEqual(getAddress(q.transaction.to), getAddress(holder))) {
@@ -108,6 +135,7 @@ export class ZeroExSwap implements SwapProvider {
       }
       if (BigInt(allowance.actual) < BigInt(quote.sellAmount)) quote.approval = { spender: holder, spenderName: "0x", amount: quote.sellAmount };
     }
+    checkTransaction(q, req);
     return quote;
   }
 
@@ -128,7 +156,7 @@ export class ZeroExSwap implements SwapProvider {
     if (quote.approval && quote.sell.address) {
       const data = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [getAddress(quote.approval.spender), BigInt(quote.approval.amount)] });
       steps.push({
-        title: `Allow 0x to use exactly ${formatUnits(quote.approval.amount, quote.sell.decimals)} ${quote.sell.symbol}`,
+        ...titled(msg("bg.req.allowUseExactly", { spender: "0x", amount: `${formatUnits(quote.approval.amount, quote.sell.decimals)} ${quote.sell.symbol}` })),
         lines: [{ label: "Limit", value: "Only this amount, for this swap" }],
         request: mk({ from, to: getAddress(quote.sell.address), value: "0x0", data }),
       });
@@ -136,7 +164,7 @@ export class ZeroExSwap implements SwapProvider {
     const swap: Record<string, string> = { from, to: getAddress(tx.to), data: tx.data, value: toHex(BigInt(tx.value || "0")) };
     if (tx.gas) swap.gas = toHex(BigInt(tx.gas));
     steps.push({
-      title: `Swap ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+      ...titled(msg("bg.req.swap", { pay: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
       lines: [{ label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}` }],
       request: mk(swap),
       verify: (r) => {

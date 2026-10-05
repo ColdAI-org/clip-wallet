@@ -20,6 +20,11 @@ import {
   type SignablePayload,
   type TokenBalance,
   type Warning,
+  isWalletOrigin,
+  labelled,
+  msg,
+  titled,
+  warning,
 } from "@clip-wallet/core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
@@ -197,6 +202,35 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     return { inscribed: signing.filter((_, i) => res[i] !== "clean").map((x) => x.index), unchecked: false };
   }
 
+  /**
+   * Audit BTC-01: a segwit v0 signature commits only to the amount of the coin it signs, so a PSBT that understates
+   * our coins' amounts (witnessUtxo, with no full previous transaction) can hide a huge fee, the known two-signature
+   * fee attack. Check the amounts of our coins against the network before showing the fee.
+   */
+  /** PSBTs this module built from the network's own coin list (buildTransfer uses "clip-wallet://send"). */
+  const builtHere = (req: DappRequest) => isWalletOrigin(req.origin) || req.origin.startsWith("clip-wallet://");
+
+  async function checkWitnessAmounts(ctx: ChainContext, tx: Transaction, a: PsbtAnalysis, warnings?: DecodedRequest["warnings"]): Promise<void> {
+    const need = a.inputs.filter((x) => x.sign && x.kind === "wpkh" && !tx.getInput(x.index).nonWitnessUtxo && x.amount !== undefined && x.script);
+    let unchecked = false;
+    for (const x of need) {
+      let prev: { vout?: { scriptpubkey?: string; value?: number }[] };
+      try {
+        prev = await esploraJson(ctx.network, ctx.fetch, `/tx/${x.txid}`);
+      } catch {
+        unchecked = true;
+        continue;
+      }
+      const o = prev.vout?.[x.vout];
+      if (!o || o.value === undefined || BigInt(o.value) !== x.amount || o.scriptpubkey?.toLowerCase() !== hex.encode(x.script!)) {
+        throw new ClipError("The app described one of your coins wrongly (its amount doesn't match the network), so we stopped it.", "bad-input-amount", x.index);
+      }
+    }
+    if (unchecked) {
+      warnings?.push({ level: "caution", code: "simulation-failed", message: "We couldn't check the amounts of your coins with the network, so the fee shown may be wrong." });
+    }
+  }
+
   function messageKind(op: Extract<BtcOp, { kind: "message" }>, ctx: ChainContext): { kind: "wpkh" | "tr"; address: string } {
     const own = ownScripts(ctx.account);
     const w = segwitAddress(own.pubkey, ctx.network);
@@ -225,9 +259,9 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       }
       const signIn = text ? /^(\S+) wants you to sign in with your Bitcoin account/.exec(text) : null;
       if (signIn) {
-        d.title = `Sign in to ${signIn[1]}`;
-        if (signIn[1] !== host) d.warnings.push({ level: "danger", code: "domain-mismatch", message: `This sign-in is for ${signIn[1]}, but the request came from ${host}.` });
-      } else d.title = `Sign a message for ${host}`;
+        Object.assign(d, titled(msg("bg.req.signIn", { domain: signIn[1]! })));
+        if (signIn[1] !== host) d.warnings.push(warning("danger", "domain-mismatch", msg("bg.warn.signInFrom", { domain: signIn[1]!, host })));
+      } else Object.assign(d, titled(msg("bg.req.signMessage", { host })));
       d.lines.push({ label: "Message", value: text ?? hex.encode(op.message) }, { label: "Address", value: address }, { label: "Requested by", value: host });
       if (!text) d.warnings.push({ level: "caution", code: "blind-signing", message: "This message isn't readable text. It can't move coins by itself, but only sign it if you trust the site." });
       return d;
@@ -239,23 +273,25 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     const allOurs = a.inputs.every((x) => x.kind !== null);
     const sentOut = external.reduce((s, o) => s + o.amount, 0n);
 
-    if (allOurs && external.length === 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${shortBtcAddress(external[0]!.address ?? "an address")}`;
-    else if (allOurs && external.length > 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${external.length} addresses`;
-    else if (allOurs) d.title = "Move your BTC between your own addresses";
-    else if (a.net < 0n) d.title = `Pay ${formatBtc(-a.net)} BTC in a transaction from ${host}`;
-    else if (a.net > 0n) d.title = `Receive ${formatBtc(a.net)} BTC in a transaction from ${host}`;
-    else d.title = `Sign a Bitcoin transaction for ${host}`;
+    const btc = (v: bigint) => `${formatBtc(v)} BTC`;
+    if (allOurs && external.length === 1 && external[0]!.address) Object.assign(d, titled(msg("bg.req.sendTo", { amount: btc(sentOut), to: shortBtcAddress(external[0]!.address) })));
+    else if (allOurs && external.length === 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${shortBtcAddress(external[0]!.address ?? "an address")}`;
+    else if (allOurs && external.length > 1) Object.assign(d, titled(msg("bg.req.sendToMany", { amount: btc(sentOut), count: external.length })));
+    else if (allOurs) Object.assign(d, titled(msg("bg.req.moveBetweenOwn", { symbol: "BTC" })));
+    else if (a.net < 0n) Object.assign(d, titled(msg("bg.req.payInTxFrom", { amount: btc(-a.net), host })));
+    else if (a.net > 0n) Object.assign(d, titled(msg("bg.req.receiveInTxFrom", { amount: btc(a.net), host })));
+    else Object.assign(d, titled(msg("bg.req.signChainTxFor", { chain: "Bitcoin", host })));
 
     let n = 0;
     for (const x of a.inputs) {
       n++;
       const amt = x.amount !== undefined ? `${formatBtc(x.amount)} BTC` : "amount unknown";
-      d.lines.push({ label: x.kind ? (x.sign ? `Your coin ${n}` : `Your coin ${n} (not signed now)`) : `Other coin ${n}`, value: amt });
+      d.lines.push(labelled(msg(x.kind ? (x.sign ? "bg.bitcoin.yourCoinN" : "bg.bitcoin.yourCoinNUnsigned") : "bg.bitcoin.otherCoinN", { n }), amt));
     }
     for (const o of a.outputs) {
       if (o.opReturn) d.lines.push({ label: "Data note", value: hex.encode(o.script.slice(1, 81)) });
       else if (o.ours) d.lines.push({ label: "Change back to you", value: `${formatBtc(o.amount)} BTC` });
-      else d.lines.push({ label: `To ${o.address ?? "a custom script"}`, value: `${formatBtc(o.amount)} BTC` });
+      else d.lines.push(o.address ? labelled(msg("bg.bitcoin.toAddress", { address: o.address }), `${formatBtc(o.amount)} BTC`) : { label: "To a custom script", value: `${formatBtc(o.amount)} BTC` });
     }
     if (a.fee !== undefined) d.lines.push({ label: "Network fee", value: `${formatBtc(a.fee)} BTC (${a.feeRate} sat/vB)` });
     d.lines.push({ label: "Can be sped up later", value: a.rbf ? "Yes" : "No" });
@@ -274,6 +310,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     if (a.fee !== undefined && a.feeRate !== undefined && a.feeRate > 500) {
       d.warnings.push({ level: "danger", code: "high-fee", message: `The network fee is unusually high (${a.feeRate} sat/vB).` });
     }
+    if (op.kind === "psbt" && !builtHere(req)) await checkWitnessAmounts(ctx, tx, a, d.warnings);
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       d.warnings.push({
@@ -312,6 +349,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
 
     const tx = await resolvePsbt(req, ctx, op);
     const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined, changeOf(req.id, ctx));
+    if (op.kind === "psbt" && !builtHere(req)) await checkWitnessAmounts(ctx, tx, a);
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       throw new ClipError("This would spend a coin that holds a collectible (ordinal), so Clip Wallet won't sign it.", "inscribed-utxo", ord.inscribed);

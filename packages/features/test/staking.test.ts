@@ -215,7 +215,8 @@ describe("StakingService", () => {
     expect(overview[0]).toMatchObject({ assetKey: "sol", symbol: "SOL", wholeBalance: false });
     expect(overview[0]!.positions).toHaveLength(4);
     const q = await svc.stake({ assetKey: "sol", amount: "1.5" });
-    expect(q).toEqual({ approvalId: "approval-1", steps: ["Stake 1.5 SOL"] });
+    expect(q).toMatchObject({ approvalId: "approval-1", steps: ["Stake 1.5 SOL"] });
+    expect(q.stepMsgs).toEqual([{ id: "bg.req.stake", values: { amount: "1.5 SOL" }, fallback: "Stake 1.5 SOL" }]);
     const req = host.enqueued[0]!.request;
     const blind = { requestId: req.id, title: "Unreadable request", lines: [], balanceChanges: [], simulated: true, blind: true, warnings: [{ level: "danger" as const, code: "blind-signing" as const, message: "x" }], networkId: DEVNET.id };
     // chains-solana decodes the stake (not blind): the wallet's plain title is kept.

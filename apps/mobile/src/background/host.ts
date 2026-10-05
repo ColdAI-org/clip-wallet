@@ -44,6 +44,9 @@ import { biometricInfo, deviceKeyPrf, forgetDeviceKey, type BiometricInfo } from
 import { nativePasskeyPrf, passkeysConfigured } from "./passkey";
 import { Events } from "./events";
 import { ledgerBle, type LedgerBle } from "./ledger-ble";
+import { createMobileLink } from "./link";
+import type { LinkService } from "@clip-wallet/link";
+import type { LinkClient } from "@clip-wallet/ui";
 
 /** Vault backstop; the engine arms the user's (shorter) auto-lock. */
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
@@ -92,6 +95,9 @@ export interface MobileWallet {
   plugins: PluginsClient | null;
   /** The hidden plugin sandboxes the app root renders (PluginSandboxes); null without plugins. */
   pluginSandboxes: WebViewChannels | null;
+  /** Settings → Linked devices: this phone as the signer for a paired browser, sync, moving a wallet, handoffs. */
+  link: LinkClient;
+  linkService: LinkService;
   /** One notification check now (foreground timer; the background task calls the same). */
   pollNotifications(): Promise<unknown>;
   events: Events;
@@ -325,8 +331,19 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     await WebBrowser.openBrowserAsync(u.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET, dismissButtonStyle: "done", readerMode: false });
   };
   const features = createEngineFeaturesClient(engine, { openExternal: openSheet });
+  const link = createMobileLink({
+    kv,
+    vault,
+    engine,
+    ...(APP.config.services.linkRelayUrl ? { relayUrl: APP.config.services.linkRelayUrl } : {}),
+    ...(APP.config.services.backupUrl ? { syncUrl: APP.config.services.backupUrl } : {}),
+    onChange: () => events.emit({ type: "change" }),
+    openUrl: (url) => events.emit({ type: "open-url", url }),
+  });
 
   return {
+    link: link.client,
+    linkService: link.service,
     engine,
     client,
     features,

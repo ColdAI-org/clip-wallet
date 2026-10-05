@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, labelled, warning } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
   address,
@@ -212,8 +199,8 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
     for (const w of ds.flatMap((d) => d.warnings)) if (!warnings.some((x) => x.code === w.code && x.message === w.message)) warnings.push(w);
     return {
       d: {
-        title: `Approve ${ds.length} transactions`,
-        lines: ds.flatMap((d, i) => [{ label: `Transaction ${i + 1}`, value: d.title }, ...d.lines]),
+        ...titled(msg("bg.req.approveCount", { count: ds.length })),
+        lines: ds.flatMap((d, i) => [{ ...labelled(msg("bg.label.transactionN", { n: i + 1 }), d.title), ...(d.titleMsg ? { valueMsg: d.titleMsg } : {}) }, ...d.lines]),
         balanceChanges: [...sum.values()].filter((e) => e.delta !== 0n).map((e) => ({ asset: e.asset, delta: e.delta.toString() })),
         warnings,
         blind: ds.some((d) => d.blind),
@@ -236,7 +223,7 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
       const fee = { asset: solAsset(ctx.network.id), amount: d.fee.toString() };
       const lines = [...d.lines, { label: "Network fee", value: `${formatUnits(d.fee, 9)} SOL` }];
       if (!n.send) lines.push({ label: "Sent by", value: `${host} (it gets the signed transaction)` });
-      return { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
+      return { ...base, title: d.title, ...(d.titleMsg ? { titleMsg: d.titleMsg } : {}), lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
     }
 
     if (n.kind === "message") {
@@ -252,18 +239,14 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
         }
       }
       const warnings: Warning[] = blind ? [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }] : [];
-      return { ...base, title: `Sign a message for ${host}`, lines, balanceChanges: [], simulated: false, blind, warnings };
+      return { ...base, ...titled(msg("bg.req.signMessage", { host })), lines, balanceChanges: [], simulated: false, blind, warnings };
     }
 
     const warnings: Warning[] = [];
     const lines: { label: string; value: string }[] = [];
     for (const input of n.inputs) {
       if (input.domain !== host) {
-        warnings.push({
-          level: "danger",
-          code: "domain-mismatch",
-          message: `This sign-in is for ${input.domain}, but the request comes from ${host}. It may be a phishing site.`,
-        });
+        warnings.push(warning("danger", "domain-mismatch", msg("bg.warn.signInPhishing", { domain: input.domain, host })));
       }
       if (input.statement) lines.push({ label: "Statement", value: input.statement });
       if (input.uri) lines.push({ label: "Website", value: input.uri });
@@ -272,7 +255,7 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
     }
     return {
       ...base,
-      title: `Sign in to ${n.inputs[0]!.domain}`,
+      ...titled(msg("bg.req.signIn", { domain: n.inputs[0]!.domain })),
       lines,
       balanceChanges: [],
       simulated: false,

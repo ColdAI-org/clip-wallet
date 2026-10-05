@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, say } from "@clip-wallet/core";
 import { type ClassicAsset, MAX_PATH_LENGTH, STELLAR_HORIZON, buildPathSwap, checkPathSwap, netOf, swapAsset } from "@clip-wallet/chains-stellar";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -122,7 +122,7 @@ export class StellarPathSwap implements SwapProvider {
     // One transaction: trustline (if needed) + swap go through together or not at all. Built lazily for a fresh sequence.
     return [
       {
-        title: quote.association ? `Add ${buy} and swap ${sell} for ${buy}` : `Swap ${sell} for ${buy}`,
+        title: quote.association ? `Add ${buy} and swap ${sell} for ${buy}` : say("bg.req.swap", { pay: sell, get: buy }),
         lines,
         request: async () => (await buildPathSwap({ sell: quote.sell, buy: quote.buy, sendAmount: quote.sellAmount, destMin: quote.minBuyAmount, path }, ctx)).request,
       },

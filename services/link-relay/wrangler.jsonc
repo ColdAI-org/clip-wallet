@@ -1,0 +1,13 @@
+// services/link-relay: Clip Link's end-to-end-encrypted relay (phone ⇄ extension / desktop). No secrets.
+// Deployed (testnet builds) to https://clip-link-relay.<subdomain>.workers.dev; see docs/r1/integration/connect.md.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "clip-link-relay",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "durable_objects": { "bindings": [{ "name": "CHANNELS", "class_name": "LinkChannel" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LinkChannel"] }]
+}

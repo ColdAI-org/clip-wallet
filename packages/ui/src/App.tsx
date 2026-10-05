@@ -10,6 +10,7 @@ import { Activity } from "./screens/Activity";
 import { Send } from "./screens/Send";
 import { Receive } from "./screens/Receive";
 import { ScanWalletConnect, Settings } from "./screens/Settings";
+import { DataUse } from "./screens/DataUse";
 import { ApprovalQueue } from "./screens/Approvals";
 import { PasskeyPage } from "./screens/Passkey";
 import { RecoveryPhraseBackup } from "./screens/RecoveryPhrase";
@@ -21,6 +22,7 @@ import { FeaturesProvider, featureRoute, useFeaturesOptional, type FeaturesClien
 import { PluginSettings } from "./plugins";
 import { SocialProvider, socialRoute, useSocialOptional, type SocialClient } from "./social";
 import { SecurityProvider, securityRoute, useSecurityOptional, type SecurityClient } from "./security";
+import { LinkProvider, ReceiveWallet, linkRoute, useLinkOptional, type LinkClient } from "./link";
 
 export function parsePath(path: string): { pathname: string; query: URLSearchParams } {
   const [p, q] = path.split("?");
@@ -50,6 +52,7 @@ function Routes() {
   const social = useSocialOptional();
   const security = useSecurityOptional();
   const hardware = useHardwareOptional();
+  const link = useLinkOptional();
   const { pathname, query } = parsePath(path);
   // Once onboarding starts it stays on screen until it finishes: the vault turns "unlocked" as soon as
   // the wallet is created, but the phrase, backup check and passkey offer still follow.
@@ -63,6 +66,18 @@ function Routes() {
   if (pathname === "/restore/passkey" && (state.status === "empty" || onboarding)) {
     return (
       <PasskeyRestore
+        onDone={async () => {
+          setOnboarding(false);
+          await refresh();
+          navigate("/", { replace: true });
+        }}
+      />
+    );
+  }
+  // Copying a wallet from another device runs while this one is still empty.
+  if (link && pathname === "/link/receive" && (state.status === "empty" || onboarding)) {
+    return (
+      <ReceiveWallet
         onDone={async () => {
           setOnboarding(false);
           await refresh();
@@ -117,7 +132,9 @@ function Routes() {
     case "settings":
       if (seg[1] === "hardware" && hardware) return <HardwareSettings hardware={hardware} onAdd={() => navigate("/hardware/connect")} />;
       if (seg[1] === "plugins") return <PluginSettings />;
+      if (seg[1] === "privacy") return <DataUse />;
       if (seg[1] === "security" && security) return securityRoute(seg) ?? <Settings />;
+      if (seg[1] === "devices" && link) return linkRoute(seg) ?? <Settings />;
       return <Settings />;
     case "hardware":
       if (!hardware || seg[1] !== "connect") return <Home />;
@@ -165,6 +182,12 @@ export interface WalletAppProps {
   social?: SocialClient;
   /** Settings → Security (permissions, spam cleanup, scam protection). Without it the entry is hidden. */
   security?: SecurityClient;
+  /** Settings → Linked devices (phone / desktop signer, sync, moving a wallet). Without it the entry is hidden. */
+  link?: LinkClient;
+}
+
+function WithLink(props: { link?: LinkClient; children: ReactNode }) {
+  return props.link ? <LinkProvider client={props.link}>{props.children}</LinkProvider> : <>{props.children}</>;
 }
 
 function WithSocial(props: { social?: SocialClient; children: ReactNode }) {
@@ -193,6 +216,7 @@ export function WalletApp(props: WalletAppProps) {
           <WithHardware hardware={props.hardware}>
             <WithSocial social={props.social}>
               <WithSecurity security={props.security}>
+               <WithLink link={props.link}>
                 {props.features ? (
                   <FeaturesProvider client={props.features}>
                     <Routes />
@@ -200,6 +224,7 @@ export function WalletApp(props: WalletAppProps) {
                 ) : (
                   <Routes />
                 )}
+               </WithLink>
               </WithSecurity>
             </WithSocial>
           </WithHardware>

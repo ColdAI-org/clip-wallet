@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -42,6 +42,9 @@ import type { RecipientLog, SecurityService } from "@clip-wallet/security";
 import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
 import { SocialSignInService, type SocialSignInRequest } from "@clip-wallet/engine/social-signin";
 import { chromeOffscreen, createPlugins, type BackgroundPlugins, type OffscreenApi } from "./plugins";
+import { SettleFundingRun, claimedTitle, txHashOf } from "@clip-wallet/engine/settle-funding";
+import { formatUnits } from "@clip-wallet/route";
+import { settleFixture } from "./mocks/mock-settle";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -88,7 +91,13 @@ interface Permission {
 interface Pending {
   view: ApprovalView;
   request?: DappRequest;
+  /** Transactions: the account the request was decoded for (audit APPR-02). Approve signs with it or not at all. */
+  accountId?: string;
+  /** Transactions: an Approve is running (audit APPR-01). One approval prepares, signs and broadcasts once. */
+  busy?: boolean;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
+  /** Paying through a bonded Connector (@clip-wallet/engine/settle-funding), once Approve started it. */
+  settle?: SettleFundingRun;
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
 }
@@ -131,7 +140,8 @@ function short(a: string): string {
 
 function domainOf(origin: string): string {
   try {
-    return new URL(origin).hostname.replace(/^www\./, "");
+    const host = new URL(origin).hostname;
+    return unverifiedLabel(host) ?? host.replace(/^www\./, "");
   } catch {
     return origin;
   }
@@ -209,7 +219,7 @@ export class WalletService implements DappHost {
   }
   /** Public facts for the social host: approvals waiting now (for notifications). */
   socialApprovals(): { id: string; app: string; title: string }[] {
-    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name, ...(p.view.decoded?.titleMsg ? { titleMsg: p.view.decoded.titleMsg } : {}) }));
   }
 
   attachSecurity(s: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">, recipients?: RecipientLog) {
@@ -240,7 +250,7 @@ export class WalletService implements DappHost {
   }
   async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
     const network = this.network(request.networkId);
-    return this.module(network.family).decode(request, await this.ctx(network.id, request.origin));
+    return attachMsgs(await this.module(network.family).decode(request, await this.ctx(network.id, request.origin)));
   }
 
   /* ------------------------------------------------------------------ bus entry */
@@ -720,7 +730,8 @@ export class WalletService implements DappHost {
 
   private dappInfo(origin: string, name?: string, iconUrl?: string): DappInfo {
     const reg = this.deps.registry.lookup(origin);
-    return { name: reg.verified ? reg.name : name ?? reg.name, origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
+    // Audit DISP-01: a site's own name can't carry invisible or direction-changing characters.
+    return { name: displaySafe(reg.verified ? reg.name : name ?? reg.name).slice(0, 80), origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
   }
 
   private async enqueueTransaction(
@@ -732,7 +743,7 @@ export class WalletService implements DappHost {
     const ctx = await this.ctx(network.id, request.origin);
     let decoded: DecodedRequest;
     try {
-      decoded = await this.module(network.family).decode(request, ctx);
+      decoded = attachMsgs(await this.module(network.family).decode(request, ctx));
     } catch {
       decoded = {
         requestId: request.id,
@@ -753,6 +764,7 @@ export class WalletService implements DappHost {
         recipients: extra.recipient ? [extra.recipient] : [],
       });
     }
+    decoded = attachMsgs(decoded);
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -768,6 +780,8 @@ export class WalletService implements DappHost {
     const insights = decoded.blind ? [] : await this.plugins.insights(toInsightInput(decoded, request.origin, ctx.account.address)).catch(() => []);
     decoded = withPluginInsights(decoded, insights);
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
+    // Audit DISP-01: token names, NFT names and memos from chains can't disguise what the screen says.
+    decoded = sanitizeDecoded(decoded);
     const { balances } = await this.portfolio();
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 
@@ -791,7 +805,7 @@ export class WalletService implements DappHost {
       resolve = res;
       reject = rej;
     });
-    this.approvals.set(id, { view, request, resolve, reject });
+    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve, reject });
     // Real sends feed the look-alike check (security's RecipientLog), once they go through.
     if (extra.recipient && this.recipients) {
       const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
@@ -854,14 +868,32 @@ export class WalletService implements DappHost {
       });
       await this.kv.set(K.permissions, existing);
       this.approvals.delete(id);
-      await this.addActivity({ id, title: `Connected to ${p.view.dapp.name}`, kind: "connect", app: { name: p.view.dapp.name, origin: p.view.dapp.origin }, timestamp: Date.now(), status: "done", legs: [] });
+      await this.addActivity({ id, title: `Connected to ${p.view.dapp.name}`, titleMsg: connectedMsg(p.view.dapp.name), kind: "connect", app: { name: p.view.dapp.name, origin: p.view.dapp.origin }, timestamp: Date.now(), status: "done", legs: [] });
       p.resolve([p.connect.account]);
       this.env.broadcast();
       return;
     }
 
+    // One Approve at a time per request (audit APPR-01): a second click while the first is preparing, signing or
+    // broadcasting must not prepare and broadcast the transaction again. Checked and set before any await.
+    if (p.busy) throw this.deps.hardware.owns(p.accountId ?? "") ? inProgress() : new ClipError("This request is already being approved.", "approval/in-progress");
+    p.busy = true;
+    try {
+      await this.approveTransaction(id, p, allowBlind);
+    } finally {
+      p.busy = false;
+    }
+  }
+
+  private async approveTransaction(id: string, p: Pending, allowBlind: boolean): Promise<void> {
     const req = p.request!;
     const decoded = p.view.decoded!;
+    // Money from a bonded Connector: the first Approve pays it, a late order's Approve claims the cover.
+    if (p.view.plan?.funding && this.deps.settleFunding) {
+      const next = await (p.settle ??= await this.settleRun(p)).approve();
+      if (next === "handled") return;
+      if (next !== "sign") return this.closeSettled(id, p, next);
+    }
     if (p.view.plan?.problem) throw new ClipError(p.view.plan.problem, "approval/not-payable");
     if (decoded.blind && !((await this.prefs()).advanced && allowBlind)) {
       throw new ClipError(
@@ -872,6 +904,12 @@ export class WalletService implements DappHost {
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
     const ctx = await this.ctx(network.id, req.origin);
+    // The approval screen was built for p.accountId (audit APPR-02). If the site's account changed since (Settings →
+    // Accounts, a hardware account picked, a WalletConnect session re-pointed), don't sign with an account the user
+    // never saw in this request.
+    if (p.accountId !== undefined && ctx.account.id !== p.accountId) {
+      throw new ClipError("The account for this request changed after it arrived. Reject it and ask the app to send it again.", "approval/account-changed");
+    }
     let result: unknown;
     const hw = this.deps.hardware.owns(ctx.account.id);
     // A second Approve while the device is busy must not revoke the approval the device is signing.
@@ -890,6 +928,7 @@ export class WalletService implements DappHost {
       throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
     }
     this.approvals.delete(id);
+    p.settle?.stop();
     this.cache.clear();
     await this.addActivity(this.activityFor(p.view, result));
     p.resolve(result);
@@ -912,6 +951,75 @@ export class WalletService implements DappHost {
     }
   }
 
+  /* ------------------------------------------------------------------ settle on Hedera (@clip-wallet/engine/settle-funding) */
+
+  private async settleRun(p: Pending): Promise<SettleFundingRun> {
+    const req = p.request!;
+    const origin = req.origin;
+    const ctx = await this.ctx(req.networkId, origin);
+    return new SettleFundingRun(this.deps.settleFunding!, p.view, ctx.account.address, {
+      send: (r, approvalId) => this.sendInternal(r, approvalId, origin),
+      waitMined: (networkId, hash) => this.waitMined(networkId, hash),
+      balance: async (asset) => {
+        const c = await this.ctx(asset.networkId, origin);
+        const bals = await this.module(c.network.family).getBalances(c);
+        const addr = (asset.address ?? "").toLowerCase();
+        return bals.filter((b) => b.asset.networkId === asset.networkId && (b.asset.address ?? "").toLowerCase() === addr).reduce((t, b) => t + BigInt(b.amount), 0n);
+      },
+      replan: async () => {
+        this.cache.clear();
+        const { balances } = await this.portfolio(true);
+        return this.deps.route.plan({ request: req, decoded: p.view.decoded!, balances, networks: this.deps.networks, account: ctx.account.address });
+      },
+      changed: () => this.env.broadcast(),
+      pollMs: this.deps.mocks ? 300 : 5000,
+    });
+  }
+
+  /** A request the wallet built (Connector payment, claim): readable, signed by the vault under its own approval id. */
+  private async sendInternal(req: DappRequest, approvalId: string, origin: string): Promise<string> {
+    const network = this.network(req.networkId);
+    const mod = this.module(network.family);
+    const ctx = await this.ctx(network.id, origin);
+    if (this.deps.hardware.owns(ctx.account.id)) throw new ClipError("Paying through a Connector isn't available for hardware wallets yet.", "settle/hardware");
+    const decoded = await mod.decode(req, ctx);
+    if (decoded.blind || decoded.warnings.some((w) => w.level === "danger")) {
+      throw new ClipError("We couldn't check this payment step, so nothing was sent.", "settle/unreadable");
+    }
+    const payloads = await mod.prepare(req, ctx, approvalId);
+    this.deps.vault.registerApproval(approvalId, payloads.map((x) => hashSignablePayload(x)), APPROVAL_TTL_MS);
+    try {
+      const sigs = [];
+      for (const payload of payloads) sigs.push(await this.deps.vault.sign(payload));
+      return txHashOf(await mod.finalize(req, sigs, ctx));
+    } catch (e) {
+      this.deps.vault.revokeApproval(approvalId);
+      throw e instanceof ClipError ? e : new ClipError("That didn't go through. Nothing left your balance.", "approval/failed", e);
+    }
+  }
+
+  private async waitMined(networkId: string, hash: string): Promise<void> {
+    if (this.deps.mocks) return;
+    for (let i = 0; i < 90; i++) {
+      const r = (await this.rpc(networkId, "eth_getTransactionReceipt", [hash]).catch(() => null)) as { status?: string } | null;
+      if (r?.status === "0x1") return;
+      if (r?.status === "0x0") throw new ClipError("Your payment couldn't be sent. Nothing left your balance.", "settle/tx-failed");
+      await new Promise((res) => setTimeout(res, 2000));
+    }
+    throw new ClipError("The network is slow to confirm. Try again in a minute.", "settle/tx-slow");
+  }
+
+  private async closeSettled(id: string, p: Pending, kind: "claimed" | "dismiss"): Promise<void> {
+    this.approvals.delete(id);
+    p.settle?.stop();
+    const f = p.view.plan?.funding;
+    if (kind === "claimed" && f) {
+      await this.addActivity({ id, title: claimedTitle(f, formatUnits), kind: "receive", timestamp: Date.now(), status: "done", legs: [] });
+    }
+    p.reject(new ClipError("Your payment didn't arrive in time, so this request was cancelled.", "settle/late"));
+    this.env.broadcast();
+  }
+
   private activityFor(view: ApprovalView, result: unknown): ActivityEntry {
     const d = view.decoded!;
     const rest = d.title.replace(/^(Pay|Send) /, "");
@@ -922,9 +1030,11 @@ export class WalletService implements DappHost {
         : d.title.startsWith("Sign in to")
           ? d.title.replace(/^Sign in/, "Signed in")
           : `Approved: ${d.title}`;
+    const titleMsg = activityTitleMsg(d, view.dapp, title);
     const txHash = result && typeof result === "object" && "txHash" in result ? String((result as { txHash: unknown }).txHash) : undefined;
     const legs: ActivityLeg[] = (view.plan?.steps ?? []).map((s) => ({
       title: s.kind === "funding" ? s.title.replace(/^Move/, "Moved") : s.kind === "gas" ? s.title : title,
+      ...(s.kind === "gas" && s.titleMsg ? { titleMsg: s.titleMsg } : s.kind === "action" && titleMsg ? { titleMsg } : {}),
       networkId: view.network.id,
       status: "done",
       txHash: s.kind === "action" ? txHash : undefined,
@@ -932,6 +1042,7 @@ export class WalletService implements DappHost {
     return {
       id: view.id,
       title,
+      ...(titleMsg ? { titleMsg } : {}),
       kind: d.title.startsWith("Pay ") ? "pay" : d.title.startsWith("Send ") ? "send" : "sign",
       app: view.via === "wallet" ? undefined : { name: view.dapp.name, origin: view.dapp.origin },
       fiatValue: view.fiatValue !== undefined ? -view.fiatValue : undefined,
@@ -944,6 +1055,8 @@ export class WalletService implements DappHost {
   private async reject(id: string): Promise<void> {
     const p = this.approvals.get(id);
     if (!p) return;
+    if (p.settle?.inFlight) throw new ClipError("Your money is on its way. This stays open until it arrives or you can claim it back.", "settle/in-flight");
+    p.settle?.stop();
     this.approvals.delete(id);
     p.reject(new ClipError("You declined this request.", "user-rejected"));
     this.env.broadcast();
@@ -967,8 +1080,10 @@ export class WalletService implements DappHost {
     const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
     const hit = perms.find((p) => p.id === id);
     if (hit) {
-      await this.kv.set(K.permissions, perms.filter((p) => p.id !== id));
-      this.deps.dapps.disconnected(hit.origin);
+      // The router revokes this family (and tells the site) before the stored entry goes.
+      await this.deps.dapps.disconnected(hit.origin, hit.family);
+      const left = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
+      await this.kv.set(K.permissions, left.filter((p) => p.id !== id));
     } else {
       await this.deps.walletConnect.disconnect(id);
     }
@@ -1042,6 +1157,12 @@ export class WalletService implements DappHost {
   cancel(requestId: string) {
     for (const [id, p] of this.approvals) {
       if (id === requestId || p.request?.id === requestId) {
+        // A Connector order under way stays on screen (arrival or claim); only the app's request ends.
+        if (p.settle?.inFlight) {
+          p.settle.appGone();
+          p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
+          continue;
+        }
         this.approvals.delete(id);
         p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
         this.env.broadcast();
@@ -1076,7 +1197,10 @@ export class WalletService implements DappHost {
 
   /* ------------------------------------------------------------------ dev simulator (mock builds) */
 
-  private async simulate(kind: "pay" | "connect" | "blind" | "approval-for-all"): Promise<string> {
+  private async simulate(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late"): Promise<string> {
+    // Settle on Hedera: the same 25 USDC payment, funded by the mock Connector (delivers, or misses its deadline).
+    settleFixture.mode = kind === "settle" ? "deliver" : kind === "settle-late" ? "late" : "off";
+    if (kind === "settle" || kind === "settle-late") kind = "pay";
     const evm = await this.account("evm");
     const base = "eip155:84532";
     const merchant = "000000000000000000000000c0ffee00000000000000000000000000000000ee".slice(-40);

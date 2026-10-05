@@ -211,8 +211,8 @@ describe("dapp PSBTs (Wallet Standard / sats-connect / WalletConnect)", () => {
     const r = req("bitcoin:signTransaction", { inputs: [{ psbt, inputsToSign: [{ address: MY_WPKH_T4, signingIndexes: [1], sigHash: SigHash.SINGLE_ANYONECANPAY }] }] });
     const d = await mod.decode(r, c);
     expect(d.title).toBe("Pay 0.00031 BTC in a transaction from market.example.com");
-    expect(d.lines).toContainEqual({ label: "Other coin 1", value: "0.0001 BTC" });
-    expect(d.lines).toContainEqual({ label: "Your coin 2", value: "0.0005 BTC" });
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Other coin 1", value: "0.0001 BTC" }));
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Your coin 2", value: "0.0005 BTC" }));
     expect(d.fee).toBeUndefined(); // not all inputs are ours: we don't claim who pays
     expect(d.warnings.find((w) => w.code === "blind-signing")?.level).toBe("caution");
     const payloads = await mod.prepare(r, c, "a");
@@ -224,6 +224,21 @@ describe("dapp PSBTs (Wallet Standard / sats-connect / WalletConnect)", () => {
     const r = req("signPsbt", { psbt: marketplacePsbt(), signInputs: [{ address: MY_WPKH_T4, index: 1, sighashTypes: [SigHash.NONE] }] }, "walletconnect");
     const d = await mod.decode(r, ctx(mockFetch({})));
     expect(d.warnings.find((w) => w.code === "blind-signing")).toMatchObject({ level: "danger" });
+  });
+
+  it("audit BTC-01: a dapp PSBT that understates one of our segwit coins is refused; a correct one passes", async () => {
+    const mod = createBitcoinModule();
+    const own = ownScripts(TEST_ACCOUNT);
+    const prev = (value: number) => ({ vout: [{}, {}, {}, { scriptpubkey: hex.encode(own.wpkh), value }] });
+    const r = req("signPsbt", { psbt: marketplacePsbt(), signInputs: [{ address: MY_WPKH_T4, index: 1 }] }, "walletconnect");
+    // The PSBT claims our coin holds 50,000 sats; the network says 5,000,000 (the rest would go to fees).
+    await expect(mod.decode(r, ctx(mockFetch({ [`/tx/${"22".repeat(32)}`]: prev(5_000_000) })))).rejects.toMatchObject({ code: "bad-input-amount" });
+    await expect(mod.prepare(r, ctx(mockFetch({ [`/tx/${"22".repeat(32)}`]: prev(5_000_000) })), "a")).rejects.toMatchObject({ code: "bad-input-amount" });
+    const ok = await mod.decode(r, ctx(mockFetch({ [`/tx/${"22".repeat(32)}`]: prev(50_000) })));
+    expect(ok.warnings.map((w) => w.message).join(" ")).not.toMatch(/amounts of your coins/);
+    // Unreachable network: shown, with a caution.
+    const unchecked = await mod.decode(r, ctx(mockFetch({})));
+    expect(unchecked.warnings.map((w) => w.message).join(" ")).toMatch(/amounts of your coins/);
   });
 
   it("refuses to sign an input that isn't ours", async () => {

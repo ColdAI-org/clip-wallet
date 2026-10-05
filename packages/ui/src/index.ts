@@ -1,4 +1,5 @@
 export * from "./client";
+export { BgTextProvider, useBgText, currentBgText, type BgText } from "./i18n/bg";
 export { defaultClipConfig, defaultUiOptions, type ClipConfig, type UiOptions } from "./theme/config";
 export * from "./theme/tokens";
 export { ClipProvider, Router, useUi, useRouter, type PasskeyFactory, type Variant } from "./context";
@@ -17,6 +18,7 @@ export { Activity } from "./screens/Activity";
 export { Send } from "./screens/Send";
 export { Receive } from "./screens/Receive";
 export { Settings, ScanWalletConnect, isWalletConnectUri } from "./screens/Settings";
+export { DataUse } from "./screens/DataUse";
 export { ApprovalQueue } from "./screens/Approvals";
 export { PasskeyEnroll, PasskeyPage } from "./screens/Passkey";
 export * from "./features";
@@ -44,5 +46,7 @@ export {
 } from "./hardware";
 export type { HardwareKindView, HardwareFamilyView, PathStyleView, HardwareAccountView, KeystoneRequestView, HardwareClient, HardwareApprovalState, HardwareApprovalClient } from "./hardware/types";
 export * from "./security";
+export * from "./link";
 export { useUiT, UI_CATALOGS, PROTECTED_TERMS, type UiMessages, type UiMessageId } from "./i18n";
+export { PRIVACY_CATALOGS, PRIVACY_SECTIONS, type PrivacyMessages } from "./i18n/privacy";
 export * from "./social";

@@ -1,0 +1,124 @@
+# Every push to main and every pull request: the commands AGENTS.md says must pass, the extension build and
+# its Playwright e2e run, the Firefox lint, the mobile app and the Cloudflare services.
+#
+# Every third-party action is pinned by full commit SHA; the tag is in the trailing comment. Dependabot
+# (.github/dependabot.yml) proposes SHA bumps as reviewed pull requests.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # pnpm comes from package.json "packageManager" (pnpm/action-setup reads it).
+  NODE_VERSION: "24"
+
+jobs:
+  packages:
+    name: packages typecheck, test, harness
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (packages)
+        run: pnpm -r --filter "./packages/**" typecheck
+      - name: Test (packages)
+        run: pnpm -r --filter "./packages/**" test
+      - name: Harness (key-material, vault-import and network rules; brand consistency)
+        run: pnpm harness
+
+  extension:
+    name: extension build, e2e, Firefox lint, packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@clip-wallet/extension..."
+      - name: Typecheck and unit tests
+        run: |
+          pnpm --filter @clip-wallet/extension typecheck
+          pnpm --filter @clip-wallet/extension test
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
+      - name: e2e (real build and fixture build)
+        # Some real-wiring checks read public testnets; each screen must still say plainly when a source is down.
+        run: pnpm --filter @clip-wallet/extension e2e
+      - name: Store packages (testnet; deterministic zips)
+        run: pnpm --filter @clip-wallet/extension package
+      - name: Firefox lint (addons-linter via web-ext; errors fail the job)
+        run: npx --yes web-ext@8.10.0 lint --source-dir apps/extension/.output/firefox-mv3
+      - name: Upload screenshots and packages
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extension-${{ github.sha }}
+          path: |
+            apps/extension/screenshots/
+            apps/extension/release/
+            apps/extension/test-results/
+          retention-days: 7
+          if-no-files-found: warn
+
+  mobile:
+    name: mobile typecheck and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@clip-wallet/mobile..."
+      - run: pnpm --filter @clip-wallet/mobile typecheck
+      - name: Test (vitest + jest-expo)
+        run: pnpm --filter @clip-wallet/mobile test
+      - name: Expo config resolves (icons, splash, plugins)
+        working-directory: apps/mobile
+        run: npx expo config --type prebuild --json > /dev/null
+
+  services:
+    name: services (backup, media proxy) typecheck and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "./services/**..."
+      - name: Typecheck
+        run: pnpm -r --filter "./services/**" typecheck
+      - name: Test (inside workerd, local Miniflare D1/R2; nothing remote)
+        run: pnpm -r --filter "./services/**" test

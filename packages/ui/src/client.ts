@@ -13,8 +13,10 @@ import type {
   NetworkId,
   Nft,
   TokenBalance,
+  Msg,
   Warning,
 } from "@clip-wallet/core";
+import { currentBgText } from "./i18n/bg";
 import type { PasskeyCeremony } from "./lib/passkey";
 import type { LocalePref } from "@clip-wallet/i18n";
 
@@ -71,6 +73,8 @@ export interface PortfolioView {
 export interface ActivityLeg {
   /** "Moved 25 USDC to pay", "Network fee (sponsored)". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   networkId: NetworkId;
   status: "done" | "pending" | "failed";
   txHash?: string;
@@ -81,6 +85,8 @@ export interface ActivityEntry {
   id: string;
   /** "Paid Magic Eden 25 USDC", "Received 0.1 ETH", "Sent 40 HBAR to alice". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   kind: "pay" | "send" | "receive" | "swap" | "connect" | "sign" | "mint";
   app?: { name: string; origin: string };
   /** Signed fiat amount in display currency (negative = money out). */
@@ -104,6 +110,8 @@ export interface PlanStep {
   kind: "funding" | "gas" | "action";
   /** "Move 25 USDC to the right place", "Network fee paid for you", "Pay Magic Eden". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   detail?: string;
   balanceChanges?: DecodedRequest["balanceChanges"];
 }
@@ -119,6 +127,43 @@ export interface ApprovalPlan {
   settlement: string;
   /** Plain-words reason this can't be approved as planned (e.g. not enough money anywhere). Blocks Approve. */
   problem?: string;
+  /**
+   * Phase 3 (additive): the money comes from a bonded Connector ("settle on Hedera"). Approve pays the Connector
+   * on the other network; the screen then follows the order (see SettleFundingView.stage).
+   */
+  funding?: SettleFundingView;
+}
+
+/** Base units of an asset, with how to show them. */
+export interface SettleAmountView {
+  amount: string;
+  symbol: string;
+  decimals: number;
+}
+
+/** Same shape as @clip-wallet/route's SettleFundingInfo (the UI words every sentence from it). */
+export interface SettleFundingView {
+  orderId: string;
+  stage: "offer" | "paying" | "waiting" | "opened" | "delivered" | "closed" | "late" | "claiming" | "claimed" | "rejected";
+  /** Connector name (a proper name). */
+  provider: string;
+  pay: SettleAmountView;
+  receive: SettleAmountView;
+  fee: SettleAmountView;
+  /** Cover + penalty paid on Hedera if the Connector is late. */
+  payback: SettleAmountView;
+  /** An exact-amount allowance comes before the payment (tokens). */
+  approveFirst: boolean;
+  etaSeconds: number;
+  /** Unix seconds. */
+  deadline: number;
+  claimableFrom?: number;
+  /** The money arrived: the original request can be approved now. */
+  arrived?: boolean;
+  /** The app stopped waiting for its request while the order was under way. */
+  appGone?: boolean;
+  depositTx?: string;
+  claimTx?: string;
 }
 
 export interface ConnectView {
@@ -235,18 +280,23 @@ export interface WalletClient extends PlatformClient {
   /* shell */
   openFullTab(route?: string): Promise<void>;
   /** Dev-flag builds only: inject a fixture dapp request. */
-  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all"): Promise<string>;
+  devSimulateRequest?(kind: "pay" | "connect" | "blind" | "approval-for-all" | "settle" | "settle-late"): Promise<string>;
 }
 
 /** Thrown by client implementations; screens show `userMessage` only. */
 export interface UserFacingError {
   userMessage: string;
   code: string;
+  /** Additive: the translatable version (ClipError.msg), when the background sent one. */
+  msg?: Msg;
 }
 
 export function userMessageOf(err: unknown): string {
+  const bg = currentBgText();
   if (err && typeof err === "object" && "userMessage" in err && typeof (err as UserFacingError).userMessage === "string") {
-    return (err as UserFacingError).userMessage;
+    return bg.error(err) ?? (err as UserFacingError).userMessage;
   }
-  return "Something went wrong. Please try again.";
+  return bg.error({ userMessage: GENERIC_ERROR, code: "internal" }) ?? GENERIC_ERROR;
 }
+
+const GENERIC_ERROR = "Something went wrong. Please try again.";

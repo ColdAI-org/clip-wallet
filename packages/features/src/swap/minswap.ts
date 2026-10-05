@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   CARDANO_METHODS,
   type CborValue,
@@ -361,7 +361,7 @@ export class MinswapSwap implements SwapProvider {
     lines.push({ label: "If the price moves too far", value: "The order waits; you can cancel it in Minswap and get everything back" });
     return [
       {
-        title: `Swap ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
         lines,
         request,
       },

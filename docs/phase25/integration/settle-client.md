@@ -2,7 +2,10 @@
 
 Branch `p25/settle-client`. Only `packages/route` changed. No shared file was edited.
 
-## Nothing to wire today
+## Status
+Wired end to end on `r1/settle-e2e`: see `settle-e2e.md`. The notes below are the original client-only state.
+
+## Nothing to wire today (client-only branch)
 `settleOnHedera()` (no options) is unchanged: it rejects with `ClipError("Not available yet", "phase3")`.
 `SETTLE_DEPLOYMENTS` (`packages/route/src/phase3.ts`) is empty because no order book is deployed. Nothing in
 apps/ or packages/ui calls the settle client yet, so no wiring is needed to merge this branch.

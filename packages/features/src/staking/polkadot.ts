@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@clip-wallet/core";
 import {
   type Connection,
   Enum,
@@ -87,7 +87,7 @@ export function poolName(bytes: unknown): string | null {
 }
 
 function amountOf(v: string | undefined, symbol: string): bigint {
-  if (!v || !/^\d+$/.test(v) || BigInt(v) <= 0n) throw new ClipError(`Enter how much ${symbol} to stake.`, "staking/bad-amount");
+  if (!v || !/^\d+$/.test(v) || BigInt(v) <= 0n) throw new ClipError(msg("bg.err.enterHowMuchToStake", { symbol }), "staking/bad-amount");
   return BigInt(v);
 }
 
@@ -164,7 +164,7 @@ export class PolkadotStaking implements StakingProvider {
     return pools.map((p, i) => {
       const v: StakeOptionView = {
         id: String(p.id),
-        title: p.name ? `Pool ${p.id} · ${p.name}` : `Pool ${p.id}`,
+        title: p.name ? `Pool ${p.id} · ${p.name}` : say("bg.staking.pool", { address: p.id }),
         detail: `Keeps ${percent(p.commissionPct)} of rewards · ${p.members} member${p.members === 1 ? "" : "s"}`,
       };
       if (i === 0) v.recommended = true;
@@ -200,7 +200,7 @@ export class PolkadotStaking implements StakingProvider {
         .then(poolName)
         .catch(() => null),
     ]);
-    const base = { assetKey: this.assetKey, symbol: c.spec.symbol, decimals: c.spec.decimals, networkId: ctx.network.id, with: name ? `Pool ${m.pool_id} · ${name}` : `Pool ${m.pool_id}` };
+    const base = { assetKey: this.assetKey, symbol: c.spec.symbol, decimals: c.spec.decimals, networkId: ctx.network.id, with: name ? `Pool ${m.pool_id} · ${name}` : say("bg.staking.pool", { address: m.pool_id }) };
     const out: StakePositionView[] = [];
     if (bonded > 0n || pending > 0n) {
       const p: StakePositionView = {
@@ -262,10 +262,10 @@ export class PolkadotStaking implements StakingProvider {
       return {
         steps: [
           {
-            title: `Stake ${this.fmt(c, amount)} more`,
+            ...titled(msg("bg.req.stakeMore", { amount: this.fmt(c, amount) })),
             request,
             lines: [
-              { label: "Pool", value: name ? `Pool ${m.pool_id} · ${name}` : `Pool ${m.pool_id}` },
+              { label: "Pool", value: name ? `Pool ${m.pool_id} · ${name}` : say("bg.staking.pool", { address: m.pool_id }) },
               ...(p.optionId && p.optionId !== String(m.pool_id) ? [{ label: "Note", value: "You're already in this pool, and you can only be in one at a time, so this adds to it." }] : []),
               { label: "Unstaking takes", value: wait },
             ],
@@ -281,20 +281,20 @@ export class PolkadotStaking implements StakingProvider {
       const best = (await this.pools(ctx))[0];
       if (!best) throw new ClipError("No staking pool meets Clip Wallet's checks right now. Try again later.", "staking/no-pools");
       poolId = best.id;
-      label = best.name ? `Pool ${best.id} · ${best.name}` : `Pool ${best.id}`;
+      label = best.name ? `Pool ${best.id} · ${best.name}` : say("bg.staking.pool", { address: best.id });
     } else {
       if (!Number.isSafeInteger(poolId) || poolId < 0) throw new ClipError("That staking pool couldn't be found.", "staking/unknown-option");
       const pool = await readStorage<BondedPool>(c.rpc, c.rt, "NominationPools", "BondedPools", poolId);
       if (!pool) throw new ClipError("That staking pool couldn't be found.", "staking/unknown-option");
       if (pool.state.type !== "Open") throw new ClipError("That pool isn't taking new members. Pick another one.", "staking/pool-closed");
       const name = poolName(await readStorage(c.rpc, c.rt, "NominationPools", "Metadata", poolId).catch(() => null));
-      label = name ? `Pool ${poolId} · ${name}` : `Pool ${poolId}`;
+      label = name ? `Pool ${poolId} · ${name}` : say("bg.staking.pool", { address: poolId });
     }
     const request = await this.call(ctx, "join", { amount, pool_id: poolId });
     return {
       steps: [
         {
-          title: `Stake ${this.fmt(c, amount)}`,
+          ...titled(msg("bg.req.stake", { amount: this.fmt(c, amount) })),
           request,
           lines: [
             { label: "Pool", value: label },
@@ -338,7 +338,7 @@ export class PolkadotStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Unstake ${this.fmt(c, amount)}`,
+          ...titled(msg("bg.req.unstake", { amount: this.fmt(c, amount) })),
           request,
           lines: [
             { label: "Ready", value: `In ${wait}, then move it back to your balance` },
@@ -356,7 +356,7 @@ export class PolkadotStaking implements StakingProvider {
     const ready = m.unbonding_eras.filter(([e]) => era !== null && e <= era).reduce((t, [, a]) => t + a, 0n);
     if (ready === 0n) throw new ClipError(`This ${c.spec.symbol} is still unlocking. Try again once it's ready.`, "staking/not-withdrawable");
     const request = await this.call(ctx, "withdraw_unbonded", { member_account: Enum("Id", c.me), num_slashing_spans: 0 });
-    return { steps: [{ title: `Move ${this.fmt(c, ready)} back to your balance`, request }] };
+    return { steps: [{ ...titled(msg("bg.req.moveBack", { amount: this.fmt(c, ready) })), request }] };
   }
 
   async buildClaim(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild> {
@@ -365,7 +365,7 @@ export class PolkadotStaking implements StakingProvider {
     const pending = await this.pending(c);
     if (pending === 0n) throw new ClipError("There are no rewards to claim yet.", "staking/nothing-to-claim");
     const request = await this.call(ctx, "claim_payout", undefined);
-    return { steps: [{ title: `Claim ${this.fmt(c, pending)} of rewards`, request, lines: [{ label: "Goes to", value: "Your balance" }] }] };
+    return { steps: [{ ...titled(msg("bg.req.claimRewards", { amount: this.fmt(c, pending) })), request, lines: [{ label: "Goes to", value: "Your balance" }] }] };
   }
 
   private call(ctx: ChainContext, call: string, args: unknown): Promise<DappRequest> {

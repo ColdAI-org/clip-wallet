@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "Tus datos",
+  "privacy.title": "Tus datos",
+  "privacy.lede": "{name} no tiene una cuenta tuya. Tu frase de recuperación y tus claves se quedan en este dispositivo, bloqueadas con tu contraseña. Nunca las vemos.",
+  "privacy.device.title": "Se queda en este dispositivo",
+  "privacy.device.body": "Tu frase de recuperación, tus claves privadas, tu contraseña, tus contactos, tus ajustes y tu actividad. Nada de eso se nos envía.",
+  "privacy.network.title": "Lo que consulta la billetera",
+  "privacy.network.body": "Para mostrar saldos y enviar pagos, la billetera consulta a servicios públicos de red (nodos e indexadores) sobre tus direcciones públicas. Los precios vienen de CoinGecko y DEX Screener.",
+  "privacy.scam.title": "Comprobaciones contra estafas",
+  "privacy.scam.body": "Las listas abiertas de estafas se descargan en este dispositivo y se comprueban aquí, así nunca saben qué sitios visitas. Si esta versión tiene Blockaid activado, Blockaid ve el sitio, la solicitud y tu dirección.",
+  "privacy.partners.title": "Solo cuando los usas",
+  "privacy.partners.body": "Intercambiar, comprar y hacer staking envían tu dirección y el importe al proveedor que elijas, y se aplica su propia política de privacidad.",
+  "privacy.backup.title": "Copia con llave de acceso, si la activas",
+  "privacy.backup.body": "Nuestro servicio de copias guarda una copia bloqueada que solo tu llave de acceso puede abrir, y un hash con clave de tu correo o de tu cuenta de Google o Apple para que puedas encontrarla. Bórrala cuando quieras.",
+  "privacy.media.title": "Imágenes de coleccionables",
+  "privacy.media.body": "Las imágenes se cargan a través de nuestro proxy de medios, así los sitios que las alojan nunca ven tu dispositivo. No guardamos registro de quién las pidió.",
+  "privacy.never.title": "Nunca",
+  "privacy.never.body": "Sin analítica, sin anuncios, sin rastreo, y nunca vendemos datos.",
+} satisfies Record<keyof typeof en, string>;

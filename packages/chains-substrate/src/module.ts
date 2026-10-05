@@ -1,18 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-  WALLET_ORIGIN,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, type Msg } from "@clip-wallet/core";
 import { Enum, fromBufferToBase58, getSs58AddressInfo, u32 } from "@polkadot-api/substrate-bindings";
 import { verify as sr25519Verify } from "@scure/sr25519";
 import { readStorage, runtimeCall, storageKeys } from "./chain.js";
@@ -216,7 +202,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
       const warnings: Warning[] = blind ? [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }] : [];
       return {
         ...base,
-        title: `Sign a message for ${host}`,
+        ...titled(msg("bg.req.signMessage", { host })),
         lines: [text != null ? { label: "Message", value: text } : { label: "Message (not text)", value: hex0x(n.data) }],
         balanceChanges: [],
         simulated: false,
@@ -245,7 +231,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
       });
     } catch {
       d = {
-        title: `Approve a transaction for ${host}`,
+        ...titled(msg("bg.req.approveTxFor", { host })),
         lines: [{ label: "Action (undecoded)", value: hex0x(p.method) }],
         balanceChanges: [],
         warnings: [{ level: "danger", code: "blind-signing", message: "This transaction can't be read. Only sign it if you trust the app." }],
@@ -258,6 +244,11 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     const sym = spec.symbol;
     if (f !== null) lines.push({ label: "Network fee", value: `${formatUnits(f, spec.decimals)} ${sym}` });
     if (p.tip > 0n) lines.push({ label: "Tip", value: `${formatUnits(p.tip, spec.decimals)} ${sym}` });
+    if (p.assetId && rt.extensions.some((e) => e.identifier === "ChargeAssetTxPayment" || e.identifier === "SkipCheckIfFeeless")) {
+      // Audit SUB-01: ChargeAssetTxPayment swaps the fee out of another asset, with no limit on the rate.
+      lines.push({ label: "Fee paid in", value: `Another asset (id ${hex0x(p.assetId)}), not ${sym}` });
+      warnings.push({ level: "caution", code: "high-fee", message: `The network fee is taken from another asset you hold, at whatever rate its pool gives. The ${sym} amount shown is only an estimate.` });
+    }
     const era = eraInfo(p.era, p.blockNumber);
     lines.push({ label: "Valid for", value: era ? `about ${Math.round((era.period * BLOCK_SECONDS) / 60)} minutes` : "Never expires" });
     if (p.mode === 1 && p.metadataHash) {
@@ -277,7 +268,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     if (!n.submit && request.origin !== WALLET_ORIGIN) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     return {
       ...base,
-      title: d.title,
+      title: d.title, ...msgOf(d),
       lines,
       balanceChanges: mergeChanges(d.balanceChanges),
       ...(f !== null ? { fee: { asset: nativeAsset(spec), amount: f.toString() } } : {}),
@@ -574,3 +565,8 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
   };
 }
 
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

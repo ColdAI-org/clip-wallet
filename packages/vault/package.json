@@ -16,6 +16,7 @@
     "@algorandfoundation/xhd-wallet-api": "^1.0.3",
     "@aptos-labs/ts-sdk": "^7.3.0",
     "@clip-wallet/chains-bitcoin": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
     "@emurgo/cardano-serialization-lib-nodejs": "^17.0.0",
     "@mysten/sui": "^2.33.2",
     "@polkadot/keyring": "^14.0.3",

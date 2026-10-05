@@ -1,5 +1,5 @@
 import type { AssetRef, DappRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, say } from "@clip-wallet/core";
 import { encodeAbiParameters, encodeFunctionData, getAddress, isAddress, numberToHex, parseEventLogs } from "viem";
 import type { Hex, Log } from "viem";
 import { CLPR_ROUTER_ABI } from "./abi.js";
@@ -273,7 +273,7 @@ export class RouteClient {
       from: p.source,
       to: p.to,
       mode: p.mode,
-      title: `Pay ${paysDisplay} on ${dstName} with ${native.symbol} from ${srcName}`,
+      title: say("bg.route.payOnWith", { amount: paysDisplay, network: dstName, symbol: native.symbol, source: srcName }),
       youPay: { asset: native, amount: youPay.toString(), display: show(youPay) },
       escrow: { asset: native, amount: escrow.toString(), display: show(escrow) },
       fee: { asset: native, amount: fee.toString(), display: show(fee), usd: route.totals.costUsd },

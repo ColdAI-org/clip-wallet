@@ -57,3 +57,4 @@ export {
   type TonWalletVersion,
 } from "./encodings.js";
 export { VaultErrors } from "./errors.js";
+export { SYNC_LABEL, SYNC_SIGN_PREFIX, type SyncKeyHandle, type PairingKeyHandle } from "./link.js";

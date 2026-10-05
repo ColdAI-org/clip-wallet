@@ -11,6 +11,8 @@ export class BusError extends Error {
   constructor(
     public readonly userMessage: string,
     public readonly code: string,
+    /** The translatable version (ClipError.msg), checked with isMsg by the UI before use. */
+    public readonly msg?: unknown,
   ) {
     super(`${code}: ${userMessage}`);
   }
@@ -26,7 +28,7 @@ export function createBusClient(transport: Transport = runtimeTransport, mocks =
     }
     const env = Envelope.safeParse(raw);
     if (!env.success) throw new BusError("Something went wrong. Please try again.", "bus/bad-reply");
-    if (!env.data.ok) throw new BusError(env.data.error.userMessage, env.data.error.code);
+    if (!env.data.ok) throw new BusError(env.data.error.userMessage, env.data.error.code, env.data.error.msg);
     return env.data.data as ResponseMap[T];
   }
 

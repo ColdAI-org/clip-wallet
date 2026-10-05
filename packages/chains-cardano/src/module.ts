@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
   type Credential,
@@ -278,7 +265,7 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
       if (d.blind) warnings.push({ level: "danger", code: "blind-signing", message: "Parts of this transaction can't be explained. Only sign it if you trust the app." });
       return {
         ...base,
-        title: d.title,
+        title: d.title, ...msgOf(d),
         lines,
         balanceChanges: d.balanceChanges,
         fee: { asset: adaAsset(ctx.network.id), amount: d.fee.toString() },
@@ -299,7 +286,7 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
     ];
     const blind = text == null;
     const warnings: Warning[] = blind ? [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }] : [];
-    return { ...base, title: `Sign a message for ${host}`, lines, balanceChanges: [], simulated: false, blind, warnings };
+    return { ...base, ...titled(msg("bg.req.signMessage", { host })), lines, balanceChanges: [], simulated: false, blind, warnings };
   }
 
   /** CIP-30 signData: payment key for our base/enterprise address, stake key for our reward address. */
@@ -666,3 +653,9 @@ function concatTx(body: Uint8Array): Uint8Array {
 }
 
 export type { Credential };
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

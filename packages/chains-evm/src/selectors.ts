@@ -52,6 +52,10 @@ const TABLE: [string, string][] = [
   ["bridgeETHTo(address,uint32,bytes)", "Move ETH to another network"],
   ["depositTransaction(address,uint256,uint64,bool,bytes)", "Move funds to another network"],
   ["register(string,address,uint256,bytes32,address,bytes[],bool,uint16)", "Register a name"],
+  // Settle on Hedera (CLPRouter src/settle): SettleDeposit.deposit(Quote, sig), SettleOrderBook claims.
+  ["deposit((address,bytes32,bytes32,bytes32,bytes32,bytes32,uint256,bytes32,bytes32,bytes32,uint256,address,uint256,address,uint64,uint64,uint64,bytes32),bytes)", "Pay a Connector"],
+  ["claimDefault(bytes32)", "Claim a late payment back"],
+  ["withdrawOwed(address)", "Collect a payout"],
 ];
 
 export const KNOWN_FUNCTIONS: KnownFunction[] = TABLE.map(([signature, action]) => {

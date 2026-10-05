@@ -315,3 +315,62 @@ describe("Message signing", () => {
     expect(screen.queryByText("Ready")).not.toBeInTheDocument();
   });
 });
+
+describe("Approval paid through a bonded Connector (settle on Hedera)", () => {
+  const funding = (over: Partial<import("../src/client").SettleFundingView> = {}): import("../src/client").SettleFundingView => ({
+    orderId: `0x${"0d".repeat(32)}`,
+    stage: "offer",
+    provider: "Clip test Connector",
+    pay: { amount: "13052000", symbol: "USDC", decimals: 6 },
+    receive: { amount: "13000000", symbol: "USDC", decimals: 6 },
+    fee: { amount: "52000", symbol: "USDC", decimals: 6 },
+    payback: { amount: "19800000000", symbol: "HBAR", decimals: 8 },
+    approveFirst: true,
+    etaSeconds: 90,
+    deadline: 1_800_001_800,
+    ...over,
+  });
+  const withFunding = (f: import("../src/client").SettleFundingView) => {
+    const base = payApproval();
+    return { ...base, plan: { ...base.plan!, funding: f } };
+  };
+
+  it("shows the Connector's steps (exact allowance, payment, delivery, payback) and lets the user approve once", async () => {
+    const user = userEvent.setup();
+    renderUi(<TransactionApproval approval={withFunding(funding())} />);
+    const row = screen.getByText("From").closest(".clip-row") as HTMLElement;
+    expect(within(row).getByText("Your other balance, through Clip test Connector")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Details/ }));
+    const steps = screen.getAllByRole("listitem").filter((li) => li.classList.contains("clip-step"));
+    expect(steps.map((s) => s.textContent)).toEqual([
+      "1Allow exactly 13.052 USDC for this payment",
+      "2Pay 13.052 USDC to Clip test Connector",
+      expect.stringMatching(/^3Clip test Connector sends you 13 USDCReady: in about 2 minutes$/),
+      expect.stringMatching(/^4If it hasn't arrived by .+, you're paid back 198 HBAR on Hedera$/),
+      "5Network fee paid for youCovered by Clip ($0.04).",
+      "6Pay Magic Eden−25 USDC",
+    ]); // the plan's English "Move 13 USDC" funding step is replaced by the Connector's steps
+    expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
+  });
+
+  it("while the money is on its way, shows progress and no Approve or Reject", () => {
+    renderUi(<TransactionApproval approval={withFunding(funding({ stage: "opened" }))} />);
+    expect(screen.getByText("Order confirmed. Clip test Connector is sending 13 USDC.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reject" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Waiting for your money" })).toBeDisabled();
+  });
+
+  it("when it's late, says so plainly and offers a one-tap claim", async () => {
+    const user = userEvent.setup();
+    const { client } = renderUi(<TransactionApproval approval={withFunding(funding({ stage: "late" }))} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Your payment didn't arrive in time — you've been paid back 198 HBAR on Hedera");
+    await user.click(screen.getByRole("button", { name: "Claim 198 HBAR" }));
+    expect(client.approve).toHaveBeenCalled();
+  });
+
+  it("once the money arrived, the normal Approve signs the app's request", () => {
+    renderUi(<TransactionApproval approval={withFunding(funding({ stage: "delivered", arrived: true }))} />);
+    expect(screen.getByText("13 USDC arrived. Approve to finish.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
+  });
+});

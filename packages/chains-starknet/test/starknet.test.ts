@@ -21,7 +21,7 @@ import {
   walletChainId,
 } from "../src/index.js";
 import { fromHex } from "../src/util.js";
-import { BOB, TYPED_DATA, USDC, ctxFor, fixtureSigner, makeAccount, mockStarknet, req, transferCall } from "./helpers.js";
+import { BOB, FEE, TYPED_DATA, USDC, ctxFor, fixtureSigner, makeAccount, mockStarknet, req, transferCall } from "./helpers.js";
 import { FIX } from "./signatures.js";
 
 const PUB = FIX.publicKey;
@@ -192,6 +192,8 @@ describe("decode", () => {
     expect(d.title).toBe("Approve 2 actions for app.example");
     expect(d.lines[0]).toEqual({ label: "Action 1", value: "Allow app.example to spend 0.000000000000000001 ETH" });
     expect(d.lines[1]).toEqual({ label: "Action 2", value: "Swap exact tokens for tokens on app.example" });
+    // Audit UNK-01: an app's own function is never presented as fully understood.
+    expect(d.warnings.map((w) => w.code)).toContain("unknown-call");
     expect(d.lines).toContainEqual({ label: "Swap exact tokens for tokens", value: "0x0000…b0b0 (2 values)" });
     expect(d.blind).toBe(false);
   });
@@ -321,6 +323,21 @@ describe("prepare / finalize", () => {
     expect((inv.resource_bounds as { l2_gas: { max_amount: string } }).l2_gas.max_amount).toBe(`0x${((0x24641en * 150n) / 100n + 1n).toString(16)}`);
     // execute calldata: [n_calls, to, selector, len, ...calldata]
     expect((inv.calldata as string[]).slice(0, 4)).toEqual(["0x1", BigInt(USDC).toString(16).replace(/^/, "0x"), hash.getSelectorFromName("transfer"), "0x3"]);
+  });
+
+  it("audit STK-02: signs the fee bounds the approval screen was built on, not a new estimate", async () => {
+    let scale = 1n;
+    const scaled = () => Object.fromEntries(Object.entries(FEE).map(([k, v]) => [k, typeof v === "string" && v.startsWith("0x") ? `0x${(BigInt(v) * scale).toString(16)}` : v]));
+    const mock = mockStarknet({ deployed: true, nonce: 7n, balances: {} }, { starknet_estimateFee: (p) => (p[0] as unknown[]).map(scaled) });
+    const ctx = ctxFor(makeAccount(PUB, ME), mock.fetch);
+    const r = req("wallet_addInvokeTransaction", { calls: [transferCall(USDC, BOB, 1n)] }, "fee-snap");
+    const mod = m();
+    const d = await mod.decode(r, ctx);
+    expect(d.lines.find((l) => l.label === "Network fee at most")).toBeTruthy();
+    const before = await m().prepare(r, ctx, "x"); // a module that never showed a screen estimates now
+    scale = 10n; // fees spike (or the app's contract starts burning gas) after the user looked
+    const after = await mod.prepare(r, ctx, "y");
+    expect(after[0]!.bytes).toEqual(before[0]!.bytes);
   });
 
   it("deployed account: one INVOKE at the current nonce", async () => {
