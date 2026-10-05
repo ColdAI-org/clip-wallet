@@ -93,3 +93,18 @@ describe("audit: EVM fee terms are the ones shown (EVM-04)", () => {
     await expect(prepare()).rejects.toMatchObject({ code: "fee-changed" });
   });
 });
+
+describe("audit: look-alike tokens (TOK-01)", () => {
+  it("a non-curated contract calling itself USDC is spam everywhere, not only in the portfolio", async () => {
+    const { tokenAsset } = await import("../src/tokens.js");
+    expect(tokenAsset(SEPOLIA, 11155111, "0x00000000000000000000000000000000000a11ce", { symbol: "USDC", name: "USD Coin", decimals: 6 }).spam).toBe(true);
+    expect(tokenAsset(SEPOLIA, 11155111, "0x00000000000000000000000000000000000a11ce", { symbol: "PEPE", name: "Pepe", decimals: 18 }).spam).toBeUndefined();
+  });
+
+  it("a single invisible or right-to-left override character marks a token as spam", async () => {
+    const { tokenAsset } = await import("../src/tokens.js");
+    const a = (symbol: string) => tokenAsset(SEPOLIA, 11155111, "0x00000000000000000000000000000000000b0b00", { symbol, name: symbol, decimals: 18 });
+    expect(a("PEPE‮").spam).toBe(true);
+    expect(a("PE​PE").spam).toBe(true);
+  });
+});

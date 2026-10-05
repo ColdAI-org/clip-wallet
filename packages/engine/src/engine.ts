@@ -12,7 +12,7 @@
  * except revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, WALLET_ORIGIN, isWalletOrigin, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -694,7 +694,8 @@ export class WalletEngine implements DappHost {
 
   private dappInfo(origin: string, name?: string, iconUrl?: string): DappInfo {
     const reg = this.deps.registry.lookup(origin);
-    return { name: reg.verified ? reg.name : name ?? reg.name, origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
+    // Audit DISP-01: a site's own name can't carry invisible or direction-changing characters.
+    return { name: displaySafe(reg.verified ? reg.name : name ?? reg.name).slice(0, 80), origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
   }
 
   private deferred<T>() {
@@ -749,6 +750,8 @@ export class WalletEngine implements DappHost {
       decoded.warnings.push({ level: "caution", code: "domain-mismatch", message: `${domainOf(request.origin)} isn't a site ${this.env.walletName} recognises. Only continue if you opened it yourself.` });
     }
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
+    // Audit DISP-01: token names, NFT names and memos from chains can't disguise what the screen says.
+    decoded = sanitizeDecoded(decoded);
     const { balances } = await this.portfolio();
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 

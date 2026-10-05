@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -725,7 +725,8 @@ export class WalletService implements DappHost {
 
   private dappInfo(origin: string, name?: string, iconUrl?: string): DappInfo {
     const reg = this.deps.registry.lookup(origin);
-    return { name: reg.verified ? reg.name : name ?? reg.name, origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
+    // Audit DISP-01: a site's own name can't carry invisible or direction-changing characters.
+    return { name: displaySafe(reg.verified ? reg.name : name ?? reg.name).slice(0, 80), origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
   }
 
   private async enqueueTransaction(
@@ -773,6 +774,8 @@ export class WalletService implements DappHost {
     const insights = decoded.blind ? [] : await this.plugins.insights(toInsightInput(decoded, request.origin, ctx.account.address)).catch(() => []);
     decoded = withPluginInsights(decoded, insights);
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
+    // Audit DISP-01: token names, NFT names and memos from chains can't disguise what the screen says.
+    decoded = sanitizeDecoded(decoded);
     const { balances } = await this.portfolio();
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 

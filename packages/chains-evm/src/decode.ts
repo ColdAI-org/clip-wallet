@@ -126,6 +126,12 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
   } else {
     d.balanceChanges = staticChanges;
   }
+  // Audit TOK-01: "you receive 1,000 USDC" from a look-alike contract is the classic fake-token bait.
+  for (const c of d.balanceChanges) {
+    if (c.asset.spam && !c.delta.startsWith("-")) {
+      d.warnings.push({ level: "caution", code: "known-scam", message: `The ${c.asset.symbol} you'd receive isn't the real one. It looks like a fake or spam token.` });
+    }
+  }
   if (sim.reverts) {
     d.warnings.push({ level: "danger", code: "simulation-failed", message: `This is expected to fail and would still cost a fee.${sim.revertReason ? ` Reason: ${sim.revertReason}` : ""}` });
   } else if (!sim.simulated) {

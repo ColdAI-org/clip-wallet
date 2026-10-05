@@ -394,6 +394,30 @@ export function unverifiedLabel(hostname: string): string | undefined {
   return hostname.endsWith(UNVERIFIED_ORIGIN_SUFFIX) ? `${hostname.slice(0, -UNVERIFIED_ORIGIN_SUFFIX.length)} (unverified)` : undefined;
 }
 
+/**
+ * Internal audit 2026-10 (DISP-01): text from chains, dapps and indexers (token names and symbols, NFT names, app
+ * names, memos) can carry invisible or direction-changing characters (U+202E RIGHT-TO-LEFT OVERRIDE, zero-width
+ * spaces, BOM) that make an approval screen read differently from what it says. This removes every format (Cf)
+ * and control (Cc) character except line breaks and tabs, and the line/paragraph separators.
+ */
+export function displaySafe(text: string): string {
+  return text.replace(/[\p{Cf}\u2028\u2029]|(?![\n\t])\p{Cc}/gu, "");
+}
+
+const safeAsset = (a: AssetRef): AssetRef => ({ ...a, symbol: displaySafe(a.symbol), name: displaySafe(a.name) });
+
+/** A copy of `d` with every human-readable string passed through displaySafe. */
+export function sanitizeDecoded(d: DecodedRequest): DecodedRequest {
+  return {
+    ...d,
+    title: displaySafe(d.title),
+    lines: d.lines.map((l) => ({ label: displaySafe(l.label), value: displaySafe(l.value) })),
+    balanceChanges: d.balanceChanges.map((c) => ({ ...c, asset: safeAsset(c.asset) })),
+    warnings: d.warnings.map((w) => ({ ...w, message: displaySafe(w.message) })),
+    ...(d.fee ? { fee: { ...d.fee, asset: safeAsset(d.fee.asset) } } : {}),
+  };
+}
+
 /** True for wallet-built requests. Also accepts the shell's older `"wallet"` spelling. */
 export function isWalletOrigin(origin: string | undefined): boolean {
   return origin === WALLET_ORIGIN || origin === "wallet";

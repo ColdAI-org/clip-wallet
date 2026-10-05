@@ -4,7 +4,7 @@
  *  APPR-02  the account that signs is the account the approval screen was built for.
  */
 import { describe, expect, it, vi } from "vitest";
-import { unverifiedOrigin, type Signature } from "@clip-wallet/core";
+import { displaySafe, sanitizeDecoded, unverifiedOrigin, type DecodedRequest, type Signature } from "@clip-wallet/core";
 import { makeService, PASSWORD } from "./helpers";
 
 async function ready() {
@@ -77,6 +77,40 @@ describe("audit: approval path", () => {
     expect(view!.dapp).toMatchObject({ verified: false, domain: "magiceden.io (unverified)" });
     expect(view!.decoded!.warnings.map((w) => w.code)).toContain("domain-mismatch");
     expect(await service.accountsFor("https://magiceden.io", "evm")).toHaveLength(0);
+    await service.handle({ type: "reject", id: view!.id });
+  });
+
+  it("DISP-01: invisible and direction-changing characters never reach the approval screen", async () => {
+    expect(displaySafe("USDC\u202E0x1234")).toBe("USDC0x1234");
+    expect(displaySafe("to\u200Bm\uFEFFe\u2066x\u2069")).toBe("tomex");
+    expect(displaySafe("line one\nline two\tok")).toBe("line one\nline two\tok");
+    const asset = { key: "k", symbol: "US\u202EDC", name: "Fake\u200B", decimals: 6, networkId: "eip155:1" };
+    const d: DecodedRequest = {
+      requestId: "r",
+      title: "Send 5 \u202Eevil",
+      lines: [{ label: "To\u200B", value: "0xabc\u202E" }],
+      balanceChanges: [{ asset, delta: "-5" }],
+      fee: { asset, amount: "1" },
+      simulated: false,
+      blind: false,
+      warnings: [{ level: "info", code: "known-scam", message: "x\u202Ey" }],
+      networkId: "eip155:1",
+    };
+    const out = sanitizeDecoded(d);
+    expect(JSON.stringify(out)).not.toMatch(/[\u200B\u202E\uFEFF]/);
+
+    const { service } = await ready();
+    const p = service.request(
+      { id: "n1", origin: "https://some-site.example", via: "injected", family: "evm", networkId: "eip155:84532", method: "personal_sign", params: ["0x00"] },
+      { name: "Uni\u202Eswap\u200B" },
+    );
+    p.catch(() => undefined);
+    let view;
+    for (let i = 0; i < 100 && !view; i++) {
+      view = (await service.handle({ type: "listApprovals" }))[0];
+      if (!view) await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(view!.dapp.name).toBe("Uniswap");
     await service.handle({ type: "reject", id: view!.id });
   });
 });
