@@ -245,9 +245,9 @@ describe("HTTP surface", () => {
   });
 
   it("health reports whether email sign-in is ready", async () => {
-    expect(await (await worker.fetch(new Request("https://b/v1/health"))).json()).toEqual({ ok: true, emailSignIn: false });
+    expect(await (await worker.fetch(new Request("https://b/v1/health"))).json()).toEqual({ ok: true, emailSignIn: false, sync: true });
     const app = createApp({ email: new MemoryEmailSender() });
-    expect(await (await app.fetch(new Request("https://b/v1/health"), E)).json()).toEqual({ ok: true, emailSignIn: true });
+    expect(await (await app.fetch(new Request("https://b/v1/health"), E)).json()).toEqual({ ok: true, emailSignIn: true, sync: true });
   });
 
   it("Resend sender posts the documented request and reports failures without the provider's body", async () => {

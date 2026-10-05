@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/service-backup",
+  "name": "@clip-wallet/service-link-relay",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -10,12 +10,12 @@
     "dev": "wrangler dev --local"
   },
   "dependencies": {
-    "@clip-wallet/backup-client": "workspace:*",
     "@clip-wallet/link": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.22.0",
     "@cloudflare/workers-types": "5.20260925.1",
+    "@noble/hashes": "^2.4.0",
     "typescript": "^5.6.0",
     "vitest": "~4.1.0",
     "wrangler": "4.124.0"
