@@ -47,6 +47,7 @@ Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/pr
 - plugins: Clip Plugins (SES sandbox page, offscreen host, npm install with integrity checks).
 - hardware: Ledger (WebHID), Keystone (QR). names: ENS, SNS, HNS, Clip handles.
 - link: linked devices: phone or Clip Desktop as signer (relay / native messaging), end-to-end encrypted settings sync, handoffs ("continue elsewhere").
+- connect: Clip Connect, the dapp-side SDK (EIP-6963/Wallet Standard discovery preferring Clip, CAIP-10 accounts, pay() with EIP-5792 + ERC-7682 auxiliary funds, React/wagmi/Solana adapters). Compatibility promise and suite: docs/compat.md.
 - kit-modules: NEAR Wallet Selector, Stellar Wallets Kit, use-wallet, Beacon peer.
 - backup-client, media-client: clients for services/backup and services/media-proxy.
 - create-clip-wallet: npx create-clip-wallet <folder> (template + identity + listing drafts); identity | listings | mainnet-check.

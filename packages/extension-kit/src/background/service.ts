@@ -187,7 +187,12 @@ export class WalletService implements DappHost {
       sources: () => deps.auxiliaryFundsSources ?? [],
       rpc: (n, m, params) => this.rpc(n, m, params),
       sendCall: (call, approvalId) => this.sendBatchCall(call, approvalId),
-      activity: async (e) => (await this.addActivity(e), env.broadcast()),
+      activity: async (e) => {
+        // Upsert: a batch's in-progress entry is replaced by its final one.
+        const list = (await this.activity()).filter((x) => x.id !== e.id);
+        await this.kv.set(K.activity, [e, ...list].slice(0, 200));
+        env.broadcast();
+      },
       openActivity: () => env.openTab("/activity"),
     });
     this.hw = new HardwareSignHost(() => this.deps.hardware, () => env.broadcast());
@@ -983,7 +988,7 @@ export class WalletService implements DappHost {
       throw new ClipError("The account for this request changed after it arrived. Reject it and ask the app to send it again.", "approval/account-changed");
     }
     if (this.deps.hardware.owns(ctx.account.id)) throw new ClipError(msg("bg.err.batchHardware"), "batch/hardware");
-    const result = await this.calls.start(req, id, p.batch!.decoded, { name: p.view.dapp.name, origin: p.view.dapp.origin });
+    const result = await this.calls.start(req, id, p.batch!.decoded, { name: p.view.dapp.name, origin: p.view.dapp.origin }, p.view.fiatValue);
     this.approvals.delete(id);
     p.settle?.stop();
     this.cache.clear();

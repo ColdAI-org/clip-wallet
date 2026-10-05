@@ -23,6 +23,8 @@ export interface DappHostLike {
   isUnlocked(): Promise<boolean>;
   cancel(requestId: string): void;
   isKnownScam?(origin: string): boolean;
+  /** EIP-5792 Wallet Call API host (@clip-wallet/1mask CallsHost), passed through while this device signs. */
+  calls?: { enabled?(): boolean; auxiliaryFunds(networkIds: string[]): unknown; status(origin: string, id: string): Promise<unknown>; show(origin: string, id: string): Promise<boolean> };
 }
 
 export interface DappConnectorLike {
@@ -112,6 +114,17 @@ export function remoteDappHost(local: DappHostLike, mode: RemoteMode): DappHostL
       local.cancel(id);
     },
     ...(local.isKnownScam ? { isKnownScam: (o: string) => local.isKnownScam!(o) } : {}),
+    // The Wallet Call API runs batches on this device; while another device signs, the methods are off (4200).
+    ...(local.calls
+      ? {
+          calls: {
+            enabled: () => !mode.active() && (local.calls!.enabled?.() ?? true),
+            auxiliaryFunds: (ids: string[]) => local.calls!.auxiliaryFunds(ids),
+            status: (o: string, id: string) => local.calls!.status(o, id),
+            show: (o: string, id: string) => local.calls!.show(o, id),
+          },
+        }
+      : {}),
   };
 }
 

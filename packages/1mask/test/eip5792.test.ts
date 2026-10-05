@@ -65,6 +65,16 @@ describe("EIP-5792 off (no calls host): exactly as before", () => {
     await expect(d("wallet_getCapabilities", [EVM_ADDR])).rejects.toMatchObject({ code: 4200 });
   });
 
+  it("a host can switch it off for a while (enabled() false → 4200, e.g. another device is signing)", async () => {
+    let on = true;
+    const { d, permissions } = make({ calls: { ...host(), enabled: () => on } });
+    await permissions.grant(O, "evm");
+    expect(await d("wallet_getCapabilities", [EVM_ADDR])).toBeTruthy();
+    on = false;
+    await expect(d("wallet_getCapabilities", [EVM_ADDR])).rejects.toMatchObject({ code: 4200 });
+    await expect(d("wallet_sendCalls", sendCalls())).rejects.toMatchObject({ code: 4200 });
+  });
+
   it("other methods are untouched by turning it on", async () => {
     const off = make({}, false);
     const on = make();

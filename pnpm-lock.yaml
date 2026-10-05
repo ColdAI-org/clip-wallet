@@ -198,6 +198,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
+      '@clip-wallet/connect':
+        specifier: workspace:*
+        version: link:../../packages/connect
       '@clip-wallet/ui':
         specifier: workspace:*
         version: link:../../packages/ui

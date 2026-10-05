@@ -394,7 +394,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       return approve(makeReq(origin, "evm", net, method, params));
     }
 
-    if (callsDispatch && isCallsMethod(method)) return callsDispatch(origin, method, params);
+    if (callsOn() && isCallsMethod(method)) return callsDispatch!(origin, method, params);
 
     // Read-only JSON-RPC: proxied to the background's RPC, no prompt.
     const req = makeReq(origin, "evm", net, method, params);
@@ -526,6 +526,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   /* ------------------------------------------------------------ EIP-5792 (opt-in) */
 
   const callsDispatch = opts.calls ? createCallsDispatch({ permitted, accounts, approve, makeReq, candidates }, opts.calls) : undefined;
+  const callsOn = () => !!callsDispatch && opts.calls!.enabled?.() !== false;
 
   /* ------------------------------------------------------------ public */
 
@@ -541,7 +542,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "evm" && (EVM_METHODS.rejected as readonly string[]).includes(method)) {
       return dispatchEvm(origin, method, params);
     }
-    if (!injectedAllowlist(family).has(method) && !(family === "evm" && callsDispatch && isCallsMethod(method))) throw rpcError.unsupportedMethod(method);
+    if (!injectedAllowlist(family).has(method) && !(family === "evm" && callsOn() && isCallsMethod(method))) throw rpcError.unsupportedMethod(method);
     // Refresh knownPermitted first, so a connected site's network is the same from its very first call.
     if (FAMILIES.includes(family)) await permitted(origin, family);
     if (family === "evm") return dispatchEvm(origin, method, params);

@@ -78,18 +78,30 @@ export class BackgroundCalls implements CallsHost {
     return null;
   }
 
-  /** Runs an approved batch (`calls` = each call's decoded request, for Activity). */
-  start(req: DappRequest, approvalId: string, calls: DecodedRequest[], app: { name: string; origin: string }): Promise<SendCallsResult> {
-    return this.run.start(req, approvalId, {
+  /** Batches whose final Activity entry is written (the in-progress one must not overwrite it). */
+  private readonly finished = new Set<string>();
+
+  /**
+   * Runs an approved batch (`calls` = each call's decoded request). Activity gets one entry right away (in progress)
+   * that the run updates when the batch finishes or stops. `activity` upserts by id.
+   */
+  async start(req: DappRequest, approvalId: string, calls: DecodedRequest[], app: { name: string; origin: string }, fiatValue?: number): Promise<SendCallsResult> {
+    const res = await this.run.start(req, approvalId, {
       walletConnect: req.via === "walletconnect",
-      done: (rec) => this.o.activity(activityOf(rec, calls, app)),
+      done: async (rec) => {
+        this.finished.add(rec.id);
+        await this.o.activity(activityOf(rec, calls, app, false, fiatValue));
+      },
     });
+    const rec = await this.store.get(req.origin, res.id);
+    if (rec && !this.finished.has(rec.id)) await this.o.activity(activityOf(rec, calls, app, true, fiatValue)).catch(() => undefined);
+    return res;
   }
 }
 
 /** One Activity entry for a finished (or stopped) batch, with one leg per call. */
-export function activityOf(rec: BatchRecord, calls: DecodedRequest[], app: { name: string; origin: string }): ActivityEntry {
-  const stoppedAt = rec.calls.findIndex((c) => c.state !== "sent" || (c.receipt && c.receipt.status !== "0x1"));
+export function activityOf(rec: BatchRecord, calls: DecodedRequest[], app: { name: string; origin: string }, running = false, fiatValue?: number): ActivityEntry {
+  const stoppedAt = running ? -1 : rec.calls.findIndex((c) => c.state !== "sent" || (c.receipt && c.receipt.status !== "0x1"));
   const title = stoppedAt < 0 ? msg("bg.act.batch", { count: rec.calls.length, app: app.name }) : msg("bg.act.batchStopped", { count: rec.calls.length, app: app.name, n: stoppedAt + 1 });
   return {
     id: rec.id,
@@ -97,13 +109,15 @@ export function activityOf(rec: BatchRecord, calls: DecodedRequest[], app: { nam
     titleMsg: title,
     kind: "sign",
     app,
+    // What left the balance, as the approval showed it (only when every call went through or is under way).
+    ...(fiatValue !== undefined && (running || stoppedAt < 0) ? { fiatValue: -fiatValue } : {}),
     timestamp: Date.now(),
-    status: stoppedAt < 0 ? "done" : "failed",
+    status: running ? "pending" : stoppedAt < 0 ? "done" : "failed",
     legs: rec.calls.map((c, i) => ({
       title: calls[i]?.title ?? "",
       ...(calls[i]?.titleMsg ? { titleMsg: calls[i]!.titleMsg } : {}),
       networkId: rec.networkId,
-      status: c.receipt ? (c.receipt.status === "0x1" ? "done" : "failed") : c.state === "sent" ? "pending" : "failed",
+      status: c.receipt ? (c.receipt.status === "0x1" ? "done" : "failed") : c.state === "sent" || running ? "pending" : "failed",
       ...(c.hash ? { txHash: c.hash } : {}),
     })),
   };

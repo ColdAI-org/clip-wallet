@@ -109,6 +109,8 @@ export interface ChainCapabilities {
 
 /** What the wallet host answers for the Wallet Call API (the extension background / mobile engine). */
 export interface CallsHost {
+  /** False = the methods answer 4200 for now (e.g. another device is signing for this wallet). Default true. */
+  enabled?(): boolean;
   /** ERC-7682 per network: where Clip can bring in money from the user's other balances. Static, never balances. */
   auxiliaryFunds(networkIds: NetworkId[]): Record<NetworkId, AuxiliaryFundsCapability | undefined> | Promise<Record<NetworkId, AuxiliaryFundsCapability | undefined>>;
   /** Status of a batch this origin sent; undefined = unknown id (5730). Other origins' ids are unknown too. */

@@ -33,6 +33,8 @@ function pin(file, fields) {
 }
 pin("package.json", ["devDependencies"]);
 pin("packages/extension/package.json", ["dependencies", "devDependencies"]);
+// The demo dapp uses Clip Connect (@clip-wallet/connect) for its Clip Connect page.
+pin("packages/nextjs/package.json", ["dependencies", "devDependencies"]);
 
 const harness = join(root, "tools", "harness", "check.mjs");
 const copy = join(tpl, "tools", "harness", "check.mjs");

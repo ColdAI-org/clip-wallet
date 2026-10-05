@@ -24,6 +24,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@clip-wallet/connect": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
     "@mysten/wallet-standard": "^0.21.32",
     "@playwright/test": "^1.63.0",

@@ -165,6 +165,25 @@ extension's build config. It is never hardcoded.
 - **Errors.** WC SDK codes: 5000 user rejected, 5100 unsupported chains, 5101 unsupported methods,
   3001 unauthorized method, 6000 user disconnected.
 
+## EIP-5792 Wallet Call API and ERC-7682 auxiliary funds (opt-in)
+
+Sources (read 2026-10-05): https://eips.ethereum.org/EIPS/eip-5792 (Final), https://eips.ethereum.org/EIPS/eip-7682
+(Draft), https://docs.walletconnect.com/wallets/web/eip5792 (CAIP-25 `scopedProperties`).
+
+The methods are on only when the host passes `calls` (a `CallsHost`) to `createOneMaskRouter` or
+`createWalletConnectWallet`. Without it, they answer 4200 as before. `CallsHost.enabled()` can switch them off for a
+while, for example while another device signs (link/remote).
+
+| Method | Behaviour |
+| --- | --- |
+| `wallet_getCapabilities` | Connected sites and own addresses only (4100). Per chain it returns `atomic: { status: "unsupported" }` (EOA accounts) and `auxiliaryFunds: { supported, assets }` where the host can bring money in. Chains the wallet doesn't have are left out. |
+| `wallet_sendCalls` | Validated in `shared/calls.ts`: version, hex chainId, up to 10 calls, unknown non-optional capabilities (5700), unknown chain (5710), too many calls (5740), `atomicRequired: true` (5760), ERC-7682 `requiredAssets` (5772 / 5773). Then one approval on the chain the params name, with method `wallet_sendCalls`. The host decodes every call (see `@clip-wallet/engine/calls-batch`). |
+| `wallet_getCallsStatus`, `wallet_showCallsStatus` | Only the origin that sent a batch can see it. Any other id gives 5730. |
+
+Over WalletConnect, the four methods are served on eip155 when the app's proposal asks for them. The approved session
+carries each chain's capabilities in `scopedProperties`. `wallet_sendCalls` goes to the chain its params name, which
+must be in the session.
+
 ## Security properties (tested)
 
 - The content script ignores messages from other windows or frames (`event.source !== window`),

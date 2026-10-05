@@ -34,7 +34,7 @@ packages/extension/clip.config.ts         theme, networks, routing, hardware, pa
 packages/extension/wxt.config.ts          clipWallet({ config }): the whole build
 packages/extension/src/entrypoints/       one-line entrypoints into the kit
 packages/extension/MAINNET.md             the owner's mainnet checklist
-packages/nextjs/                          Scaffold-HBAR dapp: app/page.tsx (demo), app/debug, contracts/
+packages/nextjs/                          Scaffold-HBAR dapp: app/page.tsx (demo), app/clip-connect (Clip Connect demo), app/debug, contracts/
 docs/listings/                            listing drafts (generated)
 tools/harness/check.mjs                   the rules above, as checks
 ```

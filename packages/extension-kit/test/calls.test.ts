@@ -58,7 +58,9 @@ describe("wallet_sendCalls with auxiliary funds (fixture Connector)", () => {
     expect(st.receipts).toHaveLength(2);
     // Only the app that sent it can read it.
     expect(await calls.status("https://other.example", rec!.id)).toBeUndefined();
-    const entry = await until(async () => (await service.handle({ type: "getActivity" })).find((e) => e.id === rec!.id), () => true);
+    // In Activity at once (in progress), replaced by the finished entry: never two.
+    const entry = await until(async () => (await service.handle({ type: "getActivity" })).find((e) => e.id === rec!.id), (e) => e.status === "done");
+    expect((await service.handle({ type: "getActivity" })).filter((e) => e.id === rec!.id)).toHaveLength(1);
     expect(entry).toMatchObject({ title: "2 steps on Magic Eden", status: "done" });
     expect(entry.legs.map((l) => l.title)).toEqual(["Pay 10 USDC", "Pay 15 USDC"]);
     expect(deps.auxiliaryFundsSources?.length).toBeGreaterThan(0);

@@ -8,7 +8,7 @@
  * gives an app one "Connect" button that prefers Clip. Use @clip-wallet/connect's `connect()` (or the React hooks)
  * on the same provider for pay() with auxiliary funds.
  */
-import { injected } from "@wagmi/core";
+import { injected, type CreateConnectorFn } from "@wagmi/core";
 import { CLIP_WALLET, discovered, rankEip6963, startDiscovery, type Preference } from "./discovery.js";
 
 export interface ClipConnectorParameters {
@@ -17,7 +17,7 @@ export interface ClipConnectorParameters {
   shimDisconnect?: boolean;
 }
 
-export function clipConnect(parameters: ClipConnectorParameters = {}) {
+export function clipConnect(parameters: ClipConnectorParameters = {}): CreateConnectorFn {
   startDiscovery();
   const prefer = parameters.prefer ?? CLIP_WALLET;
   // `target` typed loosely: wagmi's Target type differs between v2 and v3 (both are supported peers).
