@@ -1,6 +1,6 @@
 import { defineConfig } from "wxt";
 import clipConfig from "./clip.config";
-import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { PASSKEY_BRIDGE_URL } from "./src/app-settings";
@@ -12,7 +12,13 @@ import pkg from "./package.json" with { type: "json" };
 
 /** Fixture mode: mock chains/1Mask/route/WalletConnect + dev simulator. Default: real packages. */
 const MOCKS = process.env.CLIP_MOCKS === "1";
-const CHANNEL = `clip-${randomUUID()}`;
+/**
+ * postMessage channel between the inpage script and the content script. It is visible to every page (the inpage
+ * script runs in the page's world), so it is a namespace, not a secret: the content script still checks source,
+ * schema and size, and the background adds the origin. Derived from the version and SOURCE_DATE_EPOCH so two
+ * builds of the same commit are byte-identical (scripts/repro-check.sh).
+ */
+const CHANNEL = `clip-${createHash("sha256").update(`${pkg.version}:${process.env.SOURCE_DATE_EPOCH ?? "dev"}`).digest("hex").slice(0, 16)}`;
 const ICON = `data:image/svg+xml;base64,${readFileSync(new URL("./icon.svg", import.meta.url)).toString("base64")}`;
 const PUBLIC_NETWORKS = walletNetworks(clipConfig).map((n) => ({ ...n, rpcUrls: n.rpcUrls.slice(0, 1) }));
 /**
@@ -106,7 +112,21 @@ export default defineConfig({
       ...(plugins ? { sandbox: { pages: [SANDBOX_PAGE] } } : {}),
       // Lets the passkey web-bridge page hand back a PRF result (Chromium; Firefox lacks externally_connectable).
       ...(browser !== "firefox" ? { externally_connectable: { matches: [`${bridgeOrigin}/*`] } } : {}),
-      ...(browser === "firefox" ? { browser_specific_settings: { gecko: { id: `wallet@${clipConfig.rdns.split(".").reverse().join(".")}`, strict_min_version: "128.0" } } } : {}),
+      // Firefox built-in data consent (required for new AMO listings since 2025-11-03; Firefox 140+):
+      // https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/
+      // Required: addresses and signed transactions go to network nodes and indexers (the wallet can't work
+      // without that). Optional: the email address for passkey backup, only if the user turns backup on.
+      ...(browser === "firefox"
+        ? {
+            browser_specific_settings: {
+              gecko: {
+                id: `wallet@${clipConfig.rdns.split(".").reverse().join(".")}`,
+                strict_min_version: "140.0",
+                data_collection_permissions: { required: ["financialAndPaymentInfo"], optional: ["personallyIdentifyingInfo"] },
+              },
+            },
+          }
+        : {}),
     };
   },
   vite: () => ({

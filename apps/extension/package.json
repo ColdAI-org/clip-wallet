@@ -11,6 +11,8 @@
     "build:firefox": "wxt build -b firefox --mv3",
     "build:fixtures": "CLIP_MOCKS=1 wxt build",
     "zip": "wxt zip",
+    "package": "node scripts/package.mjs",
+    "store:shots": "CLIP_MOCKS=1 wxt build && STORE_SHOTS=1 playwright test e2e/store.spec.ts",
     "typecheck": "wxt prepare && tsc -p . --noEmit",
     "test": "vitest run",
     "e2e": "wxt build && CLIP_MOCKS=1 wxt build && playwright test"
