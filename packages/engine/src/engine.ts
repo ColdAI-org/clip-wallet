@@ -68,6 +68,10 @@ interface Permission {
 interface Pending {
   view: ApprovalView;
   request?: DappRequest;
+  /** Transactions: the account the request was decoded for (audit APPR-02). Approve signs with it or not at all. */
+  accountId?: string;
+  /** Transactions: an Approve is running (audit APPR-01). One approval prepares, signs and broadcasts once. */
+  busy?: boolean;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
@@ -762,7 +766,7 @@ export class WalletEngine implements DappHost {
       ...(extra.recipient ? { recipient: { address: extra.recipient, family: network.family } } : {}),
     };
     const d = this.deferred<unknown>();
-    this.approvals.set(id, { view, request, resolve: d.resolve, reject: d.reject });
+    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve: d.resolve, reject: d.reject });
     // Real sends feed the look-alike check (security's RecipientLog), once they go through.
     if (extra.recipient && this.recipients) {
       const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
@@ -826,6 +830,18 @@ export class WalletEngine implements DappHost {
       return;
     }
 
+    // One Approve at a time per request (audit APPR-01): a second click while the first is preparing, signing or
+    // broadcasting must not prepare and broadcast the transaction again. Checked and set before any await.
+    if (p.busy) throw this.hardware?.owns(p.accountId ?? "") ? new ClipError("Your hardware wallet is already signing this request.", "hw/in-progress") : new ClipError("This request is already being approved.", "approval/in-progress");
+    p.busy = true;
+    try {
+      await this.approveTransaction(id, p, allowBlind);
+    } finally {
+      p.busy = false;
+    }
+  }
+
+  private async approveTransaction(id: string, p: Pending, allowBlind: boolean): Promise<void> {
     const req = p.request!;
     const decoded = p.view.decoded!;
     if (p.view.plan?.problem) throw new ClipError(p.view.plan.problem, "approval/not-payable");
@@ -835,6 +851,12 @@ export class WalletEngine implements DappHost {
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
     const ctx = await this.ctx(network.id, req.origin);
+    // The approval screen was built for p.accountId (audit APPR-02). If the site's account changed since (Settings →
+    // Accounts, a hardware account picked, a WalletConnect session re-pointed), don't sign with an account the user
+    // never saw in this request.
+    if (p.accountId !== undefined && ctx.account.id !== p.accountId) {
+      throw new ClipError("The account for this request changed after it arrived. Reject it and ask the app to send it again.", "approval/account-changed");
+    }
     let result: unknown;
     const hw = this.hardware?.owns(ctx.account.id) ? this.hardware : undefined;
     try {
