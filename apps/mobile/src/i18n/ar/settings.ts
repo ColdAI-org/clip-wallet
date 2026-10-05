@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "عبارة الاسترداد والنسخ الاحتياطي بمفتاح المرور",
   "m.settings.menu.accountsHint": "إضافة الحسابات وإعادة تسميتها واختيارها",
   "m.settings.menu.hardwareHint": "Ledger وKeystone",
+  "m.settings.menu.security": "الأمان",
+  "m.settings.menu.securityHint": "أذونات التطبيقات وتنظيف الرموز المزعجة والحماية من الاحتيال",
+  "m.settings.menu.plugins": "المكوّنات الإضافية",
+  "m.settings.menu.pluginsHint": "إضافات تضيف ملاحظات إلى الطلبات أو تبحث عن الأسماء",
 } satisfies Record<keyof typeof en, string>;

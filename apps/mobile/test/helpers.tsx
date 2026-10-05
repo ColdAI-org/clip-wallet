@@ -4,7 +4,7 @@
  */
 import { act, render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
-import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSocialClient } from "@clip-wallet/engine";
+import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSecurityClient, createEnginePluginsClient, createEngineSocialClient, type EnginePlugins } from "@clip-wallet/engine";
 import { EngineHardware, createEngineHardwareClient } from "@clip-wallet/engine/hardware";
 import { createSocial } from "@clip-wallet/engine/social";
 import type { Notice } from "@clip-wallet/social";
@@ -14,6 +14,7 @@ import { WalletProvider, type Route } from "../src/ui/context";
 import { BASE_SEPOLIA, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../../packages/engine/test/fixtures";
 import { fakeHardwareDeps } from "../../../packages/engine/test/hardware-fixtures";
 import { FEATURE_ANSWERS, QUEUE } from "./feature-fixtures";
+import { SECURITY_ANSWERS } from "./security-fixtures";
 
 export const WORDS = Array.from({ length: 12 }, (_, i) => `word${i + 1}`);
 
@@ -33,9 +34,18 @@ export interface TestWallet extends MobileWallet {
   ledgerPicked: { id: string; name: string } | null;
   /** Local notifications the social service showed. */
   notices: Notice[];
+  /** sec* requests the Security screens made, in order. */
+  securityCalls: { type: string; [k: string]: unknown }[];
 }
 
-export function testWallet(answers: Partial<Record<string, (m: Record<string, unknown>) => unknown>> = {}): TestWallet {
+export interface TestWalletOptions {
+  /** Answers for sec* requests (default: security-fixtures.ts). Return QUEUE to queue a wallet approval. */
+  security?: Partial<Record<string, (m: Record<string, unknown>) => unknown>>;
+  /** Clip Plugins on the engine (default: none, so the Plugins entry is hidden). */
+  plugins?: (engine: WalletEngine, kv: MemoryKV) => EnginePlugins;
+}
+
+export function testWallet(answers: Partial<Record<string, (m: Record<string, unknown>) => unknown>> = {}, opts: TestWalletOptions = {}): TestWallet {
   const events = new Events();
   const vault = new PhraseVault();
   const env = makeEnv((id) => events.emit({ type: "approval", id }));
@@ -85,6 +95,27 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
     }) as never,
   });
   const features = createEngineFeaturesClient(engine, { openExternal: async (url) => void opened.push(url) });
+  // Security service with sample answers (the real one scans RPCs/indexers). Revokes and cleanups queue a real
+  // approval on the engine, like SecurityService does through host.enqueue.
+  const securityCalls: TestWallet["securityCalls"] = [];
+  engine.attachSecurity({
+    refine: async (_r, d) => d,
+    assessSite: async () => [],
+    threat: { isKnownScam: () => false } as never,
+    cleanup: { hidden: async () => new Set<string>() } as never,
+    handle: (async (m: { type: string; [k: string]: unknown }) => {
+      securityCalls.push(m);
+      const answer = opts.security?.[m.type] ?? SECURITY_ANSWERS[m.type];
+      if (!answer) throw new Error(`not in tests: ${m.type}`);
+      const out = await answer(m);
+      if (out === QUEUE) {
+        const { id } = await engine.enqueueWalletRequest({ id: `sec-${securityCalls.length}`, origin: "wallet", via: "injected", family: "evm", networkId: SEPOLIA.id, method: "personal_sign", params: ["0x68656c6c6f"] }, "Clip Wallet");
+        return { queued: { approvalId: id, steps: ["Remove permission"] }, hidden: 0 };
+      }
+      return out;
+    }) as never,
+  });
+  if (opts.plugins) engine.attachPlugins(opts.plugins(engine, kv));
   const social = createEngineSocialClient(engine, { requestNotificationPermission: async () => true });
   let ledgerPicked: TestWallet["ledgerPicked"] = null;
   const wallet: TestWallet = {
@@ -114,6 +145,10 @@ export function testWallet(answers: Partial<Record<string, (m: Record<string, un
     confirmPresence: async () => true,
     social,
     notices,
+    securityCalls,
+    security: createEngineSecurityClient(engine),
+    plugins: opts.plugins ? createEnginePluginsClient(engine) : null,
+    pluginSandboxes: null,
     pollNotifications: async () => undefined,
     events,
     argon2: { kind: "native", fn: async () => new Uint8Array(32), selfTest: Promise.resolve(true) },

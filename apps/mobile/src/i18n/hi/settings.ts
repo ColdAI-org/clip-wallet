@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "रिकवरी फ़्रेज़ और पासकी बैकअप",
   "m.settings.menu.accountsHint": "अकाउंट जोड़ें, उनका नाम बदलें और चुनें",
   "m.settings.menu.hardwareHint": "Ledger और Keystone",
+  "m.settings.menu.security": "सुरक्षा",
+  "m.settings.menu.securityHint": "ऐप अनुमतियां, स्पैम सफ़ाई और स्कैम से सुरक्षा",
+  "m.settings.menu.plugins": "प्लगइन",
+  "m.settings.menu.pluginsHint": "ऐसे ऐड-ऑन जो रिक्वेस्ट में नोट जोड़ते हैं या नाम खोजते हैं",
 } satisfies Record<keyof typeof en, string>;

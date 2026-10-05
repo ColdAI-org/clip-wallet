@@ -93,4 +93,10 @@ Example: `examples/address-label/` (insight only: names the zero/burn address an
   - registry gating (off by default, Advanced only, explicit confirm for the exact version)
 - `example.test.ts` covers the address-label plugin end to end through `HostBridgeServer`.
 
+- `portable.test.ts` covers the install path without WebCrypto, DecompressionStream or a strict TextDecoder (React Native).
+
 Not covered by unit tests: the real iframe/offscreen wiring in Chrome (see `extension/` templates and docs/phase25/integration/extensibility.md).
+
+## On the phone
+
+`apps/mobile/src/plugins` runs the same runtime in one hidden `react-native-webview` per plugin: an inline SES page at about:blank with a no-network CSP, react-native-webview's `postMessage` as the only bridge (schema-checked both ways), and the same `PluginHost`/`PluginRegistry`. Hashes use `@noble/hashes` and gunzip is injectable (`NpmOptions.gunzip`), because Hermes has neither WebCrypto nor DecompressionStream. Details and device-only checks: docs/phase25/integration/mobile-parity.md.

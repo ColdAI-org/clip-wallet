@@ -9,13 +9,14 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { BalanceChange } from "@clip-wallet/core";
 import type { Family } from "@clip-wallet/core";
-import { formatFiat, formatUnits, hueFor, readyInMessage, userMessageOf, type ApprovalView, formatLocale } from "@clip-wallet/ui";
+import { formatFiat, formatUnits, hueFor, readyInMessage, userMessageOf, type ApprovalView, type PluginInsightView, formatLocale } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Notice, Row, T, Toggle, Warnings } from "../ui/kit";
 import { IconAlert, IconChevron, IconShield } from "../ui/icons";
 import { APP } from "../env";
 import { useMobileT, type MobileMessageId } from "../i18n";
 import { ContactAvatar } from "./Contacts";
+import { PluginInsights } from "./Plugins";
 
 /** readyInMessage's ids, in the mobile catalog ("common.readyIn.x" → "m.common.readyIn.x"). */
 function useReadyIn() {
@@ -195,6 +196,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
           <Row key={l.label} label={l.label} value={l.value} />
         ))}
       </Card>
+      {/* Clip Plugins' notes: their own "From <plugin>" cards, never mixed into the wallet's lines or warnings. */}
+      <PluginInsights insights={(d as { pluginInsights?: PluginInsightView[] }).pluginInsights} />
       <Pressable onPress={() => setOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
         <T color={theme.c.accent} style={{ fontWeight: "600" }}>
           {t("m.approval.details")}

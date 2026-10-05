@@ -28,6 +28,9 @@ import { Contacts } from "./screens/Contacts";
 import { ContactEdit } from "./screens/ContactEdit";
 import { Notifications } from "./screens/Notifications";
 import { useNotificationBridge } from "./ui/notifications";
+import { Cleanup, Permissions, Protection, SecurityHome } from "./screens/Security";
+import { PluginSettings } from "./screens/Plugins";
+import { PluginSandboxes } from "./plugins/PluginSandboxes";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
 
@@ -86,6 +89,16 @@ function Routes(props: { route: Route }) {
       return <ContactEdit key={r.id ?? "new"} id={r.id} address={r.address} family={r.family} />;
     case "notifications":
       return <Notifications />;
+    case "security":
+      return <SecurityHome />;
+    case "security-permissions":
+      return <Permissions />;
+    case "security-cleanup":
+      return <Cleanup />;
+    case "security-protection":
+      return <Protection />;
+    case "plugins":
+      return <PluginSettings />;
   }
 }
 
@@ -163,6 +176,8 @@ export function App(props: { wallet: MobileWallet; initialRoute?: Route }) {
       <WalletProvider wallet={props.wallet} initialRoute={props.initialRoute}>
         <Shell pendingLink={link} clearLink={() => setLink(null)} />
       </WalletProvider>
+      {/* Clip Plugins: hidden sandboxes, one per running plugin (none unless Advanced mode + Plugins are on). */}
+      {props.wallet.pluginSandboxes && <PluginSandboxes channels={props.wallet.pluginSandboxes} />}
     </SafeAreaProvider>
   );
 }

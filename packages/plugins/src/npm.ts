@@ -11,6 +11,7 @@
  *
  * Nothing from the package runs here. The result is a PendingInstall the UI shows as a permission prompt.
  */
+import { sha256 as nobleSha256, sha512 as nobleSha512 } from "@noble/hashes/sha2.js";
 import { MANIFEST_FILE, MAX_BUNDLE_BYTES, ManifestError, describePermissions, parseManifest, type PluginManifest } from "./manifest.js";
 
 export const NPM_REGISTRY = "https://registry.npmjs.org";
@@ -49,18 +50,41 @@ export function pluginIdOf(name: string): string {
   return name.replace(/^@/, "").replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
 }
 
-function toHex(b: ArrayBuffer): string {
-  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+function toHex(b: Uint8Array): string {
+  return [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * SHA-256 / SHA-512 with @noble/hashes rather than crypto.subtle: the same code then runs in the extension and
+ * in React Native (Hermes has no WebCrypto). Async to keep the original signature.
+ */
 export async function sha256Hex(bytes: Uint8Array | string): Promise<string> {
   const data = typeof bytes === "string" ? new TextEncoder().encode(bytes) : bytes;
-  return toHex(await crypto.subtle.digest("SHA-256", data as BufferSource));
+  return toHex(nobleSha256(data));
 }
 
-function b64(bytes: ArrayBuffer): string {
+/**
+ * Strict UTF-8 decoding. `TextDecoder(..., { fatal: true })` where the platform has it; otherwise (the
+ * fast-text-encoding polyfill on React Native refuses `fatal`) decode leniently and require that re-encoding
+ * gives back the same bytes, which fails exactly when a U+FFFD replacement was inserted.
+ */
+export function decodeUtf8Strict(bytes: Uint8Array): string {
+  let fatal: TextDecoder | null = null;
+  try {
+    fatal = new TextDecoder("utf-8", { fatal: true });
+  } catch {
+    fatal = null;
+  }
+  if (fatal) return fatal.decode(bytes);
+  const s = new TextDecoder("utf-8").decode(bytes);
+  const back = new TextEncoder().encode(s);
+  if (back.length !== bytes.length || back.some((b, i) => b !== bytes[i])) throw new TypeError("invalid UTF-8");
+  return s;
+}
+
+function b64(bytes: Uint8Array): string {
   let s = "";
-  for (const x of new Uint8Array(bytes)) s += String.fromCharCode(x);
+  for (const x of bytes) s += String.fromCharCode(x);
   return btoa(s);
 }
 
@@ -71,11 +95,13 @@ export async function checkIntegrity(bytes: Uint8Array, integrity: string): Prom
     .filter((s) => s.startsWith("sha512-"))
     .map((s) => s.slice(7));
   if (!wanted.length) return false;
-  const got = b64(await crypto.subtle.digest("SHA-512", bytes as BufferSource));
+  const got = b64(nobleSha512(bytes));
   return wanted.includes(got);
 }
 
-async function gunzip(bytes: Uint8Array): Promise<Uint8Array> {
+async function gunzip(bytes: Uint8Array, custom?: NpmOptions["gunzip"]): Promise<Uint8Array> {
+  if (custom) return custom(bytes, MAX_UNPACKED_BYTES);
+  if (typeof DecompressionStream !== "function") throw new InstallError("bad-package", "This version can't unpack plugins.");
   const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"));
   const reader = stream.getReader();
   const parts: Uint8Array[] = [];
@@ -129,7 +155,14 @@ export function untar(tar: Uint8Array): Map<string, Uint8Array> {
 export interface NpmOptions {
   fetch?: typeof fetch;
   registry?: string;
+  /**
+   * gunzip for platforms without DecompressionStream (React Native / Hermes). Must throw once the output passes
+   * `maxBytes` (a small tarball can inflate to gigabytes).
+   */
+  gunzip?: (bytes: Uint8Array, maxBytes: number) => Uint8Array | Promise<Uint8Array>;
 }
+
+export { MAX_UNPACKED_BYTES };
 
 /** Downloads and verifies a plugin. Throws InstallError (plain message) on any problem. */
 export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { version?: string } = {}): Promise<PendingInstall> {
@@ -161,17 +194,16 @@ export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { v
 
   let files: Map<string, Uint8Array>;
   try {
-    files = untar(await gunzip(tgz));
+    files = untar(await gunzip(tgz, opts.gunzip));
   } catch (e) {
     if (e instanceof InstallError) throw e;
     throw new InstallError("bad-package", "That plugin package is damaged.");
   }
-  const dec = new TextDecoder("utf-8", { fatal: true });
   const readJson = (path: string): unknown => {
     const b = files.get(`package/${path}`);
     if (!b) return undefined;
     try {
-      return JSON.parse(dec.decode(b));
+      return JSON.parse(decodeUtf8Strict(b));
     } catch {
       return undefined;
     }
@@ -193,7 +225,7 @@ export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { v
   if ((await sha256Hex(bundle)) !== manifest.bundle.sha256) throw new InstallError("integrity", "That plugin's code doesn't match its manifest, so it wasn't installed.");
   let source: string;
   try {
-    source = dec.decode(bundle);
+    source = decodeUtf8Strict(bundle);
   } catch {
     throw new InstallError("bad-package", "That plugin package is damaged.");
   }
