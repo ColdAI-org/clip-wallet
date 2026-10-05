@@ -26,7 +26,7 @@ WORK="$(mktemp -d "$ROOT/.repro/run.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
 git update-ref refs/repro-check/src "$COMMIT"
-git bundle create "$WORK/src.bundle" refs/repro-check/src >/dev/null 2>&1
+git bundle create "$WORK/src.bundle" refs/repro-check/src 2>/dev/null
 git update-ref -d refs/repro-check/src
 echo "repro-check: commit $COMMIT, SOURCE_DATE_EPOCH=$EPOCH, image $IMAGE"
 
@@ -41,7 +41,8 @@ run() {
     "$IMAGE" bash -euo pipefail -c "
       umask $mask
       git config --global advice.detachedHead false
-      git clone -q /in/src.bundle /work && cd /work && git checkout -q $COMMIT
+      git init -q /work && cd /work
+      git fetch -q /in/src.bundle refs/repro-check/src && git checkout -q $COMMIT
       npm install -g --silent pnpm@$PNPM_VERSION >/dev/null
       pnpm install --frozen-lockfile --reporter=silent --filter \"@clip-wallet/extension...\"
       pnpm --filter @clip-wallet/extension package >/out/package.log 2>&1 || { tail -50 /out/package.log; exit 1; }
