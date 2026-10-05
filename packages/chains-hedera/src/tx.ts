@@ -80,6 +80,12 @@ export function parseTransaction(bytes: Uint8Array): ParsedTransaction {
   }
   if (!entries.length) throw new Error("no transactions found in bytes");
   for (const e of entries) if (!e.body.kind) throw new Error("transaction body has no data");
+  // Audit 2026-10 (HED-01): decode() describes the first body and prepare() signs every body, so they must be
+  // the same transaction sent to different nodes. A list whose bodies differ in anything but nodeAccountID (a
+  // second, hidden transfer; multi-chunk messages) is refused rather than half-shown.
+  const shape = (b: Uint8Array) => hex(concat(rawFields(b).filter((f) => f.field !== 2).map((f) => f.raw)));
+  const first = shape(entries[0]!.bodyBytes);
+  if (entries.some((e) => shape(e.bodyBytes) !== first)) throw new Error("the transactions in this list differ in more than the node");
   return { entries, frozen: entries.some((e) => e.signed), body: entries[0]!.body };
 }
 
