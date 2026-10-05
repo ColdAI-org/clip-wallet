@@ -6,6 +6,10 @@ packages:
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
+  # Desktop app (apps/desktop): downloads the Electron binary for this platform.
+  electron: true
+  # electron-builder's Squirrel.Windows helper; not used (NSIS + zip targets only).
+  electron-winstaller: false
   workerd: true
   protobufjs: false
   unrs-resolver: false

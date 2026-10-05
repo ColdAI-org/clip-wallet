@@ -33,6 +33,8 @@ export const VAULT_IMPORT_ALLOW = [
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
   // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
   /^apps\/mobile\/src\/background\//,
+  // The desktop app's main-process host (it builds the vault for @clip-wallet/engine; renderers and preloads never may).
+  /^apps\/desktop\/src\/main\/host\//,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
@@ -383,7 +385,7 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
             "vault-import-not-allowed",
             f,
             line(imp.offset),
-            "Only the extension background and the onboarding screen may import @clip-wallet/vault. Send a message to the background instead (type-only imports are fine).",
+            "Only the extension background, the mobile and desktop hosts and the onboarding screen may import @clip-wallet/vault. Send a message to the background instead (type-only imports are fine).",
           );
         }
       }

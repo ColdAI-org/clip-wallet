@@ -1,0 +1,6 @@
+out/
+release/
+test-results/
+playwright-report/
+# Built from @clip-wallet/1mask at build/typecheck/test time.
+src/preload/inpage.generated.ts
