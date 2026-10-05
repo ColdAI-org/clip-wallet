@@ -192,6 +192,8 @@ describe("decode", () => {
     expect(d.title).toBe("Approve 2 actions for app.example");
     expect(d.lines[0]).toEqual({ label: "Action 1", value: "Allow app.example to spend 0.000000000000000001 ETH" });
     expect(d.lines[1]).toEqual({ label: "Action 2", value: "Swap exact tokens for tokens on app.example" });
+    // Audit UNK-01: an app's own function is never presented as fully understood.
+    expect(d.warnings.map((w) => w.code)).toContain("unknown-call");
     expect(d.lines).toContainEqual({ label: "Swap exact tokens for tokens", value: "0x0000…b0b0 (2 values)" });
     expect(d.blind).toBe(false);
   });

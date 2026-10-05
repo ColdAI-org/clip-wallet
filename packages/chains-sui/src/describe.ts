@@ -262,6 +262,16 @@ export async function describeTransaction(data: TransactionData, bytes: Uint8Arr
     warnings.push({ level: "info", code: "network-matters", message: "Another account pays the network fee for this transaction." });
   }
 
+  // Audit UNK-01: an app's own Move functions can take any object passed to them (NFTs, kiosks, caps), and only coin
+  // balances are previewed. Say so instead of presenting the call as fully understood.
+  if (targets.length) {
+    warnings.push({
+      level: "caution",
+      code: "unknown-call",
+      message: `This runs ${o.host}'s own code. Clip Wallet shows coin changes only; items you own that it uses could leave your account.`,
+    });
+  }
+
   // Title: the plainest true sentence we can say.
   let title = `Approve a transaction for ${o.host}`;
   const others = [...recipients].filter((r) => r !== me);
