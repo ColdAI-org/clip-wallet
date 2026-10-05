@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "Deine Wallet wird übertragen…",
   "link.transfer.sent": "Deine Wallet ist jetzt auf {device}.",
   "link.transfer.received": "Deine Wallet ist auf diesem Gerät.",
+  "link.connector.title": "Browser-Erweiterung",
+  "link.connector.hint": "Damit schickt die {name}-Erweiterung in Chrome, Edge, Brave oder Firefox ihre Anfragen zur Freigabe hierher. Deine Schlüssel bleiben auf diesem Computer.",
+  "link.connector.ready": "Eingerichtet für {browsers}.",
+  "link.connector.none": "In keinem Browser eingerichtet.",
+  "link.connector.repair": "Neu einrichten",
+  "link.connector.remove": "Aus den Browsern entfernen",
 } satisfies Record<keyof typeof en, string>;

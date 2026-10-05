@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "正在转移你的钱包…",
   "link.transfer.sent": "你的钱包现在在 {device} 上。",
   "link.transfer.received": "你的钱包已在这台设备上。",
+  "link.connector.title": "浏览器扩展",
+  "link.connector.hint": "让 Chrome、Edge、Brave 或 Firefox 中的 {name} 扩展把请求发到这里供你确认。你的密钥始终留在这台电脑上。",
+  "link.connector.ready": "已为 {browsers} 设置。",
+  "link.connector.none": "尚未在任何浏览器中设置。",
+  "link.connector.repair": "重新设置",
+  "link.connector.remove": "从浏览器中移除",
 } satisfies Record<keyof typeof en, string>;

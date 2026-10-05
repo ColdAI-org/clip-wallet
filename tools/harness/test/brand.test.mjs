@@ -14,11 +14,11 @@ const mark = read("brand/clip-mark.svg");
 const dataUri = `data:image/svg+xml;base64,${mark.toString("base64")}`;
 
 test("icon.svg copies match brand/clip-mark.svg", () => {
-  for (const p of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg"]) assert.ok(read(p).equals(mark), `${p}: run node tools/brand/render.mjs`);
+  for (const p of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg", "apps/desktop/src/renderer/public/icon.svg"]) assert.ok(read(p).equals(mark), `${p}: run node tools/brand/render.mjs`);
 });
 
 test("inline identity icons are the brand mark, not a placeholder", () => {
-  for (const p of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts"]) {
+  for (const p of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts", "apps/desktop/src/shared/app-config.ts"]) {
     assert.ok(read(p).toString().includes(JSON.stringify(dataUri)), `${p}: run node tools/brand/render.mjs`);
   }
 });
@@ -44,6 +44,12 @@ test("rendered icons and store graphics have the sizes the stores ask for", () =
     "apps/mobile/assets/adaptive-icon.png": [1024, 1024],
     "apps/mobile/assets/adaptive-monochrome.png": [1024, 1024],
     "apps/mobile/assets/splash-icon.png": [1024, 1024],
+    "apps/desktop/build/icon.png": [1024, 1024],
+    "apps/desktop/build/icon-mac.png": [1024, 1024],
+    "apps/desktop/src/renderer/public/tray/trayTemplate.png": [16, 16],
+    "apps/desktop/src/renderer/public/tray/trayTemplate@2x.png": [32, 32],
+    "apps/desktop/src/renderer/public/tray/tray.png": [16, 16],
+    "apps/desktop/src/renderer/public/tray/tray@2x.png": [32, 32],
   };
   for (const [p, wh] of Object.entries(want)) assert.deepEqual(size(p), wh, p);
 });

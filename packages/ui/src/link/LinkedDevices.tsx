@@ -9,7 +9,7 @@ import { useRouter, useUi } from "../context";
 import { Button, Card, Empty, ErrorNote, Field, Qr, Screen, Spinner, Toggle } from "../components";
 import { relativeTime } from "../lib/format";
 import { useUiT } from "../i18n";
-import type { LinkStatusView, PairingView } from "./client";
+import type { BrowserConnectorView, LinkStatusView, PairingView } from "./client";
 import { useLink } from "./context";
 
 /** Status, refreshed when the background says so and every 1.5 s while a screen is open (pairing is live). */
@@ -124,7 +124,7 @@ export function LinkedDevices() {
         </section>
       )}
 
-      {status.platform === "extension" && (
+      {status.platform !== "mobile" && (
         <section className="clip-section" aria-label={t("link.signer.title")}>
           <h2 className="clip-section__title">{t("link.signer.title")}</h2>
           <p className="clip-hint" data-testid="signer-mode">
@@ -164,7 +164,7 @@ export function LinkedDevices() {
                     </span>
                   </span>
                   <span className="clip-row-buttons">
-                    {status.platform === "extension" && signers.includes(d) && status.signer.deviceId !== d.id && (
+                    {status.platform !== "mobile" && signers.includes(d) && status.signer.deviceId !== d.id && (
                       <Button variant="secondary" disabled={busy} onClick={() => run(() => link.useSigner({ deviceId: d.id }))}>
                         {t("link.signer.use")}
                       </Button>
@@ -206,6 +206,8 @@ export function LinkedDevices() {
           </div>
         )}
       </nav>
+
+      {link.browserConnector && <BrowserConnector />}
 
       {page && (
         <section className="clip-section" aria-label={t("link.handoff.title")}>
@@ -259,6 +261,51 @@ export function LinkedDevices() {
         </section>
       )}
     </Screen>
+  );
+}
+
+/** Clip Desktop: the extension connector (native-messaging host) per browser, with repair and remove. */
+function BrowserConnector() {
+  const t = useUiT();
+  const link = useLink();
+  const { config } = useUi();
+  const [view, setView] = useState<BrowserConnectorView | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void link.browserConnector?.status().then(setView, (e) => setErr(userMessageOf(e)));
+  }, [link]);
+  const act = async (fn: () => Promise<BrowserConnectorView>) => {
+    setErr(null);
+    setBusy(true);
+    try {
+      setView(await fn());
+    } catch (e) {
+      setErr(userMessageOf(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (!view?.available) return null;
+  const names: Record<string, string> = { chrome: "Chrome", chromium: "Chromium", edge: "Edge", brave: "Brave", firefox: "Firefox" };
+  const ready = view.browsers.filter((b) => b.installed).map((b) => names[b.browser]);
+  return (
+    <section className="clip-section" aria-label={t("link.connector.title")} data-testid="browser-connector">
+      <h2 className="clip-section__title">{t("link.connector.title")}</h2>
+      <p className="clip-hint">{t("link.connector.hint", { name: config.name })}</p>
+      <p role="status">{ready.length ? t("link.connector.ready", { browsers: ready.join(", ") }) : t("link.connector.none")}</p>
+      <ErrorNote message={err} />
+      <div className="clip-row-buttons">
+        <Button variant="secondary" disabled={busy} onClick={() => void act(() => link.browserConnector!.repair())}>
+          {t("link.connector.repair")}
+        </Button>
+        {ready.length > 0 && (
+          <Button variant="ghost" disabled={busy} onClick={() => void act(() => link.browserConnector!.remove())}>
+            {t("link.connector.remove")}
+          </Button>
+        )}
+      </div>
+    </section>
   );
 }
 

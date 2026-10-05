@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "आपका वॉलेट ले जाया जा रहा है…",
   "link.transfer.sent": "आपका वॉलेट अब {device} पर है।",
   "link.transfer.received": "आपका वॉलेट इस डिवाइस पर है।",
+  "link.connector.title": "ब्राउज़र एक्सटेंशन",
+  "link.connector.hint": "Chrome, Edge, Brave या Firefox में {name} एक्सटेंशन को अपनी रिक्वेस्ट यहां भेजने देता है, ताकि आप उन्हें देख सकें। आपकी कीज़ इसी कंप्यूटर पर रहती हैं।",
+  "link.connector.ready": "{browsers} के लिए सेट अप है।",
+  "link.connector.none": "किसी भी ब्राउज़र में सेट अप नहीं है।",
+  "link.connector.repair": "फिर से सेट अप करें",
+  "link.connector.remove": "ब्राउज़र से हटाएं",
 } satisfies Record<keyof typeof en, string>;

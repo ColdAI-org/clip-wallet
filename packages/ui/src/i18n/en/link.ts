@@ -78,4 +78,10 @@ export default {
   "link.transfer.moving": "Moving your wallet…",
   "link.transfer.sent": "Your wallet is now on {device}.",
   "link.transfer.received": "Your wallet is on this device.",
+  "link.connector.title": "Browser extension",
+  "link.connector.hint": "Lets the {name} extension in Chrome, Edge, Brave or Firefox send its requests here for approval. Your keys stay on this computer.",
+  "link.connector.ready": "Set up for {browsers}.",
+  "link.connector.none": "Not set up in any browser.",
+  "link.connector.repair": "Set up again",
+  "link.connector.remove": "Remove from browsers",
 } as const;
