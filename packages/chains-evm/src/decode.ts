@@ -13,7 +13,7 @@ import {
   parseAbi,
   toFunctionSelector,
 } from "viem";
-import { chainIdOf, quoteFees, tokenMeta } from "./chain.js";
+import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
 import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
 import { type TxParams, type TypedData, parsePersonalSign, parseTx, parseTypedData } from "./params.js";
@@ -57,10 +57,23 @@ function base(req: DappRequest): DecodedRequest {
   return { requestId: req.id, title: "", lines: [], balanceChanges: [], simulated: false, blind: false, warnings: [], networkId: req.networkId };
 }
 
-export async function decodeRequest(req: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
+/**
+ * The fee terms a transaction's approval screen was built on (audit 2026-10, EVM-04). prepare() signs these fee
+ * caps instead of re-quoting after approval, and refuses if the transaction now needs far more gas than shown.
+ */
+export interface FeeSnapshot {
+  fees: FeeQuote;
+  /** Gas the screen's fee was computed from; prepare() may use up to GAS_HEADROOM of it. */
+  gas: bigint;
+}
+
+/** prepare() may sign up to this multiple (numerator / 10) of the gas the screen was built on. */
+export const GAS_HEADROOM_TENTHS = 15n;
+
+export async function decodeRequest(req: DappRequest, ctx: ChainContext, onFee?: (s: FeeSnapshot) => void): Promise<DecodedRequest> {
   switch (req.method) {
     case "eth_sendTransaction":
-      return decodeTransaction(req, ctx);
+      return decodeTransaction(req, ctx, onFee);
     case "personal_sign":
     case "wallet_authenticate":
       return decodePersonalSign(req, ctx);
@@ -76,7 +89,7 @@ export async function decodeRequest(req: DappRequest, ctx: ChainContext): Promis
 
 /* ------------------------------------------------------------------ transactions */
 
-async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
+async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s: FeeSnapshot) => void): Promise<DecodedRequest> {
   const tx = parseTx(req, ctx);
   const d = base(req);
   const native = ctx.network.nativeAsset;
@@ -113,6 +126,12 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<D
   } else {
     d.balanceChanges = staticChanges;
   }
+  // Audit TOK-01: "you receive 1,000 USDC" from a look-alike contract is the classic fake-token bait.
+  for (const c of d.balanceChanges) {
+    if (c.asset.spam && !c.delta.startsWith("-")) {
+      d.warnings.push({ level: "caution", code: "known-scam", message: `The ${c.asset.symbol} you'd receive isn't the real one. It looks like a fake or spam token.` });
+    }
+  }
   if (sim.reverts) {
     d.warnings.push({ level: "danger", code: "simulation-failed", message: `This is expected to fail and would still cost a fee.${sim.revertReason ? ` Reason: ${sim.revertReason}` : ""}` });
   } else if (!sim.simulated) {
@@ -133,6 +152,11 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<D
         }
       }
       d.fee = { asset: native, amount: amount.toString() };
+      // The most this can cost: what prepare() will sign at most (fee caps from this quote, gas with headroom).
+      const perGas = fees.type === "eip1559" ? fees.maxFeePerGas! : fees.gasPrice!;
+      const maxGas = tx.gas ?? (gas * GAS_HEADROOM_TENTHS) / 10n;
+      d.lines.push({ label: "Network fee at most", value: `${formatAmount(maxGas * perGas, native.decimals)} ${native.symbol}` });
+      onFee?.({ fees, gas });
     }
   } catch {
     /* fee unknown: the UI shows "fee unavailable" */
@@ -344,18 +368,43 @@ function big(v: unknown): bigint | undefined {
   return undefined;
 }
 
+type TypeFields = Record<string, readonly { name: string; type: string }[]>;
+
+/**
+ * The message as EIP-712 hashes it: only the fields `types` declares, recursively (audit 2026-10, EVM-01). Keys the
+ * dapp adds beyond the declared struct don't reach the signature, so they must not reach the screen either.
+ */
+function signedView(types: TypeFields, type: string, value: unknown, depth = 0): unknown {
+  if (depth > 16) throw new ClipError("This signature request is nested too deeply to read.", "invalid-params");
+  const arr = /^(.+)\[(\d*)\]$/.exec(type);
+  if (arr) return Array.isArray(value) ? value.map((v) => signedView(types, arr[1]!, v, depth + 1)) : value;
+  const fields = Object.prototype.hasOwnProperty.call(types, type) ? types[type] : undefined;
+  if (!Array.isArray(fields)) return value;
+  const src = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = Object.create(null);
+  for (const f of fields) {
+    if (!f || typeof f.name !== "string") continue;
+    out[f.name] = signedView(types, f.type, Object.prototype.hasOwnProperty.call(src, f.name) ? src[f.name] : undefined, depth + 1);
+  }
+  return out;
+}
+
+/** Shown fields of unrecognised typed data before the rest is only counted. */
+const TYPED_FIELDS_SHOWN = 16;
+
 async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
   const td = parseTypedData(req, ctx);
   const d = base(req);
   const host = hostOf(req.origin);
   const dom = td.domain;
-  const msg = td.message;
+  const msg = signedView(td.types as TypeFields, td.primaryType, td.message) as Record<string, unknown>;
   const domainName = typeof dom.name === "string" ? dom.name : undefined;
   const verifying = typeof dom.verifyingContract === "string" ? dom.verifyingContract : undefined;
 
   const domainChain = big(dom.chainId);
   if (domainChain !== undefined && domainChain !== BigInt(chainIdOf(ctx))) {
-    d.warnings.push({ level: "caution", code: "network-matters", message: "This signature is for a different network than the one selected." });
+    // Danger (audit EVM-03): a signature for another chain id may be valid on a mainnet the same key controls.
+    d.warnings.push({ level: "danger", code: "network-matters", message: "This signature is for a different network than the one selected. It could be used there." });
   }
 
   const isPermit2 = domainName === "Permit2";
@@ -409,10 +458,19 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
     if (domainName) d.lines.push({ label: "App", value: domainName });
     if (verifying) d.lines.push({ label: "App contract", value: safeChecksum(verifying) });
     d.lines.push({ label: "Type", value: humanLabel(td.primaryType) });
-    for (const [k, v] of Object.entries(msg).slice(0, 8)) {
-      const s = typeof v === "string" && /^0x[0-9a-fA-F]{40}$/.test(v) ? safeChecksum(v) : typeof v === "object" ? truncate(JSON.stringify(v)) : String(v);
+    const entries = Object.entries(msg);
+    for (const [k, v] of entries.slice(0, TYPED_FIELDS_SHOWN)) {
+      const s = typeof v === "string" && /^0x[0-9a-fA-F]{40}$/.test(v) ? safeChecksum(v) : v && typeof v === "object" ? truncate(JSON.stringify(v)) : String(v);
       d.lines.push({ label: humanLabel(k), value: s });
     }
+    if (entries.length > TYPED_FIELDS_SHOWN) d.lines.push({ label: "More fields", value: `${entries.length - TYPED_FIELDS_SHOWN} not shown (see Details)` });
+    // Audit EVM-02: an order or permission format the wallet doesn't know (marketplace listings, intents) can move
+    // assets once signed; say so instead of presenting it as a harmless message.
+    d.warnings.push({
+      level: "caution",
+      code: "unknown-call",
+      message: `Clip Wallet doesn't recognise this kind of signature, so it can't tell what it allows. Sign only if you trust ${host}.`,
+    });
   }
   d.lines.push({ label: "Requested by", value: host });
   return d;

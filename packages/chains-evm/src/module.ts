@@ -36,7 +36,7 @@ import {
 } from "viem";
 import { getBalances, getNfts } from "./balances.js";
 import { chainIdOf, estimateGas, quoteFees } from "./chain.js";
-import { decodeRequest } from "./decode.js";
+import { GAS_HEADROOM_TENTHS, decodeRequest, type FeeSnapshot } from "./decode.js";
 import { parsePersonalSign, parseTx, parseTypedData, typedDataForHash } from "./params.js";
 import { RpcError, rpc } from "./rpc.js";
 
@@ -83,6 +83,9 @@ async function toRsv(sig: Signature, digest: Hex, expected: string): Promise<{ r
 
 export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pendingCount(): number } {
   const pending = new Map<string, Pending>();
+  /** Fee terms each transaction's approval screen showed, by request id (audit EVM-04). */
+  const feeSnapshots = new Map<string, FeeSnapshot & { at: number }>();
+  const FEE_SNAPSHOT_TTL_MS = 15 * 60_000;
   const newId = opts.newId ?? (() => globalThis.crypto.randomUUID());
 
   const payload = (ctx: ChainContext, digest: Hex, approvalId: string): SignablePayload[] => [
@@ -100,7 +103,12 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
 
     getBalances,
     getNfts,
-    decode: decodeRequest,
+    decode: (request: DappRequest, ctx: ChainContext) =>
+      decodeRequest(request, ctx, (snap) => {
+        const now = Date.now();
+        for (const [k, v] of feeSnapshots) if (now - v.at > FEE_SNAPSHOT_TTL_MS) feeSnapshots.delete(k);
+        feeSnapshots.set(request.id, { ...snap, at: now });
+      }),
 
     async prepare(request: DappRequest, ctx: ChainContext, approvalId: string): Promise<SignablePayload[]> {
       switch (request.method) {
@@ -108,9 +116,12 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
           const p = parseTx(request, ctx);
           const chainId = chainIdOf(ctx);
           const call = { from: p.from, data: p.data, value: toHex(p.value), ...(p.to ? { to: p.to } : {}) };
+          const shown = feeSnapshots.get(request.id);
+          const fresh = shown && Date.now() - shown.at <= FEE_SNAPSHOT_TTL_MS ? shown : undefined;
           const [nonceHex, fees, gas] = await Promise.all([
             rpc<Hex>(ctx.network, ctx.fetch, "eth_getTransactionCount", [p.from, "pending"]),
-            quoteFees(ctx),
+            // The fee caps the approval screen was built on, never a new quote taken after the user said yes.
+            fresh ? Promise.resolve(fresh.fees) : quoteFees(ctx),
             p.gas !== undefined
               ? Promise.resolve(p.gas)
               : estimateGas(ctx, call).catch((e) => {
@@ -118,6 +129,9 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
                   throw e;
                 }),
           ]);
+          if (fresh && p.gas === undefined && gas > (fresh.gas * GAS_HEADROOM_TENTHS) / 10n) {
+            throw new ClipError("This now needs more network fee than you were shown, so it wasn't sent. Ask the app to try again.", "fee-changed");
+          }
           const common = { chainId, nonce: Number(BigInt(nonceHex)), gas, value: p.value, data: p.data, ...(p.to ? { to: p.to } : {}) };
           const tx: TransactionSerializable =
             fees.type === "eip1559"
@@ -163,6 +177,7 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
       if (!sig) throw new ClipError("The request wasn't signed.", "no-signature");
       const rsv = await toRsv(sig, p.digest, ctx.account.address);
       pending.delete(request.id);
+      feeSnapshots.delete(request.id);
       if (p.kind === "sign") {
         return `${rsv.r}${rsv.s.slice(2)}${(27 + rsv.yParity).toString(16)}`;
       }

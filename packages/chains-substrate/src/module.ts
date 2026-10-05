@@ -258,6 +258,11 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     const sym = spec.symbol;
     if (f !== null) lines.push({ label: "Network fee", value: `${formatUnits(f, spec.decimals)} ${sym}` });
     if (p.tip > 0n) lines.push({ label: "Tip", value: `${formatUnits(p.tip, spec.decimals)} ${sym}` });
+    if (p.assetId && rt.extensions.some((e) => e.identifier === "ChargeAssetTxPayment" || e.identifier === "SkipCheckIfFeeless")) {
+      // Audit SUB-01: ChargeAssetTxPayment swaps the fee out of another asset, with no limit on the rate.
+      lines.push({ label: "Fee paid in", value: `Another asset (id ${hex0x(p.assetId)}), not ${sym}` });
+      warnings.push({ level: "caution", code: "high-fee", message: `The network fee is taken from another asset you hold, at whatever rate its pool gives. The ${sym} amount shown is only an estimate.` });
+    }
     const era = eraInfo(p.era, p.blockNumber);
     lines.push({ label: "Valid for", value: era ? `about ${Math.round((era.period * BLOCK_SECONDS) / 60)} minutes` : "Never expires" });
     if (p.mode === 1 && p.metadataHash) {

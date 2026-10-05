@@ -200,6 +200,15 @@ describe("decode sendTransaction", () => {
     expect(d.blind).toBe(false);
   });
 
+  it("audit TON-01: says where leftover fee GRAM goes when an app sends it somewhere else", async () => {
+    const body = jettonTransferBody({ amount: 1n, destination: Address.parse(BOB), responseDestination: Address.parse(BOB), forwardTon: 0n });
+    const r = req("sendTransaction", { network: "-3", messages: [{ address: Address.parse(MY_JETTON_WALLET).toString({ testOnly: true }), amount: "50000000000", payload: body.toBoc().toString("base64") }] });
+    const { ctx: c } = ctx(active());
+    const d = await mod({ emulate: false }).decode(r, c);
+    expect(d.lines.find((l) => l.label === "Covers token fees")!.value).toMatch(/unused part goes to/);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "unknown-call" }));
+  });
+
   it("flags a jetton transfer through someone else's jetton wallet as blind danger", async () => {
     const body = jettonTransferBody({ amount: 1n, destination: Address.parse(BOB), responseDestination: meAddr(), forwardTon: 0n });
     const r = req("sendTransaction", { network: "-3", messages: [{ address: Address.parse(MY_JETTON_WALLET).toString({ testOnly: true }), amount: "50000000", payload: body.toBoc().toString("base64") }] });

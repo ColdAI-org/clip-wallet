@@ -284,6 +284,12 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
         title = `${words(fn)} on ${o.host}`;
         lines.push({ label: "App action", value: `${short(ef.module_name.address.toString())}::${ef.module_name.name.identifier}::${fn}` });
         if (ef.type_args.length) lines.push({ label: "Types", value: ef.type_args.map((t) => t.toString()).join(", ") });
+        // Audit UNK-01: arguments aren't shown and only coin/fungible-asset changes are previewed.
+        warnings.push({
+          level: "caution",
+          code: "unknown-call",
+          message: `This runs ${o.host}'s own code. Clip Wallet shows coin changes only; items you own that it uses could leave your account.`,
+        });
       }
     } else {
       lines.push({ label: "Sends to", value: longAddress(transfer.to) === me ? "Your own account" : longAddress(transfer.to) });
@@ -297,6 +303,7 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
     lines.push({ label: "Shared account", value: p.multiSig.multisig_address.toString() });
     const inner = p.multiSig.transaction_payload?.transaction_payload;
     if (inner && "function_name" in inner) lines.push({ label: "App action", value: functionId(inner as EntryFunction) });
+    warnings.push({ level: "caution", code: "unknown-call", message: "Clip Wallet can only show which function this shared-account transaction calls, not what it does." });
   } else if (p instanceof TransactionPayloadEncryptedPayload) {
     blind = true;
     lines.push({ label: "Action", value: "Encrypted transaction" });

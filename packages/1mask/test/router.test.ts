@@ -20,6 +20,17 @@ function make(over: Partial<OneMaskRouterOptions> = {}) {
   return { router, permissions, handled, d };
 }
 
+describe("audit 1MASK-01: unconnected sites learn nothing from the wallet's state", () => {
+  it("only a connected site starts on the balance-derived network or sees whether the wallet is unlocked", async () => {
+    const { d } = make({ defaultNetwork: () => "eip155:84532", isUnlocked: () => true });
+    expect(await d("evm", "eth_chainId")).toBe("0xaa36a7"); // registry's first network, not where the money is
+    expect(((await d("evm", "1mask_getProviderState")) as { isUnlocked: boolean }).isUnlocked).toBe(false);
+    await d("evm", "eth_requestAccounts");
+    expect(await d("evm", "eth_chainId")).toBe("0x14a34");
+    expect(((await d("evm", "1mask_getProviderState")) as { isUnlocked: boolean }).isUnlocked).toBe(true);
+  });
+});
+
 describe("router: EVM permissions", () => {
   it("does not reveal accounts before the site is connected", async () => {
     const { d, handled } = make();

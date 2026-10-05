@@ -291,7 +291,10 @@ export interface Warning {
     | "malicious-transaction"
     // Phase 2.5 (social)
     /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
-    | "public-record";
+    | "public-record"
+    // Internal audit 2026-10
+    /** A contract call or signed order the wallet can name but not fully read: its effects may not all be shown. */
+    | "unknown-call";
   message: string;
 }
 
@@ -365,6 +368,55 @@ export interface ChainModule {
  * Dapp origins are URLs (`https://…`), so this can't collide with one.
  */
 export const WALLET_ORIGIN = "clip-wallet";
+
+/**
+ * Internal audit 2026-10 (WC-01): a WalletConnect app's self-declared URL that Verify didn't confirm is never used as
+ * a web origin. It becomes `https://<claimed host>.unverified.invalid` (RFC 2606 `.invalid` can't be a real site), so
+ * it can't borrow a real site's registry entry, permissions, per-site account or sign-in domain, and can't pass for
+ * the wallet. Screens show it as "<claimed host> (unverified)".
+ */
+export const UNVERIFIED_ORIGIN_SUFFIX = ".unverified.invalid";
+
+/** The pseudo-origin for an unconfirmed claim (`claimedUrl` may be anything a peer sent). */
+export function unverifiedOrigin(claimedUrl: string | undefined): string {
+  let host = "unknown";
+  try {
+    const u = new URL(claimedUrl ?? "");
+    if ((u.protocol === "https:" || u.protocol === "http:") && u.hostname) host = u.hostname.replace(/\.unverified\.invalid$/, "");
+  } catch {
+    /* not a URL: "unknown" */
+  }
+  return `https://${host}${UNVERIFIED_ORIGIN_SUFFIX}`;
+}
+
+/** "app.example (unverified)" for a pseudo-origin from unverifiedOrigin(); undefined for anything else. */
+export function unverifiedLabel(hostname: string): string | undefined {
+  return hostname.endsWith(UNVERIFIED_ORIGIN_SUFFIX) ? `${hostname.slice(0, -UNVERIFIED_ORIGIN_SUFFIX.length)} (unverified)` : undefined;
+}
+
+/**
+ * Internal audit 2026-10 (DISP-01): text from chains, dapps and indexers (token names and symbols, NFT names, app
+ * names, memos) can carry invisible or direction-changing characters (U+202E RIGHT-TO-LEFT OVERRIDE, zero-width
+ * spaces, BOM) that make an approval screen read differently from what it says. This removes every format (Cf)
+ * and control (Cc) character except line breaks and tabs, and the line/paragraph separators.
+ */
+export function displaySafe(text: string): string {
+  return text.replace(/[\p{Cf}\u2028\u2029]|(?![\n\t])\p{Cc}/gu, "");
+}
+
+const safeAsset = (a: AssetRef): AssetRef => ({ ...a, symbol: displaySafe(a.symbol), name: displaySafe(a.name) });
+
+/** A copy of `d` with every human-readable string passed through displaySafe. */
+export function sanitizeDecoded(d: DecodedRequest): DecodedRequest {
+  return {
+    ...d,
+    title: displaySafe(d.title),
+    lines: d.lines.map((l) => ({ label: displaySafe(l.label), value: displaySafe(l.value) })),
+    balanceChanges: d.balanceChanges.map((c) => ({ ...c, asset: safeAsset(c.asset) })),
+    warnings: d.warnings.map((w) => ({ ...w, message: displaySafe(w.message) })),
+    ...(d.fee ? { fee: { ...d.fee, asset: safeAsset(d.fee.asset) } } : {}),
+  };
+}
 
 /** True for wallet-built requests. Also accepts the shell's older `"wallet"` spelling. */
 export function isWalletOrigin(origin: string | undefined): boolean {

@@ -542,6 +542,18 @@ describe("WalletConnect", () => {
     expect(result).toEqual([[...b64decode(FIX.wcTx.signedBase64)], [...b64decode(FIX.wcTx2.signedBase64)]]);
   });
 
+  it("audit NEAR-01: refuses a dapp-built transaction whose block hash isn't on this network", async () => {
+    const { ctx } = chain({
+      block: (p: Record<string, unknown>) => {
+        if (p.block_id !== undefined) throw new RpcFail("UNKNOWN_BLOCK", "DB Not Found Error: BLOCK HEIGHT");
+        return { header: { hash: FIX.blockHash, height: 271356934 } };
+      },
+    });
+    const r = req(NEAR_METHODS.wcSignTransaction, { transaction: [...b64decode(FIX.wcTx.txBase64)] }, "https://guest-book.example", "walletconnect");
+    await rejects(near.decode(r, ctx), "near/wrong-network");
+    await rejects(near.prepare(r, ctx, "a"), "near/wrong-network");
+  });
+
   it("refuses transactions for another key and unreadable bytes", async () => {
     const { ctx } = chain();
     const other = decodeTransaction(b64decode(FIX.wcTx.txBase64));

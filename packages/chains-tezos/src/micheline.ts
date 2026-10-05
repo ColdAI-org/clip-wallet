@@ -30,8 +30,13 @@ export function asNat(m: unknown): bigint | null {
   return typeof o?.int === "string" && /^-?\d+$/.test(o.int) ? BigInt(o.int) : null;
 }
 
+/** A Micheline node carries exactly one of int / string / bytes / prim. */
+const VALUE_KEYS = ["int", "string", "bytes", "prim"] as const;
+
 export function asAddress(m: unknown): string | null {
   const o = obj(m);
+  // Audit TEZ-01: a node with both "string" and "bytes" would be shown as one address and forged as the other.
+  if (o && VALUE_KEYS.filter((k) => k in o).length > 1) return null;
   if (typeof o?.string === "string") {
     const a = o.string.split("%")[0]!;
     return isTezosAddress(a) ? a : null;

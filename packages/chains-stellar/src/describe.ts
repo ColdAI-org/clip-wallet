@@ -616,6 +616,7 @@ export async function describeTransaction(tx: Transaction | FeeBumpTransaction, 
 
   // Soroban: simulate for token movements.
   if (isSorobanTx(tx)) {
+    let unsimulated = false;
     if (dc.simulate && dc.rpc) {
       try {
         const sim = await dc.rpc.simulate(tx.toEnvelope().toXDR("base64"));
@@ -627,10 +628,16 @@ export async function describeTransaction(tx: Transaction | FeeBumpTransaction, 
           if (sim.minResourceFee) lines.push({ label: "Smart contract resources", value: `${formatUnits(BigInt(sim.minResourceFee), 7)} XLM (included in the fee)` });
         }
       } catch {
-        warnings.push(caution("simulation-failed", "Couldn't test-run this smart contract call, so its effects aren't shown."));
+        unsimulated = true;
       }
     } else {
-      warnings.push(caution("simulation-failed", "Couldn't test-run this smart contract call, so its effects aren't shown."));
+      unsimulated = true;
+    }
+    // Audit STL-01: a contract call's sub-calls are shown by name only (no arguments); without a test run nothing
+    // shows what moves, so this is blind signing rather than a caution.
+    if (unsimulated) {
+      blind = true;
+      warnings.push(danger("blind-signing", "Couldn't test-run this smart contract call, so Clip Wallet can't show what it moves. Only sign it if you trust the app."));
     }
   }
 

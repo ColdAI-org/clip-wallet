@@ -79,6 +79,16 @@ export class JupiterSwap implements SwapProvider {
     u.searchParams.set("slippageBps", String(req.slippageBps));
     const o = await fetchJson<OrderResponse>(ctx.fetch, u.toString(), "Jupiter", { headers: this.headers() });
     if (!o.transaction) throw plainOrderError(o);
+    // Audit FEAT-01: the order must be the one asked for (mints and amount); the transaction itself is described by
+    // the Solana module and lands only after the user approves what that shows.
+    const mismatch =
+      o.inputMint !== (req.sell.address ?? NATIVE_SOL_MINT) ||
+      o.outputMint !== (req.buy.address ?? NATIVE_SOL_MINT) ||
+      o.inAmount !== req.amount ||
+      !/^\d+$/.test(o.otherAmountThreshold ?? "") ||
+      !/^\d+$/.test(o.outAmount ?? "") ||
+      BigInt(o.otherAmountThreshold) > BigInt(o.outAmount);
+    if (mismatch) throw new ClipError("This swap quote doesn't match what you asked for, so Clip Wallet stopped it.", "swap/quote-mismatch");
     const labels = (o.routePlan ?? []).map((r) => r.swapInfo?.label).filter((l): l is string => !!l);
     const q: SwapQuote = {
       providerId: this.id,

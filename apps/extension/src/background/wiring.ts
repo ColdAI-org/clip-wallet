@@ -132,7 +132,7 @@ export interface DappConnector {
   start(host: DappHost): void;
   attachPort?(port: RouterPort, senderOrigin?: string): void;
   /** The wallet disconnected an origin: tell the site. */
-  disconnected(origin: string): void;
+  disconnected(origin: string, family?: Family): void | Promise<void>;
   /** Accounts appeared/disappeared (unlock/lock). */
   accountsChanged?(): void;
 }

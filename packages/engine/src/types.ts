@@ -103,7 +103,7 @@ export interface DappConnector {
   start(host: DappHost): void;
   /** `senderOrigin` must come from the browser / WebView, never from the page. */
   attachPort?(port: RouterPort, senderOrigin?: string): void;
-  disconnected(origin: string): void;
+  disconnected(origin: string, family?: Family): void | Promise<void>;
   accountsChanged?(): void;
 }
 

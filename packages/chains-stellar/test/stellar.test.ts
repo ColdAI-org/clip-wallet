@@ -317,6 +317,15 @@ describe("decode", () => {
     expect(d.balanceChanges).toEqual([]);
   });
 
+  it("audit STL-01: a Soroban call that can't be test-run is blind", async () => {
+    const { m, ctx } = setup({}, {}, { simulate: false });
+    const d = await m.decode(signXdr(FIX.soroban), ctx);
+    expect(d.blind).toBe(true);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "blind-signing" }));
+    const down = setup({}, { simulateTransaction: () => { throw { code: -32000, message: "down" }; } });
+    expect((await down.m.decode(signXdr(FIX.soroban), down.ctx)).blind).toBe(true);
+  });
+
   it("SEP-41 token events use the contract's decimals and symbol", async () => {
     const token = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
     const fakeToken = "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA";

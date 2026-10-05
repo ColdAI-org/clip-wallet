@@ -127,6 +127,8 @@ describe("decode", () => {
     const d = await aptos.decode(req("aptos:signTransaction", { account: ME, transaction: FIX.swap }), ctxFor(m.fetch));
     expect(d.title).toBe("Swap exact input on app.example");
     expect(d.lines).toContainEqual({ label: "App action", value: "0xabab…abab::router::swap_exact_input" });
+    // Audit UNK-01: an app's own function is never presented as fully understood.
+    expect(d.warnings.map((w) => w.code)).toContain("unknown-call");
     expect(d.lines).toContainEqual({ label: "Types", value: "0x1::aptos_coin::AptosCoin" });
   });
 

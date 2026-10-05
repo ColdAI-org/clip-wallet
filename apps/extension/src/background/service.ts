@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -88,6 +88,10 @@ interface Permission {
 interface Pending {
   view: ApprovalView;
   request?: DappRequest;
+  /** Transactions: the account the request was decoded for (audit APPR-02). Approve signs with it or not at all. */
+  accountId?: string;
+  /** Transactions: an Approve is running (audit APPR-01). One approval prepares, signs and broadcasts once. */
+  busy?: boolean;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
@@ -131,7 +135,8 @@ function short(a: string): string {
 
 function domainOf(origin: string): string {
   try {
-    return new URL(origin).hostname.replace(/^www\./, "");
+    const host = new URL(origin).hostname;
+    return unverifiedLabel(host) ?? host.replace(/^www\./, "");
   } catch {
     return origin;
   }
@@ -720,7 +725,8 @@ export class WalletService implements DappHost {
 
   private dappInfo(origin: string, name?: string, iconUrl?: string): DappInfo {
     const reg = this.deps.registry.lookup(origin);
-    return { name: reg.verified ? reg.name : name ?? reg.name, origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
+    // Audit DISP-01: a site's own name can't carry invisible or direction-changing characters.
+    return { name: displaySafe(reg.verified ? reg.name : name ?? reg.name).slice(0, 80), origin, domain: domainOf(origin), verified: reg.verified, iconUrl: reg.iconUrl ?? iconUrl };
   }
 
   private async enqueueTransaction(
@@ -768,6 +774,8 @@ export class WalletService implements DappHost {
     const insights = decoded.blind ? [] : await this.plugins.insights(toInsightInput(decoded, request.origin, ctx.account.address)).catch(() => []);
     decoded = withPluginInsights(decoded, insights);
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
+    // Audit DISP-01: token names, NFT names and memos from chains can't disguise what the screen says.
+    decoded = sanitizeDecoded(decoded);
     const { balances } = await this.portfolio();
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 
@@ -791,7 +799,7 @@ export class WalletService implements DappHost {
       resolve = res;
       reject = rej;
     });
-    this.approvals.set(id, { view, request, resolve, reject });
+    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve, reject });
     // Real sends feed the look-alike check (security's RecipientLog), once they go through.
     if (extra.recipient && this.recipients) {
       const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
@@ -860,6 +868,18 @@ export class WalletService implements DappHost {
       return;
     }
 
+    // One Approve at a time per request (audit APPR-01): a second click while the first is preparing, signing or
+    // broadcasting must not prepare and broadcast the transaction again. Checked and set before any await.
+    if (p.busy) throw this.deps.hardware.owns(p.accountId ?? "") ? inProgress() : new ClipError("This request is already being approved.", "approval/in-progress");
+    p.busy = true;
+    try {
+      await this.approveTransaction(id, p, allowBlind);
+    } finally {
+      p.busy = false;
+    }
+  }
+
+  private async approveTransaction(id: string, p: Pending, allowBlind: boolean): Promise<void> {
     const req = p.request!;
     const decoded = p.view.decoded!;
     if (p.view.plan?.problem) throw new ClipError(p.view.plan.problem, "approval/not-payable");
@@ -872,6 +892,12 @@ export class WalletService implements DappHost {
     const network = this.network(req.networkId);
     const mod = this.module(network.family);
     const ctx = await this.ctx(network.id, req.origin);
+    // The approval screen was built for p.accountId (audit APPR-02). If the site's account changed since (Settings →
+    // Accounts, a hardware account picked, a WalletConnect session re-pointed), don't sign with an account the user
+    // never saw in this request.
+    if (p.accountId !== undefined && ctx.account.id !== p.accountId) {
+      throw new ClipError("The account for this request changed after it arrived. Reject it and ask the app to send it again.", "approval/account-changed");
+    }
     let result: unknown;
     const hw = this.deps.hardware.owns(ctx.account.id);
     // A second Approve while the device is busy must not revoke the approval the device is signing.
@@ -967,8 +993,10 @@ export class WalletService implements DappHost {
     const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
     const hit = perms.find((p) => p.id === id);
     if (hit) {
-      await this.kv.set(K.permissions, perms.filter((p) => p.id !== id));
-      this.deps.dapps.disconnected(hit.origin);
+      // The router revokes this family (and tells the site) before the stored entry goes.
+      await this.deps.dapps.disconnected(hit.origin, hit.family);
+      const left = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
+      await this.kv.set(K.permissions, left.filter((p) => p.id !== id));
     } else {
       await this.deps.walletConnect.disconnect(id);
     }

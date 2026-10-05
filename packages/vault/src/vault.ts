@@ -402,7 +402,10 @@ export class ClipVault implements Vault {
     this.approvals.revoke(approvalId);
   }
 
-  async sign(payload: SignablePayload): Promise<Signature> {
+  async sign(input: SignablePayload): Promise<Signature> {
+    // Read the caller's object exactly once (audit 2026-10, VAULT-01): what is hashed for the approval check
+    // must be what gets signed, even if `input` uses getters or its buffers change while sign() awaits.
+    const payload = snapshotPayload(input);
     const src = this.requireKeys();
     const { family, index } = parseAccountId(payload.accountId);
     if (!FAMILY_SCHEMES[family].includes(payload.scheme)) throw VaultErrors.schemeMismatch();
@@ -789,7 +792,28 @@ export class ClipVault implements Vault {
 
 function cleanLabel(label: string): string {
   if (typeof label !== "string") throw new TypeError("label must be a string");
-  return label.normalize("NFC").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, MAX_LABEL);
+  // Audit VAULT-04: format characters too (U+202E, zero-width), so a label can't impersonate another account's.
+  return label.normalize("NFC").replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, "").trim().slice(0, MAX_LABEL);
+}
+
+/** A private copy of everything sign() uses from a payload; each field is read once. */
+function snapshotPayload(input: SignablePayload): SignablePayload {
+  if (!input || typeof input !== "object") throw VaultErrors.badPayload("no payload");
+  const { accountId, scheme, bytes, options, derivationSubPath, approvalId } = input;
+  if (typeof accountId !== "string" || typeof scheme !== "string" || typeof approvalId !== "string")
+    throw VaultErrors.badPayload("malformed payload");
+  if (!(bytes instanceof Uint8Array)) throw VaultErrors.badPayload("empty bytes");
+  if (derivationSubPath !== undefined && typeof derivationSubPath !== "string") throw VaultErrors.badPayload("malformed sub-path");
+  const tweak = options?.taprootTweak;
+  if (tweak !== undefined && !(tweak instanceof Uint8Array)) throw VaultErrors.badPayload("malformed taproot tweak");
+  return {
+    accountId,
+    scheme,
+    bytes: bytes.slice(),
+    approvalId,
+    ...(tweak !== undefined ? { options: { taprootTweak: tweak.slice() } } : {}),
+    ...(derivationSubPath !== undefined ? { derivationSubPath } : {}),
+  };
 }
 
 export function parseAccountId(id: string): { family: Family; index: number } {

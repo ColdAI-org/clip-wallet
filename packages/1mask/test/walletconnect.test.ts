@@ -1,4 +1,4 @@
-import type { DappRequest, Family } from "@clip-wallet/core";
+import { isWalletOrigin, type DappRequest, type Family } from "@clip-wallet/core";
 import { describe, expect, it, vi } from "vitest";
 import {
   assessVerify,
@@ -112,7 +112,25 @@ describe("Verify API → warnings", () => {
     const a = assessVerify(ctx("INVALID", "https://uniswap-airdrop.example"), "https://app.uniswap.org");
     expect(a.verification).toBe("mismatch");
     expect(a.warnings).toEqual([expect.objectContaining({ level: "danger", code: "domain-mismatch" })]);
-    expect(a.origin).toBe("https://app.uniswap.org");
+    // Audit WC-01: a claim Verify contradicts is never attributed to the claimed site.
+    expect(a.origin).toBe("https://app.uniswap.org.unverified.invalid");
+  });
+  it("audit WC-01: an unconfirmed claim gets a pseudo-origin and a caution, never the real site or the wallet", () => {
+    const a = assessVerify(ctx("UNKNOWN", ""), "https://app.uniswap.org/swap");
+    expect(a.origin).toBe("https://app.uniswap.org.unverified.invalid");
+    expect(a.verification).toBe("unverified");
+    expect(a.warnings).toContainEqual(expect.objectContaining({ level: "caution", code: "domain-mismatch" }));
+    const noCtx = assessVerify(undefined, "https://victim.example");
+    expect(noCtx.origin).toBe("https://victim.example.unverified.invalid");
+    // WC-02: a peer can't pass for the wallet's own requests.
+    for (const claim of ["clip-wallet", "wallet", "javascript:alert(1)", undefined]) {
+      const w = assessVerify(undefined, claim);
+      expect(isWalletOrigin(w.origin)).toBe(false);
+      expect(w.origin).toBe("https://unknown.unverified.invalid");
+    }
+    // A Verify-attested web origin is used as is.
+    expect(assessVerify(ctx("VALID", "https://app.uniswap.org"), "https://app.uniswap.org").origin).toBe("https://app.uniswap.org");
+    expect(assessVerify(ctx("VALID", "clip-wallet"), "clip-wallet").origin).toBe("https://unknown.unverified.invalid");
   });
   it("isScam or local blocklist → known-scam danger", () => {
     expect(assessVerify(ctx("VALID", "https://x.example", true), "https://x.example").warnings).toEqual([
@@ -202,6 +220,14 @@ describe("WalletConnect wallet (fake WalletKit)", () => {
       }),
     );
     expect(f.calls.at(-1)).toMatchObject({ name: "approveSession", args: { id: 7 } });
+  });
+
+  it("audit WC-04: a proposal that shares other kinds of address says so on the connect screen", async () => {
+    const approveProposal = vi.fn(async () => true);
+    const { f } = await wallet({ approveProposal });
+    await f.fire("session_proposal", { id: 8, params: { id: 8, proposer: { metadata: peer }, ...P.multichain } });
+    const arg = (approveProposal.mock.calls[0] as unknown as [{ warnings: { code: string; level: string; message: string }[] }])[0];
+    expect(arg.warnings).toContainEqual(expect.objectContaining({ level: "info", code: "network-matters", message: expect.stringMatching(/addresses on \d+ networks/) }));
   });
 
   it("rejects unsupported proposals with SDK codes, and user rejection with 5000", async () => {

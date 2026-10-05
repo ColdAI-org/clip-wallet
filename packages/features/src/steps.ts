@@ -42,7 +42,10 @@ export function registerIntent(request: DappRequest, intent: Intent): void {
 export function refineDecoded(request: DappRequest, decoded: DecodedRequest): DecodedRequest {
   const intent = intents.get(request);
   if (!intent) return decoded;
-  const out: DecodedRequest = { ...decoded, title: intent.title, lines: [...intent.lines, ...decoded.lines] };
+  // Audit FEAT-02: the plain title comes from what the wallet asked a provider for; keep what the chain module read
+  // from the transaction itself in view whenever it says something different.
+  const read = !decoded.blind && decoded.title && decoded.title !== intent.title ? [{ label: "What the transaction does", value: decoded.title }] : [];
+  const out: DecodedRequest = { ...decoded, title: intent.title, lines: [...intent.lines, ...read, ...decoded.lines] };
   if (decoded.blind) {
     const simulatedOk = decoded.simulated && !decoded.warnings.some((w) => w.code === "simulation-failed");
     if (intent.verify?.(request) && simulatedOk) {

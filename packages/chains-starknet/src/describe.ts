@@ -145,6 +145,14 @@ export async function describeCalls(calls: StarkCall[], o: { me: string; host: s
 
     titles.push(`${humanize(ep)} on ${o.host}`);
     lines.push({ label: humanize(ep), value: `${short(call.contractAddress)}${cd.length ? ` (${cd.length} values)` : ""}` });
+    // Audit UNK-01: approvals of NFTs, session keys and delegates show no balance change in the preview.
+    if (!warnings.some((w) => w.code === "unknown-call")) {
+      warnings.push({
+        level: /approv|delegat|session|owner|guardian|signer|upgrade/i.test(ep) ? "danger" : "caution",
+        code: "unknown-call",
+        message: `Clip Wallet can't read what ${humanize(ep).toLowerCase()} does on this contract. Only approve it if you trust ${o.host}.`,
+      });
+    }
   }
 
   const title = titles.length === 1 ? titles[0]! : `Approve ${titles.length} actions for ${o.host}`;
