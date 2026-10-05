@@ -1,0 +1,246 @@
+{
+  "wagmi": {
+    "steps": {
+      "discover": {
+        "ok": {
+          "id": "org.coldai.clipwallet",
+          "name": "Clip Wallet",
+          "type": "injected",
+          "hasIcon": true
+        }
+      },
+      "connect": {
+        "ok": {
+          "accounts": 1,
+          "chainId": 11155111
+        }
+      },
+      "sign": {
+        "ok": {
+          "valid": true
+        }
+      },
+      "send": {
+        "ok": {
+          "error": "TransactionExecutionError",
+          "code": 4001
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
+        "{\"family\":\"evm\",\"method\":\"eth_accounts\",\"result\":[\"<evm-address>\"]}",
+        "{\"family\":\"evm\",\"method\":\"eth_accounts\",\"result\":[]}",
+        "{\"family\":\"evm\",\"method\":\"eth_chainId\",\"result\":\"0xaa36a7\"}",
+        "{\"family\":\"evm\",\"method\":\"eth_sendTransaction\",\"error\":{\"code\":4001}}",
+        "{\"family\":\"evm\",\"method\":\"personal_sign\",\"result\":\"<hex 65 bytes>\"}",
+        "{\"family\":\"evm\",\"method\":\"wallet_requestPermissions\",\"result\":[{\"caveats\":[{\"type\":\"restrictReturnedAccounts\",\"value\":[\"<evm-address>\"]}],\"date\":\"<timestamp>\",\"id\":\"https://compat-dapp.example#eth_accounts\",\"invoker\":\"https://compat-dapp.example\",\"parentCapability\":\"eth_accounts\"}]}"
+      ],
+      "events": [
+        "{\"family\":\"evm\",\"event\":\"accountsChanged\",\"data\":[\"<evm-address>\"]}"
+      ]
+    }
+  },
+  "solana": {
+    "steps": {
+      "detect": {
+        "ok": {
+          "name": "Clip Wallet",
+          "readyState": "Installed",
+          "supportedTransactionVersions": [
+            0,
+            "legacy"
+          ]
+        }
+      },
+      "connect": {
+        "ok": {
+          "connected": true,
+          "publicKey": "base58"
+        }
+      },
+      "signMessage": {
+        "ok": {
+          "bytes": 64
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
+        "{\"family\":\"solana\",\"method\":\"solana:signMessage\",\"result\":[{\"signature\":\"<base64>\",\"signedMessage\":\"SGVsbG8gZnJvbSBhbiB1bm1vZGlmaWVkIFNvbGFuYSBkYXBw\"}]}",
+        "{\"family\":\"solana\",\"method\":\"standard:connect\",\"result\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ],
+      "events": [
+        "{\"family\":\"solana\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ]
+    }
+  },
+  "sui": {
+    "steps": {
+      "detect": {
+        "ok": {
+          "name": "Clip Wallet",
+          "chains": [],
+          "features": [
+            "solana:signAndSendTransaction",
+            "solana:signIn",
+            "solana:signMessage",
+            "solana:signTransaction",
+            "standard:connect",
+            "standard:disconnect",
+            "standard:events"
+          ]
+        }
+      },
+      "connect": {
+        "ok": {
+          "accounts": 1,
+          "chains": [
+            "solana:devnet"
+          ]
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
+        "{\"family\":\"solana\",\"method\":\"standard:connect\",\"result\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ],
+      "events": [
+        "{\"family\":\"solana\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ]
+    }
+  },
+  "cardano": {
+    "steps": {
+      "detect": {
+        "ok": {
+          "key": "clipwallet",
+          "apiVersion": "1",
+          "hasIcon": true,
+          "enabled": false
+        }
+      },
+      "enable": {
+        "ok": {
+          "networkId": 0,
+          "enabled": true
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"cardano\",\"method\":\"1mask_getAccounts\",\"result\":[]}",
+        "{\"family\":\"cardano\",\"method\":\"1mask_getAccounts\",\"result\":[{\"address\":\"<base64>\",\"publicKey\":\"<base64>\"}]}",
+        "{\"family\":\"cardano\",\"method\":\"cardano_enable\",\"result\":[{\"address\":\"<base64>\",\"publicKey\":\"<base64>\"}]}",
+        "{\"family\":\"cardano\",\"method\":\"cardano_getNetworkId\",\"result\":0}",
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}"
+      ],
+      "events": [
+        "{\"family\":\"cardano\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<base64>\",\"publicKey\":\"<base64>\"}]}"
+      ]
+    }
+  },
+  "appkit": {
+    "steps": {
+      "discover": {
+        "ok": {
+          "name": "Clip Wallet",
+          "type": "INJECTED",
+          "chain": "eip155",
+          "rdns": "org.coldai.clipwallet"
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
+        "{\"family\":\"evm\",\"method\":\"eth_accounts\",\"result\":[]}"
+      ],
+      "events": []
+    }
+  },
+  "legacy-alone": {
+    "steps": {
+      "probe": {
+        "ok": {
+          "ethereum": "absent"
+        }
+      },
+      "announcements": {
+        "ok": {
+          "rdns": [
+            "org.coldai.clipwallet"
+          ]
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}"
+      ],
+      "events": []
+    }
+  },
+  "legacy-other-wallet": {
+    "steps": {
+      "probe": {
+        "ok": {
+          "ethereum": "other-wallet",
+          "chainId": "0x1"
+        }
+      },
+      "announcements": {
+        "ok": {
+          "rdns": [
+            "org.coldai.clipwallet"
+          ]
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}"
+      ],
+      "events": []
+    }
+  },
+  "polkadot": {
+    "steps": {
+      "enable": {
+        "ok": {
+          "extensions": [
+            {
+              "name": "clip-wallet",
+              "version": "string",
+              "signer": "function"
+            }
+          ]
+        }
+      },
+      "accounts": {
+        "ok": {
+          "accounts": [
+            {
+              "source": "clip-wallet",
+              "type": "sr25519",
+              "address": "ss58"
+            }
+          ]
+        }
+      }
+    },
+    "wire": {
+      "requests": [
+        "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
+        "{\"family\":\"substrate\",\"method\":\"1mask_getAccounts\",\"result\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}",
+        "{\"family\":\"substrate\",\"method\":\"substrate_enable\",\"result\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ],
+      "events": [
+        "{\"family\":\"substrate\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+      ]
+    }
+  }
+}

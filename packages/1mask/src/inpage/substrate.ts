@@ -163,7 +163,9 @@ export function installSubstrate(
   const name = opts.name ?? substrateExtensionName(identity);
   const w = win as unknown as { injectedWeb3?: Record<string, unknown> };
   if (!w.injectedWeb3 || typeof w.injectedWeb3 !== "object") {
-    Object.defineProperty(win, "injectedWeb3", { value: {}, writable: false, configurable: true, enumerable: true });
+    // Writable, like every other extension's: @polkadot/extension-dapp runs `win.injectedWeb3 = win.injectedWeb3 || {}`
+    // in strict mode on import, which throws on a read-only property (found by the compat suite, docs/compat.md).
+    Object.defineProperty(win, "injectedWeb3", { value: {}, writable: true, configurable: true, enumerable: true });
   }
   const ns = w.injectedWeb3!;
   if (name in ns) return undefined;

@@ -214,6 +214,17 @@ describe("injectedWeb3 connector", () => {
     version: 4,
   };
 
+  it("leaves window.injectedWeb3 assignable: @polkadot/extension-dapp's strict-mode `win.injectedWeb3 = win.injectedWeb3 || {}` must not throw", () => {
+    const { win, transport } = harness(() => true);
+    installSubstrate(win, resolveIdentity(), transport);
+    const w = win as unknown as { injectedWeb3: Record<string, unknown> };
+    expect(() => {
+      "use strict";
+      w.injectedWeb3 = w.injectedWeb3 || {};
+    }).not.toThrow();
+    expect(Object.keys(w.injectedWeb3)).toEqual(["clip-wallet"]);
+  });
+
   it("installs window.injectedWeb3[name] and enables with accounts, metadata and signer", async () => {
     const { win, transport, handled } = harness((r) => {
       if (r.method === "substrate_signPayload") return { signature: `0x01${"11".repeat(64)}` };
