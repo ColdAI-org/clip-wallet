@@ -35,6 +35,8 @@ const out = await build({
   minify: true,
   legalComments: "none",
   logLevel: "warning",
+  // Workspace packages: their "development" export condition is the TypeScript source (no build needed).
+  conditions: ["development"],
   plugins: [aptosEntryKeepsInit],
 });
 const js = out.outputFiles[0].text;

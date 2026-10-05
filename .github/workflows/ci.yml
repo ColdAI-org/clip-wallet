@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Types, tests, harness, packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm harness
+      - name: Build and pack every publishable package (publishes nothing)
+        run: pnpm pack-all
+
+  extension:
+    name: Extension e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
+      - run: pnpm --filter @clip-wallet/extension e2e
+
+  kit:
+    name: Kit e2e (create-clip-wallet and the Scaffold-HBAR template, from tarballs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
+      - run: git config --global user.name "kit e2e" && git config --global user.email "kit-e2e@users.noreply.github.com"
+      - run: pnpm kit:e2e
+      - run: pnpm kit:e2e:scaffold-hbar --no-pack

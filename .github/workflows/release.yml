@@ -1,0 +1,42 @@
+name: Release
+
+# The only way @clip-wallet/* and create-clip-wallet reach npm. Changesets opens a "Version packages" pull request
+# (pnpm version-packages: versions, changelogs, and the Scaffold-HBAR template pinned to the new version); merging it
+# runs pnpm release: pack-all (build + manifest and tarball checks) then changeset publish with npm provenance, so every
+# tarball carries a Sigstore-signed attestation naming this repository, this workflow and the commit.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write # npm provenance (OIDC → Sigstore)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck && pnpm test && pnpm harness
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

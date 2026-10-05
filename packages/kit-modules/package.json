@@ -1,18 +1,100 @@
 {
   "name": "@clip-wallet/kit-modules",
   "version": "0.1.0",
+  "description": "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/kit-modules#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/kit-modules"
+  },
   "type": "module",
   "sideEffects": false,
-  "description": "Clip Wallet connection modules for NEAR Wallet Selector, Stellar Wallets Kit, Tezos Beacon (wallet side) and TxnLab use-wallet.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./near": "./src/near/index.ts",
-    "./stellar": "./src/stellar/index.ts",
-    "./tezos": "./src/tezos/index.ts",
-    "./algorand": "./src/algorand/index.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./near": {
+      "development": "./src/near/index.ts",
+      "types": "./dist/near/index.d.ts",
+      "import": "./dist/near/index.js",
+      "default": "./dist/near/index.js"
+    },
+    "./stellar": {
+      "development": "./src/stellar/index.ts",
+      "types": "./dist/stellar/index.d.ts",
+      "import": "./dist/stellar/index.js",
+      "default": "./dist/stellar/index.js"
+    },
+    "./tezos": {
+      "development": "./src/tezos/index.ts",
+      "types": "./dist/tezos/index.d.ts",
+      "import": "./dist/tezos/index.js",
+      "default": "./dist/tezos/index.js"
+    },
+    "./algorand": {
+      "development": "./src/algorand/index.ts",
+      "types": "./dist/algorand/index.d.ts",
+      "import": "./dist/algorand/index.js",
+      "default": "./dist/algorand/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./near": {
+        "types": "./dist/near/index.d.ts",
+        "import": "./dist/near/index.js",
+        "default": "./dist/near/index.js"
+      },
+      "./stellar": {
+        "types": "./dist/stellar/index.d.ts",
+        "import": "./dist/stellar/index.js",
+        "default": "./dist/stellar/index.js"
+      },
+      "./tezos": {
+        "types": "./dist/tezos/index.d.ts",
+        "import": "./dist/tezos/index.js",
+        "default": "./dist/tezos/index.js"
+      },
+      "./algorand": {
+        "types": "./dist/algorand/index.d.ts",
+        "import": "./dist/algorand/index.js",
+        "default": "./dist/algorand/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },

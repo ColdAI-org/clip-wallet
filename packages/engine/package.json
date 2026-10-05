@@ -1,21 +1,132 @@
 {
   "name": "@clip-wallet/engine",
   "version": "0.1.0",
+  "description": "Clip Wallet's environment-free orchestration: approvals, permissions, portfolio, send/receive, 1Mask and WalletConnect hosting",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/engine#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/engine"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./wiring": "./src/wiring.ts",
-    "./platform": "./src/platform.ts",
-    "./catalog": "./src/catalog.ts",
-    "./features": "./src/features.ts",
-    "./social-signin": "./src/social-signin.ts",
-    "./hardware": "./src/hardware.ts",
-    "./social": "./src/social.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./wiring": {
+      "development": "./src/wiring.ts",
+      "types": "./dist/wiring.d.ts",
+      "import": "./dist/wiring.js",
+      "default": "./dist/wiring.js"
+    },
+    "./platform": {
+      "development": "./src/platform.ts",
+      "types": "./dist/platform.d.ts",
+      "import": "./dist/platform.js",
+      "default": "./dist/platform.js"
+    },
+    "./catalog": {
+      "development": "./src/catalog.ts",
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js",
+      "default": "./dist/catalog.js"
+    },
+    "./features": {
+      "development": "./src/features.ts",
+      "types": "./dist/features.d.ts",
+      "import": "./dist/features.js",
+      "default": "./dist/features.js"
+    },
+    "./social-signin": {
+      "development": "./src/social-signin.ts",
+      "types": "./dist/social-signin.d.ts",
+      "import": "./dist/social-signin.js",
+      "default": "./dist/social-signin.js"
+    },
+    "./hardware": {
+      "development": "./src/hardware.ts",
+      "types": "./dist/hardware.d.ts",
+      "import": "./dist/hardware.js",
+      "default": "./dist/hardware.js"
+    },
+    "./social": {
+      "development": "./src/social.ts",
+      "types": "./dist/social.d.ts",
+      "import": "./dist/social.js",
+      "default": "./dist/social.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./wiring": {
+        "types": "./dist/wiring.d.ts",
+        "import": "./dist/wiring.js",
+        "default": "./dist/wiring.js"
+      },
+      "./platform": {
+        "types": "./dist/platform.d.ts",
+        "import": "./dist/platform.js",
+        "default": "./dist/platform.js"
+      },
+      "./catalog": {
+        "types": "./dist/catalog.d.ts",
+        "import": "./dist/catalog.js",
+        "default": "./dist/catalog.js"
+      },
+      "./features": {
+        "types": "./dist/features.d.ts",
+        "import": "./dist/features.js",
+        "default": "./dist/features.js"
+      },
+      "./social-signin": {
+        "types": "./dist/social-signin.d.ts",
+        "import": "./dist/social-signin.js",
+        "default": "./dist/social-signin.js"
+      },
+      "./hardware": {
+        "types": "./dist/hardware.d.ts",
+        "import": "./dist/hardware.js",
+        "default": "./dist/hardware.js"
+      },
+      "./social": {
+        "types": "./dist/social.d.ts",
+        "import": "./dist/social.js",
+        "default": "./dist/social.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },

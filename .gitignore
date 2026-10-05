@@ -11,3 +11,6 @@ coverage/
 
 # Example plugin bundles are committed: their manifests pin the bundle sha256.
 !packages/plugins/examples/*/dist/
+
+# pnpm pack-all output
+.packs/
