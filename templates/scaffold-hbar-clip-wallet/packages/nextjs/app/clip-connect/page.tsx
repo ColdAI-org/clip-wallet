@@ -131,7 +131,9 @@ const ClipConnectPage: NextPage = () => (
         prefer: { rdns: WALLET_RDNS, name: WALLET_NAME },
         chains: CHAINS,
         rpc: { [hederaTestnet.id]: scaffoldConfig.rpcOverrides[hederaTestnet.id] },
-        walletConnect: { projectId: scaffoldConfig.walletConnectProjectId, load: () => import("@walletconnect/ethereum-provider") },
+        // WalletConnect: the header's Connect Wallet (RainbowKit) covers it. To use Clip Connect's own fallback, add
+        // @walletconnect/ethereum-provider and pass
+        // walletConnect: { projectId: scaffoldConfig.walletConnectProjectId, load: () => import("@walletconnect/ethereum-provider") }.
       }}
     >
       <Demo />
