@@ -7,7 +7,8 @@
  *  - RouteClient.planPayOnHedera: the Router.send request the wallet must approve.
  *  - RouteClient.trackRoute: plain-language progress from the CLPRouter status API.
  * Phase 3 (settle on Hedera through bonded Connectors): ./phase3 (types, settleOnHedera) and ./settle (client).
- * `settleOnHedera()` without options is still the "Not available yet" placeholder: nothing is deployed yet.
+ * `settleOnHedera()` without options is the "Not available yet" placeholder; `SETTLE_DEPLOYMENTS` lists the testnet
+ * deployment and `SettleFunding` (./settle-funding) turns a Connector quote into a payment's funding.
  */
 export { RouteClient, createRouteClient, hederaRecipientToEvm, DEFAULT_NATIVE_ASSETS } from "./client.js";
 export { findShortfall, needsFromDecoded } from "./shortfall.js";
@@ -15,6 +16,8 @@ export { RouteStatusClient, describeRoute, trackRoute } from "./track.js";
 export type { HopStatus, OutcomeStatus, RouteProgress, RouteStage, RouteStatusResponse, TrackOptions } from "./track.js";
 export { settleOnHedera, SETTLE_DEPLOYMENTS } from "./phase3.js";
 export { settleClientFor, settleFundingOption, type SettleFundingOption } from "./settle-plan.js";
+export { SettleFunding, stageOf, SETTLE_FINAL_STAGES } from "./settle-funding.js";
+export type { SettleAmount, SettleFundingInfo, SettleFundingPlan, SettleStage } from "./settle-funding.js";
 export type {
   ConnectorBond,
   ConnectorDirectoryEntry,

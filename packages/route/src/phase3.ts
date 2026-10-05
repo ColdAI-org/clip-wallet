@@ -8,8 +8,8 @@ import type { SettleQuoteJson } from "./settle-quote.js";
  * delivers on network X (`SettleDelivery`), both are proven over CLPR to `SettleOrderBook` on Hedera; if the
  * Connector misses the deadline the user is paid cover + penalty from its bond on Hedera.
  *
- * `settleOnHedera()` without options still rejects every call with ClipError("Not available yet", "phase3"): there
- * is no deployment yet (SETTLE_DEPLOYMENTS is empty). `settleOnHedera(options)` returns the real client
+ * `settleOnHedera()` without options rejects every call with ClipError("Not available yet", "phase3").
+ * `settleOnHedera(options)` returns the real client
  * (./settle.ts) for a given order book, Deposit contracts and Connector directory.
  */
 
@@ -169,8 +169,9 @@ export interface SettleOnHederaOptions {
 }
 
 /**
- * Known "settle on Hedera" deployments. Empty: the contracts are not deployed on any testnet yet (CLPRouter branch
- * feat/settle-on-hedera). Add the order book, its Deposit contracts and Connectors here once they are.
+ * Known "settle on Hedera" deployments. Testnet: CLPRouter `deployments/README.md` ("Settle on Hedera (testnet)",
+ * branch feat/settle-testnet): SettleOrderBook on Hedera testnet, SettleDeposit on Sepolia, and the test Connector,
+ * whose reference service runs locally (`script/deploy/settle-connector.sh serve`, 127.0.0.1:8787).
  */
 export interface SettleDeployment {
   network: "testnet" | "mainnet";
@@ -179,7 +180,15 @@ export interface SettleDeployment {
   deposits: Record<NetworkId, `0x${string}`>;
   connectors: ConnectorDirectoryEntry[];
 }
-export const SETTLE_DEPLOYMENTS: readonly SettleDeployment[] = [];
+export const SETTLE_DEPLOYMENTS: readonly SettleDeployment[] = [
+  {
+    network: "testnet",
+    hederaChainId: 296,
+    orderBook: "0xB7C875E6EB4a9D470BBccFecbA6256342676e895",
+    deposits: { "eip155:11155111": "0x249f83524D0827840237e751981B804D99bB5bD6" },
+    connectors: [{ id: "0x316323692104293b58366e6Bc66a796B919108E7", name: "Clip testnet Connector", url: "http://127.0.0.1:8787" }],
+  },
+];
 
 const notYet = async (): Promise<never> => {
   throw new ClipError("Not available yet", "phase3");
