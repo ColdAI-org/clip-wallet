@@ -241,6 +241,12 @@ describe("accounts and labels (encrypted metadata)", () => {
     expect((await vault.listAccounts(["sui", "ton"])).map((a) => a.id)).toEqual(["sui:0", "ton:0"]);
   });
 
+  it("audit VAULT-04: labels lose control, bidi and zero-width characters", async () => {
+    const { vault } = await imported();
+    const a = await vault.addAccount("evm", "Sav\u202Eings\u200B\u0007");
+    expect(a.label).toBe("Savings");
+  });
+
   it("addAccount, setAccountLabel persist across lock, restart and password change", async () => {
     const storage = new MemoryStorage();
     const { vault } = await imported({}, storage);
