@@ -51,15 +51,11 @@ export const en = {
   ...security,
   ...plugins,
   ...settle,
-};
-
-/** Namespaces in the order above; each locale folder has one file per namespace. */
-export const UI_NAMESPACES = ['common', 'settings', 'onboarding', 'backup', 'home', 'collectibles', 'activity', 'receive', 'accounts', 'approvals', 'components', 'stake', 'swap', 'buy', 'trade', 'hardware', 'send', 'approval', 'explore', 'social', 'security', 'plugins', 'settle'] as const;
   ...privacy,
 };
 
 /** Namespaces in the order above; each locale folder has one file per namespace. */
-export const UI_NAMESPACES = ['common', 'settings', 'onboarding', 'backup', 'home', 'collectibles', 'activity', 'receive', 'accounts', 'approvals', 'components', 'stake', 'swap', 'buy', 'trade', 'hardware', 'send', 'approval', 'explore', 'social', 'security', 'plugins', 'privacy'] as const;
+export const UI_NAMESPACES = ['common', 'settings', 'onboarding', 'backup', 'home', 'collectibles', 'activity', 'receive', 'accounts', 'approvals', 'components', 'stake', 'swap', 'buy', 'trade', 'hardware', 'send', 'approval', 'explore', 'social', 'security', 'plugins', 'settle', 'privacy'] as const;
 
 export type UiMessages = typeof en;
 export type UiMessageId = keyof UiMessages;
