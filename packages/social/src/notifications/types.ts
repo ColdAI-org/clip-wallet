@@ -1,3 +1,5 @@
+import type { Msg } from "@clip-wallet/core";
+
 export type NotificationKind = "incoming" | "nft" | "confirmed" | "failed" | "price" | "approval";
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = ["incoming", "nft", "confirmed", "failed", "price", "approval"];
@@ -51,8 +53,9 @@ export interface Snapshot {
   nfts: { id: string; name?: string; collection: string; spam?: boolean }[];
   /** null when the source couldn't read collectibles this time. */
   nftsRead: boolean;
-  activity: { id: string; title: string; status: "done" | "pending" | "failed"; kind: string }[];
-  approvals: { id: string; app: string; title: string }[];
+  /** `titleMsg` (additive): the title as a translatable Msg (@clip-wallet/core), rendered in the notification's language. */
+  activity: { id: string; title: string; titleMsg?: Msg; status: "done" | "pending" | "failed"; kind: string }[];
+  approvals: { id: string; app: string; title: string; titleMsg?: Msg }[];
   /** Price of an asset in a display currency, if known. */
   price(assetKey: string, currency: string): number | undefined;
 }

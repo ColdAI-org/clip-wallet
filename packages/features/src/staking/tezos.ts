@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@clip-wallet/core";
 import { type StakePosition, type TezosModule, rpcFor, tezosModule, tzktFor } from "@clip-wallet/chains-tezos";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { formatUnits, percent, shortAddress } from "../util.js";
@@ -171,7 +171,7 @@ export class TezosStaking implements StakingProvider {
     return ranked.map((c, i) => {
       const parts: string[] = [];
       if (c.acceptsStaking) {
-        if (c.stakeApy !== undefined) parts.push(`Staking earns about ${percent(c.stakeApy)} a year`);
+        if (c.stakeApy !== undefined) parts.push(say("bg.staking.stakingEarnsAbout", { percent: percent(c.stakeApy) }));
         parts.push(`keeps ${percent(c.edge * 100, 0)} of staking rewards`);
         parts.push(c.room > 0n ? `room to stake ${xtz(c.room, 0)}` : "full for staking, delegation only");
       } else {
@@ -254,10 +254,10 @@ export class TezosStaking implements StakingProvider {
     if (amount > 0n) {
       lines.push({ label: "Baker keeps", value: `${percent(c.edge * 100, 0)} of staking rewards` });
       lines.push({ label: "Unstaking", value: `Takes about ${UNSTAKE_DAYS} days` });
-      return { steps: [{ title: `Stake ${xtz(amount)}`, request, lines }] };
+      return { steps: [{ ...titled(msg("bg.req.stake", { amount: xtz(amount) })), request, lines }] };
     }
     lines.push({ label: "Your XTZ", value: "Stays in your account and spendable" });
-    return { steps: [{ title: `Delegate your XTZ to ${c.name}`, request, lines }] };
+    return { steps: [{ title: say("bg.tezos.delegateXtzTo", { name: c.name }), request, lines }] };
   }
 
   private async position(ctx: ChainContext, id: string): Promise<{ kind: Kind; baker: string; p: StakePosition }> {
@@ -281,7 +281,7 @@ export class TezosStaking implements StakingProvider {
     if (amount > staked) throw new ClipError(`You have ${xtz(staked)} staked. Unstake that much or less.`, "staking/too-much");
     const request = await this.m.staking.buildUnstake({ validator: baker, amount: amount.toString() }, ctx);
     return {
-      steps: [{ title: `Unstake ${xtz(amount)}`, request, lines: [{ label: "Ready", value: `In about ${UNSTAKE_DAYS} days, then move it back to your balance` }] }],
+      steps: [{ ...titled(msg("bg.req.unstake", { amount: xtz(amount) })), request, lines: [{ label: "Ready", value: `In about ${UNSTAKE_DAYS} days, then move it back to your balance` }] }],
     };
   }
 
@@ -290,6 +290,6 @@ export class TezosStaking implements StakingProvider {
     const ready = BigInt(p.withdrawable ?? "0");
     if (kind !== "withdrawable" || ready <= 0n) throw new ClipError("This XTZ isn't ready yet. Try again once it's unlocked.", "staking/not-withdrawable");
     const request = await this.m.staking.buildWithdraw({ validator: baker }, ctx);
-    return { steps: [{ title: `Move ${xtz(ready, 4)} back to your balance`, request }] };
+    return { steps: [{ ...titled(msg("bg.req.moveBack", { amount: xtz(ready, 4) })), request }] };
   }
 }

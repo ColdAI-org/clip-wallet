@@ -16,6 +16,7 @@ import { sha3_256 } from "@noble/hashes/sha3.js";
 import { APT_METADATA, aptAsset, assetKey, isApt, longAddress } from "./networks.js";
 import { AptosApiError, type AptosRest, plainAptosError } from "./rest.js";
 import { formatUnits, fromHex, short } from "./util.js";
+import { say, recallMsg, knownMsg, withFallback } from "@clip-wallet/core";
 
 export type Role = "sender" | "secondary" | "feePayer";
 
@@ -260,7 +261,7 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
   const lines: { label: string; value: string }[] = [];
   const warnings: Warning[] = [];
   let blind = false;
-  let title = `Approve a transaction for ${o.host}`;
+  let title = say("bg.req.approveTxFor", { host: o.host });
   let transfer: ReturnType<typeof transferOf> = null;
 
   const p = raw.payload;
@@ -272,23 +273,23 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
       const fn = ef.function_name.identifier;
       if (id === "0x1::delegation_pool::add_stake") {
         const amount = argU64(ef, 1);
-        title = amount != null ? `Stake ${formatUnits(amount, 8)} APT` : "Stake APT";
+        title = amount != null ? say("bg.req.stake", { amount: `${formatUnits(amount, 8)} APT` }) : "Stake APT";
         const pool = argAddress(ef, 0);
         if (pool) lines.push({ label: "Stake with", value: pool });
       } else if (id === "0x1::delegation_pool::unlock") {
         const amount = argU64(ef, 1);
-        title = amount != null ? `Unstake ${formatUnits(amount, 8)} APT` : "Unstake APT";
+        title = amount != null ? say("bg.req.unstake", { amount: `${formatUnits(amount, 8)} APT` }) : "Unstake APT";
       } else if (id === "0x1::delegation_pool::withdraw") {
         title = "Withdraw unstaked APT";
       } else {
-        title = `${words(fn)} on ${o.host}`;
+        title = say("bg.req.actionOnApp", { action: words(fn), app: o.host });
         lines.push({ label: "App action", value: `${short(ef.module_name.address.toString())}::${ef.module_name.name.identifier}::${fn}` });
         if (ef.type_args.length) lines.push({ label: "Types", value: ef.type_args.map((t) => t.toString()).join(", ") });
         // Audit UNK-01: arguments aren't shown and only coin/fungible-asset changes are previewed.
         warnings.push({
           level: "caution",
           code: "unknown-call",
-          message: `This runs ${o.host}'s own code. Clip Wallet shows coin changes only; items you own that it uses could leave your account.`,
+          message: say("bg.warn.runsOwnCode", { host: o.host }),
         });
       }
     } else {
@@ -345,10 +346,14 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
     const got = received.get(to);
     const amount = got && got.size === 1 ? [...got.values()][0]! : transfer.amount;
     const a = assetFor(o.networkId, transfer.assetType, isApt(transfer.assetType) ? null : await assetInfo(o.rest, transfer.assetType));
-    title = `Send ${formatUnits(amount, a.decimals)} ${a.symbol} to ${short(to)}`;
+    title = say("bg.req.sendSymbolTo", { amount: formatUnits(amount, a.decimals), symbol: a.symbol, to: short(to) });
   }
 
-  if (o.role === "feePayer") title = `Pay the network fee: ${title[0]!.toLowerCase()}${title.slice(1)}`;
+  if (o.role === "feePayer") {
+    const lower = `${title[0]!.toLowerCase()}${title.slice(1)}`;
+    const inner = recallMsg(title) ?? knownMsg(title);
+    title = inner ? say("bg.req.payFeeFor", { inner: withFallback(inner, lower) }) : `Pay the network fee: ${lower}`;
+  }
 
   if (!iPay) {
     lines.push({ label: "Network fee", value: feePayer === longAddress("0x0") ? "Paid by the app's sponsor" : `Paid by ${short(feePayer)}` });

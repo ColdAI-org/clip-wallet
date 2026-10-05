@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled, say } from "@clip-wallet/core";
 import { NEAR_CHAINS, NearRpc, createNearModule, isPool, networkName, poolName, type NearModule } from "@clip-wallet/chains-near";
 import { fetchJson } from "../http.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
@@ -195,7 +195,7 @@ export class NearStaking implements StakingProvider {
     return ranked.slice(0, 10).map((c, i) => {
       const o: StakeOptionView = {
         id: c.pool,
-        title: `Validator ${poolName(c.pool)}`,
+        title: say("bg.staking.validator", { name: poolName(c.pool) }),
         detail: `${c.apy !== undefined ? `Earns about ${percent(c.apy)} a year · ` : ""}keeps ${percent(c.fee! * 100)} of rewards · online ${percent(c.uptime * 100, 0)}`,
       };
       if (c.apy !== undefined) o.apy = c.apy;
@@ -241,7 +241,7 @@ export class NearStaking implements StakingProvider {
       const [pool, a] = entry;
       const staked = BigInt(a.staked_balance ?? "0");
       const unstaked = BigInt(a.unstaked_balance ?? "0");
-      const withValidator = `Validator ${poolName(pool)}`;
+      const withValidator = say("bg.staking.validator", { name: poolName(pool) });
       if (staked > DUST) {
         out.push({ ...base, id: pool, amount: staked.toString(), amountDisplay: near(staked), with: withValidator, status: "active", statusText: "Earning rewards", actions: ["unstake"], partialUnstake: true });
       }
@@ -269,10 +269,10 @@ export class NearStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Stake ${near(amount, 6)}`,
+          ...titled(msg("bg.req.stake", { amount: near(amount, 6) })),
           request,
           lines: [
-            { label: "With", value: `Validator ${poolName(pool)}` },
+            { label: "With", value: say("bg.staking.validator", { name: poolName(pool) }) },
             { label: "Starts earning", value: "From the next epoch, within about 7 hours" },
             { label: "Unstaking later", value: `Takes ${UNLOCK_TEXT}` },
           ],
@@ -302,7 +302,7 @@ export class NearStaking implements StakingProvider {
     }
     const request = await this.module.staking.buildUnstake(amount === undefined ? { validator: pool } : { validator: pool, amount: amount.toString() }, ctx);
     const lines = [
-      { label: "From", value: `Validator ${poolName(pool)}` },
+      { label: "From", value: say("bg.staking.validator", { name: poolName(pool) }) },
       { label: "Ready", value: `In ${UNLOCK_TEXT}, then move it back to your balance` },
     ];
     const unstaked = BigInt(account.unstaked_balance ?? "0");
@@ -314,7 +314,7 @@ export class NearStaking implements StakingProvider {
           : `The ${near(unstaked)} already unlocking here will be ready at the same new time as this.`,
       });
     }
-    return { steps: [{ title: amount === undefined ? `Unstake all ${near(staked)}` : `Unstake ${near(amount, 6)}`, request, lines }] };
+    return { steps: [{ title: amount === undefined ? `Unstake all ${near(staked)}` : say("bg.req.unstake", { amount: near(amount, 6) }), request, lines }] };
   }
 
   async buildWithdraw(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild> {
@@ -330,6 +330,6 @@ export class NearStaking implements StakingProvider {
       if (amount === unstaked) amount = undefined;
     }
     const request = await this.module.staking.buildWithdraw(amount === undefined ? { validator: pool } : { validator: pool, amount: amount.toString() }, ctx);
-    return { steps: [{ title: `Move ${near(amount ?? unstaked)} back to your balance`, request, lines: [{ label: "From", value: `Validator ${poolName(pool)}` }] }] };
+    return { steps: [{ ...titled(msg("bg.req.moveBack", { amount: near(amount ?? unstaked) })), request, lines: [{ label: "From", value: `Validator ${poolName(pool)}` }] }] };
   }
 }

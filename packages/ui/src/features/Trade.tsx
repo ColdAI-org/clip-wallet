@@ -1,3 +1,4 @@
+import { useBgText } from "../i18n/bg";
 import { useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
@@ -220,6 +221,7 @@ export function TradeCreate() {
 
 /** Counterparty: paste or open a link, see what the actual transaction does, accept. */
 export function TradeReview(props: { link?: string }) {
+  const bg = useBgText();
   const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
@@ -276,7 +278,7 @@ export function TradeReview(props: { link?: string }) {
             <Row label={t("trade.youGive")} value={review.offer.get.display} />
             <Row label={t("trade.from")} value={review.offer.counterparty} />
             {review.lines.map((l) => (
-              <Row key={l.label + l.value} label={l.label} value={l.value} />
+              <Row key={l.label + l.value} label={bg.label(l)} value={bg.value(l)} />
             ))}
           </div>
           {review.balanceChanges.length > 0 && (
@@ -296,8 +298,8 @@ export function TradeReview(props: { link?: string }) {
             <>
               {review.steps.length > 1 && (
                 <ol className="clip-steps" aria-label={t("trade.steps")}>
-                  {review.steps.map((s) => (
-                    <li key={s}>{s}</li>
+                  {review.steps.map((s, i) => (
+                    <li key={s}>{bg.msg(review.stepMsgs?.[i], s)}</li>
                   ))}
                 </ol>
               )}

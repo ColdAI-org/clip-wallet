@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest, WALLET_ORIGIN, msg, titled, type Msg, say } from "@clip-wallet/core";
 import {
   type SwapLeg,
   buildAssociate,
@@ -152,7 +152,7 @@ export class SecureTradeService {
     const getToken = tokenOf(get);
     if (getToken && !(await this.canReceive(ctx, me, getToken))) {
       const label = get.kind === "nft" ? (get.name ?? getToken) : get.symbol;
-      steps.push({ title: `Add ${label} to your account`, request: () => buildAssociate(getToken, ctx) });
+      steps.push({ ...titled(msg("bg.req.addToYourAccount", { symbol: label })), request: () => buildAssociate(getToken, ctx) });
     }
 
     const id = crypto.randomUUID();
@@ -160,7 +160,7 @@ export class SecureTradeService {
     const payload: OfferPayload = { v: 1, n: network.id, mode: p.mode, maker: me, taker: other.account, give, get };
     const record: TradeRecord = { id, role: "maker", payload, status: "draft", createdAt: this.now(), notes };
     await this.save(record);
-    const title = `Trade ${legText(give, formatUnits)} for ${legText(get, formatUnits)} with ${other.account}`;
+    const title = say("bg.req.tradeWith", { give: legText(give, formatUnits), get: legText(get, formatUnits), who: other.account });
     const base = this.opts.linkBase ?? "https://clipwallet.example/trade";
 
     steps.push({
@@ -225,7 +225,7 @@ export class SecureTradeService {
     const p = r.payload;
     const counterparty = r.role === "maker" ? p.taker : p.maker;
     const [mine, theirs] = r.role === "maker" ? [p.give, p.get] : [p.get, p.give];
-    const title = `Trade ${legText(mine, formatUnits)} for ${legText(theirs, formatUnits)} with ${counterparty}`;
+    const title = say("bg.req.tradeWith", { give: legText(mine, formatUnits), get: legText(theirs, formatUnits), who: counterparty });
     const statusText: Record<TradeStatus, string> = {
       draft: "Waiting for your approval",
       waiting: r.role === "maker" ? `Waiting for ${counterparty} to accept` : "Waiting to go through",
@@ -355,17 +355,19 @@ export class SecureTradeService {
     const request = await this.takerRequest(p, ctx, me);
     const decoded = await this.host.decode(request);
     const problem = this.checkAgainstClaims(p, decoded);
-    const steps: string[] = [];
+    const stepMsgs: Msg[] = [];
     const recv = tokenOf(p.give);
-    if (recv && !(await this.canReceive(ctx, me, recv))) steps.push(`Add ${p.give.kind === "nft" ? (p.give.name ?? recv) : p.give.symbol} to your account`);
-    steps.push("Accept the trade");
+    if (recv && !(await this.canReceive(ctx, me, recv))) stepMsgs.push(msg("bg.req.addToYourAccount", { symbol: p.give.kind === "nft" ? (p.give.name ?? recv) : p.give.symbol }));
+    stepMsgs.push(msg("bg.trade.accept"));
     const view: TradeReviewView = {
       offer: offerView(),
       title: decoded.title,
+      ...(decoded.titleMsg ? { titleMsg: decoded.titleMsg } : {}),
       lines: decoded.lines,
       balanceChanges: decoded.balanceChanges,
       warnings: decoded.warnings,
-      steps,
+      steps: stepMsgs.map((m) => m.fallback),
+      stepMsgs,
     };
     if (problem) view.problem = problem;
     return view;
@@ -380,7 +382,7 @@ export class SecureTradeService {
     const steps: Step[] = [];
     const recv = tokenOf(p.give);
     if (recv && !(await this.canReceive(ctx, me, recv))) {
-      steps.push({ title: `Add ${p.give.kind === "nft" ? (p.give.name ?? recv) : p.give.symbol} to your account`, request: () => buildAssociate(recv, ctx) });
+      steps.push({ ...titled(msg("bg.req.addToYourAccount", { symbol: p.give.kind === "nft" ? (p.give.name ?? recv) : p.give.symbol })), request: () => buildAssociate(recv, ctx) });
     }
     const record: TradeRecord = { id: crypto.randomUUID(), role: "taker", payload: p, status: "draft", createdAt: this.now(), notes: [] };
     steps.push({

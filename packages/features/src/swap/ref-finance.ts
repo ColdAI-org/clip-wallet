@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   NEAR_METHODS,
   NearRpc,
@@ -204,7 +204,7 @@ export class RefFinanceSwap implements SwapProvider {
         if (amount + deposits + NEAR_RESERVE > bal.available) throw new ClipError("You don't have enough NEAR for this swap, including network fees.", "swap/insufficient");
       } else {
         const have = BigInt(await rpc.view<string>(tokenIn, "ft_balance_of", { account_id: me }));
-        if (have < amount) throw new ClipError(`You don't have enough ${quote.sell.symbol} for this swap.`, "swap/insufficient");
+        if (have < amount) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: quote.sell.symbol }), "swap/insufficient");
       }
     } catch (e) {
       if (e instanceof ClipError) throw e;
@@ -226,7 +226,7 @@ export class RefFinanceSwap implements SwapProvider {
     if (outReg) lines.push({ label: "First", value: `Sets up ${quote.buy.symbol === "NEAR" ? "wNEAR" : quote.buy.symbol} on your account (${formatUnits(BigInt(outReg.deposit), 24)} NEAR storage deposit)` });
     return [
       {
-        title: `Swap ${formatUnits(amount, quote.sell.decimals)} ${quote.sell.symbol} for ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: `${formatUnits(amount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `${quote.buy.symbol}` })),
         request,
         lines,
         verify: (r) => verifyRefRequest(r, ctx.network.id, me, tokenIn, tokenOut),

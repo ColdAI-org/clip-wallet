@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, msg, titled } from "@clip-wallet/core";
 import {
   type Connection,
   type SubstrateModule,
@@ -43,7 +43,7 @@ const locOf = (x: "native" | number): XcmLocation => (x === "native" ? nativeLoc
 function idOf(a: AssetRef): "native" | number {
   if (!a.address) return "native";
   const id = Number(a.address);
-  if (!/^\d+$/.test(a.address) || !Number.isSafeInteger(id)) throw new ClipError(`Swapping ${a.symbol} isn't available yet.`, "swap/unsupported-asset");
+  if (!/^\d+$/.test(a.address) || !Number.isSafeInteger(id)) throw new ClipError(msg("bg.err.swapAssetUnavailable", { symbol: a.symbol }), "swap/unsupported-asset");
   return id;
 }
 
@@ -88,7 +88,7 @@ export class AssetHubSwap implements SwapProvider {
       const [a, b] = [locOf(path[i]!), locOf(path[i + 1]!)];
       const q = await runtimeCall<bigint | undefined>(c.rpc, c.rt, "AssetConversionApi", "quote_price_exact_tokens_for_tokens", [a, b, out, true]).catch(() => undefined);
       if (q === undefined || q === null || BigInt(q) <= 0n) {
-        throw new ClipError(`There's no way to swap ${req.sell.symbol} for ${req.buy.symbol} right now. Try a smaller amount or another token.`, "swap/no-route");
+        throw new ClipError(msg("bg.err.noSwapRouteFor", { sell: req.sell.symbol, buy: req.buy.symbol }), "swap/no-route");
       }
       out = BigInt(q);
       const r = await runtimeCall<[bigint, bigint] | undefined>(c.rpc, c.rt, "AssetConversionApi", "get_reserves", [a, b]).catch(() => undefined);
@@ -112,7 +112,7 @@ export class AssetHubSwap implements SwapProvider {
         readStorage<{ balance: bigint }>(c.rpc, c.rt, "Assets", "Account", sellId, c.me),
       ]);
       const bal = BigInt(held?.balance ?? 0n);
-      if (amount > bal) throw new ClipError(`You don't have enough ${req.sell.symbol} for this swap.`, "swap/insufficient");
+      if (amount > bal) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: req.sell.symbol }), "swap/insufficient");
       const min = BigInt(asset?.min_balance ?? 0n);
       if (amount === bal) keepAlive = false;
       else if (bal - amount < min) {
@@ -157,7 +157,7 @@ export class AssetHubSwap implements SwapProvider {
     const buy = `${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`;
     return [
       {
-        title: `Swap ${sell} for ~${buy}`,
+        ...titled(msg("bg.req.swap", { pay: `${sell}`, get: `~${buy}` })),
         lines: [{ label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}, or nothing happens` }],
         request: async () => {
           const c = await connect(ctx);

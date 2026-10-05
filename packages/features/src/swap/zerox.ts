@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import { decodeFunctionData, encodeFunctionData, erc20Abi, getAddress, isAddressEqual, parseAbi, toHex } from "viem";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -107,7 +107,7 @@ export class ZeroExSwap implements SwapProvider {
     if (!q.liquidityAvailable || !q.buyAmount || !q.transaction) {
       throw new ClipError("There's no way to swap these two right now. Try a smaller amount or another token.", "swap/no-route");
     }
-    if (q.issues?.balance) throw new ClipError(`You don't have enough ${req.sell.symbol} for this swap.`, "swap/insufficient");
+    if (q.issues?.balance) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: req.sell.symbol }), "swap/insufficient");
     const holder = ZEROX_CHAINS[chainId]!;
     // Safety: the swap must go to 0x's AllowanceHolder, and any permission must be for it.
     if (!isAddressEqual(getAddress(q.transaction.to), getAddress(holder))) {
@@ -156,7 +156,7 @@ export class ZeroExSwap implements SwapProvider {
     if (quote.approval && quote.sell.address) {
       const data = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [getAddress(quote.approval.spender), BigInt(quote.approval.amount)] });
       steps.push({
-        title: `Allow 0x to use exactly ${formatUnits(quote.approval.amount, quote.sell.decimals)} ${quote.sell.symbol}`,
+        ...titled(msg("bg.req.allowUseExactly", { spender: "0x", amount: `${formatUnits(quote.approval.amount, quote.sell.decimals)} ${quote.sell.symbol}` })),
         lines: [{ label: "Limit", value: "Only this amount, for this swap" }],
         request: mk({ from, to: getAddress(quote.sell.address), value: "0x0", data }),
       });
@@ -164,7 +164,7 @@ export class ZeroExSwap implements SwapProvider {
     const swap: Record<string, string> = { from, to: getAddress(tx.to), data: tx.data, value: toHex(BigInt(tx.value || "0")) };
     if (tx.gas) swap.gas = toHex(BigInt(tx.gas));
     steps.push({
-      title: `Swap ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+      ...titled(msg("bg.req.swap", { pay: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
       lines: [{ label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}` }],
       request: mk(swap),
       verify: (r) => {

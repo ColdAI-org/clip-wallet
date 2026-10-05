@@ -1,19 +1,4 @@
-import {
-  type Account,
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-  WALLET_ORIGIN,
-} from "@clip-wallet/core";
+import { type Account, type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, say, recallMsg, knownMsg, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { type BuiltOperation, type PartialTezosOperation, ProtocolsHash, buildOperation, normalizeOperations } from "./build.js";
 import { describeOperations } from "./describe.js";
@@ -173,7 +158,7 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     const host = hostOf(request.origin);
 
     if (n.kind === "accounts") {
-      return { ...base, title: `Share your Tezos address with ${host}`, lines: [{ label: "Address", value: me }], balanceChanges: [], simulated: false, blind: false, warnings: [] };
+      return { ...base, title: say("bg.tezos.shareAddress", { host }), lines: [{ label: "Address", value: me }], balanceChanges: [], simulated: false, blind: false, warnings: [] };
     }
 
     if (n.kind === "send") {
@@ -188,12 +173,12 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
       const warnings: Warning[] = [...d.warnings];
       if (built.simulationError) warnings.push({ level: "danger", code: "simulation-failed", message: built.simulationError });
       const total = built.fees + built.maxBurn;
-      if (built.fees > HIGH_FEE_MUTEZ) warnings.push({ level: "caution", code: "high-fee", message: `The network fee is ${xtzText(built.fees)}, which is unusually high.` });
+      if (built.fees > HIGH_FEE_MUTEZ) warnings.push({ level: "caution", code: "high-fee", message: say("bg.tezos.highFee", { fee: xtzText(built.fees) }) });
       const lines = [...d.lines, ...n.notes.map((value) => ({ label: "Note", value })), { label: "Network fee", value: xtzText(built.fees) }];
       if (built.maxBurn > 0n) lines.push({ label: "Storage", value: `up to ${xtzText(built.maxBurn)} (paid once to the network for storing data)` });
       return {
         ...base,
-        title: d.title,
+        title: d.title, ...msgOf(d),
         lines,
         balanceChanges: d.balanceChanges,
         fee: { asset: xtzAsset(ctx.network.id), amount: total.toString() },
@@ -214,7 +199,7 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
       const fees = parsed.contents.reduce((a, c) => a + BigInt(typeof c.fee === "string" ? c.fee : "0"), 0n);
       return {
         ...base,
-        title: `Sign an operation for ${host}: ${d.title}`,
+        title: recallMsg(d.title) ?? knownMsg(d.title) ? say("bg.req.signOperationFor", { host, inner: (recallMsg(d.title) ?? knownMsg(d.title))! }) : `Sign an operation for ${host}: ${d.title}`,
         lines: [...d.lines, { label: "Network fee", value: xtzText(fees) }, { label: "Sent by", value: `${host} (it gets the signed operation and can send it whenever it wants)` }],
         balanceChanges: d.balanceChanges,
         fee: { asset: xtzAsset(ctx.network.id), amount: fees.toString() },
@@ -232,14 +217,14 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     }
     if (n.signingType === "micheline" || (n.signingType === "raw" && n.bytes[0] === 0x05)) {
       const v = describeMicheline(n.bytes, request.origin);
-      return { ...base, title: v.title, lines: v.lines, balanceChanges: [], simulated: false, blind: v.blind, warnings: v.warnings };
+      return { ...base, title: v.title, ...msgOf(v), lines: v.lines, balanceChanges: [], simulated: false, blind: v.blind, warnings: v.warnings };
     }
     const text = textOf(n.bytes);
     if (text != null) {
       const v = describeText(text, request.origin);
       return {
         ...base,
-        title: v.title,
+        title: v.title, ...msgOf(v),
         lines: v.lines,
         balanceChanges: [],
         simulated: false,
@@ -249,7 +234,7 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     }
     return {
       ...base,
-      title: `Sign data for ${host}`,
+      ...titled(msg("bg.req.signData", { host })),
       lines: [{ label: "Data (not text)", value: `0x${hex(n.bytes).slice(0, 400)}${n.bytes.length > 200 ? "…" : ""}` }],
       balanceChanges: [],
       simulated: false,
@@ -378,4 +363,10 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     encodePublicKey,
     staking,
   };
+}
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
 }

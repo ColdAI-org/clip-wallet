@@ -11,6 +11,8 @@ class SecurityBusError extends Error {
   constructor(
     public readonly userMessage: string,
     public readonly code: string,
+    /** The translatable version (ClipError.msg), checked with isMsg by the UI before use. */
+    public readonly msg?: unknown,
   ) {
     super(`${code}: ${userMessage}`);
   }
@@ -28,7 +30,7 @@ export function createSecurityBusClient(transport: SecurityTransport = (m) => br
     }
     const env = Envelope.safeParse(raw);
     if (!env.success) throw new SecurityBusError("Something went wrong. Please try again.", "bus/bad-reply");
-    if (!env.data.ok) throw new SecurityBusError(env.data.error.userMessage, env.data.error.code);
+    if (!env.data.ok) throw new SecurityBusError(env.data.error.userMessage, env.data.error.code, env.data.error.msg);
     return env.data.data as SecurityResponseMap[T];
   }
   return {

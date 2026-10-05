@@ -1,4 +1,4 @@
-import { ClipError, type Warning } from "@clip-wallet/core";
+import { ClipError, type Warning, msg, titled, say } from "@clip-wallet/core";
 import { LocalForger, type ProtocolsHash } from "@taquito/local-forging";
 import { fromHex, hex, hostOf, isHex, textOf } from "./encoding.js";
 import { unpack } from "./micheline.js";
@@ -58,14 +58,14 @@ export function describeText(text: string, origin: string): MessageView {
   const host = hostOf(origin);
   const warnings: Warning[] = [];
   const lines: { label: string; value: string }[] = [];
-  let title = `Sign a message for ${host}`;
+  let title = say("bg.req.signMessage", { host });
   if (text.startsWith(SIGNED_MESSAGE_PREFIX)) {
     const rest = text.slice(SIGNED_MESSAGE_PREFIX.length).trim();
     const [first = "", second = "", ...statement] = rest.split(/\s+/);
     const claimed = /^https?:\/\//i.test(first) ? hostOf(first) : first.replace(/\/.*$/, "");
-    title = `Sign in to ${claimed || host}`;
+    title = say("bg.req.signIn", { domain: claimed || host });
     if (claimed && !sameSite(claimed, host)) {
-      warnings.push({ level: "danger", code: "domain-mismatch", message: `This sign-in is for ${claimed}, but the request comes from ${host}. It may be a phishing site.` });
+      warnings.push({ level: "danger", code: "domain-mismatch", message: say("bg.warn.signInPhishing", { domain: claimed, host }) });
     }
     if (/^\d{4}-\d{2}-\d{2}T/.test(second)) lines.push({ label: "Time", value: second });
     const st = /^\d{4}-\d{2}-\d{2}T/.test(second) ? statement.join(" ") : [second, ...statement].join(" ").trim();
@@ -76,7 +76,7 @@ export function describeText(text: string, origin: string): MessageView {
   }
   const other = urlHosts(text).find((h) => !sameSite(h, host));
   if (other && !warnings.length) {
-    warnings.push({ level: "danger", code: "domain-mismatch", message: `This message mentions ${other}, but the request comes from ${host}. It may be a phishing site.` });
+    warnings.push({ level: "danger", code: "domain-mismatch", message: say("bg.tezos.messageMentions", { other, host }) });
   }
   return { title, lines, warnings, blind: false };
 }
@@ -91,7 +91,7 @@ export function describeMicheline(bytes: Uint8Array, origin: string): MessageVie
     if (text != null) return describeText(text, origin);
   }
   return {
-    title: `Sign data for ${host}`,
+    ...titled(msg("bg.req.signData", { host })),
     lines: [{ label: "Data (not text)", value: `0x${hex(bytes).slice(0, 400)}${bytes.length > 200 ? "…" : ""}` }],
     warnings: [
       {

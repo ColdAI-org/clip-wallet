@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network, msg, titled } from "@clip-wallet/core";
 import {
   type CpmmState,
   LIQUIDITY_BAKING,
@@ -133,7 +133,7 @@ export class SiriusSwap implements SwapProvider {
     if (d.direction === "token-to-xtz") lines.push({ label: "Permission", value: `Sirius may use exactly ${amt(sell, quote.sell)}, only in this swap` });
     return [
       {
-        title: `Swap ${amt(sell, quote.sell)} for ~${amt(quote.buyAmount, quote.buy)}`,
+        ...titled(msg("bg.req.swap", { pay: `${amt(sell, quote.sell)}`, get: `~${amt(quote.buyAmount, quote.buy)}` })),
         lines,
         request,
         verify: (r) => verifySiriusRequest(r, { me, cpmm: lb.cpmm, token: lb.token }),

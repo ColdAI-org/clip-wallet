@@ -1,3 +1,4 @@
+import { useBgText } from "../i18n/bg";
 import { useMemo, useState } from "react";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
@@ -13,6 +14,7 @@ const SLIPPAGE = [50, 100, 300];
 /** Swap in assets: "100 USDC for ETH". The wallet finds where; a network only shows in Advanced mode. */
 export function Swap(props: { sell?: string; buy?: string; /** Discover: symbol for a token the wallet doesn't list yet ("token:<chain>:<address>"). */ buySymbol?: string }) {
   const t = useUiT();
+  const bg = useBgText();
   const f = useFormat();
   const { client, state } = useUi();
   const features = useFeatures();
@@ -137,7 +139,7 @@ export function Swap(props: { sell?: string; buy?: string; /** Discover: symbol 
           {quote.steps.length > 1 && (
             <ol className="clip-steps" aria-label={t("swap.steps")}>
               {quote.steps.map((s, i) => (
-                <li key={s + i}>{s}</li>
+                <li key={s + i}>{bg.msg(quote.stepMsgs?.[i], s)}</li>
               ))}
             </ol>
           )}

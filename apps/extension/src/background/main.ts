@@ -20,7 +20,7 @@ import { RecipientLog, SecurityService } from "@clip-wallet/security";
 const AUTOLOCK_ALARM = "clip-autolock";
 
 export function toEnvelope(e: unknown): Envelope {
-  if (e instanceof ClipError) return { ok: false, error: { userMessage: e.userMessage, code: e.code } };
+  if (e instanceof ClipError) return { ok: false, error: { userMessage: e.userMessage, code: e.code, ...(e.msg ? { msg: e.msg } : {}) } };
   // Plain-words errors from packages that don't depend on core's class (e.g. PluginsUserError): same shape.
   const u = e as { userMessage?: unknown; code?: unknown } | null;
   if (u && typeof u.userMessage === "string" && typeof u.code === "string") return { ok: false, error: { userMessage: u.userMessage, code: u.code } };

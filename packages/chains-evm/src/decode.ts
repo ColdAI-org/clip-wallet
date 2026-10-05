@@ -2,7 +2,7 @@
  * decode(): DappRequest → DecodedRequest in plain words.
  * Titles never contain raw method names; fees are an amount of the network's native asset.
  */
-import { ClipError, type BalanceChange, type ChainContext, type DappRequest, type DecodedRequest, type Warning } from "@clip-wallet/core";
+import { ClipError, msg, titled, warning, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
 import {
   type AbiFunction,
   type Hex,
@@ -49,6 +49,28 @@ export const SEL = {
   safeTransferFrom721Data: sel("safeTransferFrom(address,address,uint256,bytes)"),
   safeTransferFrom1155: sel("safeTransferFrom(address,address,uint256,uint256,bytes)"),
 } as const;
+
+/** selectors.ts actions as whole translatable sentences ("Swap tokens on {app}"). */
+const ACTION_IDS: Record<string, BgMessageId | undefined> = {
+  "Deposit": "bg.evm.on.deposit",
+  "Withdraw": "bg.evm.on.withdraw",
+  "Swap tokens": "bg.req.swapTokensOn",
+  "Run several actions": "bg.evm.on.runSeveralActions",
+  "Mint": "bg.evm.on.mint",
+  "Claim rewards": "bg.evm.on.claimRewards",
+  "Claim tokens": "bg.evm.on.claimTokens",
+  "Stake": "bg.evm.on.stake",
+  "Unstake": "bg.evm.on.unstake",
+  "Lend": "bg.evm.on.lend",
+  "Borrow": "bg.evm.on.borrow",
+  "Repay a loan": "bg.evm.on.repayALoan",
+  "Deposit into a vault": "bg.evm.on.depositIntoAVault",
+  "Withdraw from a vault": "bg.evm.on.withdrawFromAVault",
+  "Submit a spending permission": "bg.evm.on.submitASpendingPermission",
+  "Move ETH to another network": "bg.evm.on.moveEthToAnotherNetwork",
+  "Move funds to another network": "bg.evm.on.moveFundsToAnotherNetwork",
+  "Register a name": "bg.evm.on.registerAName",
+};
 
 /** Name for a contract or account in plain words: a known app, otherwise the short address. */
 const who = (address: string): string => appName(address) ?? shortAddress(address);
@@ -98,12 +120,12 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
   const nativeOut = (v: bigint) => v > 0n && staticChanges.push({ asset: native, delta: (-v).toString() });
 
   if (!tx.to) {
-    d.title = `Create a new app contract for ${host}`;
+    Object.assign(d, titled(msg("bg.req.createContractFor", { host })));
     d.lines.push({ label: "App", value: host });
     nativeOut(tx.value);
   } else if (tx.data === "0x" || tx.data.length < 10) {
     const amt = formatAmount(tx.value, native.decimals);
-    d.title = `Send ${amt} ${native.symbol} to ${shortAddress(tx.to)}`;
+    Object.assign(d, titled(msg("bg.req.sendSymbolTo", { amount: amt, symbol: native.symbol, to: shortAddress(tx.to) })));
     d.lines.push({ label: "To", value: safeChecksum(tx.to) }, { label: "Amount", value: `${amt} ${native.symbol}` });
     nativeOut(tx.value);
   } else {
@@ -133,7 +155,7 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
     }
   }
   if (sim.reverts) {
-    d.warnings.push({ level: "danger", code: "simulation-failed", message: `This is expected to fail and would still cost a fee.${sim.revertReason ? ` Reason: ${sim.revertReason}` : ""}` });
+    d.warnings.push(warning("danger", "simulation-failed", sim.revertReason ? msg("bg.warn.expectedToFailReason", { reason: sim.revertReason }) : msg("bg.warn.expectedToFail")));
   } else if (!sim.simulated) {
     d.warnings.push({ level: "caution", code: "simulation-failed", message: "We couldn't preview the exact result of this on the network. Check the details before you approve." });
   }
@@ -183,16 +205,16 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     const { asset, isToken } = await tokenMeta(ctx, to);
     if (!isToken) {
       // ERC-721 transferFrom shares the ERC-20 selector.
-      d.title = `Send NFT #${amount} from ${asset.name} to ${shortAddress(recipient)}`;
+      Object.assign(d, titled(msg("bg.req.sendNftTo", { id: String(amount), collection: asset.name, to: shortAddress(recipient) })));
       d.lines.push({ label: "To", value: safeChecksum(recipient) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
       return;
     }
     const amt = `${formatAmount(amount, asset.decimals)} ${asset.symbol}`;
     const ownFrom = isAddressEqual(from as `0x${string}`, me);
-    d.title = ownFrom ? `Send ${amt} to ${shortAddress(recipient)}` : `Move ${amt} from ${shortAddress(from)} to ${shortAddress(recipient)}`;
+    Object.assign(d, titled(ownFrom ? msg("bg.req.sendTo", { amount: amt, to: shortAddress(recipient) }) : msg("bg.req.moveFromTo", { amount: amt, from: shortAddress(from), to: shortAddress(recipient) })));
     d.lines.push({ label: "To", value: safeChecksum(recipient) }, { label: "Amount", value: amt }, { label: "Token", value: `${asset.name} (${safeChecksum(to)})` });
     if (!ownFrom) d.lines.splice(0, 0, { label: "From", value: safeChecksum(from) });
-    if (asset.spam) d.warnings.push({ level: "caution", code: "known-scam", message: `${asset.symbol} looks like a spam token. It may be worthless or a trap.` });
+    if (asset.spam) d.warnings.push(warning("caution", "known-scam", msg("bg.warn.spamToken", { symbol: asset.symbol })));
     if (ownFrom) staticChanges.push({ asset, delta: (-amount).toString() });
     if (!ownFrom && isAddressEqual(recipient as `0x${string}`, me)) staticChanges.push({ asset, delta: amount.toString() });
     return;
@@ -204,22 +226,18 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     const name = who(spender);
     if (!isToken) {
       // ERC-721 approve(to, tokenId)
-      d.title = `Allow ${name} to move your NFT #${amount} from ${asset.name}`;
+      Object.assign(d, titled(msg("bg.req.allowMoveNft", { spender: name, id: String(amount), collection: asset.name })));
       d.lines.push({ label: "Allowed app", value: safeChecksum(spender) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
       return;
     }
     if (selector === SEL.approve && amount === 0n) {
-      d.title = `Stop ${name} from spending your ${asset.symbol}`;
+      Object.assign(d, titled(msg("bg.req.stopSpending", { spender: name, symbol: asset.symbol })));
     } else if (isUnlimited(amount)) {
-      d.title = `Allow ${name} to spend all your ${asset.symbol}`;
-      d.warnings.push({
-        level: "danger",
-        code: "unlimited-approval",
-        message: `This lets ${name} take all your ${asset.symbol}, now or any time later, without asking again. Only allow this for apps you trust.`,
-      });
+      Object.assign(d, titled(msg("bg.req.allowSpendAll", { spender: name, symbol: asset.symbol })));
+      d.warnings.push(warning("danger", "unlimited-approval", msg("bg.warn.letsTakeAll", { spender: name, symbol: asset.symbol })));
     } else {
       const amt = `${formatAmount(amount, asset.decimals)} ${asset.symbol}`;
-      d.title = selector === SEL.approve ? `Allow ${name} to spend up to ${amt}` : `Allow ${name} to spend ${amt} more`;
+      Object.assign(d, titled(msg(selector === SEL.approve ? "bg.req.allowSpendUpTo" : "bg.req.allowSpendMore", { spender: name, amount: amt })));
     }
     d.lines.push({ label: "Allowed app", value: safeChecksum(spender) }, { label: "Token", value: `${asset.name} (${safeChecksum(to)})` });
     if (!isUnlimited(amount) && amount > 0n) d.lines.push({ label: "Limit", value: `${formatAmount(amount, asset.decimals)} ${asset.symbol}` });
@@ -232,14 +250,10 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     const name = who(operator);
     const collection = asset.name && asset.name !== "token" ? asset.name : shortAddress(to);
     if (approved) {
-      d.title = `Allow ${name} to move all your ${collection} NFTs`;
-      d.warnings.push({
-        level: "danger",
-        code: "approval-for-all",
-        message: `This lets ${name} take every NFT you hold in ${collection}, including ones you get later. Scams often ask for this.`,
-      });
+      Object.assign(d, titled(msg("bg.req.allowMoveAllNfts", { spender: name, collection })));
+      d.warnings.push(warning("danger", "approval-for-all", msg("bg.warn.letsTakeEveryNft", { spender: name, collection })));
     } else {
-      d.title = `Stop ${name} from moving your ${collection} NFTs`;
+      Object.assign(d, titled(msg("bg.req.stopMovingNfts", { spender: name, collection })));
     }
     d.lines.push({ label: "Allowed app", value: safeChecksum(operator) }, { label: "Collection", value: safeChecksum(to) });
     return;
@@ -251,7 +265,7 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     const { asset } = await tokenMeta(ctx, to);
     const collection = asset.name && asset.name !== "token" ? asset.name : shortAddress(to);
     const count = selector === SEL.safeTransferFrom1155 ? (args[3] as bigint) : 1n;
-    d.title = count === 1n ? `Send NFT #${id} from ${collection} to ${shortAddress(recipient)}` : `Send ${count} × NFT #${id} from ${collection} to ${shortAddress(recipient)}`;
+    Object.assign(d, titled(count === 1n ? msg("bg.req.sendNftTo", { id: String(id), collection, to: shortAddress(recipient) }) : msg("bg.req.sendNftsTo", { count: String(count), id: String(id), collection, to: shortAddress(recipient) })));
     d.lines.push({ label: "To", value: safeChecksum(recipient) }, { label: "Collection", value: safeChecksum(to) });
     return;
   }
@@ -259,7 +273,7 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
   const known = lookupSelector(selector);
   const app = appName(to) ?? host;
   if (known) {
-    d.title = `${known.action} on ${app}`;
+    Object.assign(d, titled(ACTION_IDS[known.action] ? msg(ACTION_IDS[known.action]!, { app }) : { id: "", fallback: say("bg.req.actionOnApp", { action: known.action, app }) }));
     d.lines.push({ label: "App contract", value: safeChecksum(to) });
     try {
       const { args } = decodeFunctionData({ abi: [known.abi], data: tx.data });
@@ -271,7 +285,7 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
   }
 
   d.blind = true;
-  d.title = `Approve an unreadable request from ${host}`;
+  Object.assign(d, titled(msg("bg.req.unreadableFrom", { host })));
   d.lines.push({ label: "App contract", value: safeChecksum(to) }, { label: "Data", value: `${tx.data.slice(0, 74)}${tx.data.length > 74 ? "…" : ""}` });
   d.warnings.push({
     level: "danger",
@@ -324,23 +338,19 @@ async function decodePersonalSign(req: DappRequest, ctx: ChainContext): Promise<
   const siwe = isText ? SIWE.exec(text) : null;
   if (siwe) {
     const domain = siwe[1]!;
-    d.title = `Sign in to ${domain}`;
+    Object.assign(d, titled(msg("bg.req.signIn", { domain })));
     d.lines.push({ label: "Website", value: domain }, { label: "Message", value: text });
     if (domain !== host) {
-      d.warnings.push({
-        level: "danger",
-        code: "domain-mismatch",
-        message: `This sign-in is for ${domain}, but the request came from ${host}. A site may be trying to sign in as you somewhere else.`,
-      });
+      d.warnings.push(warning("danger", "domain-mismatch", msg("bg.warn.signInForOther", { domain, host })));
     }
     if (!isAddressEqual(siwe[2] as `0x${string}`, ctx.account.address as `0x${string}`)) {
       d.warnings.push({ level: "danger", code: "domain-mismatch", message: "This sign-in names a different account than yours." });
     }
   } else if (isText) {
-    d.title = `Sign a message for ${host}`;
+    Object.assign(d, titled(msg("bg.req.signMessage", { host })));
     d.lines.push({ label: "Message", value: text });
   } else {
-    d.title = `Sign data for ${host}`;
+    Object.assign(d, titled(msg("bg.req.signData", { host })));
     d.lines.push({ label: "Data", value: truncate(text, 200) });
     d.warnings.push({ level: "caution", code: "blind-signing", message: "This message isn't readable text. It can't move funds by itself, but only sign it if you trust the site." });
   }
@@ -397,7 +407,7 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
   const d = base(req);
   const host = hostOf(req.origin);
   const dom = td.domain;
-  const msg = signedView(td.types as TypeFields, td.primaryType, td.message) as Record<string, unknown>;
+  const tdMsg = signedView(td.types as TypeFields, td.primaryType, td.message) as Record<string, unknown>;
   const domainName = typeof dom.name === "string" ? dom.name : undefined;
   const verifying = typeof dom.verifyingContract === "string" ? dom.verifyingContract : undefined;
 
@@ -408,14 +418,14 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
   }
 
   const isPermit2 = domainName === "Permit2";
-  const isEip2612 = td.primaryType === "Permit" && !isPermit2 && "spender" in msg;
+  const isEip2612 = td.primaryType === "Permit" && !isPermit2 && "spender" in tdMsg;
   if (isPermit2 || isEip2612) {
-    const spender = String(msg.spender ?? "");
+    const spender = String(tdMsg.spender ?? "");
     const grants: PermitGrant[] = [];
     if (isEip2612) {
-      if ("allowed" in msg) grants.push({ token: verifying ?? "", amount: msg.allowed === true || msg.allowed === "true" ? "all" : 0n });
+      if ("allowed" in tdMsg) grants.push({ token: verifying ?? "", amount: tdMsg.allowed === true || tdMsg.allowed === "true" ? "all" : 0n });
       else {
-        const v = big(msg.value) ?? 0n;
+        const v = big(tdMsg.value) ?? 0n;
         grants.push({ token: verifying ?? "", amount: isUnlimited(v) ? "all" : v });
       }
     } else {
@@ -426,24 +436,36 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
           grants.push({ token: String(e.token ?? ""), amount: v >= PERMIT2_UNLIMITED ? "all" : v });
         }
       };
-      collect(msg.details);
-      collect(msg.permitted);
+      collect(tdMsg.details);
+      collect(tdMsg.permitted);
     }
     const parts: string[] = [];
+    const allOf: string[] = [];
     let unlimited = false;
     for (const g of grants) {
       const { asset } = g.token ? await tokenMeta(ctx, g.token).catch(() => ({ asset: undefined })) : { asset: undefined };
       const sym = asset?.symbol ?? (isEip2612 && domainName ? domainName : "tokens");
       if (g.amount === "all") {
         unlimited = true;
+        allOf.push(sym);
         parts.push(`all your ${sym}`);
       } else parts.push(`${asset ? formatAmount(g.amount, asset.decimals) : g.amount.toString()} ${sym}`);
       d.lines.push({ label: "Token", value: g.token ? `${asset?.name ?? sym} (${safeChecksum(g.token)})` : sym });
     }
     const name = spender ? who(spender) : host;
-    d.title = parts.length ? `Allow ${name} to spend ${parts.join(", ")}` : `Give ${name} permission to spend your tokens`;
+    const permitTitle = parts.length ? `Allow ${name} to spend ${parts.join(", ")}` : say("bg.req.giveSpendPermission", { spender: name });
+    // Translatable when the grants are all amounts, or one unlimited grant; a mix stays English.
+    const permitMsg = !parts.length
+      ? msg("bg.req.giveSpendPermission", { spender: name })
+      : !allOf.length
+        ? msg("bg.req.allowSpend", { spender: name, amount: parts.join(", ") })
+        : parts.length === 1
+          ? msg("bg.req.allowSpendAll", { spender: name, symbol: allOf[0]! })
+          : undefined;
+    d.title = permitTitle;
+    if (permitMsg) d.titleMsg = permitMsg;
     if (spender) d.lines.unshift({ label: "Allowed app", value: safeChecksum(spender) });
-    const deadline = big(msg.deadline ?? msg.sigDeadline ?? msg.expiry ?? (msg.details as Record<string, unknown> | undefined)?.expiration);
+    const deadline = big(tdMsg.deadline ?? tdMsg.sigDeadline ?? tdMsg.expiry ?? (tdMsg.details as Record<string, unknown> | undefined)?.expiration);
     if (deadline !== undefined && deadline > 0n && deadline < 1n << 48n) {
       d.lines.push({ label: "Permission expires", value: new Date(Number(deadline) * 1000).toISOString().replace(".000Z", "Z") });
     }
@@ -452,13 +474,13 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
       code: "permit",
       message: `Signing this lets ${name} move ${parts.join(", ") || "your tokens"} without asking again. It costs nothing to sign, which is why scams use it.`,
     });
-    if (unlimited) d.warnings.push({ level: "danger", code: "unlimited-approval", message: `${name} could take all of these tokens at any time.` });
+    if (unlimited) d.warnings.push(warning("danger", "unlimited-approval", msg("bg.warn.couldTakeAllTokens", { spender: name })));
   } else {
-    d.title = `Sign a message for ${host}`;
+    Object.assign(d, titled(msg("bg.req.signMessage", { host })));
     if (domainName) d.lines.push({ label: "App", value: domainName });
     if (verifying) d.lines.push({ label: "App contract", value: safeChecksum(verifying) });
     d.lines.push({ label: "Type", value: humanLabel(td.primaryType) });
-    const entries = Object.entries(msg);
+    const entries = Object.entries(tdMsg);
     for (const [k, v] of entries.slice(0, TYPED_FIELDS_SHOWN)) {
       const s = typeof v === "string" && /^0x[0-9a-fA-F]{40}$/.test(v) ? safeChecksum(v) : v && typeof v === "object" ? truncate(JSON.stringify(v)) : String(v);
       d.lines.push({ label: humanLabel(k), value: s });
@@ -469,7 +491,7 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
     d.warnings.push({
       level: "caution",
       code: "unknown-call",
-      message: `Clip Wallet doesn't recognise this kind of signature, so it can't tell what it allows. Sign only if you trust ${host}.`,
+      message: say("bg.warn.unknownSignatureKind", { host }),
     });
   }
   d.lines.push({ label: "Requested by", value: host });
@@ -481,7 +503,7 @@ async function decodeTypedData(req: DappRequest, ctx: ChainContext): Promise<Dec
 function decodeEthSign(req: DappRequest): DecodedRequest {
   const d = base(req);
   d.blind = true;
-  d.title = `Refused: unreadable signature request from ${hostOf(req.origin)}`;
+  Object.assign(d, titled(msg("bg.req.refusedUnreadable", { host: hostOf(req.origin) })));
   d.lines.push({ label: "Requested by", value: hostOf(req.origin) });
   const w: Warning = {
     level: "danger",

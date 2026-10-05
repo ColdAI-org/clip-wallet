@@ -4,6 +4,7 @@ import { asAddress, isPrim, parseFa12Approve, parseFa12Transfer, parseFa2Transfe
 import { tokenAssetKey, xtzAsset } from "./networks.js";
 import type { Tzkt } from "./rpc.js";
 import { type TzktToken, isSpamToken, tokenAsset } from "./tokens.js";
+import { msg, titled, say } from "@clip-wallet/core";
 
 export interface Line {
   label: string;
@@ -144,7 +145,7 @@ async function describeOp(op: Op, dc: DescribeContext, look: Lookups, changes: C
       const name = b?.alias ?? short(d);
       const inactive = b?.active === false;
       return {
-        title: `Delegate to ${name}`,
+        ...titled(msg("bg.req.delegateTo", { name })),
         lines: [
           { label: "Baker", value: `${name} (${d})` },
           { label: "Your XTZ", value: "Stays in your account and can be spent at any time." },
@@ -199,7 +200,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
     const baker = dc.delegate ? (dc.delegate.alias ?? short(dc.delegate.address)) : "your baker";
     if (kind === "stake") {
       return {
-        title: `Stake ${xtz(amount)} with ${baker}`,
+        ...titled(msg("bg.req.stakeWith", { amount: xtz(amount), validator: baker })),
         lines: [
           { label: "Stake", value: xtz(amount) },
           { label: "Unstaking", value: "Takes about 4 cycles (around 4 days) before you can withdraw." },
@@ -211,7 +212,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
     }
     if (kind === "unstake") {
       return {
-        title: `Unstake ${xtz(amount)} from ${baker}`,
+        ...titled(msg("bg.req.unstakeFrom", { amount: xtz(amount), validator: baker })),
         lines: [
           { label: "Unstake", value: xtz(amount) },
           { label: "Available", value: "After about 4 cycles (around 4 days), then withdraw it." },
@@ -227,7 +228,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
   if (plain) {
     const to = dest.startsWith("KT1") ? await look.name(dest) : short(dest);
     return {
-      title: dest === me ? `Send ${xtz(amount)} to yourself` : `Send ${xtz(amount)} to ${to}`,
+      title: dest === me ? `Send ${xtz(amount)} to yourself` : say("bg.req.sendTo", { amount: xtz(amount), to }),
       lines: [{ label: "To", value: dest === me ? `${dest} (you)` : dest }],
       warnings: [],
       blind: false,
@@ -269,7 +270,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
       const asset = await tokenFor(look, dc, dest, "0");
       const who = await look.name(a.spender);
       if (a.amount === 0n) {
-        return { title: `Remove ${who}'s permission to spend your ${asset.symbol}`, lines: [{ label: "App", value: a.spender }, ...extra], warnings: [], blind: false };
+        return { ...titled(msg("bg.req.removeSpendPermission", { spender: who, symbol: asset.symbol })), lines: [{ label: "App", value: a.spender }, ...extra], warnings: [], blind: false };
       }
       const t = await look.token(dest, "0");
       const supply = t?.totalSupply && isUint(t.totalSupply) ? BigInt(t.totalSupply) : null;
@@ -280,8 +281,8 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
         lines: [{ label: "Spender", value: a.spender }, { label: "Limit", value: unlimited ? "Unlimited" : amountText(asset, a.amount) }, ...extra],
         warnings: [
           unlimited
-            ? { level: "danger", code: "unlimited-approval", message: `${who} can take all your ${asset.symbol}, now or later, without asking again.` }
-            : { level: "caution", code: "unlimited-approval", message: `${who} can take up to ${amountText(asset, a.amount)} without asking again.` },
+            ? { level: "danger", code: "unlimited-approval", message: say("bg.tezos.canTakeAll", { spender: who, symbol: asset.symbol }) }
+            : { level: "caution", code: "unlimited-approval", message: say("bg.tezos.canTakeUpTo", { spender: who, amount: amountText(asset, a.amount) }) },
         ],
         blind: false,
       };
@@ -297,7 +298,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
       for (const u of ups) {
         const who = await look.name(u.operator);
         if (u.add) {
-          if (!title) title = `Let ${who} move your ${contractName} tokens`;
+          if (!title) title = say("bg.req.letMoveTokens", { spender: who, collection: contractName });
           lines.push({ label: "Gives access to", value: `${u.operator} (token ${u.tokenId})` });
           if (!warnings.length) {
             warnings.push({
@@ -307,7 +308,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
             });
           }
         } else {
-          if (!title) title = `Remove ${who}'s access to your ${contractName} tokens`;
+          if (!title) title = say("bg.req.removeTokenAccess", { spender: who, collection: contractName });
           lines.push({ label: "Removes access for", value: `${u.operator} (token ${u.tokenId})` });
         }
         if (u.owner !== me) lines.push({ label: "Owner", value: u.owner });
@@ -318,7 +319,7 @@ async function describeTransaction(op: Op, dc: DescribeContext, look: Lookups, c
   }
 
   return {
-    title: amount > 0n ? `Call ${ep} on ${contractName} with ${xtz(amount)}` : `Call ${ep} on ${contractName}`,
+    title: amount > 0n ? `Call ${ep} on ${contractName} with ${xtz(amount)}` : say("bg.near.call", { method: ep, contract: contractName }),
     lines: [
       { label: "Contract", value: `${contractName} (${dest})` },
       { label: "Action", value: ep },
@@ -362,8 +363,8 @@ export async function describeOperations(contents: Op[], dc: DescribeContext): P
     title = ds[0]?.title ?? "Approve a Tezos operation";
     lines = ds.flatMap((d) => d.lines);
   } else {
-    title = `Approve ${main.length} operations`;
-    lines = ds.flatMap((d, i) => [...(d.minor ? [] : [{ label: `Step ${i + 1}`, value: d.title }]), ...d.lines]);
+    title = say("bg.req.approveOps", { count: main.length });
+    lines = ds.flatMap((d, i) => [...(d.minor ? [] : [{ label: say("bg.label.stepN", { n: i + 1 }), value: d.title }]), ...d.lines]);
   }
   return { title, lines, balanceChanges: changes.list(), warnings, blind };
 }

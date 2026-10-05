@@ -3,6 +3,9 @@ import {
   type ChainModule,
   ClipError,
   isWalletOrigin,
+  msg as bgMsg,
+  titled,
+  type Msg,
   type DappRequest,
   type DecodedRequest,
   type Network,
@@ -205,7 +208,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
         if (typeof msg !== "string") throw new ClipError("This request is missing its message.", "hedera/bad-params");
         return {
           ...base,
-          title: `Sign a message for ${hostOf(request.origin)}`,
+          ...titled(bgMsg("bg.req.signMessage", { host: hostOf(request.origin) })),
           lines: [{ label: "Message", value: msg }],
           balanceChanges: [],
           blind: false,
@@ -224,7 +227,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
         }
         return {
           ...base,
-          title: `Pay a small fee so ${hostOf(request.origin)} can read Hedera data`,
+          ...titled(bgMsg("bg.hedera.payToRead", { host: hostOf(request.origin) })),
           lines: [{ label: "Request", value: kind }],
           balanceChanges: [],
           blind: false,
@@ -290,7 +293,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
     if (tx.body.memo) lines.push({ label: "Memo", value: tx.body.memo });
     // Like the SDK: a fee of 0 means "not set", so nothing is shown.
     const maxFee = tx.body.fee != null && tx.body.fee > 0n ? tx.body.fee : null;
-    const out: DecodedRequest = { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, blind: d.blind, warnings };
+    const out: DecodedRequest = { ...base, title: d.title, ...msgOf(d), lines, balanceChanges: d.balanceChanges, blind: d.blind, warnings };
     if (maxFee != null && (payer == null || payer === me)) {
       out.fee = { asset: hbarAsset(request.networkId), amount: maxFee.toString() };
       lines.push({ label: "Network fee", value: `up to ${formatUnits(maxFee, 8)} HBAR` });
@@ -529,4 +532,10 @@ function hostOf(origin: string): string {
   } catch {
     return origin;
   }
+}
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
 }

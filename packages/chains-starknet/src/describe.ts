@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, ClipError, type NetworkId, type Warning } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, ClipError, type NetworkId, type Warning, msg, titled, say } from "@clip-wallet/core";
 import { hash, typedData as td } from "starknet";
 import { chainOf, STARKNET_CHAINS } from "./networks.js";
 import type { StarknetRpc } from "./rpc.js";
@@ -103,15 +103,15 @@ export async function describeCalls(calls: StarkCall[], o: { me: string; host: s
       const asset = await tokenAsset(o.rpc, o.networkId, call.contractAddress);
       if (asset && asset.decimals > 0) {
         const amount = u256(low, high);
-        titles.push(`Send ${formatUnits(amount, asset.decimals)} ${asset.symbol} to ${short(padAddress(recipient))}`);
+        titles.push(say("bg.req.sendSymbolTo", { amount: formatUnits(amount, asset.decimals), symbol: asset.symbol, to: short(padAddress(recipient)) }));
         lines.push({ label: "To", value: padAddress(recipient) }, { label: "Amount", value: `${formatUnits(amount, asset.decimals)} ${asset.symbol}` });
-        if (asset.spam) warnings.push({ level: "caution", code: "known-scam", message: `This ${asset.symbol} isn't the real one. It only copies the name.` });
+        if (asset.spam) warnings.push({ level: "caution", code: "known-scam", message: say("bg.starknet.notReal", { symbol: asset.symbol }) });
         declared.push({ asset, delta: (-amount).toString() });
         continue;
       }
       if (ep !== "transfer") {
         const id = u256(low, high);
-        titles.push(`Send NFT #${id} to ${short(padAddress(recipient))}`);
+        titles.push(say("bg.starknet.sendNft", { id, to: short(padAddress(recipient)) }));
         lines.push({ label: "To", value: padAddress(recipient) }, { label: "Collection", value: call.contractAddress });
         continue;
       }
@@ -128,7 +128,7 @@ export async function describeCalls(calls: StarkCall[], o: { me: string; host: s
         lines.push({ label: "Allowed app", value: padAddress(spender) }, { label: "Spending limit", value: unlimited ? "Unlimited" : `${formatUnits(amount, asset.decimals)} ${asset.symbol}` });
         warnings.push(
           unlimited
-            ? { level: "danger", code: "unlimited-approval", message: `This lets ${short(padAddress(spender))} take all your ${asset.symbol}, now and later. Scams often ask for this.` }
+            ? { level: "danger", code: "unlimited-approval", message: say("bg.starknet.letsTakeAll", { spender: short(padAddress(spender)), symbol: asset.symbol }) }
             : { level: "caution", code: "unlimited-approval", message: `This lets ${short(padAddress(spender))} move up to ${what} without asking again.` },
         );
         continue;
@@ -143,7 +143,7 @@ export async function describeCalls(calls: StarkCall[], o: { me: string; host: s
       continue;
     }
 
-    titles.push(`${humanize(ep)} on ${o.host}`);
+    titles.push(say("bg.req.actionOnApp", { action: humanize(ep), app: o.host }));
     lines.push({ label: humanize(ep), value: `${short(call.contractAddress)}${cd.length ? ` (${cd.length} values)` : ""}` });
     // Audit UNK-01: approvals of NFTs, session keys and delegates show no balance change in the preview.
     if (!warnings.some((w) => w.code === "unknown-call")) {
@@ -156,7 +156,7 @@ export async function describeCalls(calls: StarkCall[], o: { me: string; host: s
   }
 
   const title = titles.length === 1 ? titles[0]! : `Approve ${titles.length} actions for ${o.host}`;
-  if (titles.length > 1) lines.unshift(...titles.map((t, i) => ({ label: `Action ${i + 1}`, value: t })));
+  if (titles.length > 1) lines.unshift(...titles.map((t, i) => ({ label: say("bg.label.actionN", { n: i + 1 }), value: t })));
   return { title, lines, warnings, blind, declared };
 }
 
@@ -304,7 +304,7 @@ export function describeTypedData(t: TypedDataLike, host: string): Omit<Describe
       code: "blind-signing",
       message: "This signature lets someone else send transactions from your account later. Only sign it for an app you trust completely.",
     });
-    return { title: `Let ${host} act for your account`, lines, warnings, blind: true };
+    return { ...titled(msg("bg.req.actForAccount", { host })), lines, warnings, blind: true };
   }
 
   lines.push({ label: "Type", value: humanize(t.primaryType) });
@@ -313,7 +313,7 @@ export function describeTypedData(t: TypedDataLike, host: string): Omit<Describe
     lines.push({ label: humanize(k), value: s.length > 120 ? `${s.slice(0, 120)}…` : s });
   }
   lines.push({ label: "Requested by", value: host });
-  return { title: `Sign a message for ${host}`, lines, warnings, blind: false };
+  return { ...titled(msg("bg.req.signMessage", { host })), lines, warnings, blind: false };
 }
 
 export function networkLabel(networkId: NetworkId): string {

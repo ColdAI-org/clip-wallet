@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, type Msg } from "@clip-wallet/core";
 import { hash, transaction } from "starknet";
 import { ARGENT_ACCOUNT_CLASS_HASH, type AccountClass, type AccountKind, DEFAULT_ACCOUNT_CLASS, deploymentData, isDeployed, isStarknetAddress, starkKeyX, verifyStark, type DeploymentData } from "./account.js";
 import {
@@ -246,7 +233,7 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
       checkTypedDataChain(n.data, ctx.network.id);
       typedDataHash(n.data, address); // refuses data that can't be hashed
       const d = describeTypedData(n.data, host);
-      return { ...base, title: d.title, lines: d.lines, balanceChanges: [], simulated: false, blind: d.blind, warnings: d.warnings };
+      return { ...base, title: d.title, ...msgOf(d), lines: d.lines, balanceChanges: [], simulated: false, blind: d.blind, warnings: d.warnings };
     }
 
     const p = await plan(ctx, n.calls);
@@ -300,7 +287,7 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
         /* balance unknown */
       }
     }
-    const out: DecodedRequest = { ...base, title: d.title, lines, balanceChanges, simulated, blind: d.blind, warnings };
+    const out: DecodedRequest = { ...base, title: d.title, ...msgOf(d), lines, balanceChanges, simulated, blind: d.blind, warnings };
     if (fee !== null) out.fee = { asset: strkAsset(ctx.network.id), amount: fee.toString() };
     return out;
   }
@@ -477,7 +464,7 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
       { contract_address: padAddress(token), entry_point_selector: hash.getSelectorFromName("balanceOf"), calldata: [address] },
       "latest",
     ]);
-    if (big(r[0]) + big(r[1]) * 2n ** 128n < amount) throw new ClipError(`You don't have enough ${asset.symbol}.`, "starknet/insufficient-token");
+    if (big(r[0]) + big(r[1]) * 2n ** 128n < amount) throw new ClipError(msg("bg.err.notEnough", { symbol: asset.symbol }), "starknet/insufficient-token");
     const low = amount % 2n ** 128n;
     const high = amount / 2n ** 128n;
     return {
@@ -521,3 +508,8 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
   };
 }
 
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

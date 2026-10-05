@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import { formatFiat, relativeTime, shortAddress, userMessageOf, type ActivityEntry } from "@clip-wallet/ui";
+import { formatFiat, relativeTime, shortAddress, useBgText, userMessageOf, type ActivityEntry } from "@clip-wallet/ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Card, Chip, Empty, ErrorNote, Screen, Spinner, T } from "../ui/kit";
 import { IconArrowDown, IconArrowUp, IconCheck } from "../ui/icons";
@@ -15,6 +15,7 @@ function KindIcon(props: { kind: ActivityEntry["kind"]; color: string }) {
 function Item(props: { e: ActivityEntry; currency: string; networkName: (id: string) => string; advanced: boolean }) {
   const { theme } = useWallet();
   const t = useMobileT();
+  const bg = useBgText();
   const e = props.e;
   const [open, setOpen] = useState(false);
   return (
@@ -24,7 +25,7 @@ function Item(props: { e: ActivityEntry; currency: string; networkName: (id: str
           <KindIcon kind={e.kind} color={theme.c.text2} />
         </View>
         <View style={{ flex: 1, gap: 2 }}>
-          <T style={{ fontWeight: "500" }}>{e.title}</T>
+          <T style={{ fontWeight: "500" }}>{bg.title(e)}</T>
           {e.status === "pending" ? <Chip tone="accent">{t("m.activity.pending")}</Chip> : e.status === "failed" ? <Chip>{t("m.activity.failed")}</Chip> : <T v="hint">{relativeTime(e.timestamp)}</T>}
         </View>
         {e.fiatValue !== undefined && <T color={e.fiatValue > 0 ? theme.c.positive : theme.c.text}>{formatFiat(e.fiatValue, props.currency, { signed: true })}</T>}
@@ -32,7 +33,7 @@ function Item(props: { e: ActivityEntry; currency: string; networkName: (id: str
       {open &&
         e.legs.map((l, i) => (
           <View key={i} style={{ paddingLeft: 48, paddingBottom: 6 }}>
-            <T v="hint">{l.title}</T>
+            <T v="hint">{bg.title(l)}</T>
             {props.advanced && <T v="hint">{l.txHash ? t("m.activity.legDetail", { network: props.networkName(l.networkId), hash: shortAddress(l.txHash, 6) }) : props.networkName(l.networkId)}</T>}
           </View>
         ))}

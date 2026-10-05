@@ -1,4 +1,5 @@
 export * from "./client";
+export { BgTextProvider, useBgText, currentBgText, type BgText } from "./i18n/bg";
 export { defaultClipConfig, defaultUiOptions, type ClipConfig, type UiOptions } from "./theme/config";
 export * from "./theme/tokens";
 export { ClipProvider, Router, useUi, useRouter, type PasskeyFactory, type Variant } from "./context";

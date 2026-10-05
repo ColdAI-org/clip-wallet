@@ -10,7 +10,8 @@
  * The first poll only records a baseline, so turning notifications on never floods the user with history.
  * State lives in the host's KV (public data only).
  */
-import { formatAmount, formatFiat, type LocaleCode } from "@clip-wallet/i18n";
+import { formatAmount, formatFiat, formatMsg, type LocaleCode } from "@clip-wallet/i18n";
+import { isMsg, loadBgMessages, titleMsgOf, type Msg } from "@clip-wallet/core";
 import type { KVLike } from "../contacts/store.js";
 import { notificationText } from "./messages.js";
 import { DEFAULT_NOTIFICATION_SETTINGS, NOTIFICATION_KINDS, type Notice, type NotificationSettings, type Notifier, type PriceAlert, type Snapshot } from "./types.js";
@@ -97,6 +98,12 @@ export class NotificationWatcher {
     const prev = await this.opts.kv.get<WatchState>(NOTIFY_STATE_KEY);
     const locale = await this.opts.locale();
     const t = notificationText(locale);
+    // Activity and approval titles come from the background in English plus a Msg; show them in the person's language.
+    const bg = locale === "en" ? undefined : await loadBgMessages(locale).catch(() => undefined);
+    const titleText = (x: { title: string; titleMsg?: Msg }) => {
+      const m = titleMsgOf({ title: x.title, ...(isMsg(x.titleMsg) ? { titleMsg: x.titleMsg } : {}) });
+      return m ? formatMsg(m, bg, locale) : x.title;
+    };
     const notices: Notice[] = [];
     const stamp = this.now();
 
@@ -144,8 +151,8 @@ export class NotificationWatcher {
         if (a.kind === "receive" || a.kind === "connect") continue;
         const was = prev.activity[a.id];
         if (was === a.status || (was !== undefined && was !== "pending")) continue;
-        if (a.status === "done" && settings.kinds.confirmed) notices.push({ id: `tx:${a.id}:done`, kind: "confirmed", title: t("confirmed.title"), body: a.title, route: "/activity" });
-        if (a.status === "failed" && settings.kinds.failed) notices.push({ id: `tx:${a.id}:failed`, kind: "failed", title: t("failed.title"), body: t("failed.body", { what: a.title }), route: "/activity" });
+        if (a.status === "done" && settings.kinds.confirmed) notices.push({ id: `tx:${a.id}:done`, kind: "confirmed", title: t("confirmed.title"), body: titleText(a), route: "/activity" });
+        if (a.status === "failed" && settings.kinds.failed) notices.push({ id: `tx:${a.id}:failed`, kind: "failed", title: t("failed.title"), body: t("failed.body", { what: titleText(a) }), route: "/activity" });
       }
     }
 
@@ -154,7 +161,7 @@ export class NotificationWatcher {
       const before = new Set(prev.approvals);
       for (const a of snap.approvals) {
         if (before.has(a.id)) continue;
-        notices.push({ id: `ap:${a.id}`, kind: "approval", title: t("approval.title", { app: a.app }), body: a.title, route: `/approval/${encodeURIComponent(a.id)}` });
+        notices.push({ id: `ap:${a.id}`, kind: "approval", title: t("approval.title", { app: a.app }), body: titleText(a), route: `/approval/${encodeURIComponent(a.id)}` });
       }
     }
 

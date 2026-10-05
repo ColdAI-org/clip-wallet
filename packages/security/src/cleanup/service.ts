@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance, say } from "@clip-wallet/core";
 import { looksLikeSpam } from "@clip-wallet/chains-evm";
 import { buildDissociate, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { formatUnits, queueSteps, type Step } from "@clip-wallet/features";
@@ -85,7 +85,7 @@ export class CleanupService {
             items.push(...hides);
           }
         } catch {
-          partial.push({ code: "cleanup/unreachable", network: n.name, message: `Couldn't check ${n.name} right now. Try again in a moment.` });
+          partial.push({ code: "cleanup/unreachable", network: n.name, message: say("bg.security.couldntCheck", { name: n.name }) });
         }
       }),
     );

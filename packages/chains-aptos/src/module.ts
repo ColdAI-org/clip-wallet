@@ -1,16 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, msg, titled, type Msg } from "@clip-wallet/core";
 import {
   type AnyRawTransaction,
   AccountAddress,
@@ -301,7 +289,7 @@ export function createAptosModule(options: AptosModuleOptions = {}): ChainModule
       const f = await messageFields(request, n.input, ctx);
       const lines = [{ label: "Message", value: n.input.message }];
       if (f.application) lines.push({ label: "For", value: f.application });
-      return { ...base, title: `Sign a message for ${host}`, lines, balanceChanges: [], simulated: false, blind: false, warnings: [] };
+      return { ...base, ...titled(msg("bg.req.signMessage", { host })), lines, balanceChanges: [], simulated: false, blind: false, warnings: [] };
     }
     const { tx, role } = await resolve(request, n, ctx);
     const rest = restFor(ctx);
@@ -319,7 +307,7 @@ export function createAptosModule(options: AptosModuleOptions = {}): ChainModule
     if (n.kind === "tx" && !n.submit) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     const fee: NonNullable<DecodedRequest["fee"]> = { asset: aptAsset(ctx.network.id), amount: d.fee.toString() };
     if (d.sponsored) fee.sponsored = true;
-    return { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
+    return { ...base, title: d.title, ...msgOf(d), lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
   }
 
   async function signable(request: DappRequest, ctx: ChainContext): Promise<{ n: Normalized; bytes: Uint8Array; tx?: AnyRawTransaction; fields?: Awaited<ReturnType<typeof messageFields>> }> {
@@ -506,4 +494,10 @@ export function createAptosModule(options: AptosModuleOptions = {}): ChainModule
     buildTransfer,
     normalize,
   };
+}
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
 }

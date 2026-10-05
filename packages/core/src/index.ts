@@ -9,6 +9,10 @@
  *    `networkId` is carried for the "network chip" and Advanced mode only.
  */
 
+import { knownMsg, type Msg, type MsgValue } from "./messages/msg.js";
+import { recallMsg, say } from "./messages/recall.js";
+import type { WarningCode } from "./messages/warnings.js";
+
 /* ------------------------------------------------------------------ networks */
 
 /** Network families. Phase 1: evm, hedera, solana, bitcoin. Phase 2 adds the rest. */
@@ -262,40 +266,22 @@ export interface BalanceChange {
 
 export interface Warning {
   level: "info" | "caution" | "danger";
-  code:
-    | "blind-signing"
-    | "unlimited-approval"
-    | "approval-for-all"
-    | "permit"
-    | "durable-nonce"
-    | "known-scam"
-    | "domain-mismatch"
-    | "new-recipient"
-    | "network-matters"
-    | "simulation-failed"
-    | "inscribed-utxo"
-    | "high-fee"
-    // Phase 2 (near-stellar-tezos-algorand)
-    /** Hands control of the account to another key (Algorand rekey, NEAR full-access AddKey, Stellar setOptions signer/master weight). */
-    | "account-takeover"
-    /** Closes the account and sends everything left to someone (Algorand close-to, NEAR DeleteAccount, Stellar accountMerge). */
-    | "account-closure"
-    /** The recipient (an exchange, usually) needs a memo, or the funds may be lost (Stellar SEP-29). */
-    | "memo-required"
-    // Phase 2.5 (security)
-    /** The site is on a phishing list (MetaMask, ScamSniffer, Phantom, PolkadotJS) or a scanning provider flagged it. */
-    | "phishing-site"
-    /** The recipient looks like an address you used before but isn't (look-alike / zero-value transfer poisoning). */
-    | "address-poisoning"
-    /** A scanning provider or a scam address list says this transaction would hurt you. */
-    | "malicious-transaction"
-    // Phase 2.5 (social)
-    /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
-    | "public-record"
-    // Internal audit 2026-10
-    /** A contract call or signed order the wallet can name but not fully read: its effects may not all be shown. */
-    | "unknown-call";
+  /**
+   * What kind of risk (WARNING_CODES in ./messages/warnings.ts, with notes):
+   * blind-signing, unlimited-approval, approval-for-all, permit, durable-nonce, known-scam, domain-mismatch,
+   * new-recipient, network-matters, simulation-failed, inscribed-utxo, high-fee;
+   * Phase 2: account-takeover (hands control of the account to another key: Algorand rekey, NEAR full-access
+   * AddKey, Stellar setOptions signer/master weight), account-closure (closes the account and sends what's left:
+   * Algorand close-to, NEAR DeleteAccount, Stellar accountMerge), memo-required (the recipient, usually an
+   * exchange, needs a memo: Stellar SEP-29);
+   * Phase 2.5 security: phishing-site (the site is on a phishing list or a scanner flagged it), address-poisoning
+   * (looks like an address you used but isn't), malicious-transaction (a scanner or scam list says this hurts you);
+   * Phase 2.5 social: public-record (writes something anyone can read, forever).
+   */
+  code: WarningCode;
   message: string;
+  /** Additive: `message` as a translatable Msg. Absent → warningMsg() derives one (exact sentence or the code's general message). */
+  msg?: Msg;
 }
 
 /** What the approval screen shows. Plain language first; the network is a chip. */
@@ -303,7 +289,10 @@ export interface DecodedRequest {
   requestId: string;
   /** "Swap 100 USDC for 0.03 ETH on Uniswap", "Pay 25 USDC", "Sign in to magiceden.io". */
   title: string;
-  lines: { label: string; value: string }[];
+  /** Additive: `title` as a translatable Msg (titleMsgOf() also knows fixed titles). */
+  titleMsg?: Msg;
+  /** labelMsg/valueMsg (additive): translatable versions; fixed labels are known by text (lineLabelMsg()). */
+  lines: { label: string; value: string; labelMsg?: Msg; valueMsg?: Msg }[];
   balanceChanges: BalanceChange[];
   fee?: { asset: AssetRef; amount: string; fiatValue?: number; sponsored?: boolean };
   simulated: boolean;
@@ -391,7 +380,8 @@ export function unverifiedOrigin(claimedUrl: string | undefined): string {
 
 /** "app.example (unverified)" for a pseudo-origin from unverifiedOrigin(); undefined for anything else. */
 export function unverifiedLabel(hostname: string): string | undefined {
-  return hostname.endsWith(UNVERIFIED_ORIGIN_SUFFIX) ? `${hostname.slice(0, -UNVERIFIED_ORIGIN_SUFFIX.length)} (unverified)` : undefined;
+  // say(): the English is unchanged; attachMsgs translates "(unverified)" wherever this name lands in a title.
+  return hostname.endsWith(UNVERIFIED_ORIGIN_SUFFIX) ? say("bg.label.hostUnverified", { host: hostname.slice(0, -UNVERIFIED_ORIGIN_SUFFIX.length) }) : undefined;
 }
 
 /**
@@ -408,14 +398,33 @@ const safeAsset = (a: AssetRef): AssetRef => ({ ...a, symbol: displaySafe(a.symb
 
 /** A copy of `d` with every human-readable string passed through displaySafe. */
 export function sanitizeDecoded(d: DecodedRequest): DecodedRequest {
+  // The translatable Msgs keep their place (and pass through displaySafe too: their values are the same chain text).
   return {
     ...d,
     title: displaySafe(d.title),
-    lines: d.lines.map((l) => ({ label: displaySafe(l.label), value: displaySafe(l.value) })),
+    ...(d.titleMsg ? { titleMsg: safeMsg(d.titleMsg) } : {}),
+    lines: d.lines.map((l) => ({
+      label: displaySafe(l.label),
+      value: displaySafe(l.value),
+      ...(l.labelMsg ? { labelMsg: safeMsg(l.labelMsg) } : {}),
+      ...(l.valueMsg ? { valueMsg: safeMsg(l.valueMsg) } : {}),
+    })),
     balanceChanges: d.balanceChanges.map((c) => ({ ...c, asset: safeAsset(c.asset) })),
-    warnings: d.warnings.map((w) => ({ ...w, message: displaySafe(w.message) })),
+    warnings: d.warnings.map((w) => ({ ...w, message: displaySafe(w.message), ...(w.msg ? { msg: safeMsg(w.msg) } : {}) })),
     ...(d.fee ? { fee: { ...d.fee, asset: safeAsset(d.fee.asset) } } : {}),
   };
+}
+
+/** A Msg with displaySafe applied to its fallback and every string value (nested Msgs too). Never keeps a non-Msg. */
+export function safeMsg(m: Msg, depth = 0): Msg {
+  const out: Msg = { id: displaySafe(m.id), fallback: displaySafe(m.fallback) };
+  if (m.approx) out.approx = true;
+  if (m.values && depth < 4) {
+    const values: Record<string, MsgValue> = {};
+    for (const [k, v] of Object.entries(m.values)) values[k] = typeof v === "string" ? displaySafe(v) : typeof v === "number" ? v : safeMsg(v, depth + 1);
+    out.values = values;
+  }
+  return out;
 }
 
 /** True for wallet-built requests. Also accepts the shell's older `"wallet"` spelling. */
@@ -424,12 +433,23 @@ export function isWalletOrigin(origin: string | undefined): boolean {
 }
 
 export class ClipError extends Error {
+  /** Shown to the user. Plain words and a next step, never a raw RPC error. */
+  public readonly userMessage: string;
+  /** Additive: `userMessage` as a translatable Msg (given, or the catalog's exact sentence). errorMsg() also knows error kinds. */
+  public readonly msg?: Msg;
+
   constructor(
-    /** Shown to the user. Plain words and a next step, never a raw RPC error. */
-    public readonly userMessage: string,
+    /** A plain-words sentence, or a Msg (its English becomes `userMessage`). */
+    message: string | Msg,
     public readonly code: string,
     public readonly cause?: unknown,
   ) {
+    const userMessage = typeof message === "string" ? message : message.fallback;
     super(`${code}: ${userMessage}`);
+    this.userMessage = userMessage;
+    const m = typeof message === "string" ? (knownMsg(message) ?? recallMsg(message)) : message;
+    if (m) this.msg = m;
   }
 }
+
+export * from "./messages/index.js";

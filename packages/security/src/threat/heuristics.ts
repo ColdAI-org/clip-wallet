@@ -2,6 +2,7 @@ import type { HistoryEntry, SecurityHost } from "../host.js";
 import { fetchJson, shortAddress } from "../util.js";
 import { normAddr } from "./lists.js";
 import type { ProviderStatus, ThreatFinding, ThreatIntelProvider, TxCheckInput } from "./types.js";
+import { say } from "@clip-wallet/core";
 
 /**
  * Local heuristics. Everything runs on the device from data the wallet already has; the only network read
@@ -88,7 +89,7 @@ export class LocalHeuristics implements ThreatIntelProvider {
           level: "danger",
           code: "address-poisoning",
           source: this.id,
-          message: `${shortAddress(r)} only appears in your history from a zero-value transfer. That's a common trick to get you to copy a scammer's address.`,
+          message: say("bg.security.zeroValueTrick", { address: shortAddress(r) }),
         });
       }
     }

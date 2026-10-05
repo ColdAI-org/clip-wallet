@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@clip-wallet/core";
 import { bcs } from "@mysten/sui/bcs";
 import { messageWithIntent } from "@mysten/sui/cryptography";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
@@ -224,7 +211,7 @@ export function createSuiModule(options: SuiModuleOptions = {}): ChainModule & {
         : [];
       return {
         ...base,
-        title: `Sign a message for ${host}`,
+        ...titled(msg("bg.req.signMessage", { host })),
         lines: [text != null ? { label: "Message", value: text } : { label: "Message (not text)", value: `0x${hex(n.message)}` }],
         balanceChanges: [],
         simulated: false,
@@ -245,7 +232,7 @@ export function createSuiModule(options: SuiModuleOptions = {}): ChainModule & {
     if (!n.execute) lines.push({ label: "Sent by", value: `${host} (it gets the signed transaction)` });
     const fee: NonNullable<DecodedRequest["fee"]> = { asset: suiAsset(ctx.network.id), amount: d.fee.toString() };
     if (d.sponsored) fee.sponsored = true;
-    return { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: false, warnings: d.warnings };
+    return { ...base, title: d.title, ...msgOf(d), lines, balanceChanges: d.balanceChanges, fee, simulated: d.simulated, blind: false, warnings: d.warnings };
   }
 
   async function digestFor(request: DappRequest, ctx: ChainContext): Promise<{ n: Normalized; digest: Uint8Array; bytes: Uint8Array }> {
@@ -402,7 +389,7 @@ export function createSuiModule(options: SuiModuleOptions = {}): ChainModule & {
     } catch (cause) {
       const msg = String((cause as Error)?.message ?? cause);
       if (/insufficient/i.test(msg)) {
-        throw new ClipError(type === SUI_TYPE ? "You don't have enough SUI for this and the network fee." : `You don't have enough ${p.asset.symbol}.`, "sui/insufficient", cause);
+        throw new ClipError(type === SUI_TYPE ? "You don't have enough SUI for this and the network fee." : say("bg.err.notEnough", { symbol: p.asset.symbol }), "sui/insufficient", cause);
       }
       throw new ClipError(plainSuiError(msg), "sui/build-failed", cause);
     }
@@ -437,3 +424,8 @@ export function createSuiModule(options: SuiModuleOptions = {}): ChainModule & {
   };
 }
 
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

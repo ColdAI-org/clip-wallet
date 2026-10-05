@@ -24,6 +24,7 @@ import {
 } from "./proto/hapi.js";
 import { bodyFromSchedulable } from "./tx.js";
 import { abs, formatUnits, hex, joinWords } from "./util.js";
+import { msg, titled, warning, withFallback, titleMsgOf, finalMsg, type Msg, say } from "@clip-wallet/core";
 
 export interface Line {
   label: string;
@@ -32,6 +33,7 @@ export interface Line {
 
 export interface Described {
   title: string;
+  titleMsg?: Msg;
   lines: Line[];
   balanceChanges: BalanceChange[];
   warnings: Warning[];
@@ -91,9 +93,9 @@ function evmLabel(evm: string | null): string {
   return longZeroToAccountId(evm) ?? evm;
 }
 
-function blindResult(title: string, why: string, lines: Line[] = []): Described {
+function blindResult(t: string | Msg, why: string, lines: Line[] = []): Described {
   return {
-    title,
+    ...(typeof t === "string" ? { title: t } : titled(t)),
     lines,
     balanceChanges: [],
     warnings: [{ level: "danger", code: "blind-signing", message: why }],
@@ -203,12 +205,21 @@ async function describeTransfer(data: Uint8Array, dc: DescribeContext): Promise<
   const who = (list: typeof receivers) => (list.length === 1 ? list[0]!.label : `${list.length} accounts`);
 
   let title: string;
+  let titleMsg: Msg | undefined;
+  // Translatable when each side is one amount and one party ("1 HBAR and 2 SAUCE" / "3 accounts" carry English words).
+  const one = (xs: string[]) => (xs.length === 1 ? xs[0]! : undefined);
   if (out.length && !inn.length) title = `Send ${joinWords(out)} to ${who(receivers)}`;
   else if (inn.length && !out.length) title = `Receive ${joinWords(inn)} from ${who(senders)}`;
   else if (out.length && inn.length) {
     const party = [...l.others.values()];
     title = `Trade ${joinWords(out)} for ${joinWords(inn)}${party.length === 1 ? ` with ${party[0]!.label}` : ""}`;
   } else title = "Move funds between other accounts";
+  if (out.length && !inn.length && one(out) && receivers.length === 1) titleMsg = msg("bg.req.sendTo", { amount: out[0]!, to: receivers[0]!.label });
+  else if (inn.length && !out.length && one(inn) && senders.length === 1) titleMsg = msg("bg.req.receiveFrom", { amount: inn[0]!, from: senders[0]!.label });
+  else if (out.length && inn.length && one(out) && one(inn)) {
+    const party = [...l.others.values()];
+    titleMsg = party.length === 1 ? msg("bg.req.tradeWith", { give: out[0]!, get: inn[0]!, who: party[0]!.label }) : msg("bg.req.trade", { give: out[0]!, get: inn[0]! });
+  }
 
   for (const o of l.others.values()) {
     const gets = [...o.parts.values()].filter((p) => p.delta > 0n).map((p) => amountText(p.asset, p.delta));
@@ -245,7 +256,7 @@ async function describeTransfer(data: Uint8Array, dc: DescribeContext): Promise<
     }
   }
 
-  return { title, lines, balanceChanges, warnings, blind: false };
+  return { title, ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges, warnings, blind: false };
 }
 
 function bump(m: Map<string, { asset: AssetRef; delta: bigint }>, asset: AssetRef, d: bigint) {
@@ -285,32 +296,38 @@ async function describeAssociate(data: Uint8Array, dc: DescribeContext, add: boo
   const yours = tx.account == null || isMe(dc, tx.account);
   const where = yours ? "your account" : `account ${accountLabel(tx.account)}`;
   const title = add ? `Add ${joinWords(names)} to ${where}` : `Remove ${joinWords(names)} from ${where}`;
+  const single = assets.length === 1 && assets[0]!.info ? assets[0]!.symbol : undefined;
+  const titleMsg = single
+    ? yours
+      ? msg(add ? "bg.hedera.addTokenToYours" : "bg.hedera.removeTokenFromYours", { symbol: single })
+      : msg(add ? "bg.hedera.addTokenToAccount" : "bg.hedera.removeTokenFromAccount", { symbol: single, account: accountLabel(tx.account) })
+    : undefined;
   const lines: Line[] = assets.map((a) => ({ label: "Token", value: a.info ? `${a.name} (${a.symbol}, ${a.address})` : `${a.address}` }));
   if (add) lines.push({ label: "Why", value: "Hedera accounts must add a token before they can hold it." });
-  return { title, lines, balanceChanges: [], warnings: [], blind: false };
+  return { title, ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges: [], warnings: [], blind: false };
 }
 
 /* ------------------------------------------------------------------ allowances */
 
 async function describeAllowance(data: Uint8Array, dc: DescribeContext): Promise<Described> {
   const tx = decodeApproveAllowance(data);
-  const parts: { title: string; warning?: Warning }[] = [];
+  const parts: { title: string; titleMsg: Msg; warning?: Warning }[] = [];
   const lines: Line[] = [];
 
   for (const a of tx.hbar) {
     const amt = a.amount;
     const spender = accountLabel(a.spender);
     if (amt === 0n) {
-      parts.push({ title: `Remove ${spender}'s permission to spend your HBAR` });
+      parts.push({ ...titled(msg("bg.req.removeSpendPermission", { spender, symbol: "HBAR" })) });
     } else if (amt >= HBAR_TOTAL_SUPPLY_TINYBARS) {
       parts.push({
-        title: `Allow ${spender} to spend all your HBAR`,
-        warning: { level: "danger", code: "unlimited-approval", message: `${spender} could take all your HBAR at any time, without asking again.` },
+        ...titled(msg("bg.req.allowSpendAll", { spender, symbol: "HBAR" })),
+        warning: warning("danger", "unlimited-approval", msg("bg.hedera.couldTakeAll", { spender, symbol: "HBAR" })),
       });
     } else {
       parts.push({
-        title: `Allow ${spender} to spend up to ${formatUnits(amt, 8)} HBAR`,
-        warning: { level: "caution", code: "unlimited-approval", message: `${spender} can spend up to ${formatUnits(amt, 8)} HBAR from your account without asking again.` },
+        ...titled(msg("bg.req.allowSpendUpTo", { spender, amount: `${formatUnits(amt, 8)} HBAR` })),
+        warning: warning("caution", "unlimited-approval", msg("bg.hedera.canSpendUpToFromAccount", { spender, amount: `${formatUnits(amt, 8)} HBAR` })),
       });
     }
   }
@@ -322,16 +339,16 @@ async function describeAllowance(data: Uint8Array, dc: DescribeContext): Promise
     const supply = asset.info?.total_supply ? BigInt(asset.info.total_supply) : null;
     const huge = amt >= INT64_MAX / 2n || (supply != null && supply > 0n && amt >= supply);
     if (amt === 0n) {
-      parts.push({ title: `Remove ${spender}'s permission to spend your ${asset.symbol}` });
+      parts.push({ ...titled(msg("bg.req.removeSpendPermission", { spender, symbol: asset.symbol })) });
     } else if (huge) {
       parts.push({
-        title: `Allow ${spender} to spend unlimited ${asset.symbol}`,
-        warning: { level: "danger", code: "unlimited-approval", message: `${spender} could take all your ${asset.symbol} at any time, without asking again.` },
+        ...titled(msg("bg.req.allowSpendUnlimited", { spender, symbol: asset.symbol })),
+        warning: warning("danger", "unlimited-approval", msg("bg.hedera.couldTakeAll", { spender, symbol: asset.symbol })),
       });
     } else {
       parts.push({
-        title: `Allow ${spender} to spend up to ${amountText(asset, amt)}`,
-        warning: { level: "caution", code: "unlimited-approval", message: `${spender} can spend up to ${amountText(asset, amt)} without asking again.` },
+        ...titled(msg("bg.req.allowSpendUpTo", { spender, amount: amountText(asset, amt) })),
+        warning: warning("caution", "unlimited-approval", msg("bg.hedera.canSpendUpTo", { spender, amount: amountText(asset, amt) })),
       });
     }
   }
@@ -342,22 +359,24 @@ async function describeAllowance(data: Uint8Array, dc: DescribeContext): Promise
     const spender = accountLabel(a.spender);
     if (a.approvedForAll) {
       parts.push({
-        title: `Allow ${spender} to move all your ${coll} NFTs`,
-        warning: { level: "danger", code: "approval-for-all", message: `${spender} could move every ${coll} NFT you own, now and in the future, without asking again.` },
+        ...titled(msg("bg.req.allowMoveAllNfts", { spender, collection: coll })),
+        warning: warning("danger", "approval-for-all", msg("bg.hedera.couldMoveEveryNftFuture", { spender, collection: coll })),
       });
     } else {
       const serials = a.serials.map((s) => `#${s.toString()}`);
       parts.push({
-        title: `Allow ${spender} to move ${coll} ${joinWords(serials)}`,
+        ...(serials.length === 1
+          ? titled(msg("bg.req.allowMoveNfts", { spender, collection: coll, items: serials[0]! }))
+          : { title: `Allow ${spender} to move ${coll} ${joinWords(serials)}`, titleMsg: finalMsg(`Allow ${spender} to move ${coll} ${joinWords(serials)}`) }),
         warning: { level: "caution", code: "approval-for-all", message: `${spender} can move ${coll} ${joinWords(serials)} without asking again.` },
       });
     }
   }
 
   if (!parts.length) return blindResult("Change spending permissions", "This permission request is empty or unreadable.");
-  for (const p of parts) lines.push({ label: "Permission", value: p.title });
+  for (const p of parts) lines.push({ label: "Permission", value: p.title, ...(p.titleMsg.id ? { valueMsg: p.titleMsg } : {}) });
   return {
-    title: parts.length === 1 ? parts[0]!.title : "Give apps permission to spend from your account",
+    ...(parts.length === 1 ? (parts[0]!.titleMsg.id ? titled(parts[0]!.titleMsg) : { title: parts[0]!.title }) : titled(msg("bg.req.giveAppsPermission"))),
     lines,
     balanceChanges: [],
     warnings: parts.flatMap((p) => (p.warning ? [p.warning] : [])),
@@ -379,8 +398,8 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
   if (tx.gas > 0n) lines.push({ label: "Gas limit", value: tx.gas.toString() });
 
   if (data.length === 0) {
-    if (payable > 0n) return { title: `Send ${formatUnits(payable, 8)} HBAR to contract ${contract}`, lines, balanceChanges, warnings: [], blind: false };
-    return blindResult(`Use contract ${contract}`, "This contract call has no readable function.", lines);
+    if (payable > 0n) return { ...titled(msg("bg.req.sendToContract", { amount: `${formatUnits(payable, 8)} HBAR`, contract })), lines, balanceChanges, warnings: [], blind: false };
+    return blindResult(msg("bg.hedera.useContract", { contract }), "This contract call has no readable function.", lines);
   }
   const swap = tx.contractId ? decodeSaucerSwap(contract, data, payable, ledgerOf(dc.networkId)) : null;
   if (swap) return describeSaucerSwap(swap, contract, payable, lines, dc);
@@ -388,7 +407,7 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
   const entry = lookupSelector(data);
   if (!entry) {
     lines.push({ label: "Function", value: `0x${hex(data.subarray(0, 4))} (unknown)` });
-    return { ...blindResult(`Use contract ${contract}`, "Clip Wallet can't read what this contract call does.", lines), balanceChanges };
+    return { ...blindResult(msg("bg.hedera.useContract", { contract }), "Clip Wallet can't read what this contract call does.", lines), balanceChanges };
   }
   lines.push({ label: "Function", value: entry.signature });
 
@@ -396,16 +415,21 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
   const token = tx.contractId ? await dc.mirror.token(contract).catch(() => null) : null;
   const asset = token ? await tokenAsset(dc, contract) : null;
   const warnings: Warning[] = [];
-  let title = `${entry.plain} with contract ${contract}`;
+  let title = say("bg.req.fnWithContract", { fn: entry.plain, contract });
+  let titleMsg: Msg | undefined;
+  const set = (m: Msg) => {
+    title = m.fallback;
+    titleMsg = m;
+  };
 
   switch (entry.name) {
     case "transfer": {
       const to = evmLabel(abiAddress(data, 0));
       const amt = abiUint(data, 1) ?? 0n;
       if (asset) {
-        title = `Send ${amountText(asset, amt)} to ${to}`;
+        set(msg("bg.req.sendTo", { amount: amountText(asset, amt), to }));
         balanceChanges.push({ asset: stripExtra(asset), delta: (-amt).toString() });
-      } else title = `Send tokens from contract ${contract} to ${to}`;
+      } else set(msg("bg.hedera.sendTokensFromContract", { contract, to }));
       break;
     }
     case "approve":
@@ -415,13 +439,20 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
       const sym = asset?.symbol ?? `tokens of contract ${contract}`;
       const supply = asset?.info?.total_supply ? BigInt(asset.info.total_supply) : null;
       if (entry.name === "approve" && amt === 0n) {
-        title = `Remove ${spender}'s permission to spend your ${sym}`;
+        if (asset) set(msg("bg.req.removeSpendPermission", { spender, symbol: sym }));
+        else title = `Remove ${spender}'s permission to spend your ${sym}`;
       } else if (amt >= 2n ** 128n || amt >= INT64_MAX / 2n || (supply != null && supply > 0n && amt >= supply)) {
-        title = `Allow ${spender} to spend unlimited ${sym}`;
-        warnings.push({ level: "danger", code: "unlimited-approval", message: `${spender} could take all your ${sym} at any time, without asking again.` });
+        if (asset) {
+          set(msg("bg.req.allowSpendUnlimited", { spender, symbol: sym }));
+          warnings.push(warning("danger", "unlimited-approval", msg("bg.hedera.couldTakeAll", { spender, symbol: sym })));
+        } else {
+          title = `Allow ${spender} to spend unlimited ${sym}`;
+          warnings.push({ level: "danger", code: "unlimited-approval", message: `${spender} could take all your ${sym} at any time, without asking again.` });
+        }
       } else {
         const shown = asset ? amountText(asset, amt) : `${amt} units`;
-        title = `Allow ${spender} to spend up to ${shown}${asset ? "" : ` of ${sym}`}`;
+        if (asset) set(msg("bg.req.allowSpendUpTo", { spender, amount: shown }));
+        else title = `Allow ${spender} to spend up to ${shown}${asset ? "" : ` of ${sym}`}`;
         warnings.push({ level: "caution", code: "unlimited-approval", message: `${spender} can spend up to ${shown} without asking again.` });
       }
       break;
@@ -431,9 +462,11 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
       const on = (abiUint(data, 1) ?? 0n) !== 0n;
       const coll = asset?.info?.name ?? `contract ${contract}`;
       if (on) {
-        title = `Allow ${op} to move all your ${coll} NFTs`;
+        if (asset?.info?.name) set(msg("bg.req.allowMoveAllNfts", { spender: op, collection: coll }));
+        else title = `Allow ${op} to move all your ${coll} NFTs`;
         warnings.push({ level: "danger", code: "approval-for-all", message: `${op} could move every ${coll} NFT you own without asking again.` });
-      } else title = `Remove ${op}'s access to your ${coll} NFTs`;
+      } else if (asset?.info?.name) set(msg("bg.req.removeNftAccess", { spender: op, collection: coll }));
+      else title = `Remove ${op}'s access to your ${coll} NFTs`;
       break;
     }
     case "transferFrom":
@@ -441,20 +474,20 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
       const from = evmLabel(abiAddress(data, 0));
       const to = evmLabel(abiAddress(data, 1));
       const v = abiUint(data, 2) ?? 0n;
-      if (asset && asset.info?.type === "FUNGIBLE_COMMON") title = `Move ${amountText(asset, v)} from ${from} to ${to}`;
+      if (asset && asset.info?.type === "FUNGIBLE_COMMON") set(msg("bg.req.moveFromTo", { amount: amountText(asset, v), from, to }));
       else title = `Move ${asset?.info?.name ?? "NFT"} #${v} from ${from} to ${to}`;
       break;
     }
     case "associate":
-      title = asset ? `Add the ${asset.symbol} token to your account` : `Add token ${contract} to your account`;
+      set(asset ? msg("bg.hedera.addTokenToYours", { symbol: asset.symbol }) : msg("bg.hedera.addTokenIdToYours", { token: contract }));
       break;
     case "dissociate":
-      title = asset ? `Remove the ${asset.symbol} token from your account` : `Remove token ${contract} from your account`;
+      set(asset ? msg("bg.hedera.removeTokenFromYours", { symbol: asset.symbol }) : msg("bg.hedera.removeTokenIdFromYours", { token: contract }));
       break;
     default:
       if (payable > 0n) title += ` and send ${formatUnits(payable, 8)} HBAR`;
   }
-  return { title, lines, balanceChanges, warnings, blind: false };
+  return { title, ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges, warnings, blind: false };
 }
 
 async function describeSaucerSwap(sw: SaucerSwapIntent, router: string, payable: bigint, lines: Line[], dc: DescribeContext): Promise<Described> {
@@ -486,9 +519,9 @@ async function describeSaucerSwap(sw: SaucerSwapIntent, router: string, payable:
   if (!mine) {
     const who = evmLabel(sw.recipient);
     out.push({ label: "Sends what you get to", value: who });
-    warnings.push({ level: "danger", code: "new-recipient", message: `The tokens from this swap go to ${who}, not to you.` });
+    warnings.push(warning("danger", "new-recipient", msg("bg.warn.swapGoesTo", { who })));
   }
-  return { title: `Swap ${pay} for ${get} on SaucerSwap`, lines: out, balanceChanges, warnings, blind: false };
+  return { ...titled(msg("bg.req.swapOn", { pay, get, app: "SaucerSwap" })), lines: out, balanceChanges, warnings, blind: false };
 }
 
 /* ------------------------------------------------------------------ account settings & staking */
@@ -510,13 +543,17 @@ function describeAccountUpdate(data: Uint8Array, dc: DescribeContext): Described
   }
 
   let title: string | null = null;
+  let titleMsg: Msg | undefined;
   const nodeId = tx.stakedNode;
   const stakedAccount = tx.stakedAccount ? accountIdString(tx.stakedAccount) : undefined;
   if (nodeId != null) {
-    title = nodeId.toString() === "-1" ? "Stop staking HBAR" : `Stake HBAR with node ${nodeId.toString()}`;
+    title = nodeId.toString() === "-1" ? "Stop staking HBAR" : say("bg.hedera.stakeWithNode", { node: nodeId.toString() });
+    if (nodeId.toString() !== "-1") titleMsg = msg("bg.hedera.stakeWithNode", { node: nodeId.toString() });
   } else if (stakedAccount != null) {
-    title = stakedAccount === "0.0.0" ? "Stop staking HBAR" : `Stake HBAR through account ${stakedAccount}`;
+    title = stakedAccount === "0.0.0" ? "Stop staking HBAR" : say("bg.hedera.stakeThroughAccount", { account: stakedAccount });
+    if (stakedAccount !== "0.0.0") titleMsg = msg("bg.hedera.stakeThroughAccount", { account: stakedAccount });
   }
+  if (title === "Stop staking HBAR") titleMsg = msg("bg.req.stopStaking", { symbol: "HBAR" });
   if (title?.startsWith("Stake")) {
     lines.push({ label: "Your HBAR", value: "Stays in your account and can be spent any time" });
   }
@@ -539,7 +576,7 @@ function describeAccountUpdate(data: Uint8Array, dc: DescribeContext): Described
   }
   if (tx.autoRenewSeconds != null) lines.push({ label: "Renewal period", value: `${tx.autoRenewSeconds.toString()} seconds` });
   if (tx.expiration != null) lines.push({ label: "Expires", value: timestampDate(tx.expiration).toISOString() });
-  return { title: title ?? "Update your account settings", lines, balanceChanges: [], warnings: [], blind: false };
+  return { title: title ?? "Update your account settings", ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges: [], warnings: [], blind: false };
 }
 
 /* ------------------------------------------------------------------ schedules */
@@ -555,7 +592,8 @@ async function describeScheduleCreate(data: Uint8Array, dc: DescribeContext, dep
     ...d.lines,
   ];
   if (tx.payer && !isMe(dc, tx.payer)) lines.push({ label: "Fee paid by", value: accountLabel(tx.payer) });
-  return { ...d, title: `Schedule: ${lowerFirst(d.title)}`, lines };
+  const innerMsg = titleMsgOf(d);
+  return { ...d, title: `Schedule: ${lowerFirst(d.title)}`, ...(innerMsg ? { titleMsg: msg("bg.req.schedule", { inner: withFallback(innerMsg, lowerFirst(d.title)) }) } : {}), lines };
 }
 
 async function describeScheduleSign(data: Uint8Array, dc: DescribeContext, depth: number): Promise<Described> {
@@ -575,7 +613,8 @@ async function describeScheduleSign(data: Uint8Array, dc: DescribeContext, depth
   const warnings = [...d.warnings];
   if (s.executed_timestamp) warnings.push({ level: "info", code: "simulation-failed", message: "This scheduled transaction already ran. Approving does nothing but costs a fee." });
   if (s.deleted) warnings.push({ level: "info", code: "simulation-failed", message: "This scheduled transaction was cancelled. Approving does nothing but costs a fee." });
-  return { ...d, title: `Approve scheduled: ${lowerFirst(d.title)}`, lines, warnings };
+  const innerMsg = titleMsgOf(d);
+  return { ...d, title: `Approve scheduled: ${lowerFirst(d.title)}`, ...(innerMsg ? { titleMsg: msg("bg.req.approveScheduled", { inner: withFallback(innerMsg, lowerFirst(d.title)) }) } : {}), lines, warnings };
 }
 
 function lowerFirst(s: string): string {
@@ -611,10 +650,10 @@ export async function describeTransaction(body: BodyP, dc: DescribeContext, dept
       return describeScheduleSign(data, dc, depth);
     case BODY.consensusSubmitMessage: {
       const m = decodeSubmitMessage(data);
-      const msg = new TextDecoder().decode(m.message);
-      const preview = msg.length > 280 ? `${msg.slice(0, 280)}…` : msg;
+      const text = new TextDecoder().decode(m.message);
+      const preview = text.length > 280 ? `${text.slice(0, 280)}…` : text;
       return {
-        title: `Post a message to topic ${m.topicId ? entityIdString(m.topicId) : "?"}`,
+        ...titled(msg("bg.req.postToTopic", { topic: m.topicId ? entityIdString(m.topicId) : "?" })),
         lines: [{ label: "Message", value: preview || "(empty)" }],
         balanceChanges: [],
         warnings: [],
@@ -624,7 +663,7 @@ export async function describeTransaction(body: BodyP, dc: DescribeContext, dept
     case BODY.cryptoDelete: {
       const d = decodeCryptoDelete(data);
       return blindResult(
-        `Close account ${accountLabel(d.deleteAccount)} and send what's left to ${accountLabel(d.transferAccount)}`,
+        msg("bg.hedera.closeAccount", { account: accountLabel(d.deleteAccount), to: accountLabel(d.transferAccount) }),
         "This permanently closes the account.",
       );
     }

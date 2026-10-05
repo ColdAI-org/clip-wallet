@@ -8,6 +8,7 @@ import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings";
 import { locationAsset } from "./defi.js";
 import { assetKey } from "./networks.js";
 import { equal, formatUnits, hex, joinWords, short, textOf } from "./util.js";
+import { msg, titled, say, recallMsg, knownMsg } from "@clip-wallet/core";
 
 export interface DecodedCall {
   type: string;
@@ -93,7 +94,7 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     case "Balances.transfer":
     case "Balances.force_transfer": {
       const to = addressOf(a.dest);
-      out.title = `Send ${amt(a.value)} to ${short(to)}`;
+      Object.assign(out, titled(msg("bg.req.sendTo", { amount: amt(a.value), to: short(to) })));
       out.lines.push({ label: "To", value: to }, { label: "Amount", value: amt(a.value) });
       if (name === "transfer_allow_death") out.lines.push({ label: "Note", value: "May close your account if the rest falls below the minimum" });
       if (name === "force_transfer") {
@@ -104,9 +105,9 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     }
     case "Balances.transfer_all": {
       const to = addressOf(a.dest);
-      out.title = `Send all your ${sym} to ${short(to)}`;
+      Object.assign(out, titled(msg("bg.req.sendAllTo", { symbol: sym, to: short(to) })));
       out.lines.push({ label: "To", value: to }, { label: "Amount", value: a.keep_alive ? `Everything except the minimum balance` : "Everything" });
-      out.warnings.push({ level: "caution", code: "new-recipient", message: `This empties your ${sym} balance.` });
+      out.warnings.push({ level: "caution", code: "new-recipient", message: say("bg.substrate.emptiesBalance", { symbol: sym }) });
       return out;
     }
     case "Assets.transfer":
@@ -139,31 +140,31 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       const to = addressOf(a.target ?? a.dest);
       out.title = `Send ${text} to ${short(to)}`;
       out.lines.push({ label: "To", value: to }, { label: "Amount", value: text });
-      if (!info) out.warnings.push({ level: "caution", code: "known-scam", message: `Clip Wallet doesn't know asset #${id}. Check it's the one you mean.` });
+      if (!info) out.warnings.push({ level: "caution", code: "known-scam", message: say("bg.substrate.unknownAsset", { id }) });
       if (!isMe(to, c.me) && name !== "transfer_approved") out.balanceChanges.push({ asset, delta: (-amount).toString() });
       return out;
     }
     case "Staking.bond":
-      out.title = `Stake ${amt(a.value)}`;
+      Object.assign(out, titled(msg("bg.req.stake", { amount: amt(a.value) })));
       out.lines.push({ label: "Stake", value: amt(a.value) }, { label: "Rewards go to", value: show(a.payee) });
       return out;
     case "Staking.bond_extra":
-      out.title = `Stake ${amt(a.max_additional)} more`;
+      Object.assign(out, titled(msg("bg.req.stakeMore", { amount: amt(a.max_additional) })));
       return out;
     case "Staking.unbond":
-      out.title = `Unstake ${amt(a.value)}`;
+      Object.assign(out, titled(msg("bg.req.unstake", { amount: amt(a.value) })));
       out.lines.push({ label: "Note", value: "Available to withdraw after the unbonding period" });
       return out;
     case "Staking.rebond":
-      out.title = `Restake ${amt(a.value)}`;
+      Object.assign(out, titled(msg("bg.req.restake", { amount: amt(a.value) })));
       return out;
     case "Staking.withdraw_unbonded":
-      out.title = `Withdraw unstaked ${sym}`;
+      Object.assign(out, titled(msg("bg.req.withdrawUnstaked", { symbol: sym })));
       return out;
     case "Staking.nominate": {
       const targets = Array.isArray(a.targets) ? a.targets.map(addressOf) : [];
-      out.title = `Nominate ${targets.length} validator${targets.length === 1 ? "" : "s"}`;
-      out.lines.push(...targets.map((t, i) => ({ label: `Validator ${i + 1}`, value: t })));
+      out.title = say("bg.req.nominate", { count: targets.length }, `Nominate ${targets.length} validator${targets.length === 1 ? "" : "s"}`);
+      out.lines.push(...targets.map((t, i) => ({ label: say("bg.staking.validator", { name: i + 1 }), value: t })));
       return out;
     }
     case "Staking.chill":
@@ -175,11 +176,11 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       return out;
     case "Staking.payout_stakers":
     case "Staking.payout_stakers_by_page":
-      out.title = `Pay out staking rewards for era ${show(a.era)}`;
+      Object.assign(out, titled(msg("bg.req.payOutRewards", { era: show(a.era) })));
       out.lines.push({ label: "Validator", value: addressOf(a.validator_stash) });
       return out;
     case "NominationPools.join":
-      out.title = `Stake ${amt(a.amount)} in pool #${show(a.pool_id)}`;
+      Object.assign(out, titled(msg("bg.req.stakeInPool", { amount: amt(a.amount), pool: show(a.pool_id) })));
       out.lines.push({ label: "Pool", value: `#${show(a.pool_id)}` }, { label: "Amount", value: amt(a.amount) });
       return out;
     case "NominationPools.bond_extra":
@@ -191,19 +192,19 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     }
     case "NominationPools.unbond": {
       const member = addressOf(a.member_account);
-      out.title = `Unstake ${amt(a.unbonding_points)} from your pool`;
+      Object.assign(out, titled(msg("bg.req.unstakeFromPool", { amount: amt(a.unbonding_points) })));
       out.lines.push({ label: "Note", value: "Pool points; the amount can differ slightly. Withdraw after the unbonding period." });
       if (!isMe(member, c.me)) out.lines.push({ label: "Member", value: member });
       return out;
     }
     case "NominationPools.withdraw_unbonded":
-      out.title = `Withdraw unstaked ${sym} from your pool`;
+      Object.assign(out, titled(msg("bg.req.withdrawUnstakedFromPool", { symbol: sym })));
       return out;
     case "NominationPools.claim_payout":
       out.title = "Claim your pool rewards";
       return out;
     case "NominationPools.claim_payout_other":
-      out.title = `Claim pool rewards for ${short(addressOf(a.other))}`;
+      Object.assign(out, titled(msg("bg.req.claimPoolRewardsFor", { who: short(addressOf(a.other)) })));
       return out;
     case "NominationPools.set_claim_permission":
       out.title = "Change who can claim your pool rewards";
@@ -227,7 +228,7 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       const sell = big(exactIn ? a.amount_in : a.amount_in_max);
       const buy = big(exactIn ? a.amount_out_min : a.amount_out);
       const fmt = (v: bigint, r: AssetRef) => `${formatUnits(v, r.decimals)} ${r.symbol}`;
-      out.title = exactIn ? `Swap ${fmt(sell, from)} for at least ${fmt(buy, to)}` : `Swap at most ${fmt(sell, from)} for ${fmt(buy, to)}`;
+      out.title = exactIn ? say("bg.near.swapAtLeast", { pay: fmt(sell, from), get: fmt(buy, to) }) : `Swap at most ${fmt(sell, from)} for ${fmt(buy, to)}`;
       out.lines.push(
         { label: exactIn ? "You pay" : "You pay at most", value: fmt(sell, from) },
         { label: exactIn ? "You get at least" : "You get", value: fmt(buy, to) },
@@ -236,7 +237,7 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       const to_ = addressOf(a.send_to);
       if (!isMe(to_, c.me)) {
         out.lines.push({ label: "Sent to", value: to_ });
-        out.warnings.push({ level: "caution", code: "new-recipient", message: `The tokens you buy go to ${short(to_)}, not to you.` });
+        out.warnings.push({ level: "caution", code: "new-recipient", message: say("bg.substrate.buyGoesTo", { to: short(to_) }) });
       } else out.balanceChanges.push({ asset: to, delta: buy.toString() });
       out.balanceChanges.push({ asset: from, delta: (-sell).toString() });
       if (from.key === c.native.key && a.keep_alive === false) out.lines.push({ label: "Note", value: "May close your account if the rest falls below the minimum" });
@@ -255,13 +256,13 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       const calls = (Array.isArray(a.calls) ? a.calls : []) as DecodedCall[];
       if (depth > 3) {
         out.blind = true;
-        out.title = `${calls.length} nested actions`;
+        out.title = say("bg.substrate.nestedActions", { count: calls.length });
         return out;
       }
       const parts = await Promise.all(calls.map((x) => describeCall(x, c, depth + 1)));
       out.title = parts.length === 1 ? parts[0]!.title : parts.length === 0 ? "Do nothing" : `${parts[0]!.title} and ${parts.length - 1} more`;
       parts.forEach((p, i) => {
-        out.lines.push({ label: `Action ${i + 1}`, value: p.title }, ...p.lines);
+        out.lines.push({ label: say("bg.label.actionN", { n: i + 1 }), value: p.title }, ...p.lines);
         out.balanceChanges.push(...p.balanceChanges);
         out.warnings.push(...p.warnings);
         out.blind ||= p.blind;
@@ -271,7 +272,7 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     }
     case "Proxy.add_proxy": {
       const who = addressOf(a.delegate);
-      out.title = `Give ${short(who)} control of your account`;
+      Object.assign(out, titled(msg("bg.req.giveControl", { who: short(who) })));
       out.lines.push({ label: "Delegate", value: who }, { label: "Allowed", value: show(a.proxy_type) });
       out.warnings.push({ level: "danger", code: "approval-for-all", message: `${short(who)} could act for your account (${show(a.proxy_type)}). Only approve this for an account you control.` });
       return out;
@@ -281,7 +282,9 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
       return out;
     case "Proxy.proxy": {
       const inner = await describeCall(a.call as DecodedCall, c, depth + 1);
-      return { ...inner, title: `On behalf of ${short(addressOf(a.real))}: ${inner.title}`, balanceChanges: [] };
+      const innerMsg = recallMsg(inner.title) ?? knownMsg(inner.title);
+      const title = innerMsg ? say("bg.req.onBehalfOf", { who: short(addressOf(a.real)), inner: innerMsg }) : `On behalf of ${short(addressOf(a.real))}: ${inner.title}`;
+      return { ...inner, title, balanceChanges: [] };
     }
   }
 

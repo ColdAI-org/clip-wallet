@@ -1,4 +1,4 @@
-import { ClipError, type Family } from "@clip-wallet/core";
+import { ClipError, type Family, say } from "@clip-wallet/core";
 import { queueSteps, type Step } from "@clip-wallet/features";
 import type { SecurityConfig, SecurityHost } from "../host.js";
 import type { ApprovalsOverviewView, Unavailable } from "../views.js";
@@ -68,7 +68,7 @@ export class ApprovalsService {
           grants.push(...r.grants);
           partial.push(...r.partial);
         } catch {
-          partial.push({ code: "approvals/unreachable", network: n.name, message: `Couldn't check ${n.name} right now. Try again in a moment.` });
+          partial.push({ code: "approvals/unreachable", network: n.name, message: say("bg.security.couldntCheck", { name: n.name }) });
         }
       }),
     );

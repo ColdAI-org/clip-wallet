@@ -4,7 +4,7 @@
  * app-data API, handle actions go through `enqueue` (the normal approval path), and notifications read public
  * data only (the account cache the wallet writes after unlock), so they work while the wallet is locked.
  */
-import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, Family, Network } from "@clip-wallet/core";
+import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, Family, Msg, Network } from "@clip-wallet/core";
 import { resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
 import { ClipHandlesBackend } from "@clip-wallet/names";
 import { SocialService, publicSnapshot, type Notifier, type TokenRiskSource } from "@clip-wallet/social";
@@ -30,7 +30,7 @@ export interface SocialHostDeps {
   ctx(networkId: string): Promise<ChainContext>;
   enqueue(request: DappRequest, appName: string): Promise<{ id: string }>;
   /** Approvals waiting now (empty when locked). */
-  approvals(): Promise<{ id: string; app: string; title: string }[]>;
+  approvals(): Promise<{ id: string; app: string; title: string; titleMsg?: Msg }[]>;
   prices: { usd(assetKey: string): number | undefined; fx(currency: string): number };
   notifier: Notifier;
   /** The device's preferred languages (navigator.languages / expo-localization). */
@@ -99,7 +99,7 @@ export function createSocial(d: SocialHostDeps): SocialService {
         networks: d.networks,
         chains: d.chains,
         accounts: () => d.kv.get<Account[]>(ACCOUNTS_KEY),
-        activity: async () => (await d.kv.get<{ id: string; title: string; status: "done" | "pending" | "failed"; kind: string }[]>(ACTIVITY_KEY)) ?? [],
+        activity: async () => (await d.kv.get<{ id: string; title: string; titleMsg?: Msg; status: "done" | "pending" | "failed"; kind: string }[]>(ACTIVITY_KEY)) ?? [],
         approvals: () => d.approvals().catch(() => []),
         usd: (k) => d.prices.usd(k),
         fx: (c) => d.prices.fx(c),

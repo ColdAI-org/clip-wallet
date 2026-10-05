@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   AVNU_EXCHANGE,
   STARKNET_METHODS,
@@ -189,7 +189,7 @@ export class AvnuSwap implements SwapProvider {
     const amt = `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`;
     return [
       {
-        title: `Swap ${amt} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: `${amt}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
         lines: [
           { label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}` },
           { label: "Through", value: quote.route.join(" + ") },

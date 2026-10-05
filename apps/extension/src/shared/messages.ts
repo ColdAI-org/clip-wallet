@@ -239,7 +239,7 @@ export interface ResponseMap extends FeatureResponseMap, SocialResponseMap, Secu
 export const Envelope = z.union([
   // `data` is absent for void replies (JSON drops undefined).
   z.object({ ok: z.literal(true), data: z.unknown().optional() }),
-  z.object({ ok: z.literal(false), error: z.object({ userMessage: z.string(), code: z.string() }) }),
+  z.object({ ok: z.literal(false), error: z.object({ userMessage: z.string(), code: z.string(), msg: z.unknown().optional() }) }),
 ]);
 export type Envelope = z.infer<typeof Envelope>;
 

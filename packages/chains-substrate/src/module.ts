@@ -1,18 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-  WALLET_ORIGIN,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, type Msg } from "@clip-wallet/core";
 import { Enum, fromBufferToBase58, getSs58AddressInfo, u32 } from "@polkadot-api/substrate-bindings";
 import { verify as sr25519Verify } from "@scure/sr25519";
 import { readStorage, runtimeCall, storageKeys } from "./chain.js";
@@ -216,7 +202,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
       const warnings: Warning[] = blind ? [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }] : [];
       return {
         ...base,
-        title: `Sign a message for ${host}`,
+        ...titled(msg("bg.req.signMessage", { host })),
         lines: [text != null ? { label: "Message", value: text } : { label: "Message (not text)", value: hex0x(n.data) }],
         balanceChanges: [],
         simulated: false,
@@ -245,7 +231,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
       });
     } catch {
       d = {
-        title: `Approve a transaction for ${host}`,
+        ...titled(msg("bg.req.approveTxFor", { host })),
         lines: [{ label: "Action (undecoded)", value: hex0x(p.method) }],
         balanceChanges: [],
         warnings: [{ level: "danger", code: "blind-signing", message: "This transaction can't be read. Only sign it if you trust the app." }],
@@ -282,7 +268,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     if (!n.submit && request.origin !== WALLET_ORIGIN) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     return {
       ...base,
-      title: d.title,
+      title: d.title, ...msgOf(d),
       lines,
       balanceChanges: mergeChanges(d.balanceChanges),
       ...(f !== null ? { fee: { asset: nativeAsset(spec), amount: f.toString() } } : {}),
@@ -579,3 +565,8 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
   };
 }
 
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}
