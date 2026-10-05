@@ -38,23 +38,20 @@
         "detail": {
           "title": "Send <0.000001 ETH to 0x05AC…2717",
           "network": "Sepolia",
-          "rows": "From Your balance Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 ETH Requested by matrix-dapp.example",
-          "details": "1 Send <0.000001 ETH to 0x05AC…2717 −<0.000001 ETH Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "rows": "Fee $0.07 Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 ETH Requested by matrix-dapp.example Network fee at most 0.000074 ETH",
+          "details": "1 Network fee 2 Send <0.000001 ETH to 0x05AC…2717 If it fails, nothing leaves your balance.",
           "notices": [
-            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
-            "This is expected to fail and would still cost a fee. Reason: err: insufficient funds for gas * price + value: address 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 have 0 want 1 (supplied gas 18446744073709551615)",
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
-          "approveEnabled": false,
-          "overflowing": [],
-          "declinedAs": "TransactionExecutionError"
+          "approveEnabled": true,
+          "overflowing": []
         }
       },
       "send": {
-        "status": "skip",
-        "why": "needs 0.001 ETH on Sepolia at 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717; has 0",
+        "status": "pass",
+        "why": "https://sepolia.etherscan.io/tx/0x398603c4da73c2ed659c645bcf0b58f104284c894565e50c0ca990168d98dcf8",
         "detail": {
-          "declinedAs": "TransactionExecutionError"
+          "id": "0x398603c4da73c2ed659c645bcf0b58f104284c894565e50c0ca990168d98dcf8"
         }
       }
     },
@@ -62,7 +59,7 @@
       "evm-sign.png",
       "evm-approval.png"
     ],
-    "at": "2026-10-05T13:20:42.113Z"
+    "at": "2026-10-05T13:52:04.563Z"
   },
   "hedera-evm": {
     "target": "hedera-evm",
@@ -115,9 +112,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://hashscan.io/testnet/transaction/0x1f0b2a5c8a93f3fef500ecc632f8f6f84e10cdf97cd0ddae212ec8cfa78f19fc",
+        "why": "https://hashscan.io/testnet/transaction/0xcfb5ffa6446156760a95add3f00fba453334b7d7f3daa74ed2f0a8e8166f9047",
         "detail": {
-          "id": "0x1f0b2a5c8a93f3fef500ecc632f8f6f84e10cdf97cd0ddae212ec8cfa78f19fc"
+          "id": "0xcfb5ffa6446156760a95add3f00fba453334b7d7f3daa74ed2f0a8e8166f9047"
         }
       }
     },
@@ -125,7 +122,7 @@
       "hedera-evm-sign.png",
       "hedera-evm-approval.png"
     ],
-    "at": "2026-10-05T13:34:40.861Z"
+    "at": "2026-10-05T13:52:42.488Z"
   },
   "hedera": {
     "target": "hedera",
@@ -151,7 +148,7 @@
       }
     },
     "shots": [],
-    "at": "2026-10-05T13:35:11.202Z"
+    "at": "2026-10-05T13:53:13.350Z"
   },
   "solana": {
     "target": "solana",
@@ -202,9 +199,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://explorer.solana.com/tx/5U5HuDQSpAc3bW1J7mZz5RYtyCMAiicXiStjVwRQk2X6rNGWNxA7KZRqxt8y4h5WzTUVycN5RBGPraZvHXVFVz4R?cluster=devnet",
+        "why": "https://explorer.solana.com/tx/25xEHvRV7nH1UQpAuhqcUKS8CofoWVaYWvEXrqQzTqfSK217nzGX5HNvz7vqXtyDQEGHsDf3EfhXSChcyrN7Ls6Y?cluster=devnet",
         "detail": {
-          "id": "5U5HuDQSpAc3bW1J7mZz5RYtyCMAiicXiStjVwRQk2X6rNGWNxA7KZRqxt8y4h5WzTUVycN5RBGPraZvHXVFVz4R"
+          "id": "25xEHvRV7nH1UQpAuhqcUKS8CofoWVaYWvEXrqQzTqfSK217nzGX5HNvz7vqXtyDQEGHsDf3EfhXSChcyrN7Ls6Y"
         }
       }
     },
@@ -212,7 +209,7 @@
       "solana-sign.png",
       "solana-approval.png"
     ],
-    "at": "2026-10-05T13:36:19.439Z"
+    "at": "2026-10-05T13:53:17.398Z"
   },
   "bitcoin": {
     "target": "bitcoin",
@@ -248,26 +245,27 @@
         }
       },
       "approval": {
-        "status": "pass",
-        "why": "Move your BTC between your own addresses",
+        "status": "skip",
+        "why": "needs funds first; the approval says: \"You don't have enough BTC to send this amount and pay the network fee.\"",
         "detail": {
-          "title": "Move your BTC between your own addresses",
+          "title": "Unreadable request",
           "network": "Bitcoin Testnet4",
-          "rows": "From Your balance Fee $0.12 Ready in about 10 minutes Your coin 1 0.005 BTC Change back to you 0.00000546 BTC Change back to you 0.00499313 BTC Network fee 0.00000141 BTC (1 sat/vB) Can be sped up later Yes Sends now Yes Requested by matrix-dapp.example",
-          "details": "1 Network fee 2 Move your BTC between your own addresses −0.000001 BTC If it fails, nothing leaves your balance.",
+          "rows": "",
+          "details": "1 Unreadable request",
           "notices": [
-            "We can't check whether these coins hold collectibles (ordinals). If they do, sending could lose them.",
+            "Clip Wallet can't read this request, so it's blocked. Signing something you can't read can empty your wallet. Only Advanced mode can override this.",
+            "You don't have enough BTC to send this amount and pay the network fee.",
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
-          "approveEnabled": true,
+          "approveEnabled": false,
           "overflowing": []
         }
       },
       "send": {
-        "status": "pass",
-        "why": "https://mempool.space/testnet4/tx/1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386",
+        "status": "skip",
+        "why": "needs 0.00005 BTC on Bitcoin Testnet4 at tb1q4j5qk5zu6ervj79ewph4zw3lukn9dhpdl6ydnr; has 0.00000546",
         "detail": {
-          "id": "1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386"
+          "declinedAs": "Error -32000"
         }
       }
     },
@@ -275,7 +273,7 @@
       "bitcoin-sign.png",
       "bitcoin-approval.png"
     ],
-    "at": "2026-10-05T13:36:48.402Z"
+    "at": "2026-10-05T13:53:49.812Z"
   },
   "sui": {
     "target": "sui",
@@ -329,9 +327,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://suiscan.xyz/testnet/tx/G61Mg4WVn55s6o5XQa96RyTtY8a5YYjHU4ZtiEQh9Zwk",
+        "why": "https://suiscan.xyz/testnet/tx/4mtQgGbWGRAXmMXy8W98ELYy9UXwQNTr5mmrXAcYCYgL",
         "detail": {
-          "id": "G61Mg4WVn55s6o5XQa96RyTtY8a5YYjHU4ZtiEQh9Zwk"
+          "id": "4mtQgGbWGRAXmMXy8W98ELYy9UXwQNTr5mmrXAcYCYgL"
         }
       }
     },
@@ -339,7 +337,7 @@
       "sui-sign.png",
       "sui-approval.png"
     ],
-    "at": "2026-10-05T13:38:49.620Z"
+    "at": "2026-10-05T13:54:16.233Z"
   },
   "aptos": {
     "target": "aptos",
@@ -404,7 +402,7 @@
       "aptos-sign.png",
       "aptos-approval.png"
     ],
-    "at": "2026-10-05T13:22:49.663Z"
+    "at": "2026-10-05T13:54:48.519Z"
   },
   "cardano": {
     "target": "cardano",
@@ -452,7 +450,7 @@
         "detail": {
           "title": "Move your ADA between your own addresses",
           "network": "Cardano Preprod",
-          "rows": "Fee $0.05 Ready in about 40 seconds To Your own address: 9999.659254 ADA Valid until slot 135528144 Network fee 0.171165 ADA Sent by matrix-dapp.example (it gets your signature)",
+          "rows": "Fee $0.05 Ready in about 40 seconds To Your own address: 9999.488089 ADA Valid until slot 135528914 Network fee 0.171165 ADA Sent by matrix-dapp.example (it gets your signature)",
           "details": "1 Network fee 2 Move your ADA between your own addresses If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -463,9 +461,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://preprod.cardanoscan.io/transaction/7033ff42dea5cd01e2e5a07ee4ed6f5a128394d9f98541a913e435e2d9c64e88",
+        "why": "https://preprod.cardanoscan.io/transaction/a722a4bf90217115de7488e1410c140d6bef3156bc91e2ec71c4bcccbf9da93d",
         "detail": {
-          "id": "7033ff42dea5cd01e2e5a07ee4ed6f5a128394d9f98541a913e435e2d9c64e88"
+          "id": "a722a4bf90217115de7488e1410c140d6bef3156bc91e2ec71c4bcccbf9da93d"
         }
       }
     },
@@ -473,7 +471,7 @@
       "cardano-sign.png",
       "cardano-approval.png"
     ],
-    "at": "2026-10-05T13:42:41.733Z"
+    "at": "2026-10-05T13:55:12.107Z"
   },
   "substrate": {
     "target": "substrate",
@@ -525,9 +523,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://westend.subscan.io/extrinsic/0xceb9bc6ce2c132e540ee21967b77089a26b3810b3436e0cbed9640e6e6901253",
+        "why": "https://westend.subscan.io/extrinsic/0x7b235ac6ae275e09872f979c1efbbdafc874e25ed975b3d612d6ee0e218fa91a",
         "detail": {
-          "id": "0xceb9bc6ce2c132e540ee21967b77089a26b3810b3436e0cbed9640e6e6901253"
+          "id": "0x7b235ac6ae275e09872f979c1efbbdafc874e25ed975b3d612d6ee0e218fa91a"
         }
       }
     },
@@ -535,7 +533,7 @@
       "substrate-sign.png",
       "substrate-approval.png"
     ],
-    "at": "2026-10-05T13:39:59.914Z"
+    "at": "2026-10-05T13:56:46.071Z"
   },
   "starknet": {
     "target": "starknet",
@@ -577,7 +575,7 @@
         "detail": {
           "title": "Send 0.000000000000000001 STRK to 0x014f…e6b8",
           "network": "Starknet Sepolia",
-          "rows": "Fee $0.003 Ready in about 10 seconds To 0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8 Amount 0.000000000000000001 STRK Account Not active yet. This first transaction also activates it (one-time fee). Network fee 0.055643718708031624 STRK Network fee at most 0.12519967671358782 STRK",
+          "rows": "Fee $0.001 Ready in about 10 seconds To 0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8 Amount 0.000000000000000001 STRK Network fee 0.018781775980538304 STRK Network fee at most 0.042259649934599701 STRK",
           "details": "1 Network fee 2 Send 0.000000000000000001 STRK to 0x014f…e6b8 If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -588,9 +586,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://sepolia.voyager.online/tx/0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb",
+        "why": "https://sepolia.voyager.online/tx/0x0368b31742d49ad25c261047de09c8a2e40ca41b598e8145b1086dad3a004db0",
         "detail": {
-          "id": "0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb"
+          "id": "0x0368b31742d49ad25c261047de09c8a2e40ca41b598e8145b1086dad3a004db0"
         }
       }
     },
@@ -598,7 +596,7 @@
       "starknet-sign.png",
       "starknet-approval.png"
     ],
-    "at": "2026-10-05T13:43:52.160Z"
+    "at": "2026-10-05T13:57:24.007Z"
   },
   "ton": {
     "target": "ton",
@@ -665,7 +663,7 @@
       "ton-sign.png",
       "ton-approval.png"
     ],
-    "at": "2026-10-05T13:24:27.102Z"
+    "at": "2026-10-05T13:57:52.402Z"
   },
   "near": {
     "target": "near",
@@ -689,7 +687,7 @@
           "approval": {
             "title": "Sign in to matrix-dapp.example",
             "network": "NEAR Testnet",
-            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) For matrix-dapp.example Account 1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272 Nonce FWlIx6mgW1ETQTWNcY0VytzsqS+QsJTSCi9ELnZjuw8=",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) For matrix-dapp.example Account 1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272 Nonce Wv53ZHgXAoBSbWRy78dQr2THc8x/wAW5y/2ZMEuV+VI=",
             "details": "1 Sign in to matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
             "notices": [
               "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -728,7 +726,7 @@
       "near-sign.png",
       "near-approval.png"
     ],
-    "at": "2026-10-05T13:24:56.128Z"
+    "at": "2026-10-05T13:58:14.865Z"
   },
   "stellar": {
     "target": "stellar",
@@ -770,7 +768,7 @@
         "detail": {
           "title": "Send 0.0000001 XLM to GB4N…VYVJ",
           "network": "Stellar Testnet",
-          "rows": "Fee $0.00 Ready in about 5 seconds To GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ Asset XLM (native) Valid until 2026-10-05T13:40:47Z Network fee up to 0.00001 XLM Sent by matrix-dapp.example (it gets the signed transaction)",
+          "rows": "Fee $0.00 Ready in about 5 seconds To GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ Asset XLM (native) Valid until 2026-10-05T14:04:00Z Network fee up to 0.00001 XLM Sent by matrix-dapp.example (it gets the signed transaction)",
           "details": "1 Network fee 2 Send 0.0000001 XLM to GB4N…VYVJ If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -781,9 +779,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://stellar.expert/explorer/testnet/tx/5fcf453495774302cd7a9edce45039c5b103aa624bdb699861bab1eedafb7f33",
+        "why": "https://stellar.expert/explorer/testnet/tx/495928614f41a96371e62b105abaa8b973824a20cde6220f4d088ad1d8453554",
         "detail": {
-          "id": "5fcf453495774302cd7a9edce45039c5b103aa624bdb699861bab1eedafb7f33"
+          "id": "495928614f41a96371e62b105abaa8b973824a20cde6220f4d088ad1d8453554"
         }
       }
     },
@@ -791,7 +789,7 @@
       "stellar-sign.png",
       "stellar-approval.png"
     ],
-    "at": "2026-10-05T13:35:31.713Z"
+    "at": "2026-10-05T13:58:43.171Z"
   },
   "tezos": {
     "target": "tezos",
@@ -816,7 +814,7 @@
           "approval": {
             "title": "Sign in to matrix-dapp.example",
             "network": "Tezos Shadownet",
-            "rows": "Time 2026-10-05T13:44:24.985Z Statement Clip Wallet dapp matrix: sign-in check (testnet) Message Tezos Signed Message: matrix-dapp.example 2026-10-05T13:44:24.985Z Clip Wallet dapp matrix: sign-in check (testnet)",
+            "rows": "Time 2026-10-05T13:59:26.001Z Statement Clip Wallet dapp matrix: sign-in check (testnet) Message Tezos Signed Message: matrix-dapp.example 2026-10-05T13:59:26.001Z Clip Wallet dapp matrix: sign-in check (testnet)",
             "details": "1 Sign in to matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
             "notices": [
               "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -832,7 +830,7 @@
         "detail": {
           "title": "Send 0.000001 XTZ to yourself",
           "network": "Tezos Shadownet",
-          "rows": "Fee $0.0002 Ready in about 10 seconds Account setup First transaction from this account: it also publishes your account's public key (a one-time step). To tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud (you) Network fee 0.000665 XTZ",
+          "rows": "Fee $0.0002 Ready in about 10 seconds To tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud (you) Network fee 0.000478 XTZ",
           "details": "1 Network fee 2 Send 0.000001 XTZ to yourself If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -843,9 +841,9 @@
       },
       "send": {
         "status": "pass",
-        "why": "https://shadownet.tzkt.io/opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X",
+        "why": "https://shadownet.tzkt.io/onwo49LZraha6MYrwX2rMQ5jEXYtHMG53VBXRexv1uwfMbXniXZ",
         "detail": {
-          "id": "opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X"
+          "id": "onwo49LZraha6MYrwX2rMQ5jEXYtHMG53VBXRexv1uwfMbXniXZ"
         }
       }
     },
@@ -853,7 +851,7 @@
       "tezos-sign.png",
       "tezos-approval.png"
     ],
-    "at": "2026-10-05T13:44:23.675Z"
+    "at": "2026-10-05T13:59:24.683Z"
   },
   "algorand": {
     "target": "algorand",
@@ -879,29 +877,26 @@
           "title": "Send 0.000001 ALGO to you",
           "network": "Algorand TestNet",
           "rows": "Fee $0.0001 Ready in about 5 seconds Network fee 0.001 ALGO Sent by matrix-dapp.example (it gets the signed transactions)",
-          "details": "1 Network fee 2 Send 0.000001 ALGO to you Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "details": "1 Network fee 2 Send 0.000001 ALGO to you If it fails, nothing leaves your balance.",
           "notices": [
-            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
-            "You don't have enough ALGO for this, including the network fee. (found in a test run)",
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
-          "approveEnabled": false,
-          "overflowing": [],
-          "declinedAs": "SignTxnsError 4001"
+          "approveEnabled": true,
+          "overflowing": []
         }
       },
       "send": {
-        "status": "skip",
-        "why": "needs 0.2 ALGO on Algorand TestNet at 4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4; has 0",
+        "status": "pass",
+        "why": "https://lora.algokit.io/testnet/transaction/B3EKJPKVQQHBORJ5QGPEJCNSCIINHHMZULNYAOA2OQPKK2LBQTSQ",
         "detail": {
-          "declinedAs": "SignTxnsError 4001"
+          "id": "B3EKJPKVQQHBORJ5QGPEJCNSCIINHHMZULNYAOA2OQPKK2LBQTSQ"
         }
       }
     },
     "shots": [
       "algorand-approval.png"
     ],
-    "at": "2026-10-05T13:26:18.779Z"
+    "at": "2026-10-05T13:59:53.410Z"
   },
   "evm-live": {
     "target": "evm-live",
@@ -929,6 +924,6 @@
     "shots": [
       "evm-live-connected.png"
     ],
-    "at": "2026-10-05T13:26:34.576Z"
+    "at": "2026-10-05T14:00:16.723Z"
   }
 }

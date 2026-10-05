@@ -24,29 +24,44 @@ The default `pnpm e2e` leaves the matrix out: it needs public testnets and the m
 on). The matrix wallet's phrase is read from the git-excluded `.env.dapp-matrix` and typed into onboarding's import
 flow. Trace, screenshot-on-failure and video are off for the whole spec, so the phrase never lands in an artifact.
 
-## Results (2026-10-05)
+## Results (2026-10-05, full run after funding)
 
-| Family | Testnet | L1 connect | L2 sign | L3 send | L4 approval |
+Every L3 hash below was confirmed by the test itself on the testnet's public RPC or indexer, independently of the
+wallet (`confirmTx` in `e2e/matrix/chain.ts`), and links to the explorer.
+
+| Family | Testnet | L1 connect | L2 sign | L3 send (tx) | L4 approval |
 | --- | --- | --- | --- | --- | --- |
-| EVM | Sepolia | pass | pass (viem `verifyMessage`) | skip: needs 0.001 ETH | pass: "Send <0.000001 ETH to 0x05AC…2717" |
+| EVM | Sepolia | pass | pass (viem `verifyMessage`) | **pass** [0x398603c4…dcf8](https://sepolia.etherscan.io/tx/0x398603c4da73c2ed659c645bcf0b58f104284c894565e50c0ca990168d98dcf8) | pass: "Send <0.000001 ETH to 0x05AC…2717" |
 | EVM, live dapp | Sepolia | pass ([MetaMask test dapp](https://metamask.github.io/test-dapp/) lists and connects Clip over EIP-6963) | n/a ¹ | n/a ¹ | n/a ¹ |
-| Hedera, injected EIP-1193 | Hedera testnet (296) | pass (after fix 1) | pass (viem) | **pass** ([HashScan](https://hashscan.io/testnet/transaction/0x1f0b2a5c8a93f3fef500ecc632f8f6f84e10cdf97cd0ddae212ec8cfa78f19fc)) (after fix 2) | pass: "Send <0.000001 HBAR to 0x05AC…2717" |
+| Hedera, injected EIP-1193 | Hedera testnet (296) | pass (fix 1) | pass (viem) | **pass** [0xcfb5ffa6…9047](https://hashscan.io/testnet/transaction/0xcfb5ffa6446156760a95add3f00fba453334b7d7f3daa74ed2f0a8e8166f9047) (fix 2) | pass: "Send <0.000001 HBAR to 0x05AC…2717" |
 | Hedera, WalletConnect / HashConnect | Hedera testnet | skip ² | skip ² | skip ² | skip ² |
-| Solana | Devnet | pass | pass (`verifyMessageSignature`) | **pass** ([explorer](https://explorer.solana.com/tx/5U5HuDQSpAc3bW1J7mZz5RYtyCMAiicXiStjVwRQk2X6rNGWNxA7KZRqxt8y4h5WzTUVycN5RBGPraZvHXVFVz4R?cluster=devnet)) | pass: "Send 0.000000001 SOL to G1zR…dxzk" (after fix 4) |
-| Bitcoin | Testnet4 | pass | pass (bip322-js, BIP-322) | **pass** ([mempool](https://mempool.space/testnet4/tx/1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386)) | pass: "Move your BTC between your own addresses" ³ |
-| Sui | Testnet | pass | pass (`verifyPersonalMessageSignature`) | **pass** ([suiscan](https://suiscan.xyz/testnet/tx/G61Mg4WVn55s6o5XQa96RyTtY8a5YYjHU4ZtiEQh9Zwk)) | pass: "Send 0.000000001 SUI to 0x6103…c5f9" (after fix 4) |
+| Solana | Devnet | pass | pass (`verifyMessageSignature`) | **pass** [25xEHvRV…Ls6Y](https://explorer.solana.com/tx/25xEHvRV7nH1UQpAuhqcUKS8CofoWVaYWvEXrqQzTqfSK217nzGX5HNvz7vqXtyDQEGHsDf3EfhXSChcyrN7Ls6Y?cluster=devnet) | pass: "Send 0.000000001 SOL to G1zR…dxzk" (fix 4) |
+| Bitcoin | Testnet4 | pass | pass (bip322-js, BIP-322) | skip: holds 546 sats, needs 5,000. An earlier run with 0.005 tBTC passed: [1a80e46e…3386](https://mempool.space/testnet4/tx/1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386) | skip while short. The approval says "You don't have enough BTC…" (fix 3). Funded, it passed: "Move your BTC between your own addresses" ³ |
+| Sui | Testnet | pass | pass (`verifyPersonalMessageSignature`) | **pass** [4mtQgGbW…YCYgL](https://suiscan.xyz/testnet/tx/4mtQgGbWGRAXmMXy8W98ELYy9UXwQNTr5mmrXAcYCYgL) | pass: "Send 0.000000001 SUI to 0x6103…c5f9" (fix 4) |
 | Aptos | Testnet | pass | pass (ts-sdk `verifySignature`, AIP-62) | skip: needs 0.01 APT | skip: needs funds. The approval says "You don't have enough APT to pay the network fee." (fixes 3 and 5) |
-| Cardano | Preprod | pass | pass (cardano-verify-datasignature, CIP-8) | **pass** ([cardanoscan](https://preprod.cardanoscan.io/transaction/7033ff42dea5cd01e2e5a07ee4ed6f5a128394d9f98541a913e435e2d9c64e88)) | pass: "Move your ADA between your own addresses" (after fix 4) |
-| Substrate | Westend | pass | pass (`signatureVerify`) | **pass** ([subscan](https://westend.subscan.io/extrinsic/0xceb9bc6ce2c132e540ee21967b77089a26b3810b3436e0cbed9640e6e6901253)) | pass: "Send 0.000000000001 WND to 5Gj64M…HCQb" |
-| Starknet | Sepolia | pass | pass (starknet.js `typedData.verifyMessage`) | **pass** (account deploy + transfer, [voyager](https://sepolia.voyager.online/tx/0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb)) | pass: "Send 0.000000000000000001 STRK to 0x014f…e6b8" |
+| Cardano | Preprod | pass | pass (cardano-verify-datasignature, CIP-8) | **pass** [a722a4bf…a93d](https://preprod.cardanoscan.io/transaction/a722a4bf90217115de7488e1410c140d6bef3156bc91e2ec71c4bcccbf9da93d) | pass: "Move your ADA between your own addresses" (fix 4) |
+| Substrate | Westend | pass | pass (`signatureVerify`) | **pass** [0x7b235ac6…a91a](https://westend.subscan.io/extrinsic/0x7b235ac6ae275e09872f979c1efbbdafc874e25ed975b3d612d6ee0e218fa91a) (block hash of inclusion) | pass: "Send 0.000000000001 WND to 5Gj64M…HCQb" |
+| Starknet | Sepolia | pass | pass (starknet.js `typedData.verifyMessage`) | **pass** [0x0368b317…4db0](https://sepolia.voyager.online/tx/0x0368b31742d49ad25c261047de09c8a2e40ca41b598e8145b1086dad3a004db0) (the account was deployed by an earlier run) | pass: "Send 0.000000000000000001 STRK to 0x014f…e6b8" |
 | TON | Testnet | pass | pass (TON Connect sign-data, `signVerify`) | skip: needs 0.2 GRAM | pass: "Send 0.000000001 GRAM to 0QBQ…aXFi" |
 | NEAR | Testnet | pass | pass (NEP-413, `PublicKey.verify`) | skip: needs 0.1 NEAR | skip: needs funds. The approval says "This account doesn't exist on NEAR yet. Receive some NEAR first" (fixes 3 and 5) |
-| Stellar | Testnet | pass | pass (SEP-53, `Keypair.verify`) | **pass** ([stellar.expert](https://stellar.expert/explorer/testnet/tx/5fcf453495774302cd7a9edce45039c5b103aa624bdb699861bab1eedafb7f33)) | pass: "Send 0.0000001 XLM to GB4N…VYVJ" |
-| Tezos | Shadownet | pass | pass (Taquito `verifySignature`) | **pass** (reveal + transfer, [tzkt](https://shadownet.tzkt.io/opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X)) | pass: "Send 0.000001 XTZ to yourself" |
-| Algorand | TestNet | pass | n/a (use-wallet v5 / ARC-1 have no message signing; ARC-60 is a draft) | skip: needs 0.2 ALGO | pass: "Send 0.000001 ALGO to you" |
+| Stellar | Testnet | pass | pass (SEP-53, `Keypair.verify`) | **pass** [49592861…3554](https://stellar.expert/explorer/testnet/tx/495928614f41a96371e62b105abaa8b973824a20cde6220f4d088ad1d8453554) | pass: "Send 0.0000001 XLM to GB4N…VYVJ" |
+| Tezos | Shadownet | pass | pass (Taquito `verifySignature`) | **pass** [onwo49LZ…bXniXZ](https://shadownet.tzkt.io/onwo49LZraha6MYrwX2rMQ5jEXYtHMG53VBXRexv1uwfMbXniXZ) | pass: "Send 0.000001 XTZ to yourself" |
+| Algorand | TestNet | pass | n/a (use-wallet v5 / ARC-1 have no message signing; ARC-60 is a draft) | **pass** [B3EKJPKV…QTSQ](https://lora.algokit.io/testnet/transaction/B3EKJPKVQQHBORJ5QGPEJCNSCIINHHMZULNYAOA2OQPKK2LBQTSQ) | pass: "Send 0.000001 ALGO to you" |
 
-Totals: L1 15/15 pass (WalletConnect skipped); L2 13 pass and 2 n/a; L3 10 confirmed on chain and 5 waiting for
-funds; L4 13 pass and 2 waiting for funds. No failures.
+Totals:
+
+- L1: 15 of 15 pass (the WalletConnect row is skipped).
+- L2: 13 pass, 2 n/a.
+- L3: 11 confirmed on chain; 4 wait for funds (Bitcoin, Aptos, TON, NEAR).
+- L4: 12 pass; 3 wait for funds (Bitcoin, Aptos, NEAR), and each says why.
+- No failures.
+
+Earlier confirmed runs (before the coordinator's funding): Hedera EVM
+[0xcf9db775…4a60](https://hashscan.io/testnet/transaction/0xcf9db77579742c5bd97c4bad1b181f5ad91c0aac6e1c827889ca2afae9534a60),
+Starknet's first transaction (account deploy + transfer)
+[0x019466e3…0feb](https://sepolia.voyager.online/tx/0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb),
+Tezos's first operation (reveal + transfer)
+[opUyZvDL…A2X](https://shadownet.tzkt.io/opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X).
 
 1. The MetaMask test dapp enables its sign and send buttons only when `provider.isMetaMask` is true (its
    `isMetaMaskInstalled()`). Clip deliberately doesn't impersonate MetaMask, so the wagmi row covers those levels.
@@ -152,6 +167,11 @@ the existing e2e (compat included).
      selection; change and every handed-out address stay the base address.
    - Tests: `packages/chains-hedera/test/hedera.test.ts`, `packages/chains-cardano/test/cardano.test.ts`. The balances
      script now compares case-insensitively and derives Cardano's base address through the module.
+
+10. **Stellar balances intermittently showed "offline".** One dropped connection or a 5xx from Horizon made the
+    balance read fail with `stellar/offline`. Horizon reads now retry twice with backoff (0.4 s, 1.2 s) before
+    reporting offline; submits are never retried. Code: `packages/chains-stellar/src/horizon.ts`. Test:
+    `packages/chains-stellar/test/stellar.test.ts`.
 
 Test-suite finding: the existing compat suite's Sui scenario picked Clip's **Solana** wallet (same name, registered
 first) and never tested Sui. It now filters as dapp-kit does, and its snapshot was re-recorded for that reason only

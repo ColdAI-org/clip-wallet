@@ -39,18 +39,28 @@ export class HorizonError extends Error {
   }
 }
 
+/** Backoff before each retry of a read (Horizon has short blips: dropped connections, 502/503/504, 429). */
+export const HORIZON_READ_RETRY_MS = [400, 1200];
+
 export class Horizon {
   constructor(
     readonly url: string,
     private readonly f: typeof fetch,
+    /** Delays before retrying a failed read; reads only (a submit is never retried here). */
+    private readonly retryMs: readonly number[] = HORIZON_READ_RETRY_MS,
   ) {}
 
   private async get<T>(path: string): Promise<T | null> {
-    let res: Response;
-    try {
-      res = await this.f(`${this.url.replace(/\/$/, "")}${path}`, { headers: { accept: "application/json" } });
-    } catch (cause) {
-      throw new ClipError("Couldn't reach the Stellar network. Check your connection and try again.", "stellar/offline", cause);
+    let res: Response | undefined;
+    for (let attempt = 0; ; attempt++) {
+      const last = attempt >= this.retryMs.length;
+      try {
+        res = await this.f(`${this.url.replace(/\/$/, "")}${path}`, { headers: { accept: "application/json" } });
+        if (last || !(res.status === 429 || res.status >= 500)) break;
+      } catch (cause) {
+        if (last) throw new ClipError("Couldn't reach the Stellar network. Check your connection and try again.", "stellar/offline", cause);
+      }
+      await new Promise((r) => setTimeout(r, this.retryMs[attempt]));
     }
     if (res.status === 404) return null;
     const body = (await res.json().catch(() => ({}))) as T;

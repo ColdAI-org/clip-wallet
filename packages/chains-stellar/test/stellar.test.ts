@@ -16,6 +16,7 @@ import {
 } from "@stellar/stellar-base";
 import { describe, expect, it } from "vitest";
 import {
+  Horizon,
   STELLAR_METHODS,
   STELLAR_NETWORKS,
   STELLAR_PUBNET,
@@ -609,3 +610,26 @@ describe("errors", () => {
   });
 });
 
+
+describe("Horizon reads retry transient failures (dapp matrix regression)", () => {
+  const ACCOUNT_JSON = { id: "GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ", sequence: "1", balances: [{ asset_type: "native", balance: "10.0000000" }], subentry_count: 0 };
+  const flaky = (failures: ("throw" | 503)[]) => {
+    let n = 0;
+    return (async () => {
+      const f = failures[n++];
+      if (f === "throw") throw new TypeError("fetch failed");
+      if (f === 503) return new Response("{}", { status: 503 });
+      return new Response(JSON.stringify(ACCOUNT_JSON));
+    }) as unknown as typeof fetch;
+  };
+
+  it("answers after a dropped connection and a 503 instead of reporting offline", async () => {
+    const h = new Horizon("https://horizon.example", flaky(["throw", 503]), [0, 0]);
+    expect((await h.account(ACCOUNT_JSON.id))?.sequence).toBe("1");
+  });
+
+  it("still reports offline after the retries run out", async () => {
+    const h = new Horizon("https://horizon.example", flaky(["throw", "throw", "throw"]), [0, 0]);
+    await expect(h.account(ACCOUNT_JSON.id)).rejects.toMatchObject({ code: "stellar/offline" });
+  });
+});

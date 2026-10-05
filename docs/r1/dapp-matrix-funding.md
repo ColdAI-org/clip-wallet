@@ -21,6 +21,12 @@ node scripts/dapp-matrix-balances.mjs --json
 Once an account holds its minimum, the matrix's L3 (sign and broadcast) runs for that family instead of skipping:
 `pnpm --filter @clip-wallet/extension matrix`.
 
+## Status (2026-10-05)
+
+Funded and confirmed by the matrix's L3: EVM, Hedera (both accounts), Solana, Sui, Cardano, Substrate, Starknet,
+Stellar, Tezos, Algorand. **Still needed:** Bitcoin (holds 546 sats, needs 5,000), Aptos (0.01 APT), TON (0.2 GRAM),
+NEAR (0.1 NEAR). Then run `pnpm --filter @clip-wallet/extension matrix -- -g "bitcoin|aptos|ton|near"`.
+
 ## Table
 
 "API-only" means a plain public HTTP API with no captcha, no account, no sign-up and no terms to accept. I used only
