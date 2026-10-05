@@ -1,8 +1,8 @@
 /** Helpers shared by the dApp-side modules (browser only; no Node Buffer). */
 
-/** Placeholder mark (same as 1Mask's DEFAULT_ICON). Pass your brand icon in each module's options. */
+/** The Clip Wallet mark (same as 1Mask's DEFAULT_ICON, brand/clip-mark.svg). Pass your brand icon in each module's options. */
 export const CLIP_ICON =
-  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMTEiLz48dGV4dCB4PSIzMiIgeT0iNDQiIGZvbnQtc2l6ZT0iMzYiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DPC90ZXh0Pjwvc3ZnPg==";
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+CiAgPHRpdGxlPkNsaXAgV2FsbGV0PC90aXRsZT4KICA8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjMwIiBmaWxsPSIjRkYzQzAwIi8+CiAgPGcgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY0IDY0KSBza2V3WCgtNikgdHJhbnNsYXRlKC02NCAtNjQpIj48cGF0aCBkPSJNNzIgMThDNDYgMzAgMzIgNTAgMzIgNzJjMCA3IDEgMTIgMyAxNmgzN3oiLz48cGF0aCBkPSJNODQgNDBjMTAgMTIgMTQgMjYgMTMgNDAtNCA0LTkgNy0xMyA4eiIvPjxwYXRoIGQ9Ik0yNCA5OWg4MmMtNiA3LTE1IDExLTI2IDExSDQ4Yy0xMSAwLTE5LTQtMjQtMTF6Ii8+PC9nPgo8L3N2Zz4K";
 
 export function b64(bytes: Uint8Array): string {
   let s = "";
