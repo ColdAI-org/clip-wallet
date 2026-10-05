@@ -17,7 +17,7 @@ export default {
   "privacy.partners.body": "Swap, buy and stake send your address and the amount to the provider you choose, and their own privacy policy applies.",
   "privacy.backup.title": "Passkey backup, if you turn it on",
   "privacy.backup.body": "Our backup service stores a locked copy that only your passkey can open, and a keyed hash of your email or your Google or Apple account so you can find it again. Delete it at any time.",
-  "privacy.media.title": "Collectible pictures",
+  "privacy.media.title": "Pictures of your collectibles",
   "privacy.media.body": "Pictures load through our media proxy, so the sites that host them never see your device. We don't keep a record of who asked.",
   "privacy.never.title": "Never",
   "privacy.never.body": "No analytics, no ads, no tracking, and we never sell data.",

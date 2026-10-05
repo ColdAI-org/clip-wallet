@@ -13,7 +13,7 @@ export default {
   "privacy.partners.body": "스왑, 구매, 스테이킹을 하면 내 주소와 금액이 선택한 제공업체로 전송되며, 해당 업체의 개인정보 처리방침이 적용됩니다.",
   "privacy.backup.title": "패스키 백업(켠 경우)",
   "privacy.backup.body": "백업 서비스는 내 패스키로만 열 수 있는 잠긴 사본과, 다시 찾을 수 있도록 이메일 또는 Google·Apple 계정의 키 기반 해시만 저장합니다. 언제든지 삭제할 수 있습니다.",
-  "privacy.media.title": "컬렉티블 이미지",
+  "privacy.media.title": "내 수집품 이미지",
   "privacy.media.body": "이미지는 미디어 프록시를 거쳐 불러오므로 이미지를 호스팅하는 사이트는 내 기기를 볼 수 없습니다. 누가 요청했는지는 기록하지 않습니다.",
   "privacy.never.title": "절대 하지 않는 것",
   "privacy.never.body": "분석, 광고, 추적이 없으며 데이터를 판매하지 않습니다.",
