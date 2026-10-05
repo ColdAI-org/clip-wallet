@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "助记词和通行密钥备份",
   "m.settings.menu.accountsHint": "添加、重命名和选择账户",
   "m.settings.menu.hardwareHint": "Ledger 和 Keystone",
+  "m.settings.menu.security": "安全",
+  "m.settings.menu.securityHint": "应用权限、清理垃圾资产、防诈骗保护",
+  "m.settings.menu.plugins": "插件",
+  "m.settings.menu.pluginsHint": "为请求添加备注或查询名称的扩展",
 } satisfies Record<keyof typeof en, string>;

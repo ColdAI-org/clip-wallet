@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "Wiederherstellungsphrase und Passkey-Backup",
   "m.settings.menu.accountsHint": "Konten hinzufügen, umbenennen und auswählen",
   "m.settings.menu.hardwareHint": "Ledger und Keystone",
+  "m.settings.menu.security": "Sicherheit",
+  "m.settings.menu.securityHint": "App-Berechtigungen, Spam aufräumen, Betrugsschutz",
+  "m.settings.menu.plugins": "Plugins",
+  "m.settings.menu.pluginsHint": "Erweiterungen, die Anfragen mit Hinweisen versehen oder Namen nachschlagen",
 } satisfies Record<keyof typeof en, string>;

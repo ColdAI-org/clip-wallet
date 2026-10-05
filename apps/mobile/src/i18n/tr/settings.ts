@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "Kurtarma ifadesi ve geçiş anahtarı yedeği",
   "m.settings.menu.accountsHint": "Hesap ekleyin, yeniden adlandırın ve seçin",
   "m.settings.menu.hardwareHint": "Ledger ve Keystone",
+  "m.settings.menu.security": "Güvenlik",
+  "m.settings.menu.securityHint": "Uygulama izinleri, spam temizliği ve dolandırıcılık koruması",
+  "m.settings.menu.plugins": "Eklentiler",
+  "m.settings.menu.pluginsHint": "İsteklere not ekleyen veya adları arayan eklentiler",
 } satisfies Record<keyof typeof en, string>;
