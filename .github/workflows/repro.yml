@@ -1,0 +1,49 @@
+# Reproducible-build check: scripts/repro-check.sh builds the store packages twice, each in a fresh
+# node:24-bookworm container (pinned by digest) from a clean clone, with different time zone, locale, umask and
+# hostname, and fails unless the extension zips are byte-identical.
+name: Reproducible build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "apps/extension/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "scripts/repro-check.sh"
+      - ".github/workflows/repro.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repro-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  repro:
+    name: build twice, compare hashes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: repro-check
+        env:
+          REPRO_OUT: ${{ runner.temp }}
+        run: scripts/repro-check.sh HEAD
+      - name: Summary
+        run: |
+          {
+            echo "### Reproducible build: identical"
+            echo '```'
+            cat "$RUNNER_TEMP/SHA256SUMS" "$RUNNER_TEMP/TREE-DIGESTS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
