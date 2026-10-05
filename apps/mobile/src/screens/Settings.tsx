@@ -288,6 +288,7 @@ export function Settings() {
           <MenuItem title={t("m.settings.menu.backup")} hint={t("m.settings.menu.backupHint")} testID="menu-backup" onPress={() => navigate({ name: "backup" })} />
           <MenuItem title={t("m.settings.menu.accounts")} hint={t("m.settings.menu.accountsHint")} testID="menu-accounts" onPress={() => navigate({ name: "accounts" })} />
           <MenuItem title={t("m.settings.menu.hardware")} hint={t("m.settings.menu.hardwareHint")} testID="menu-hardware" onPress={() => navigate({ name: "hardware" })} />
+          <MenuItem title={t("m.settings.menu.security")} hint={t("m.settings.menu.securityHint")} testID="menu-security" onPress={() => navigate({ name: "security" })} />
           <MenuItem title={tp("privacy.menu")} testID="menu-data-use" onPress={() => navigate({ name: "data-use" })} />
         </Card>
       </View>
@@ -313,6 +314,9 @@ export function Settings() {
           checked={prefs.advanced}
           onChange={(v) => setPrefs({ advanced: v })}
         />
+        {prefs.advanced && wallet.plugins && (
+          <MenuItem title={t("m.settings.menu.plugins")} hint={t("m.settings.menu.pluginsHint")} testID="menu-plugins" onPress={() => navigate({ name: "plugins" })} />
+        )}
       </Section>
       {prefs.advanced && <AdvancedNetworks prefs={prefs} setPrefs={setPrefs} />}
       {prefs.advanced && (

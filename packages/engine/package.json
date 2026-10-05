@@ -13,7 +13,8 @@
     "./features": "./src/features.ts",
     "./social-signin": "./src/social-signin.ts",
     "./hardware": "./src/hardware.ts",
-    "./social": "./src/social.ts"
+    "./social": "./src/social.ts",
+    "./plugins": "./src/plugins.ts"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
@@ -42,6 +43,7 @@
     "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/names": "workspace:*",
+    "@clip-wallet/plugins": "workspace:*",
     "@clip-wallet/route": "workspace:*",
     "@clip-wallet/security": "workspace:*",
     "@clip-wallet/social": "workspace:*",

@@ -11,7 +11,7 @@ export default {
   "common.retry": "もう一度試す",
   "common.loading": "読み込み中…",
   "common.copy": "コピー",
-  "common.copied": "コピーしました",
+  "common.copied": "コピー済み",
   "common.max": "最大",
   "common.somethingWrong": "問題が発生しました。もう一度お試しください。",
   "common.nav.main": "メイン",

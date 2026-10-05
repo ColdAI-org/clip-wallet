@@ -11,6 +11,8 @@ import {
   WalletEngine,
   createEngineClient,
   createEngineFeaturesClient,
+  createEnginePluginsClient,
+  createEngineSecurityClient,
   publicNetworks,
   type KV,
   type PrfProvider,
@@ -19,7 +21,11 @@ import { createEngineDependencies } from "@clip-wallet/engine/wiring";
 import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
 import { EngineHardware, createEngineHardwareClient, type EngineKeystone, type EngineLedger } from "@clip-wallet/engine/hardware";
 import { HardwareKeyring, KeystoneBridge, type HardwareStorage, type KeystoneSigner, type LedgerSigner } from "@clip-wallet/hardware/core";
-import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, SocialClient, WalletClient } from "@clip-wallet/ui";
+import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@clip-wallet/ui";
+import { PluginBackend } from "@clip-wallet/names";
+import { createMobilePlugins, type MobilePlugins } from "../plugins/host";
+import { createWebViewChannels, type WebViewChannels } from "../plugins/channels";
+import { gunzipCapped } from "../plugins/gunzip";
 import * as WebBrowser from "expo-web-browser";
 import * as LocalAuthentication from "expo-local-authentication";
 import { createSocial } from "@clip-wallet/engine/social";
@@ -80,6 +86,12 @@ export interface MobileWallet {
   confirmPresence(reason: string, cancelLabel?: string): Promise<boolean>;
   /** Contacts, Clip handles, notifications and Discover (same services as the extension). */
   social: SocialClient;
+  /** Settings → Security: app permissions (revoke), spam cleanup, scam protection (same service as the extension). */
+  security: SecurityClient;
+  /** Clip Plugins (Advanced mode + the Plugins switch); null when this build has none. */
+  plugins: PluginsClient | null;
+  /** The hidden plugin sandboxes the app root renders (PluginSandboxes); null without plugins. */
+  pluginSandboxes: WebViewChannels | null;
   /** One notification check now (foreground timer; the background task calls the same). */
   pollNotifications(): Promise<unknown>;
   events: Events;
@@ -110,6 +122,8 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
   const vault = new ClipVault({ storage: secureVaultStorage(), argon2id: guardedArgon2, autoLockMs: VAULT_MAX_IDLE_MS });
 
   let engine!: WalletEngine;
+  // Clip Plugins: built after the engine; the name resolver asks them last (built-in names always win).
+  let plugins: MobilePlugins | undefined;
   const deps = createEngineDependencies({
     config: APP.config,
     vault,
@@ -118,6 +132,7 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
     walletConnect: { projectId: APP.wcProjectId, url: APP.siteUrl, iconUrl: APP.iconUrl },
     // CoinGecko prices cached in app storage (no partner key on mobile builds yet).
     kv,
+    extraNames: [new PluginBackend((n) => plugins?.resolveName(n) ?? Promise.resolve(null), () => plugins?.suffixes() ?? [])],
   });
 
   /* auto-lock: a JS timer while open, plus a wall-clock check when the app comes back from the background */
@@ -249,6 +264,24 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
   );
   engine.attachSecurity(security, recipients);
   void security.start().catch(() => undefined);
+
+  // Clip Plugins: one hidden, network-less WebView per running plugin (src/plugins). Off unless Advanced mode and
+  // Settings → Plugins are both on. Notifications only when the user has notifications on, labelled "(plugin)".
+  const pluginSandboxes = createWebViewChannels();
+  const notifier = expoNotifier();
+  plugins = createMobilePlugins({
+    kv,
+    advanced: async () => (await engine.prefs()).advanced,
+    channels: pluginSandboxes.factory,
+    fetch: globalThis.fetch.bind(globalThis),
+    gunzip: gunzipCapped,
+    onNotify: (n) =>
+      void social.notifications
+        .settings()
+        .then((st) => (st.enabled ? notifier.show({ id: `plugin-${randomUUID()}`, kind: "price", title: `${n.pluginName.slice(0, 60)} (plugin)`, body: n.text.slice(0, 300) }) : undefined))
+        .catch(() => undefined),
+  });
+  engine.attachPlugins(plugins);
   const pollNotifications = () => social.poll();
   setBackgroundPoll(pollNotifications);
   void social.notifications.settings().then((st) => syncBackgroundTask(st.enabled), () => undefined);
@@ -309,6 +342,9 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
       return true;
     },
     social: socialClient,
+    security: createEngineSecurityClient(engine),
+    plugins: createEnginePluginsClient(engine),
+    pluginSandboxes,
     pollNotifications,
     events,
     argon2: { ...argon2, selfTest: argonCheck },

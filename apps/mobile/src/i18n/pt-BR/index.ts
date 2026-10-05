@@ -9,12 +9,14 @@
  *   trade (Secure Trade) → negociação / negociar (feature name "Secure Trade" kept), liquidity → liquidez,
  *   request → solicitação, approve → aprovar, reject → recusar, sign → assinar, signature → assinatura,
  *   connect / disconnect → conectar / desconectar, connected apps → apps conectados, app → app,
- *   lock / unlock → bloquear / desbloquear, hardware wallet → carteira de hardware, device → dispositivo,
+ *   lock / unlock → bloquear / desbloquear (a passkey-locked backup copy: trancar / destrancar), hardware wallet → carteira de hardware, device → dispositivo,
  *   scan → escanear, QR code → código QR, contact → contato, handle (Clip handle) → usuário (usuário Clip),
  *   claim a handle → registrar, give up a handle → abrir mão de, publish → publicar,
  *   look-alike address → endereço parecido, scammer → golpista, exchange → corretora,
  *   bridged → via ponte, pin / unpin → fixar / desafixar, price alert → alerta de preço,
- *   notifications → notificações, activity → atividade, settings → configurações, Advanced mode → Modo avançado,
+ *   notifications → notificações, activity → atividade,
+ *   Settings (the app's own screen/tab, and "in Settings") → Ajustes (iOS pt-BR term; "Configurações" overflows the
+ *   6-tab mobile bar), but system/browser/notification/RPC settings → configurações, Advanced mode → Modo avançado,
  *   Discover → Descobrir, Explore → Explorar, Home → Início, unreadable request → solicitação ilegível,
  *   Browse (tab) → Navegar, biometrics → biometria,
  *   Try again → Tentar de novo (in sentences: "tente de novo"). Decimal examples use a comma (0,5).
@@ -43,6 +45,8 @@ import hardware from "./hardware";
 import stake from "./stake";
 import swap from "./swap";
 import trade from "./trade";
+import security from "./security";
+import plugins from "./plugins";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -67,5 +71,7 @@ const messages: Translation<MobileMessages> = {
   ...stake,
   ...swap,
   ...trade,
+  ...security,
+  ...plugins,
 };
 export default messages;

@@ -24,7 +24,7 @@ export default {
   "hardware.accounts.gotIt": "Fatto. Ora scegli gli account da aggiungere.",
   "hardware.accounts.ledgerLive": "Usa gli account di Ledger Live",
   "hardware.accounts.ledgerLiveHint": "Solo se hai creato questi account in Ledger Live. Gli account standard di {name} corrispondono a quelli di MetaMask, Phantom e altri wallet.",
-  "hardware.accounts.connecting": "Collegamento in corso…",
+  "hardware.accounts.connecting": "Collegamento…",
   "hardware.accounts.connect": "Collega",
   "hardware.accounts.show": "Mostra account",
   "hardware.accounts.pick": "Scegli gli account da aggiungere. Puoi aggiungerne altri più tardi nelle Impostazioni.",

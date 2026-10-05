@@ -17,7 +17,7 @@ export default {
   "send.review": "Vérifier",
   "send.preparing": "Préparation…",
   "send.ask.title": "Où doivent arriver les {symbol} ?",
-  "send.ask.lede": "{who} peut recevoir des {symbol} à plusieurs endroits. S'il s'agit d'une plateforme d'échange ou du portefeuille de quelqu'un d'autre, demandez quel réseau utiliser — envoyer sur le mauvais peut faire perdre l'argent.",
+  "send.ask.lede": "{who} peut recevoir des {symbol} à plusieurs endroits. S'il s'agit d'une plateforme d'échange ou du portefeuille de quelqu'un d'autre, demandez quel réseau utiliser — envoyer sur le mauvais réseau peut faire perdre l'argent.",
   "send.ask.legend": "Réseau pour ce destinataire",
   "send.ask.haveThere": "Vous avez {amount} {symbol} sur ce réseau",
   "send.ask.moveThere": "Nous y transférerons vos {symbol} pour vous",

@@ -1,6 +1,6 @@
 import type en from "../en/plugins";
 export default {
-  "plugins.checking": "正在核对…",
+  "plugins.checking": "正在检查…",
   "plugins.title": "插件",
   "plugins.unavailable": "此版本不支持插件",
   "plugins.advancedOnly": "插件是高级功能",

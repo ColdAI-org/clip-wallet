@@ -15,7 +15,7 @@ export default {
   "stake.action.claim": "Cobrar recompensas",
   "stake.action.change": "Cambiar",
   "stake.amount": "Cantidad",
-  "stake.amountBad": "Escribe una cantidad como 2 o 0.5.",
+  "stake.amountBad": "Escribe una cantidad como 2 o 0,5.",
   "stake.amountMissing": "Escribe cuánto quieres poner en staking.",
   "stake.where": "Dónde",
   "stake.whereLabel": "Dónde hacer staking",

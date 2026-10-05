@@ -2,18 +2,23 @@
  * Turkish mobile catalog. Glossary (shared with the UI catalog in packages/ui/src/i18n/tr/index.ts):
  *   wallet → cüzdan, recovery phrase → kurtarma ifadesi, password → parola, passkey → geçiş anahtarı,
  *   account → hesap, address → adres, network → ağ, asset → varlık, token → token, coin → coin,
- *   collectible → koleksiyon öğesi (tab/title: Koleksiyon), balance → bakiye, fee / network fee → ücret / ağ ücreti,
- *   send → Gönder, receive → Al, buy → Satın al, swap → Dönüştür (dönüştürme), stake → stake et (Staking: Stake etme),
- *   trade (P2P, Secure Trade) → takas, transaction → işlem, request → istek,
+ *   collectible → koleksiyon öğesi (nav/tab/title: Koleksiyon), balance → bakiye, fee / network fee → ücret / ağ ücreti,
+ *   send → Gönder, receive → Al, buy → Satın al, swap → Dönüştür (dönüştürme),
+ *   stake → stake et (action buttons: "Stake et"; titles/menus/categories: Stake; Staking → Stake etme),
+ *   unstake → Stake'ten çıkar, trade (P2P, Secure Trade) → takas, transaction → işlem, request → istek,
  *   approve → Onayla, reject → Reddet, sign / signature → imzala / imza, connect → Bağlan / bağlantı,
  *   connected apps → bağlı uygulamalar, lock / unlock → kilitle / kilidi aç, backup → yedek / yedekleme,
  *   restore → geri yükle, hardware wallet → donanım cüzdanı, contact → kişi, handle → kullanıcı adı (Clip kullanıcı adı),
  *   notification → bildirim, price alert → fiyat uyarısı, look-alike address → benzer görünen adres,
- *   scammer → dolandırıcı, bridged → köprülenmiş, liquidity → likidite, exchange (CEX) → borsa,
- *   Advanced mode → Gelişmiş mod, Explore → Keşfet, Discover → Keşif, Browse (tab) → Göz at,
- *   Activity → Etkinlik, Settings → Ayarlar, biometrics → biyometrik veriler, publish → yayınla, pin → sabitle.
+ *   scam / scammer → dolandırıcılık / dolandırıcı, suspicious → şüpheli, bridged → köprülenmiş, liquidity → likidite,
+ *   exchange (CEX) → borsa, slippage → fiyatın değişebileceği oran, price impact → fiyat etkisi,
+ *   Advanced mode → Gelişmiş mod, Explore → Keşfet, Discover → Keşif, Browse (tab) → Göz at, Activity → Etkinlik,
+ *   Settings → Ayarlar, biometrics → biyometrik veriler, publish → yayınla, pin → sabitle, rewards → ödüller,
+ *   unreadable request → okunamayan istek, Done (button) → Bitti, Done (status) → Tamamlandı.
+ *   Brand/device names stay verbatim (Clip Wallet, Secure Trade, WalletConnect, Ledger, Keystone, Face ID…).
  * Voice: polite "siz" in sentences ("…deneyin"); buttons use short verb stems ("Kaydet", "Onayla").
- * Never attach suffixes to {variables}: use "{app} uygulaması", "{network} ağında", "{name} adlı kişiye", "{label} ile".
+ * Never attach suffixes to {variables}: use "{app} uygulaması", "{network} ağında", "{name} adlı kişiye",
+ * "@{handle} kullanıcı adı", "{label} ile". Decimals use a comma ("0,5"); Hedera ids like 0.0.1234 stay as-is.
  */
 import type { Translation } from "@clip-wallet/i18n";
 import type { MobileMessages } from "../en";
@@ -39,6 +44,8 @@ import hardware from "./hardware";
 import stake from "./stake";
 import swap from "./swap";
 import trade from "./trade";
+import security from "./security";
+import plugins from "./plugins";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -63,5 +70,7 @@ const messages: Translation<MobileMessages> = {
   ...stake,
   ...swap,
   ...trade,
+  ...security,
+  ...plugins,
 };
 export default messages;

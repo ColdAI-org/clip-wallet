@@ -1,13 +1,13 @@
 import type en from "../en/accounts";
 export default {
   "m.accounts.title": "الحسابات",
-  "m.accounts.nameFor": "اسم {account}",
+  "m.accounts.nameFor": "اسم \u2068{account}\u2069",
   "m.accounts.save": "حفظ",
   "m.accounts.inUse": "قيد الاستخدام",
   "m.accounts.rename": "إعادة تسمية",
-  "m.accounts.renameAccount": "إعادة تسمية {account}",
+  "m.accounts.renameAccount": "إعادة تسمية \u2068{account}\u2069",
   "m.accounts.use": "استخدام",
-  "m.accounts.useAccount": "استخدام {account}",
+  "m.accounts.useAccount": "استخدام \u2068{account}\u2069",
   "m.accounts.adding": "جارٍ الإضافة…",
   "m.accounts.add": "إضافة حساب",
   "m.accounts.useDefault": "استخدام حسابي الافتراضي هنا",
@@ -15,6 +15,6 @@ export default {
   "m.accounts.family.hedera": "Hedera (HBAR)",
   "m.accounts.family.solana": "Solana (SOL)",
   "m.accounts.family.bitcoin": "Bitcoin (BTC)",
-  "m.accounts.titleFor": "الحسابات لـ {site}",
-  "m.accounts.forSiteLede": "اختر الحساب الذي يراه {site}. تحتفظ التطبيقات الأخرى باختيارها الخاص.",
+  "m.accounts.titleFor": "الحسابات لـ \u2068{site}\u2069",
+  "m.accounts.forSiteLede": "اختر الحساب الذي يراه \u2068{site}\u2069. تحتفظ التطبيقات الأخرى باختيارها الخاص.",
 } satisfies Record<keyof typeof en, string>;

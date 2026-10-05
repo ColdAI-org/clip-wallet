@@ -4,7 +4,7 @@
  * Requests still go through the zod schema: the UI is trusted code, but the check costs nothing and keeps
  * both hosts identical.
  */
-import type { FeaturesClient, SocialClient, WalletClient } from "@clip-wallet/ui";
+import type { FeaturesClient, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@clip-wallet/ui";
 import { createSocialClient } from "@clip-wallet/ui";
 import { ClipError } from "@clip-wallet/core";
 import type { WalletEngine } from "./engine.js";
@@ -90,4 +90,38 @@ export function createEngineFeaturesClient(engine: WalletEngine, opts: { openExt
 /** In-process SocialClient (contacts, handles, notifications, Discover) over the engine. */
 export function createEngineSocialClient(engine: WalletEngine, opts: { requestNotificationPermission?: () => Promise<boolean> } = {}): SocialClient {
   return createSocialClient((msg) => engine.handleUntrusted(msg), opts);
+}
+
+/**
+ * In-process SecurityClient (Settings → Security: app permissions, spam cleanup, scam protection) over the engine's
+ * security service. Same `sec*` messages as the extension's bus (docs/phase25/integration/security.md §5); revokes and
+ * cleanups come back as an approval queued on the normal approval path.
+ */
+export function createEngineSecurityClient(engine: WalletEngine): SecurityClient {
+  const call = <T>(msg: unknown) => engine.handleUntrusted(msg) as Promise<T>;
+  return {
+    approvalsScan: () => call({ type: "secApprovalsScan" }),
+    revoke: (p) => call({ type: "secRevoke", ...p }),
+    cleanupScan: () => call({ type: "secCleanupScan" }),
+    cleanupPreview: (p) => call({ type: "secCleanupPreview", ...p }),
+    cleanupRun: (p) => call({ type: "secCleanupRun", ...p }),
+    unhide: (p) => call({ type: "secUnhide", ...p }),
+    threatStatus: () => call({ type: "secThreatStatus" }),
+    threatRefresh: () => call({ type: "secThreatRefresh" }),
+    checkSite: (p) => call({ type: "secCheckSite", ...p }),
+  };
+}
+
+/** In-process PluginsClient (Settings → Advanced → Plugins); needs `engine.attachPlugins(...)`. */
+export function createEnginePluginsClient(engine: WalletEngine): PluginsClient {
+  const call = <T>(msg: unknown) => engine.handleUntrusted(msg) as Promise<T>;
+  return {
+    pluginsStatus: () => call({ type: "pluginsStatus" }),
+    pluginsSetEnabled: (p) => call({ type: "pluginsSetEnabled", ...p }),
+    pluginsPrepareInstall: (p) => call({ type: "pluginsPrepareInstall", ...p }),
+    pluginsConfirmInstall: (p) => call({ type: "pluginsConfirmInstall", ...p }),
+    pluginsCancelInstall: () => call({ type: "pluginsCancelInstall" }),
+    pluginsRemove: (p) => call({ type: "pluginsRemove", ...p }),
+    pluginsSetPluginEnabled: (p) => call({ type: "pluginsSetPluginEnabled", ...p }),
+  };
 }

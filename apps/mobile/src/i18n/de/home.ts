@@ -13,7 +13,7 @@ export default {
   "m.home.asset.title": "Asset",
   "m.home.asset.gone": "Du besitzt das nicht mehr",
   "m.home.asset.pin": "Anheften",
-  "m.home.asset.unpin": "Lösen",
+  "m.home.asset.unpin": "Loslösen",
   "m.home.asset.bridgedCopy": "gebridgte Kopie – nicht das originale {symbol}",
   "m.home.asset.where": "Wo es liegt",
   "m.home.asset.whereHint": "Darum musst du dich nicht kümmern – {symbol} wird von dort ausgegeben, wo es gerade liegt.",

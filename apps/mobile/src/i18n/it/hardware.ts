@@ -25,7 +25,7 @@ export default {
   "m.hardware.cameraCode": "Anteprima della fotocamera per il codice del Keystone",
   "m.hardware.gotIt": "Fatto. Ora scegli gli account da aggiungere.",
   "m.hardware.ledgerLive": "Usa gli account di Ledger Live",
-  "m.hardware.connecting": "Collegamento in corso…",
+  "m.hardware.connecting": "Collegamento…",
   "m.hardware.showAccounts": "Mostra account",
   "m.hardware.pickAccounts": "Scegli gli account da aggiungere. Puoi aggiungerne altri più tardi nelle Impostazioni.",
   "m.hardware.newHedera": "Nuovo account Hedera",

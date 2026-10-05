@@ -94,5 +94,5 @@ export default {
   "security.source.polkadotAddresses": "Adresses frauduleuses PolkadotJS",
   "security.source.blockaid": "Analyse Blockaid",
   "security.source.local": "Contrôle des sosies et des nouveaux contrats",
-  "security.grant.unknownApp": "Une app inconnue",
+  "security.grant.unknownApp": "Une application inconnue",
 } satisfies Record<keyof typeof en, string>;

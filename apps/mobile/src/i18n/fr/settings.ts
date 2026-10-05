@@ -27,7 +27,7 @@ export default {
   "m.settings.passkey.on": "Activée",
   "m.settings.passkey.available": "Disponible",
   "m.settings.passkey.notInBuild": "Absente de cette version",
-  "m.settings.lockNow": "Verrouiller maintenant",
+  "m.settings.lockNow": "Verrouiller",
   "m.settings.confirmPassword": "Confirmez votre mot de passe",
   "m.settings.sessions.title": "Applications connectées",
   "m.settings.sessions.none": "Aucune application n'est connectée.",
@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "Phrase de récupération et sauvegarde par clé d'accès",
   "m.settings.menu.accountsHint": "Ajouter, renommer et choisir des comptes",
   "m.settings.menu.hardwareHint": "Ledger et Keystone",
+  "m.settings.menu.security": "Sécurité",
+  "m.settings.menu.securityHint": "Autorisations des applications, nettoyage du spam, protection contre les arnaques",
+  "m.settings.menu.plugins": "Plugins",
+  "m.settings.menu.pluginsHint": "Des extensions qui ajoutent des notes aux demandes ou recherchent des noms",
 } satisfies Record<keyof typeof en, string>;

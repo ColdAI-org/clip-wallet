@@ -9,7 +9,7 @@ export default {
   "m.swap.getPrice": "الحصول على السعر",
   "m.swap.payWith": "تدفع باستخدام",
   "m.swap.amount": "المبلغ",
-  "m.swap.youHave": "لديك {amount} {symbol}",
+  "m.swap.youHave": "لديك \u2068{amount}\u2069 \u2068{symbol}\u2069",
   "m.swap.youGet": "تحصل على",
   "m.swap.slippage": "الحد الأقصى لتغيّر السعر",
   "m.swap.slippageHint": "إذا تغيّر السعر بأكثر من هذا الحد قبل تنفيذ المبادلة، فإنها تتوقف ولا تتم مبادلة أي شيء.",

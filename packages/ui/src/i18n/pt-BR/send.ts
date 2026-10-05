@@ -21,6 +21,6 @@ export default {
   "send.ask.legend": "Rede para este destinatário",
   "send.ask.haveThere": "Você tem {amount} {symbol} lá",
   "send.ask.moveThere": "Vamos mover seu {symbol} para lá por você",
-  "send.ask.rememberName": "Vamos lembrar disso para {name}, assim você não será perguntado de novo.",
-  "send.ask.rememberAddress": "Vamos lembrar disso para este endereço, assim você não será perguntado de novo.",
+  "send.ask.rememberName": "Vamos lembrar disso para {name} e não perguntar de novo.",
+  "send.ask.rememberAddress": "Vamos lembrar disso para este endereço e não perguntar de novo.",
 } satisfies Record<keyof typeof en, string>;

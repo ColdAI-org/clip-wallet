@@ -24,6 +24,8 @@ import trade from "./trade";
 import backup from "./backup";
 import accounts from "./accounts";
 import hardware from "./hardware";
+import security from "./security";
+import plugins from "./plugins";
 
 export const en = {
   ...common,
@@ -48,9 +50,11 @@ export const en = {
   ...backup,
   ...accounts,
   ...hardware,
+  ...security,
+  ...plugins,
 };
 
-export const MOBILE_NAMESPACES = ['common', 'onboarding', 'home', 'collectibles', 'activity', 'receive', 'scan', 'browser', 'kit', 'app', 'send', 'approval', 'settings', 'explore', 'social', 'stake', 'swap', 'buy', 'trade', 'backup', 'accounts', 'hardware'] as const;
+export const MOBILE_NAMESPACES = ['common', 'onboarding', 'home', 'collectibles', 'activity', 'receive', 'scan', 'browser', 'kit', 'app', 'send', 'approval', 'settings', 'explore', 'social', 'stake', 'swap', 'buy', 'trade', 'backup', 'accounts', 'hardware', 'security', 'plugins'] as const;
 
 export type MobileMessages = typeof en;
 export type MobileMessageId = keyof MobileMessages;

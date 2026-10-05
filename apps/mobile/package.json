@@ -23,6 +23,8 @@
     "@clip-wallet/features": "workspace:*",
     "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/names": "workspace:*",
+    "@clip-wallet/plugins": "workspace:*",
     "@clip-wallet/security": "workspace:*",
     "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
@@ -49,6 +51,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-task-manager": "~57.0.21",
     "expo-web-browser": "~57.0.3",
+    "pako": "2.2.0",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-native": "0.86.3",
@@ -59,7 +62,8 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
-    "readable-stream": "^3.6.2"
+    "readable-stream": "^3.6.2",
+    "ses": "2.3.0"
   },
   "devDependencies": {
     "@react-native/jest-preset": "0.86.3",

@@ -27,7 +27,7 @@ export default {
   "m.settings.passkey.on": "Açık",
   "m.settings.passkey.available": "Kullanılabilir",
   "m.settings.passkey.notInBuild": "Bu sürümde yok",
-  "m.settings.lockNow": "Şimdi kilitle",
+  "m.settings.lockNow": "Kilitle",
   "m.settings.confirmPassword": "Parolanızı onaylayın",
   "m.settings.sessions.title": "Bağlı uygulamalar",
   "m.settings.sessions.none": "Bağlı uygulama yok.",
@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "Kurtarma ifadesi ve geçiş anahtarı yedeği",
   "m.settings.menu.accountsHint": "Hesap ekleyin, yeniden adlandırın ve seçin",
   "m.settings.menu.hardwareHint": "Ledger ve Keystone",
+  "m.settings.menu.security": "Güvenlik",
+  "m.settings.menu.securityHint": "Uygulama izinleri, spam temizliği ve dolandırıcılık koruması",
+  "m.settings.menu.plugins": "Eklentiler",
+  "m.settings.menu.pluginsHint": "İsteklere not ekleyen veya adları arayan eklentiler",
 } satisfies Record<keyof typeof en, string>;

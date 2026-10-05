@@ -142,7 +142,7 @@ export function TabBar() {
         return (
           <Pressable key={name} testID={`tab-${name}`} accessibilityRole="tab" accessibilityState={{ selected: active }} onPress={() => navigate({ name } as Route)} style={{ flex: 1, alignItems: "center", gap: 2, paddingVertical: 4 }}>
             <Icon color={color} size={22} />
-            <Text style={{ fontSize: 11, color, fontWeight: active ? "600" : "400" }}>{t(label)}</Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 11, color, fontWeight: active ? "600" : "400" }}>{t(label)}</Text>
           </Pressable>
         );
       })}

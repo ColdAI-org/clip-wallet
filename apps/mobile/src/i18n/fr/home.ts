@@ -21,5 +21,5 @@ export default {
   "m.home.moreActions": "Plus d'actions",
   "m.home.swap": "Échanger",
   "m.home.buy": "Acheter",
-  "m.home.stake": "Staking",
+  "m.home.stake": "Staker",
 } satisfies Record<keyof typeof en, string>;

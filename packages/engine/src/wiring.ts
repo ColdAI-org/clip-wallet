@@ -21,7 +21,7 @@ import { createStellarModule } from "@clip-wallet/chains-stellar";
 import { createTezosModule } from "@clip-wallet/chains-tezos";
 import { createAlgorandModule } from "@clip-wallet/chains-algorand";
 import { BackupClient } from "@clip-wallet/backup-client";
-import { MultiNameResolver } from "@clip-wallet/names";
+import { MultiNameResolver, type Backend as NameBackend } from "@clip-wallet/names";
 import { KnownDappRegistry, OneMaskConnector, ReferencePriceFeed, RoutePlannerAdapter, WalletConnectAdapter, type WalletConnectAdapterOptions } from "./adapters.js";
 import { walletAssets, walletNetworks } from "./catalog.js";
 import { createPriceFeed } from "./features.js";
@@ -43,6 +43,8 @@ export interface EngineWiringOptions {
   kv?: KV;
   /** CoinGecko demo key (build env; never committed). */
   coingeckoDemoKey?: string;
+  /** Extra name backends asked after the built-ins (mobile: Clip Plugins' PluginBackend). */
+  extraNames?: NameBackend[];
 }
 
 export function createEngineDependencies(o: EngineWiringOptions): Dependencies & { walletConnect: WalletConnectAdapter } {
@@ -96,6 +98,7 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
         isAddress: Object.fromEntries(Object.entries(chains).map(([f, m]) => [f, (a: string) => m!.isAddress(a)])),
         ...(o.config.services.clipHandles ?? {}),
       },
+      ...(o.extraNames ? { extra: o.extraNames } : {}),
     }),
     backup: backupUrl ? (session) => new BackupClient({ baseUrl: backupUrl, session }) : null,
     registry: new KnownDappRegistry(o.knownDapps),

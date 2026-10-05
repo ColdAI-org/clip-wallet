@@ -7,7 +7,7 @@
  *   collectible → objet de collection (nav tab and screen title: « Collection »), collection → collection,
  *   send / receive → envoyer / recevoir, swap → échanger (noun: échange), buy → acheter,
  *   stake → staker (screen and noun: staking), unstake → retirer du staking, rewards → récompenses,
- *   trade (Secure Trade) → échange, request → demande, approve / reject → approuver / refuser,
+ *   trade → échange (product name « Secure Trade » stays in English), request → demande, approve / reject → approuver / refuser,
  *   approval → approbation, sign → signer, connect / disconnect → connecter / déconnecter,
  *   app → application, connected apps → applications connectées, settings → Paramètres,
  *   advanced mode → mode avancé, unreadable request → demande illisible, look-alike address → adresse sosie,

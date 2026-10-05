@@ -332,6 +332,12 @@ importers:
       '@clip-wallet/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@clip-wallet/names':
+        specifier: workspace:*
+        version: link:../../packages/names
+      '@clip-wallet/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
       '@clip-wallet/security':
         specifier: workspace:*
         version: link:../../packages/security
@@ -410,6 +416,9 @@ importers:
       expo-web-browser:
         specifier: ~57.0.3
         version: 57.0.3(expo@57.0.26)(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))
+      pako:
+        specifier: 2.2.0
+        version: 2.2.0
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -443,6 +452,9 @@ importers:
       readable-stream:
         specifier: ^3.6.2
         version: 3.6.2
+      ses:
+        specifier: 2.3.0
+        version: 2.3.0
     devDependencies:
       '@react-native/jest-preset':
         specifier: 0.86.3
@@ -902,6 +914,9 @@ importers:
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../names
+      '@clip-wallet/plugins':
+        specifier: workspace:*
+        version: link:../plugins
       '@clip-wallet/route':
         specifier: workspace:*
         version: link:../route
@@ -1165,6 +1180,9 @@ importers:
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../core
+      '@noble/hashes':
+        specifier: ^2.4.0
+        version: 2.4.0
       ses:
         specifier: 2.3.0
         version: 2.3.0

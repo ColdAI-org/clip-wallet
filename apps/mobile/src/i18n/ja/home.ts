@@ -14,7 +14,7 @@ export default {
   "m.home.asset.title": "資産",
   "m.home.asset.gone": "この資産はもう保有していません",
   "m.home.asset.pin": "ピン留め",
-  "m.home.asset.unpin": "ピン留めを外す",
+  "m.home.asset.unpin": "ピン留め解除",
   "m.home.asset.bridgedCopy": "ブリッジされたコピー — 本来の{symbol}ではありません",
   "m.home.asset.where": "保管場所",
   "m.home.asset.whereHint": "管理する必要はありません。{symbol}はどこにあっても使えます。",

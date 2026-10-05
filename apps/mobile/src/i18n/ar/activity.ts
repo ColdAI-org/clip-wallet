@@ -4,5 +4,5 @@ export default {
   "m.activity.pending": "قيد التنفيذ",
   "m.activity.failed": "لم تكتمل العملية — لم يُخصم شيء",
   "m.activity.empty": "لا نشاط بعد",
-  "m.activity.legDetail": "{network} · {hash}",
+  "m.activity.legDetail": "\u2068{network}\u2069 · \u2068{hash}\u2069",
 } satisfies Record<keyof typeof en, string>;

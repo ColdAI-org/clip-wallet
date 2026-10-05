@@ -14,7 +14,8 @@
  *   notification → Benachrichtigung, price alert → Preisalarm, look-alike address → verwechselbare /
  *   ähnlich aussehende Adresse, scammer → Betrüger, unreadable request → nicht lesbare Anfrage,
  *   Advanced mode → erweiterter Modus, Home → Start, Explore → Erkunden, Discover → Entdecken,
- *   Activity → Aktivität, Settings → Einstellungen, pin → anheften, QR code → QR-Code, device → Gerät.
+ *   Activity → Aktivität, Settings → Einstellungen, pin / unpin → anheften / loslösen, QR code → QR-Code, device → Gerät,
+ *   (this) build → (diese) Version. Apple Account stays verbatim (Apple's product name, der Account).
  */
 import type { Translation } from "@clip-wallet/i18n";
 import type { MobileMessages } from "../en";
@@ -40,6 +41,8 @@ import hardware from "./hardware";
 import stake from "./stake";
 import swap from "./swap";
 import trade from "./trade";
+import security from "./security";
+import plugins from "./plugins";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -64,5 +67,7 @@ const messages: Translation<MobileMessages> = {
   ...stake,
   ...swap,
   ...trade,
+  ...security,
+  ...plugins,
 };
 export default messages;

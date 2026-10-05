@@ -15,7 +15,7 @@ export default {
   "m.stake.action.change": "Değiştir",
   "m.stake.amount": "Miktar",
   "m.stake.amountMissing": "Ne kadar stake edeceğinizi girin.",
-  "m.stake.amountBad": "2 veya 0.5 gibi bir miktar girin.",
+  "m.stake.amountBad": "2 veya 0,5 gibi bir miktar girin.",
   "m.stake.where": "Nerede",
   "m.stake.whereLabel": "Nerede stake edilecek",
   "m.stake.pickedForYou": "Sizin için seçildi",

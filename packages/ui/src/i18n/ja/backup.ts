@@ -20,7 +20,7 @@ export default {
   "backup.phrase.hide": "単語を隠す",
   "backup.phrase.reveal": "長押しまたはクリックで表示",
   "backup.phrase.allowCopy": "コピーを許可",
-  "backup.phrase.allowCopyHint": "初期設定ではオフです。コピーした内容は、ほかのアプリや拡張機能から読み取られる可能性があります。",
+  "backup.phrase.allowCopyHint": "初期設定ではオフです。コピーした内容は、ほかのアプリや拡張機能が読み取れます。",
   "backup.phrase.writtenDown": "書き留めました",
 
   // Shared

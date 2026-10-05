@@ -31,7 +31,7 @@ export default {
   "m.social.edit.saving": "正在保存…",
   "m.social.edit.delete": "删除联系人",
   "m.social.edit.confirmDelete": "要删除 {name} 吗？对方的地址仍存在于各个网络上；删除的只是你对其的记录。",
-  "m.social.family.evm": "以太坊类（ETH、USDC、Base、Arbitrum…）",
+  "m.social.family.evm": "Ethereum 类（ETH、USDC、Base、Arbitrum…）",
   "m.social.family.hedera": "Hedera（HBAR）",
   "m.social.family.solana": "Solana（SOL）",
   "m.social.family.bitcoin": "Bitcoin（BTC）",

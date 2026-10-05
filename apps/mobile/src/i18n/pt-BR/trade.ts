@@ -5,7 +5,7 @@ export default {
   "m.trade.new": "Nova negociação",
   "m.trade.openLink": "Abrir um link de negociação",
   "m.trade.none": "Nenhuma negociação ainda",
-  "m.trade.chip.done": "Concluído",
+  "m.trade.chip.done": "Concluída",
   "m.trade.chip.waiting": "Aguardando",
   "m.trade.chip.closed": "Encerrada",
   "m.trade.gone": "Esta negociação não está mais aqui",

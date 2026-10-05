@@ -28,7 +28,7 @@ export default {
   "m.stake.partial.label": "Quanto togliere dallo staking (lascia vuoto per tutto)",
   "m.stake.partial.placeholder": "Tutto",
   "m.stake.partial.some": "Togli {amount} {symbol} dallo staking",
-  "m.stake.partial.all": "Togli tutti i {symbol} dallo staking",
+  "m.stake.partial.all": "Togli tutti i tuoi {symbol} dallo staking",
   "m.stake.amountOptional": "Importo da mettere in staking (facoltativo)",
   "m.stake.amountOptionalHint": "Lascialo vuoto per delegare soltanto: conta tutto il tuo saldo {symbol} e nulla viene bloccato.",
 } satisfies Record<keyof typeof en, string>;

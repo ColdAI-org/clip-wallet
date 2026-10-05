@@ -30,7 +30,7 @@ export default {
   "settings.accounts": "Hesaplar",
   "settings.hardware": "Donanım cüzdanları",
   "settings.hardware.hint": "Ledger veya Keystone: anahtarlar cihazda kalır",
-  "settings.lockNow": "Şimdi kilitle",
+  "settings.lockNow": "Kilitle",
   "settings.sessions.title": "Bağlı uygulamalar",
   "settings.sessions.none": "Bağlı uygulama yok.",
   "settings.sessions.walletConnect": "WalletConnect",

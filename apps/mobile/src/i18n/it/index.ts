@@ -14,6 +14,8 @@
  *   price alert → avviso di prezzo, activity → attività, settings → impostazioni, explore → esplora,
  *   discover → scopri, advanced mode → modalità avanzata, bridged → via bridge, exchange → exchange,
  *   unreadable request → richiesta illeggibile, verified → verificato.
+ *   scam → truffa (scam list → elenco di truffe), suspicious → sospetto, permission → permesso.
+ *   No article directly before {symbol} ("i"/"gli"/"l'" depends on the symbol): use "i tuoi {symbol}", "in {symbol}" or none.
  *   Mobile only: Browse (tab) → Naviga, in-app browser → browser in-app, biometrics → biometria.
  *   Informal "tu"; decimal examples use a comma (0,5).
  */
@@ -41,6 +43,8 @@ import hardware from "./hardware";
 import stake from "./stake";
 import swap from "./swap";
 import trade from "./trade";
+import security from "./security";
+import plugins from "./plugins";
 
 const messages: Translation<MobileMessages> = {
   ...common,
@@ -65,5 +69,7 @@ const messages: Translation<MobileMessages> = {
   ...stake,
   ...swap,
   ...trade,
+  ...security,
+  ...plugins,
 };
 export default messages;

@@ -41,6 +41,8 @@ import type { KV } from "./kv.js";
 import { EngineRequest, type EngineResponseMap } from "./messages.js";
 import { PasskeyCeremonies } from "./passkey-ceremonies.js";
 import type { EngineHardware } from "./hardware.js";
+import type { EnginePlugins } from "./plugins.js";
+import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
 import type { DappHost, Dependencies, EngineEnv, PasskeyInfoLike, PermissionStoreLike, PrfProvider } from "./types.js";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -127,6 +129,8 @@ export class WalletEngine implements DappHost {
   /** Scam lists, address poisoning, permissions, spam cleanup (security stream). */
   private security?: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">;
   private recipients?: RecipientLog;
+  /** Clip Plugins (./plugins.ts); absent = no plugins in this build. */
+  private plugins?: EnginePlugins;
   /** "Continue with Google" / "Sign in with Apple" for passkey backups. */
   private readonly socialSignIn: SocialSignInService;
   /** Passkey backup, phrase-backup flag, multiple accounts (per-site active account), name lookups. */
@@ -196,6 +200,11 @@ export class WalletEngine implements DappHost {
     return this.security?.threat.isKnownScam(origin) ?? false;
   }
 
+  attachPlugins(p: EnginePlugins) {
+    this.plugins = p;
+    void p.sync().catch(() => undefined);
+  }
+
   attachFeatures(f: Pick<FeaturesService, "handle" | "refine">) {
     this.features = f;
   }
@@ -247,6 +256,11 @@ export class WalletEngine implements DappHost {
 
   /** Validates an untrusted message (zod) and runs it. Throws ClipError with a plain userMessage. */
   async handleUntrusted(msg: unknown): Promise<unknown> {
+    const type = (msg as { type?: unknown } | null)?.type;
+    if (this.plugins && typeof type === "string" && this.plugins.service.handles(type)) {
+      this.requireUnlocked(await this.deps.vault.status());
+      return this.plugins.service.handle(msg);
+    }
     const parsed = EngineRequest.safeParse(msg);
     if (!parsed.success) throw new ClipError("Something went wrong. Please try again.", "bus/invalid");
     return this.handle(parsed.data);
@@ -410,6 +424,8 @@ export class WalletEngine implements DappHost {
     await this.kv.set(K.prefs, next);
     if (patch.displayCurrency || patch.rpcOverrides) this.cache.clear();
     if (patch.autoLockMinutes) this.env.armAutoLock(next.autoLockMinutes);
+    // Advanced mode gates plugins: turning it off stops them all.
+    if (patch.advanced !== undefined) void this.plugins?.sync().catch(() => undefined);
     this.env.broadcast();
     return next;
   }
@@ -591,7 +607,8 @@ export class WalletEngine implements DappHost {
     let address = input.trim();
     let displayName: string | undefined;
     // ENS (.eth and subdomains), SNS (.sol), Hedera names (.hbar, .boo, .cream), Clip handles (@alex, alex.clip).
-    const looksLikeName = /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address);
+    const looksLikeName =
+      /^[^\s/:]+\.(eth|sol|hbar|boo|cream|clip)$/i.test(address) || /^@[a-z0-9-]{3,32}$/i.test(address) || this.deps.names.serviceFor?.(address) === "plugin";
     let implied: string[] = [];
     let addressOn: Record<string, string> = {};
     if (looksLikeName) {
@@ -744,6 +761,11 @@ export class WalletEngine implements DappHost {
       decoded.warnings.push({ level: "caution", code: "domain-mismatch", message: `${domainOf(request.origin)} isn't a site ${this.env.walletName} recognises. Only continue if you opened it yourself.` });
     }
     if (extra.recipient) decoded.lines = [{ label: "To", value: short(extra.recipient) }, ...decoded.lines];
+    // Plugin notes ("From <plugin>") ride beside the wallet's own analysis, never inside it; never for blind requests.
+    if (this.plugins && !decoded.blind) {
+      const insights = await this.plugins.insights(toInsightInput(decoded, request.origin, ctx.account.address)).catch(() => []);
+      decoded = withPluginInsights(decoded, insights);
+    }
     const { balances } = await this.portfolio();
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 

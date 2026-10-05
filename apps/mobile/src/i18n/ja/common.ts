@@ -4,7 +4,7 @@ export default {
   "m.common.continue": "続ける",
   "m.common.cancel": "キャンセル",
   "m.common.copy": "コピー",
-  "m.common.copied": "コピーしました",
+  "m.common.copied": "コピー済み",
   "m.common.max": "最大",
   "m.common.send": "送金",
   "m.common.receive": "受け取る",

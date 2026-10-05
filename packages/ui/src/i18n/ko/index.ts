@@ -11,7 +11,8 @@
  *   explore → 탐색, discover → 둘러보기, trade → 거래 (feature name "Secure Trade" kept), liquidity → 유동성,
  *   pool → 풀, slippage → 허용 가격 변동폭, price impact → 가격 영향, bridged → 브리지됨,
  *   look-alike address → 비슷하게 생긴 주소, scammer → 사기범, Advanced mode → 고급 모드,
- *   connected apps → 연결된 앱, suspicious token → 의심스러운 토큰, didn't go through → 처리되지 않았어요.
+ *   connected apps → 연결된 앱, suspicious token → 의심스러운 토큰, didn't go through → 처리되지 않았어요,
+ *   unreadable request → 읽을 수 없는 요청.
  * Style: 해요체 for sentences, short nouns for buttons; 을(를)/이(가)/은(는) after variables.
  */
 import type { Translation } from "@clip-wallet/i18n";

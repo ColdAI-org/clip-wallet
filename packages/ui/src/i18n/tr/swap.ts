@@ -18,6 +18,6 @@ export default {
   "swap.swap": "Dönüştür",
   "swap.gettingPrice": "En iyi fiyat alınıyor…",
   "swap.getPrice": "Fiyat al",
-  "swap.amountBad": "25 veya 0.5 gibi bir miktar girin.",
+  "swap.amountBad": "25 veya 0,5 gibi bir miktar girin.",
   "swap.expired": "Bu fiyatın süresi doldu. Yeni bir fiyat alın.",
 } satisfies Record<keyof typeof en, string>;

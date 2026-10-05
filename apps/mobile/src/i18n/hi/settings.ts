@@ -36,7 +36,7 @@ export default {
   "m.settings.sessions.disconnect": "डिस्कनेक्ट करें",
   "m.settings.sessions.disconnectApp": "{app} को डिस्कनेक्ट करें",
   "m.settings.wc.title": "कोड से कनेक्ट करें",
-  "m.settings.wc.off": "कोड से कनेक्ट करना (WalletConnect) इस बिल्ड में अभी चालू नहीं है। ब्राउज़ करें टैब के ऐप्स अब भी काम करते हैं।",
+  "m.settings.wc.off": "कोड से कनेक्ट करना (WalletConnect) इस बिल्ड में अभी चालू नहीं है। ब्राउज़र टैब के ऐप्स अब भी काम करते हैं।",
   "m.settings.wc.intro": "किसी दूसरे डिवाइस के ऐप्स के लिए: उनका WalletConnect QR कोड स्कैन करें, या कोड पेस्ट करें (यह \"wc:\" से शुरू होता है)।",
   "m.settings.wc.code": "कनेक्शन कोड",
   "m.settings.wc.bad": "यह WalletConnect कोड जैसा नहीं लगता।",
@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "रिकवरी फ़्रेज़ और पासकी बैकअप",
   "m.settings.menu.accountsHint": "अकाउंट जोड़ें, उनका नाम बदलें और चुनें",
   "m.settings.menu.hardwareHint": "Ledger और Keystone",
+  "m.settings.menu.security": "सुरक्षा",
+  "m.settings.menu.securityHint": "ऐप अनुमतियां, स्पैम सफ़ाई और स्कैम से सुरक्षा",
+  "m.settings.menu.plugins": "प्लगइन",
+  "m.settings.menu.pluginsHint": "ऐसे ऐड-ऑन जो रिक्वेस्ट में नोट जोड़ते हैं या नाम खोजते हैं",
 } satisfies Record<keyof typeof en, string>;

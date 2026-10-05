@@ -30,7 +30,7 @@ export default {
   "settings.accounts": "Comptes",
   "settings.hardware": "Portefeuilles matériels",
   "settings.hardware.hint": "Ledger ou Keystone : les clés restent sur l'appareil",
-  "settings.lockNow": "Verrouiller maintenant",
+  "settings.lockNow": "Verrouiller",
   "settings.sessions.title": "Applications connectées",
   "settings.sessions.none": "Aucune application n'est connectée.",
   "settings.sessions.walletConnect": "WalletConnect",

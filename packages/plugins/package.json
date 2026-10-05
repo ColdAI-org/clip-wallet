@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@clip-wallet/core": "workspace:*",
+    "@noble/hashes": "^2.4.0",
     "ses": "2.3.0",
     "zod": "^4.6.5"
   },
