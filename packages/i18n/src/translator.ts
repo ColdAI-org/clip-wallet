@@ -51,7 +51,7 @@ export function catalogNow<M extends Messages>(catalogs: Catalogs<M>, locale: Lo
 export interface CatalogProblem {
   locale: string;
   id: string;
-  problem: "missing" | "extra" | "arguments" | "tags" | "syntax" | "term-dropped" | "empty";
+  problem: "missing" | "extra" | "arguments" | "tags" | "syntax" | "term-dropped" | "empty" | "plural" | "select" | "render" | "glossary";
   detail?: string;
 }
 

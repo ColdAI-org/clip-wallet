@@ -26,8 +26,8 @@ export default {
   "home.asset.notHeld": "لم تعد تملك هذا الأصل",
   "home.asset.unpin": "إلغاء التثبيت",
   "home.asset.pin": "التثبيت في الأعلى",
-  "home.asset.bridgedCopy": "نسخة منقولة عبر جسر — ليست {symbol} الأصلية",
+  "home.asset.bridgedCopy": "نسخة منقولة عبر جسر — ليست \u2068{symbol}\u2069 الأصلية",
   "home.asset.whereItIs": "أين يوجد",
-  "home.asset.whereHint": "لا حاجة لإدارة ذلك — يُصرف {symbol} من أي مكان يوجد فيه.",
-  "home.asset.contract": "العقد ({network})",
+  "home.asset.whereHint": "لا حاجة لإدارة ذلك — يُصرف \u2068{symbol}\u2069 من أي مكان يوجد فيه.",
+  "home.asset.contract": "العقد (\u2068{network}\u2069)",
 } satisfies Record<keyof typeof en, string>;

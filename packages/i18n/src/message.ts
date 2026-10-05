@@ -12,6 +12,8 @@
  * helper turns them into elements.
  */
 
+import { numberLocale } from "./numbers.js";
+
 type Node =
   | { t: "text"; v: string }
   | { t: "arg"; name: string; fmt?: "number" }
@@ -138,7 +140,9 @@ function pluralCategory(locale: string, n: number): string {
   return r.select(n);
 }
 
+/** Numbers in messages ("#", "{n, number}") use the same digits as amounts: Latin digits in Arabic too. */
 function numberText(locale: string, v: unknown): string {
+  locale = numberLocale(locale);
   if (typeof v === "bigint") return v.toLocaleString(locale);
   const n = typeof v === "number" ? v : Number(v);
   if (!Number.isFinite(n)) return String(v ?? "");

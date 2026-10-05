@@ -15,7 +15,7 @@ export default {
   "m.common.tab.activity": "النشاط",
   "m.common.tab.browse": "التصفح",
   "m.common.tab.settings": "الإعدادات",
-  "m.common.amount": "{amount} {symbol}",
+  "m.common.amount": "\u2068{amount}\u2069 \u2068{symbol}\u2069",
   "m.common.readyIn.moment": "بعد لحظات",
   "m.common.readyIn.seconds": "بعد نحو {n, plural, zero {# ثانية} one {ثانية واحدة} two {ثانيتين} few {# ثوانٍ} many {# ثانية} other {# ثانية}}",
   "m.common.readyIn.minutes": "بعد نحو {n, plural, zero {# دقيقة} one {دقيقة واحدة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
