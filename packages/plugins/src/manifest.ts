@@ -44,7 +44,10 @@ const origin = z
   .refine((s) => {
     try {
       const u = new URL(s);
-      return u.protocol === "https:" && u.origin === s && !u.username && !u.password && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(u.hostname);
+      // Audit PLG-01: a name, not an IP literal (no 10.x / 192.168.x / 127.x), and not a local-only name.
+      const ipLiteral = /^\d+(\.\d+){3}$/.test(u.hostname);
+      const localName = /\.(local|localhost|internal|home|lan|corp|intranet)$/.test(u.hostname);
+      return u.protocol === "https:" && u.origin === s && !u.username && !u.password && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(u.hostname) && !ipLiteral && !localName;
     } catch {
       return false;
     }

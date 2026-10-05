@@ -36,6 +36,10 @@ describe("manifest", () => {
     ["an http origin", { permissions: { transactionInsight: true, network: ["http://api.example"] } }],
     ["an origin with a path", { permissions: { transactionInsight: true, network: ["https://api.example/x"] } }],
     ["a wildcard origin", { permissions: { transactionInsight: true, network: ["https://*.example"] } }],
+    // Audit PLG-01: private network addresses and local-only names.
+    ["a private IP origin", { permissions: { transactionInsight: true, network: ["https://192.168.1.1"] } }],
+    ["a loopback IP origin", { permissions: { transactionInsight: true, network: ["https://127.0.0.1"] } }],
+    ["a .local origin", { permissions: { transactionInsight: true, network: ["https://router.local"] } }],
     ["a bundle outside the package", { bundle: { path: "../evil.js", sha256: "0".repeat(64) } }],
     ["a hidden-character name", { name: "Safe‮elbat" }],
     ["unknown top-level keys", { extra: 1 }],
