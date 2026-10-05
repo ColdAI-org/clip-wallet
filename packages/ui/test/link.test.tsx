@@ -63,6 +63,25 @@ describe("Linked devices", () => {
     expect(screen.getByRole("button", { name: "Use Clip Desktop" })).toBeInTheDocument();
   });
 
+  it("Clip Desktop: a phone can be its signer, and the browser-extension connector can be repaired or removed", async () => {
+    const c = fake(status({ platform: "desktop" }));
+    const view = (installed: boolean) => ({ available: true, browsers: [{ browser: "chrome" as const, installed }, { browser: "firefox" as const, installed }] });
+    let installed = false;
+    c.browserConnector = {
+      status: vi.fn(async () => view(installed)),
+      repair: vi.fn(async () => view((installed = true))),
+      remove: vi.fn(async () => view((installed = false))),
+    };
+    renderUi(<LinkProvider client={c}><LinkedDevices /></LinkProvider>);
+    expect(await screen.findByRole("button", { name: "Use for signing" })).toBeInTheDocument();
+    const section = await screen.findByTestId("browser-connector");
+    expect(section).toHaveTextContent("Not set up in any browser.");
+    await userEvent.click(screen.getByRole("button", { name: "Set up again" }));
+    expect(await screen.findByText("Set up for Chrome, Firefox.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Remove from browsers" }));
+    expect(await screen.findByText("Not set up in any browser.")).toBeInTheDocument();
+  });
+
   it("while the phone signs, shows what it's waiting for", async () => {
     const c = fake(status({ signer: { deviceId: "d1", deviceName: "Pixel 9", online: true, waiting: [{ id: "r1", origin: "https://app.example", kind: "request", title: "Send 10 USDC to 0x12…ab", since: 1 }] } }));
     renderUi(<LinkProvider client={c}><LinkedDevices /></LinkProvider>);

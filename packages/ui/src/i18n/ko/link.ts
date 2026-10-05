@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "지갑을 옮기는 중…",
   "link.transfer.sent": "이제 지갑이 {device}에 있습니다.",
   "link.transfer.received": "지갑이 이 기기에 있습니다.",
+  "link.connector.title": "브라우저 확장 프로그램",
+  "link.connector.hint": "Chrome, Edge, Brave, Firefox의 {name} 확장 프로그램이 요청을 여기로 보내 확인받을 수 있게 해요. 키는 이 컴퓨터에만 있어요.",
+  "link.connector.ready": "{browsers}에 설정됨",
+  "link.connector.none": "어떤 브라우저에도 설정되지 않았어요.",
+  "link.connector.repair": "다시 설정",
+  "link.connector.remove": "브라우저에서 제거",
 } satisfies Record<keyof typeof en, string>;

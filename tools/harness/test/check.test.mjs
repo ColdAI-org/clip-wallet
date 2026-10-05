@@ -98,7 +98,7 @@ test("imports: static, multi-line, type-only, dynamic and require", () => {
   assert.deepEqual(bindings(imps[3].clause).map((b) => b.name).sort(), ["d", "e"]);
 });
 
-test("vault importers: background, onboarding screen and the vault only", () => {
+test("vault importers: background, mobile/desktop hosts, onboarding screen and the vault only", () => {
   const allowed = (f) => VAULT_IMPORT_ALLOW.some((re) => re.test(f));
   for (const f of [
     "packages/vault/src/index.ts",
@@ -107,6 +107,9 @@ test("vault importers: background, onboarding screen and the vault only", () => 
     "packages/ui/src/screens/Onboarding.tsx",
     "packages/ui/src/screens/onboarding/Create.tsx",
     "apps/mobile/src/background/host.ts",
+    "apps/desktop/src/main/host/wallet.ts",
+    "apps/desktop/src/main/host/link.ts",
+    "apps/desktop/e2e/mock-extension.ts",
     "packages/extension-kit/src/background/wiring.ts",
   ]) assert.ok(allowed(f), f);
   for (const f of [
@@ -117,6 +120,16 @@ test("vault importers: background, onboarding screen and the vault only", () => 
     "apps/mobile/src/screens/Home.tsx",
     "apps/mobile/src/browser/bridge.ts",
     "packages/engine/src/engine.ts",
+    "apps/desktop/src/main/index.ts",
+    "apps/desktop/src/main/browser/browser.ts",
+    "apps/desktop/src/preload/dapp.ts",
+    "apps/desktop/src/preload/wallet.ts",
+    "apps/desktop/src/renderer/shared/clients.ts",
+    "apps/desktop/src/main/hostile/wallet.ts",
+    "apps/desktop/src/main/native-hosts.ts",
+    "apps/desktop/e2e/desktop.spec.ts",
+    "apps/desktop/e2e/link.spec.ts",
+    "apps/desktop/e2e/mock-extension.tsx",
     "packages/extension-kit/src/pages/mount.tsx",
     "packages/extension-kit/src/wxt.ts",
   ]) assert.ok(!allowed(f), f);

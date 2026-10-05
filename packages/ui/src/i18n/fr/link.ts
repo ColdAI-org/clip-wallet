@@ -71,4 +71,10 @@ export default {
   "link.transfer.moving": "Transfert de votre portefeuille…",
   "link.transfer.sent": "Votre portefeuille est maintenant sur {device}.",
   "link.transfer.received": "Votre portefeuille est sur cet appareil.",
+  "link.connector.title": "Extension de navigateur",
+  "link.connector.hint": "Permet à l’extension {name} dans Chrome, Edge, Brave ou Firefox d’envoyer ses demandes ici pour validation. Tes clés restent sur cet ordinateur.",
+  "link.connector.ready": "Configurée pour {browsers}.",
+  "link.connector.none": "Configurée dans aucun navigateur.",
+  "link.connector.repair": "Reconfigurer",
+  "link.connector.remove": "Retirer des navigateurs",
 } satisfies Record<keyof typeof en, string>;
