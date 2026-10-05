@@ -63,6 +63,7 @@ export const passkeyBackup = {
     }
   },
   decrypt(blob: Uint8Array, prfOutput: Uint8Array): string {
+    if (prfOutput.length < 32) throw new Error("PRF output must be at least 32 bytes");
     if (blob.length < HEADER_LEN + NONCE_LEN + 16 || !equalBytes(blob.subarray(0, 4), MAGIC) || blob[4] !== VERSION)
       throw new Error("not a Clip passkey backup");
     const header = blob.subarray(0, HEADER_LEN);
