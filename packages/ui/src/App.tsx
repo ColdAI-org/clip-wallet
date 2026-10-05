@@ -10,6 +10,7 @@ import { Activity } from "./screens/Activity";
 import { Send } from "./screens/Send";
 import { Receive } from "./screens/Receive";
 import { ScanWalletConnect, Settings } from "./screens/Settings";
+import { DataUse } from "./screens/DataUse";
 import { ApprovalQueue } from "./screens/Approvals";
 import { PasskeyPage } from "./screens/Passkey";
 import { RecoveryPhraseBackup } from "./screens/RecoveryPhrase";
@@ -117,6 +118,7 @@ function Routes() {
     case "settings":
       if (seg[1] === "hardware" && hardware) return <HardwareSettings hardware={hardware} onAdd={() => navigate("/hardware/connect")} />;
       if (seg[1] === "plugins") return <PluginSettings />;
+      if (seg[1] === "privacy") return <DataUse />;
       if (seg[1] === "security" && security) return securityRoute(seg) ?? <Settings />;
       return <Settings />;
     case "hardware":

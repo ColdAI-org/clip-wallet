@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128">
+  <title>Clip Wallet</title>
+  <!-- 16 and 32 px: wider gaps and a heavier sail so the jib survives at toolbar size. -->
+  <rect width="128" height="128" rx="26" fill="#FF3C00"/>
+  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" transform="translate(64 64) skewX(-6) translate(-64 -64)"><path d="M70 14C42 28 26 50 26 74c0 6 1 10 3 14h41z"/><path d="M86 40c12 12 16 28 14 44-4 2-9 4-14 4z"/><path d="M18 100h92c-6 8-17 14-30 14H48c-13 0-24-6-30-14z"/></g>
+</svg>

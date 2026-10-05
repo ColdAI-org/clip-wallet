@@ -3,6 +3,7 @@ import { act, fireEvent, screen } from "@testing-library/react-native";
 import { AppState } from "react-native";
 import { BackupHub, PasskeyBackup, RecoveryPhraseBackup } from "../src/screens/Backup";
 import { Accounts } from "../src/screens/Accounts";
+import { DataUse } from "../src/screens/DataUse";
 import { eventually, renderWith, settle, testWallet, WORDS } from "./helpers";
 
 const PW = "a long test password 42!";
@@ -176,5 +177,17 @@ describe("Accounts", () => {
     await settle();
     expect((await wallet.client.getActiveAccounts({ origin: "https://dapp.test" })).forOrigin?.evm).toBe("evm:1");
     expect((await wallet.client.getActiveAccounts()).defaults.evm ?? "evm:0").toBe("evm:0");
+  });
+});
+
+describe("Your data (data-use disclosure)", () => {
+  it("shows the same sections as the extension, with the wallet's name", async () => {
+    const wallet = testWallet();
+    renderWith(wallet, <DataUse />, { name: "data-use" });
+    expect(await eventually(() => screen.getByTestId("data-use"))).toBeTruthy();
+    expect(screen.getByText(/^Clip Wallet has no account for you/)).toBeTruthy();
+    expect(screen.getByText("Stays on this device")).toBeTruthy();
+    expect(screen.getByText(/CoinGecko and DEX Screener/)).toBeTruthy();
+    expect(screen.getByText("Never")).toBeTruthy();
   });
 });

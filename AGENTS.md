@@ -13,6 +13,8 @@ Clip Wallet is a non-custodial wallet for every CLPR network. Pre-release: testn
 ## Commands that must pass
 pnpm install && pnpm typecheck && pnpm test && pnpm harness
 
+Release work (Docker for the last one): `pnpm --filter @clip-wallet/extension package`, `actionlint`, `scripts/repro-check.sh`.
+
 ## Layout
 packages/core        shared types (the contract)
 packages/vault       phrase, derivation, encryption, signing
@@ -28,7 +30,7 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
 
 ### Rebrand
 1. Edit `apps/extension/clip.config.ts` (schema and defaults in `packages/config/src/index.ts`): `name`, `icon`, `rdns` (a reverse domain you own), `theme.accent` (`accentText` defaults to white; contrast must be at least 3:1).
-2. Put the icon next to the config (`./icon.svg` or `.png`); never a remote URL you don't control.
+2. Put the icon next to the config (`./icon.svg` or `.png`); never a remote URL you don't control. Clip Wallet's own icons come from `brand/` via `node tools/brand/render.mjs` (see `brand/README.md`).
 3. Screens read tokens only (`packages/ui/src/theme/tokens.ts`); never hard-code a colour or the product name in `packages/ui/src/screens/*`.
 4. Leave `mainnet: false`. New wallets: `npx create-clip-wallet my-wallet` (experimental, `packages/create-clip-wallet`).
 

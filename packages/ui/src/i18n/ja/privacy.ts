@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "あなたのデータ",
+  "privacy.title": "あなたのデータ",
+  "privacy.lede": "{name} にはあなたのアカウントがありません。リカバリーフレーズと鍵はこのデバイスに残り、パスワードでロックされています。私たちが見ることはありません。",
+  "privacy.device.title": "このデバイスに残るもの",
+  "privacy.device.body": "リカバリーフレーズ、秘密鍵、パスワード、連絡先、設定、アクティビティ。どれも私たちには送信されません。",
+  "privacy.network.title": "ウォレットが問い合わせるもの",
+  "privacy.network.body": "残高の表示や支払いの送信のため、ウォレットは公開ネットワークサービス（ノードとインデクサー）にあなたの公開アドレスについて問い合わせます。価格は CoinGecko と DEX Screener から取得します。",
+  "privacy.scam.title": "詐欺チェック",
+  "privacy.scam.body": "公開されている詐欺リストはこのデバイスにダウンロードされ、ここで照合されます。そのため、あなたが訪れるサイトがリスト側に知られることはありません。このバージョンで Blockaid が有効な場合、Blockaid はサイト、リクエスト、あなたのアドレスを確認します。",
+  "privacy.partners.title": "使うときだけ",
+  "privacy.partners.body": "スワップ、購入、ステーキングでは、あなたのアドレスと金額が選んだプロバイダーに送られ、そのプロバイダーのプライバシーポリシーが適用されます。",
+  "privacy.backup.title": "パスキーでのバックアップ（オンにした場合）",
+  "privacy.backup.body": "バックアップサービスが保存するのは、あなたのパスキーでしか開けないロックされたコピーと、それを見つけるためのメールアドレスまたは Google・Apple アカウントの鍵付きハッシュだけです。いつでも削除できます。",
+  "privacy.media.title": "コレクティブルの画像",
+  "privacy.media.body": "画像はメディアプロキシ経由で読み込まれるため、画像をホストしているサイトにあなたのデバイスが見えることはありません。誰がリクエストしたかは記録しません。",
+  "privacy.never.title": "決してしないこと",
+  "privacy.never.body": "分析も広告もトラッキングもなし。データを販売することもありません。",
+} satisfies Record<keyof typeof en, string>;

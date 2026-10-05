@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "내 데이터",
+  "privacy.title": "내 데이터",
+  "privacy.lede": "{name}에는 회원 계정이 없습니다. 복구 문구와 키는 비밀번호로 잠긴 채 이 기기에만 있으며, 저희는 절대 볼 수 없습니다.",
+  "privacy.device.title": "이 기기에만 남는 것",
+  "privacy.device.body": "복구 문구, 개인 키, 비밀번호, 연락처, 설정, 활동 내역. 어느 것도 저희에게 전송되지 않습니다.",
+  "privacy.network.title": "지갑이 조회하는 것",
+  "privacy.network.body": "잔액을 보여 주고 결제를 보내기 위해 지갑은 공개 네트워크 서비스(노드와 인덱서)에 내 공개 주소를 조회합니다. 가격은 CoinGecko와 DEX Screener에서 가져옵니다.",
+  "privacy.scam.title": "사기 확인",
+  "privacy.scam.body": "공개 사기 목록은 이 기기로 내려받아 여기서 확인하므로, 목록 제공자는 내가 어떤 사이트를 방문하는지 알 수 없습니다. 이 버전에서 Blockaid가 켜져 있으면 Blockaid는 사이트, 요청, 내 주소를 확인합니다.",
+  "privacy.partners.title": "사용할 때만",
+  "privacy.partners.body": "스왑, 구매, 스테이킹을 하면 내 주소와 금액이 선택한 제공업체로 전송되며, 해당 업체의 개인정보 처리방침이 적용됩니다.",
+  "privacy.backup.title": "패스키 백업(켠 경우)",
+  "privacy.backup.body": "백업 서비스는 내 패스키로만 열 수 있는 잠긴 사본과, 다시 찾을 수 있도록 이메일 또는 Google·Apple 계정의 키 기반 해시만 저장합니다. 언제든지 삭제할 수 있습니다.",
+  "privacy.media.title": "내 수집품 이미지",
+  "privacy.media.body": "이미지는 미디어 프록시를 거쳐 불러오므로 이미지를 호스팅하는 사이트는 내 기기를 볼 수 없습니다. 누가 요청했는지는 기록하지 않습니다.",
+  "privacy.never.title": "절대 하지 않는 것",
+  "privacy.never.body": "분석, 광고, 추적이 없으며 데이터를 판매하지 않습니다.",
+} satisfies Record<keyof typeof en, string>;

@@ -46,7 +46,8 @@ export type Route =
   | { name: "security-permissions" }
   | { name: "security-cleanup" }
   | { name: "security-protection" }
-  | { name: "plugins" };
+  | { name: "plugins" }
+  | { name: "data-use" };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 

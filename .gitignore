@@ -11,3 +11,8 @@ coverage/
 
 # Example plugin bundles are committed: their manifests pin the bundle sha256.
 !packages/plugins/examples/*/dist/
+
+# Store packages (apps/extension/scripts/package.mjs)
+apps/extension/release/
+.repro/
+apps/extension/store/screenshots/raw/

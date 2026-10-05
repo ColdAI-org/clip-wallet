@@ -27,6 +27,7 @@ import { ConnectHardware, HardwareSettings, HardwareStep } from "./screens/Hardw
 import { Contacts } from "./screens/Contacts";
 import { ContactEdit } from "./screens/ContactEdit";
 import { Notifications } from "./screens/Notifications";
+import { DataUse } from "./screens/DataUse";
 import { useNotificationBridge } from "./ui/notifications";
 import { Cleanup, Permissions, Protection, SecurityHome } from "./screens/Security";
 import { PluginSettings } from "./screens/Plugins";
@@ -99,6 +100,8 @@ function Routes(props: { route: Route }) {
       return <Protection />;
     case "plugins":
       return <PluginSettings />;
+    case "data-use":
+      return <DataUse />;
   }
 }
 

@@ -18,10 +18,13 @@ const config: ExpoConfig = {
   scheme: "clipwallet",
   version: "0.1.0",
   orientation: "portrait",
+  // Brand assets are rendered from brand/*.svg by tools/brand/render.mjs (never edit the PNGs by hand).
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
   ios: {
     bundleIdentifier: "org.coldai.clipwallet",
+    // iOS 18 appearance variants: https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/
+    icon: { light: "./assets/icon.png", dark: "./assets/icon-dark.png", tinted: "./assets/icon-tinted.png" },
     supportsTablet: false,
     ...(domain ? { associatedDomains: [`applinks:${domain}`, `webcredentials:${domain}`] } : {}),
     infoPlist: {
@@ -36,6 +39,12 @@ const config: ExpoConfig = {
   },
   android: {
     package: "org.coldai.clipwallet",
+    // Glyph inside the 66% safe zone on ColdAI orange; monochrome for Android 13+ themed icons.
+    adaptiveIcon: {
+      foregroundImage: "./assets/adaptive-icon.png",
+      monochromeImage: "./assets/adaptive-monochrome.png",
+      backgroundColor: "#FF3C00",
+    },
     allowBackup: false,
     // Bluetooth for Ledger: BLUETOOTH_SCAN (added with neverForLocation by the ble-plx plugin below; listing it here
     // would stop the plugin adding that flag) and
@@ -56,6 +65,8 @@ const config: ExpoConfig = {
       : [],
   },
   plugins: [
+    // Splash: white sail on ColdAI orange, same in dark mode.
+    ["expo-splash-screen", { image: "./assets/splash-icon.png", imageWidth: 160, backgroundColor: "#FF3C00", resizeMode: "contain" }],
     ["expo-secure-store", { configureAndroidBackup: true, faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
     ["expo-local-authentication", { faceIDPermission: "Unlock Clip Wallet with Face ID instead of typing your password." }],
     ["expo-camera", { cameraPermission: CAMERA, microphonePermission: false, recordAudioAndroid: false }],

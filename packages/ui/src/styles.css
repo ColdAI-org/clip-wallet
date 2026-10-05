@@ -147,7 +147,7 @@ code {
   cursor: pointer;
 }
 .clip-tabbar__item.is-active {
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 /* Long single-word labels (de "Einstellungen", pt-BR "Configurações") hyphenate onto a second line instead of
    spilling into the next tab; <html lang> is set from the locale, so the browser picks the language's rules. */
@@ -228,14 +228,14 @@ code {
   color: var(--clip-text);
 }
 .clip-icon-btn.is-active {
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 
 .clip-link {
   background: none;
   border: 0;
   padding: 0;
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -328,7 +328,7 @@ code {
 }
 .clip-chip--accent {
   background: var(--clip-accent-soft);
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 
 /* ------------------------------------------------------------------ text */
@@ -538,7 +538,7 @@ code {
   border: 0;
   border-radius: var(--clip-radius-md);
   background: var(--clip-accent-soft);
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
   font-weight: 600;
   padding: var(--clip-space-3);
   cursor: pointer;
@@ -656,7 +656,7 @@ code {
   font-weight: 600;
 }
 .clip-pin {
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 .clip-asset-icon {
   flex: none;
@@ -921,7 +921,7 @@ svg.is-open {
 }
 .clip-step--action .clip-step__n {
   background: var(--clip-accent-soft);
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 .clip-step__title {
   font-weight: 600;
@@ -1119,7 +1119,7 @@ svg.is-open {
   align-items: center;
   justify-content: center;
   background: var(--clip-accent-soft);
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 .clip-strength {
   display: flex;
@@ -1293,7 +1293,7 @@ svg.is-open {
   border-top: 1px solid var(--clip-border);
 }
 .clip-menu__item:hover {
-  color: var(--clip-accent);
+  color: var(--clip-accent-ink);
 }
 
 /* ------------------------------------------------------------------ right-to-left (Arabic) */

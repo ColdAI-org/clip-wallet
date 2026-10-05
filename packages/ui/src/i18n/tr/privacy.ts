@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "Verilerin",
+  "privacy.title": "Verilerin",
+  "privacy.lede": "{name} senin için bir hesap tutmaz. Kurtarma ifaden ve anahtarların bu cihazda, şifrenle kilitli kalır. Onları asla görmeyiz.",
+  "privacy.device.title": "Bu cihazda kalır",
+  "privacy.device.body": "Kurtarma ifaden, özel anahtarların, şifren, kişilerin, ayarların ve etkinliğin. Hiçbiri bize gönderilmez.",
+  "privacy.network.title": "Cüzdanın sorguladıkları",
+  "privacy.network.body": "Bakiyeleri göstermek ve ödeme göndermek için cüzdan, açık adreslerini herkese açık ağ hizmetlerine (düğümler ve dizinleyiciler) sorar. Fiyatlar CoinGecko ve DEX Screener'dan gelir.",
+  "privacy.scam.title": "Dolandırıcılık kontrolleri",
+  "privacy.scam.body": "Açık dolandırıcılık listeleri bu cihaza indirilir ve burada kontrol edilir; böylece hangi siteleri ziyaret ettiğini asla öğrenmezler. Bu sürümde Blockaid açıksa Blockaid siteyi, isteği ve adresini görür.",
+  "privacy.partners.title": "Yalnızca kullandığında",
+  "privacy.partners.body": "Takas, satın alma ve stake işlemleri adresini ve tutarı seçtiğin sağlayıcıya gönderir; onun kendi gizlilik politikası geçerlidir.",
+  "privacy.backup.title": "Geçiş anahtarı yedeği, açarsan",
+  "privacy.backup.body": "Yedekleme hizmetimiz yalnızca geçiş anahtarının açabileceği kilitli bir kopya ve onu yeniden bulabilmen için e-postanın ya da Google veya Apple hesabının anahtarlı bir özetini saklar. İstediğin zaman silebilirsin.",
+  "privacy.media.title": "Koleksiyon görselleri",
+  "privacy.media.body": "Görseller medya proxy'miz üzerinden yüklenir, böylece onları barındıran siteler cihazını asla görmez. Kimin istediğini kaydetmeyiz.",
+  "privacy.never.title": "Asla",
+  "privacy.never.body": "Analiz yok, reklam yok, takip yok ve verileri asla satmayız.",
+} satisfies Record<keyof typeof en, string>;

@@ -17,6 +17,8 @@ export interface Theme {
     text3: string;
     accent: string;
     accentText: string;
+    /** The accent as small text: AA 4.5:1 on every surface (tokensFor "--clip-accent-ink"). */
+    accentInk: string;
     accentSoft: string;
     positive: string;
     infoBg: string;
@@ -48,6 +50,7 @@ export function themeFor(config: ClipConfig, mode: ColorMode): Theme {
       text3: v("text-3"),
       accent: v("accent"),
       accentText: v("accent-text"),
+      accentInk: v("accent-ink"),
       accentSoft: v("accent-soft"),
       positive: v("positive"),
       infoBg: v("info-bg"),

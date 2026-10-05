@@ -38,18 +38,18 @@ function MoreActions(props: { onSwap: () => void; onBuy: () => void; onStake?: (
     <View style={{ flexDirection: "row", gap: 8 }} accessibilityLabel={t("m.home.moreActions")}>
       <Button variant="ghost" onPress={props.onSwap} testID="action-swap">
         <IconSwap color={theme.c.accent} />
-        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+        <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
           {t("m.home.swap")}
         </T>
       </Button>
       <Button variant="ghost" onPress={props.onBuy} testID="action-buy">
-        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+        <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
           {t("m.home.buy")}
         </T>
       </Button>
       {props.onStake && (
         <Button variant="ghost" onPress={props.onStake} testID="action-stake">
-          <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+          <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
             {t("m.home.stake")}
           </T>
         </Button>
@@ -97,7 +97,7 @@ export function Home() {
             }}
             style={{ backgroundColor: theme.c.accentSoft, borderRadius: theme.r.md, padding: 12 }}
           >
-            <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+            <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
               {t("m.home.pending", { n: state.pendingApprovals })}
             </T>
           </Pressable>
@@ -137,7 +137,7 @@ export function Home() {
             <Toggle label={t("m.home.hideSmall")} checked={!!prefs?.hideSmallBalances} onChange={(v) => setPref({ hideSmallBalances: v })} />
             {(merged.hiddenSpam > 0 || prefs?.showSpam) && (
               <Pressable onPress={() => setPref({ showSpam: !prefs?.showSpam })}>
-                <T v="hint" color={theme.c.accent}>
+                <T v="hint" color={theme.c.accentInk}>
                   {prefs?.showSpam ? t("m.home.spam.hide") : t("m.home.spam.hidden", { n: merged.hiddenSpam })}
                 </T>
               </Pressable>
