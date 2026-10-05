@@ -82,7 +82,7 @@ export default {
   "m.social.discover.liquidity": "{amount} लिक्विडिटी",
   "m.social.discover.volume": "आज {amount} का ट्रेड हुआ",
   "m.social.discover.refresh": "रिफ़्रेश करें",
-  "m.social.discover.updated": "{when} अपडेट हुआ",
+  "m.social.discover.updated": "अपडेट: {when}",
   "m.social.err.name": "इस संपर्क को एक नाम दें।",
   "m.social.err.noAddress": "कम से कम एक एड्रेस जोड़ें।",
   "m.social.err.badAddress": "इनमें से एक एड्रेस सही नहीं लगता। इसे जांचें और फिर से कोशिश करें।",

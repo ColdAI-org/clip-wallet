@@ -17,7 +17,7 @@ export default {
   "m.settings.security": "الأمان",
   "m.settings.autoLock": "القفل التلقائي بعد",
   "m.settings.autoLock.hour": "ساعة واحدة",
-  "m.settings.autoLock.minutes": "\u2068{n}\u2069 دقيقة",
+  "m.settings.autoLock.minutes": "{n, plural, zero {# دقيقة} one {# دقيقة} two {دقيقتان} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
   "m.settings.unlockWith": "فتح القفل باستخدام \u2068{method}\u2069",
   "m.settings.unlockBiometrics": "فتح القفل بالقياسات الحيوية",
   "m.settings.turnOff": "إيقاف",

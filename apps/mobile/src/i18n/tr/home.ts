@@ -22,5 +22,5 @@ export default {
   "m.home.moreActions": "Diğer işlemler",
   "m.home.swap": "Dönüştür",
   "m.home.buy": "Satın al",
-  "m.home.stake": "Stake",
+  "m.home.stake": "Stake et",
 } satisfies Record<keyof typeof en, string>;

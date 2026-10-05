@@ -161,7 +161,9 @@ export function checkGlossary(en: Messages, other: Messages, locale: string, glo
     const enRe = new RegExp(`(^|[^\\p{L}])${g.en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}])`, "iu");
     const trRe = new RegExp(g.tr, "iu");
     for (const [id, m] of Object.entries(en)) {
-      if (!enRe.test(m) || g.except?.includes(id)) continue;
+      // Variable names ("{account}", "{n, plural, …") are not words of the message.
+      const words = m.replace(/\{\s*[A-Za-z0-9_]+\s*(,\s*number\s*)?\}/g, " ").replace(/\{\s*[A-Za-z0-9_]+\s*,\s*(plural|select)\s*,/g, "{");
+      if (!enRe.test(words) || g.except?.includes(id)) continue;
       const t = other[id];
       if (t !== undefined && !trRe.test(t)) out.push({ locale, id, problem: "glossary", detail: `"${g.en}" → /${g.tr}/: ${t}` });
     }

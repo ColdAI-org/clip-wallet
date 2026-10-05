@@ -12,5 +12,5 @@ export default {
   "accounts.adding": "正在添加…",
   "accounts.add": "添加账户",
   "accounts.useDefault": "在此使用我的默认账户",
-  "accounts.family.evm": "以太坊类（ETH、USDC、Base、Arbitrum…）",
+  "accounts.family.evm": "Ethereum 类（ETH、USDC、Base、Arbitrum…）",
 } satisfies Record<keyof typeof en, string>;

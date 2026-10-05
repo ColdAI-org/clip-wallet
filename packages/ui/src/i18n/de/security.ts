@@ -81,7 +81,7 @@ export default {
   "security.protect.sources": "Quellen",
   "security.protect.off": "Aus",
   "security.protect.updatedEntries": "Aktualisiert {when} · {count, plural, one {{entries} Eintrag} other {{entries} Einträge}}",
-  "security.protect.refresh": "Listen jetzt aktualisieren",
+  "security.protect.refresh": "Listen aktualisieren",
   "security.protect.blockaidOff": "Aus. Füge der Konfiguration des Wallets einen Blockaid-API-Schlüssel hinzu, um jede Transaktion vor dem Signieren zu prüfen.",
   "security.privacy.list": "Lädt die öffentliche Liste auf dein Gerät und prüft dort. Es wird nichts über dich gesendet.",
   "security.privacy.local": "Läuft auf deinem Gerät mit deinem eigenen Verlauf. Fragt den Explorer nur, wann ein Contract erstellt wurde, nie nach dir.",

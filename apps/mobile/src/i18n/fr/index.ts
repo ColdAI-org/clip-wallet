@@ -10,7 +10,8 @@
  *   settings → Paramètres, Browse tab → Naviguer, in-app browser → navigateur intégré,
  *   advanced mode → mode avancé, unreadable request → demande illisible, look-alike address → adresse sosie,
  *   handle (Clip handle) → identifiant (identifiant Clip), price alert → alerte de prix, bridged → bridgé,
- *   exchange (CEX) → plateforme d'échange, QR code → code QR, device → appareil, biometrics → biométrie.
+ *   exchange (CEX) → plateforme d'échange, QR code → code QR, device → appareil, biometrics → biométrie,
+ *   scammer → arnaqueur, notification → notification, trade → échange (« Secure Trade » stays in English).
  * Typography: U+202F before ? ! ; and U+00A0 before : and % and inside « », decimal comma in examples (0,5).
  */
 import type { Translation } from "@clip-wallet/i18n";

@@ -14,6 +14,8 @@
  *   price alert → avviso di prezzo, activity → attività, settings → impostazioni, explore → esplora,
  *   discover → scopri, advanced mode → modalità avanzata, bridged → via bridge, exchange → exchange,
  *   unreadable request → richiesta illeggibile, verified → verificato.
+ *   scam → truffa (scam list → elenco di truffe), suspicious → sospetto, permission → permesso.
+ *   No article directly before {symbol} ("i"/"gli"/"l'" depends on the symbol): use "i tuoi {symbol}", "in {symbol}" or none.
  *   Informal "tu"; decimal examples use a comma (0,5).
  */
 import type { Translation } from "@clip-wallet/i18n";

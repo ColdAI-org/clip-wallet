@@ -44,7 +44,7 @@ export default {
   "backup.passkey.backedUp": "Gesichert. Du kannst auf einem neuen Gerät mit deiner E-Mail und diesem Passkey wiederherstellen.",
   "backup.passkey.yourBackups": "Deine Backups",
   "backup.passkey.made": "Erstellt am {date}",
-  "backup.passkey.signedInAs": "Angemeldet als {email}",
+  "backup.passkey.signedInAs": "Angemeldet: {email}",
   "backup.passkey.understand": "Ich verstehe, wer mein Wallet wiederherstellen kann",
   "backup.passkey.create": "Backup-Passkey erstellen",
   "backup.passkey.addAnother": "Weiteres Backup hinzufügen",
@@ -83,5 +83,5 @@ export default {
   "backup.social.apple": "Mit Apple anmelden",
   "backup.social.privacy": "Google oder Apple teilt uns nur mit, welche Backups dir gehören. Sie sehen nie deine Schlüssel, und dein Backup bleibt mit deinem Passkey verschlossen.",
   "backup.social.googleAccount": "dein Google-Konto",
-  "backup.social.appleAccount": "deinen Apple Account",
+  "backup.social.appleAccount": "dein Apple Account",
 } satisfies Record<keyof typeof en, string>;

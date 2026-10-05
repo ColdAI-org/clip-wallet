@@ -19,7 +19,7 @@ export default {
   "common.nav.collectibles": "Colecionáveis",
   "common.nav.explore": "Explorar",
   "common.nav.activity": "Atividade",
-  "common.nav.settings": "Configurações",
+  "common.nav.settings": "Ajustes",
   "common.readyIn.moment": "em instantes",
   "common.readyIn.seconds": "em cerca de {n, plural, one {# segundo} other {# segundos}}",
   "common.readyIn.minutes": "em cerca de {n, plural, one {# minuto} other {# minutos}}",

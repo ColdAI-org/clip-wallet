@@ -20,6 +20,6 @@ export default {
   "m.home.asset.contract": "العقد (\u2068{network}\u2069)",
   "m.home.moreActions": "إجراءات أخرى",
   "m.home.swap": "مبادلة",
-  "m.home.buy": "الشراء",
+  "m.home.buy": "شراء",
   "m.home.stake": "تخزين",
 } satisfies Record<keyof typeof en, string>;

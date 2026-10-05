@@ -18,6 +18,7 @@
  *   email → correo (electrónico), sign in → iniciar sesión, Ethereum-style → tipo Ethereum.
  *   Never translated: Clip Wallet, WalletConnect, Ledger, Ledger Live, Keystone, Face ID, Touch ID, Secure Trade,
  *   asset symbols, network names, CoinGecko, DEX Screener.
+ *   Devices are masculine (el dispositivo): un Ledger, tu Keystone, desbloquéalo, en él. Example decimals use a comma (0,5).
  */
 import type { Translation } from "@clip-wallet/i18n";
 import type { MobileMessages } from "../en";

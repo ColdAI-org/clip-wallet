@@ -48,3 +48,9 @@ describe("numbers inside messages", () => {
     expect(formatMessage("{n, number}", { n: 1234 }, "ar")).toMatch(/^1.234$/);
   });
 });
+
+describe("checkGlossary ignores variable names", () => {
+  it("doesn't treat {account} as the word account", () => {
+    expect(checkGlossary({ a: "Rename {account}", b: "{account, select, other {x}}" }, { a: "Umbenennen: {account}", b: "{account, select, other {x}}" }, "de", [{ en: "account", tr: "Konto" }])).toEqual([]);
+  });
+});

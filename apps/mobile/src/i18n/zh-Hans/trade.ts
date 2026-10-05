@@ -11,7 +11,7 @@ export default {
   "m.trade.gone": "此交易已不存在",
   "m.trade.youGive": "你付出",
   "m.trade.youGet": "你将获得",
-  "m.trade.with": "质押对象",
+  "m.trade.with": "交易对象",
   "m.trade.status": "状态",
   "m.trade.openUntil": "有效期至",
   "m.trade.sendNow": "现在就把它发给对方：大约 3 分钟内有效。",

@@ -108,7 +108,7 @@ export default {
   "social.discover.liquidity": "{amount} लिक्विडिटी",
   "social.discover.volume": "आज {amount} का ट्रेड हुआ",
   "social.discover.refresh": "रिफ़्रेश करें",
-  "social.discover.updated": "{when} अपडेट हुआ",
+  "social.discover.updated": "अपडेट: {when}",
   "social.err.name": "इस संपर्क को एक नाम दें।",
   "social.err.noAddress": "कम से कम एक एड्रेस जोड़ें।",
   "social.err.badAddress": "इनमें से एक एड्रेस सही नहीं लगता। इसे जांचें और फिर से कोशिश करें।",

@@ -14,7 +14,7 @@ export default {
   "m.home.asset.gone": "Non possiedi più questo asset",
   "m.home.asset.pin": "Fissa",
   "m.home.asset.unpin": "Non fissare più",
-  "m.home.asset.bridgedCopy": "copia via bridge — non il {symbol} originale",
+  "m.home.asset.bridgedCopy": "copia via bridge — non è {symbol} originale",
   "m.home.asset.where": "Dove si trova",
   "m.home.asset.whereHint": "Non devi gestirlo tu: {symbol} viene speso da dove si trova.",
   "m.home.asset.contract": "Contratto ({network})",

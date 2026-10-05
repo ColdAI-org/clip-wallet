@@ -13,7 +13,7 @@ export default {
   "m.common.tab.collectibles": "कलेक्टिबल",
   "m.common.tab.explore": "एक्सप्लोर",
   "m.common.tab.activity": "गतिविधि",
-  "m.common.tab.browse": "ब्राउज़ करें",
+  "m.common.tab.browse": "ब्राउज़र",
   "m.common.tab.settings": "सेटिंग्स",
   "m.common.amount": "{amount} {symbol}",
   "m.common.readyIn.moment": "बस कुछ ही पल में",

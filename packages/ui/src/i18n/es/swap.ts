@@ -18,6 +18,6 @@ export default {
   "swap.swap": "Intercambiar",
   "swap.gettingPrice": "Buscando el mejor precio…",
   "swap.getPrice": "Obtener precio",
-  "swap.amountBad": "Escribe una cantidad como 25 o 0.5.",
+  "swap.amountBad": "Escribe una cantidad como 25 o 0,5.",
   "swap.expired": "Este precio caducó. Obtén uno nuevo.",
 } satisfies Record<keyof typeof en, string>;

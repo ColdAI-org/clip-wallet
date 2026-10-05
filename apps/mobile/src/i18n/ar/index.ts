@@ -12,7 +12,10 @@
  *   look-alike address → عنوان مشابه, scammer → محتال, notification → إشعار, price alert → تنبيه سعر,
  *   liquidity → سيولة, pool → مجمّع, trending → رائج, bridged → عبر جسر, slippage → الحد الأقصى لتغيّر السعر,
  *   price impact → تأثير السعر, trade (Secure Trade) → صفقة / تداول, exchange (platform) → منصة تداول,
- *   QR code → رمز QR, Explore → استكشاف, Discover → اكتشاف.
+ *   QR code → رمز QR, Explore → استكشاف, Discover → اكتشاف,
+ *   plugin → مكوّن إضافي (المكوّنات الإضافية), permission → إذن (أذونات), spam → مزعج, suspicious → مشبوه.
+ *   Brand, product, device and network names and asset symbols (Secure Trade, WalletConnect, Ledger, Keystone,
+ *   Face ID, ETH…) stay in Latin script, verbatim.
  */
 import type { Translation } from "@clip-wallet/i18n";
 import type { MobileMessages } from "../en";

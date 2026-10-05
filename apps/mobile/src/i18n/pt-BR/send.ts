@@ -21,6 +21,6 @@ export default {
   "m.send.ask.lede": "{who} pode receber {symbol} em mais de um lugar. Se for uma corretora ou a carteira de outra pessoa, pergunte qual rede usar — enviar pela rede errada pode fazer você perder o dinheiro.",
   "m.send.ask.haveThere": "Você tem {amount} {symbol} lá",
   "m.send.ask.moveThere": "Vamos mover seu {symbol} para lá por você",
-  "m.send.ask.rememberName": "Vamos lembrar disso para {name}, assim você não será perguntado de novo.",
-  "m.send.ask.rememberAddress": "Vamos lembrar disso para este endereço, assim você não será perguntado de novo.",
+  "m.send.ask.rememberName": "Vamos lembrar disso para {name} e não perguntar de novo.",
+  "m.send.ask.rememberAddress": "Vamos lembrar disso para este endereço e não perguntar de novo.",
 } satisfies Record<keyof typeof en, string>;

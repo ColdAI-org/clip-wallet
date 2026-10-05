@@ -5,7 +5,7 @@ export default {
   "m.common.cancel": "إلغاء",
   "m.common.copy": "نسخ",
   "m.common.copied": "تم النسخ",
-  "m.common.max": "الحد الأقصى",
+  "m.common.max": "الأقصى",
   "m.common.send": "إرسال",
   "m.common.receive": "استلام",
   "m.common.somethingWentWrong": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",

@@ -10,7 +10,7 @@ export default {
   "send.toPlaceholderPlain": "Nombre o dirección",
   "send.toContact": "{name} (de tus contactos)",
   "send.amount": "Cantidad",
-  "send.amountBad": "Escribe una cantidad como 25 o 0.5.",
+  "send.amountBad": "Escribe una cantidad como 25 o 0,5.",
   "send.youHaveOnly": "Tienes {amount} {symbol}.",
   "send.youHave": "Tienes {amount} {symbol}",
   "send.approx": "≈ {value}",

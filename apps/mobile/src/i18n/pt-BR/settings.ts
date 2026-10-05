@@ -1,6 +1,6 @@
 import type en from "../en/settings";
 export default {
-  "m.settings.title": "Configurações",
+  "m.settings.title": "Ajustes",
   "m.settings.display": "Exibição",
   "m.settings.currency": "Moeda",
   "m.settings.appearance": "Aparência",

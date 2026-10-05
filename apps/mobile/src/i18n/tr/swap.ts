@@ -1,7 +1,7 @@
 import type en from "../en/swap";
 export default {
   "m.swap.title": "Dönüştür",
-  "m.swap.amountBad": "25 veya 0.5 gibi bir miktar girin.",
+  "m.swap.amountBad": "25 veya 0,5 gibi bir miktar girin.",
   "m.swap.expired": "Bu fiyatın süresi doldu. Yeni bir fiyat alın.",
   "m.swap.reviewAndSwap": "İncele ve dönüştür",
   "m.swap.swap": "Dönüştür",

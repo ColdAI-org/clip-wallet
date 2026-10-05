@@ -27,7 +27,7 @@ export default {
   "m.hardware.ledgerLive": "Usar as contas do Ledger Live",
   "m.hardware.connecting": "Conectando…",
   "m.hardware.showAccounts": "Mostrar contas",
-  "m.hardware.pickAccounts": "Escolha as contas que quer adicionar. Você pode adicionar mais depois em Configurações.",
+  "m.hardware.pickAccounts": "Escolha as contas que quer adicionar. Você pode adicionar mais depois em Ajustes.",
   "m.hardware.newHedera": "Nova conta Hedera",
   "m.hardware.showMore": "Mostrar mais",
   "m.hardware.confirmLedger": "Confirme na sua Ledger",
@@ -64,5 +64,5 @@ export default {
   "m.hardware.keepUnlocked": "Mantenha sua Ledger desbloqueada com o app aberto.",
   "m.hardware.ledgerLiveHint": "Só se você criou essas contas no Ledger Live. As contas habituais correspondem às da MetaMask, Phantom e outras carteiras.",
   "m.hardware.account": "Conta {n}",
-  "m.hardware.add": "{count, plural, one {Adicionar # conta} other {Adicionar # contas}}",
+  "m.hardware.add": "{count, plural, =0 {Adicionar 0 contas} one {Adicionar # conta} other {Adicionar # contas}}",
 } satisfies Record<keyof typeof en, string>;

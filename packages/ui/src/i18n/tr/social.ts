@@ -68,7 +68,7 @@ export default {
   "social.handle.understand": "Bu adreslerin herkese açık ve birbirine bağlı hâle geleceğini anlıyorum",
   "social.handle.publish": "Değişiklikleri yayınla",
   "social.handle.noChanges": "Değiştirilecek bir şey yok.",
-  "social.handle.reverse": "Adresimin yanında @{handle} göster",
+  "social.handle.reverse": "Adresimin yanında @{handle} kullanıcı adını göster",
   "social.handle.reverseHint": "Kullanıcı adlarını destekleyen uygulamalar ve cüzdanlar, Hedera adresinizi gördüklerinde kullanıcı adınızı gösterir.",
   "social.handle.release": "@{handle} kullanıcı adını bırak",
   "social.handle.confirmRelease": "@{handle} kullanıcı adı bırakılsın mı? Yayınlanan adresleri kaldırılır. 30 gün boyunca onu yalnızca siz yeniden alabilirsiniz.",
@@ -102,7 +102,7 @@ export default {
   "social.notify.alert.dirBelow": "Aşağı",
   "social.notify.alert.price": "Fiyat ({currency})",
   "social.notify.alert.now": "Şu an {price}",
-  "social.notify.alert.badPrice": "2500 veya 0.5 gibi bir fiyat girin.",
+  "social.notify.alert.badPrice": "2500 veya 0,5 gibi bir fiyat girin.",
   // discover
   "social.discover.title": "Keşif",
   "social.discover.trending": "Trend olanlar",

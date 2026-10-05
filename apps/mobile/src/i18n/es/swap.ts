@@ -1,7 +1,7 @@
 import type en from "../en/swap";
 export default {
   "m.swap.title": "Intercambiar",
-  "m.swap.amountBad": "Escribe una cantidad como 25 o 0.5.",
+  "m.swap.amountBad": "Escribe una cantidad como 25 o 0,5.",
   "m.swap.expired": "Este precio caducó. Obtén uno nuevo.",
   "m.swap.reviewAndSwap": "Revisar e intercambiar",
   "m.swap.swap": "Intercambiar",

@@ -4,7 +4,7 @@ export default {
   "plugins.title": "Plugins",
   "plugins.unavailable": "Plugins não estão disponíveis nesta versão",
   "plugins.advancedOnly": "Plugins são um recurso avançado",
-  "plugins.advancedOnlyHint": "Ative o Modo avançado em Configurações para usá-los.",
+  "plugins.advancedOnlyHint": "Ative o Modo avançado em Ajustes para usá-los.",
   "plugins.lede": "Plugins adicionam observações às solicitações que você aprova, buscam nomes ou enviam uma notificação para você.",
   "plugins.rule.never": "Um plugin nunca pode assinar, mover seus fundos nem ver sua frase de recuperação ou suas chaves.",
   "plugins.rule.marked": "O que um plugin diz sempre aparece marcado com o nome dele. A {name} não confere isso.",

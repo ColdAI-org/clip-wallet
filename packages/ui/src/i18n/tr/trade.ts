@@ -28,7 +28,7 @@ export default {
   "trade.amount": "Miktar",
   "trade.collection": "Koleksiyon",
   "trade.itemNumber": "Öğe numarası",
-  "trade.amountBad": "25 veya 0.5 gibi bir miktar girin.",
+  "trade.amountBad": "25 veya 0,5 gibi bir miktar girin.",
   "trade.counterpartyBad": "Karşı tarafın hesabını girin, örneğin 0.0.1234.",
   "trade.tradeWith": "Takas yapılacak kişi",
   "trade.whenAccept": "Ne zaman kabul edecekler",

@@ -7,7 +7,7 @@ export default {
   "backup.phrase.quizLede": "Saisissez ces mots d'après ce que vous avez noté.",
   "backup.phrase.quizWord": "Mot {n}",
   "backup.phrase.quizCheck": "Vérifier",
-  "backup.phrase.showAgain": "Afficher à nouveau la phrase",
+  "backup.phrase.showAgain": "Revoir la phrase",
   "backup.phrase.introTitle": "Sauvegardez votre phrase de récupération",
   "backup.phrase.introLede": "Ces mots sont le seul moyen de récupérer votre portefeuille si vous perdez cet appareil. Quiconque les voit peut tout prendre. Notez-les sur papier. Ne faites pas de capture d'écran, ne les photographiez pas et ne les collez nulle part.",
   "backup.phrase.checking": "Vérification…",

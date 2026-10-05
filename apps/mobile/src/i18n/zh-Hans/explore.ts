@@ -24,7 +24,7 @@ export default {
   "m.explore.menu.stakeHint": "用你持有的币赚取奖励",
   "m.explore.menu.swapHint": "将一种资产兑换为另一种",
   "m.explore.menu.buyHint": "使用银行卡或银行转账",
-  "m.explore.menu.tradeHint": "直接与你认识的人交换",
+  "m.explore.menu.tradeHint": "直接与你认识的人交易",
   "m.explore.category.trade": "交易与赚取收益",
   "m.explore.kind.perps": "合约",
   "m.explore.kind.predictions": "预测",

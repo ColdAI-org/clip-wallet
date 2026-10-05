@@ -15,7 +15,7 @@ export default {
   "stake.action.claim": "Ödülleri topla",
   "stake.action.change": "Değiştir",
   "stake.amount": "Miktar",
-  "stake.amountBad": "2 veya 0.5 gibi bir miktar girin.",
+  "stake.amountBad": "2 veya 0,5 gibi bir miktar girin.",
   "stake.amountMissing": "Ne kadar stake edeceğinizi girin.",
   "stake.where": "Nerede",
   "stake.whereLabel": "Nerede stake edilecek",

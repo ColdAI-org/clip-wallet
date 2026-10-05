@@ -96,7 +96,7 @@ export default {
   "social.notify.alert.dirBelow": "Por debajo",
   "social.notify.alert.price": "Precio ({currency})",
   "social.notify.alert.now": "Ahora {price}",
-  "social.notify.alert.badPrice": "Escribe un precio como 2500 o 0.5.",
+  "social.notify.alert.badPrice": "Escribe un precio como 2500 o 0,5.",
   "social.discover.title": "Descubrir",
   "social.discover.trending": "Tendencias",
   "social.discover.pools": "Pools principales",

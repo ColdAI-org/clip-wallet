@@ -7,7 +7,7 @@ export default {
   "m.explore.empty": "Aún no hay nada que mostrar",
   "m.explore.liquidity": "Tu liquidez",
   "m.explore.liquidityEmpty": "Cuando añadas liquidez en una app compatible, aparecerá aquí.",
-  "m.explore.earning": "Generando rendimiento",
+  "m.explore.earning": "Con rendimiento",
   "m.explore.notEarning": "Sin rendimiento",
   "m.explore.manageIn": "Gestionar en {app}",
   "m.explore.menu.stake": "Staking",

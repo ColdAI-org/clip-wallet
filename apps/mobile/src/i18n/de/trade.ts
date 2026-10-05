@@ -11,7 +11,7 @@ export default {
   "m.trade.gone": "Dieser Trade ist nicht mehr da",
   "m.trade.youGive": "Du gibst",
   "m.trade.youGet": "Du bekommst",
-  "m.trade.with": "Bei",
+  "m.trade.with": "Mit",
   "m.trade.status": "Status",
   "m.trade.openUntil": "Offen bis",
   "m.trade.sendNow": "Schick das jetzt an die Person: Es funktioniert etwa 3 Minuten lang.",

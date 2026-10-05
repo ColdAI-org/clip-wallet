@@ -12,7 +12,7 @@ export default {
   "common.loading": "جارٍ التحميل…",
   "common.copy": "نسخ",
   "common.copied": "تم النسخ",
-  "common.max": "الحد الأقصى",
+  "common.max": "الأقصى",
   "common.somethingWrong": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
   "common.nav.main": "التنقل الرئيسي",
   "common.nav.home": "الرئيسية",

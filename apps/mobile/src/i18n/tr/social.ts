@@ -76,7 +76,7 @@ export default {
   "m.social.notify.alert.dirBelow": "Aşağı",
   "m.social.notify.alert.price": "Fiyat ({currency})",
   "m.social.notify.alert.now": "Şu an {price}",
-  "m.social.notify.alert.badPrice": "2500 veya 0.5 gibi bir fiyat girin.",
+  "m.social.notify.alert.badPrice": "2500 veya 0,5 gibi bir fiyat girin.",
   // discover
   "m.social.discover.title": "Keşif",
   "m.social.discover.trending": "Trend olanlar",

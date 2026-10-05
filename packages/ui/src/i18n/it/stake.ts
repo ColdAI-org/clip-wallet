@@ -31,5 +31,5 @@ export default {
   "stake.partial.label": "Quanto togliere dallo staking (lascia vuoto per tutto)",
   "stake.partial.placeholder": "Tutto",
   "stake.partial.some": "Togli {amount} {symbol} dallo staking",
-  "stake.partial.all": "Togli tutti i {symbol} dallo staking",
+  "stake.partial.all": "Togli tutti i tuoi {symbol} dallo staking",
 } satisfies Record<keyof typeof en, string>;

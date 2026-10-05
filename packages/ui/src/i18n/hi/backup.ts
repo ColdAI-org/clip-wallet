@@ -85,5 +85,5 @@ export default {
   "backup.social.apple": "Apple से साइन इन करें",
   "backup.social.privacy": "Google या Apple हमें सिर्फ़ यह बताते हैं कि कौन-से बैकअप आपके हैं। वे आपकी कीज़ कभी नहीं देखते, और आपका बैकअप आपकी पासकी से लॉक रहता है।",
   "backup.social.googleAccount": "आपका Google अकाउंट",
-  "backup.social.appleAccount": "आपका Apple खाता",
+  "backup.social.appleAccount": "आपका Apple अकाउंट",
 } satisfies Record<keyof typeof en, string>;

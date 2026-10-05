@@ -10,7 +10,7 @@ export default {
   "send.toPlaceholderPlain": "Ad veya adres",
   "send.toContact": "{name} (kişilerinizden)",
   "send.amount": "Miktar",
-  "send.amountBad": "25 veya 0.5 gibi bir miktar girin.",
+  "send.amountBad": "25 veya 0,5 gibi bir miktar girin.",
   "send.youHaveOnly": "Bakiyeniz yalnızca {amount} {symbol}.",
   "send.youHave": "Bakiyeniz: {amount} {symbol}",
   "send.approx": "≈ {value}",

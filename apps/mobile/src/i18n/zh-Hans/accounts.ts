@@ -11,7 +11,7 @@ export default {
   "m.accounts.adding": "正在添加…",
   "m.accounts.add": "添加账户",
   "m.accounts.useDefault": "在此使用我的默认账户",
-  "m.accounts.family.evm": "以太坊类（ETH、USDC、Base、Arbitrum…）",
+  "m.accounts.family.evm": "Ethereum 类（ETH、USDC、Base、Arbitrum…）",
   "m.accounts.family.hedera": "Hedera（HBAR）",
   "m.accounts.family.solana": "Solana（SOL）",
   "m.accounts.family.bitcoin": "Bitcoin（BTC）",

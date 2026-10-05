@@ -33,7 +33,7 @@ export default {
   "explore.trade.polymarket.note": "Puoi perdere l'intera puntata. Non disponibile in molti paesi.",
   "explore.trade.ondo.description": "Azioni USA, ETF e fondi di titoli del Tesoro tokenizzati.",
   "explore.trade.ondo.note": "Un token che replica un'azione non equivale a possedere l'azione. Non disponibile negli Stati Uniti; sono previsti controlli d'identità.",
-  "explore.trade.sky.description": "Ottieni il Sky Savings Rate sulle stablecoin.",
+  "explore.trade.sky.description": "Ottieni lo Sky Savings Rate sulle stablecoin.",
   "explore.trade.sky.note": "Il tasso cambia e non è garantito.",
   "explore.trade.ethena.description": "Ottieni un rendimento su un dollaro sintetico.",
   "explore.trade.ethena.note": "Il rendimento non è garantito e può scendere a zero; il dollaro può perdere l'ancoraggio. Non disponibile in alcuni paesi.",

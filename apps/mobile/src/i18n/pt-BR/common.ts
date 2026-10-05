@@ -14,7 +14,7 @@ export default {
   "m.common.tab.explore": "Explorar",
   "m.common.tab.activity": "Atividade",
   "m.common.tab.browse": "Navegar",
-  "m.common.tab.settings": "Configurações",
+  "m.common.tab.settings": "Ajustes",
   "m.common.amount": "{amount} {symbol}",
   "m.common.readyIn.moment": "em instantes",
   "m.common.readyIn.seconds": "em cerca de {n, plural, one {# segundo} other {# segundos}}",
