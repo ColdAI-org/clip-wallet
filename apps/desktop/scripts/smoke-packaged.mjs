@@ -11,9 +11,26 @@ if (!exe) {
   process.exit(2);
 }
 const home = mkdtempSync(join(tmpdir(), "clip-smoke-"));
-// Packaged builds ignore CLIP_DESKTOP_USER_DATA; --user-data-dir keeps the runner's profile clean.
-// No system integration: the smoke run must not register native-messaging hosts or a socket on the runner/user.
-const app = await electron.launch({ executablePath: exe, args: [`--user-data-dir=${home}`], env: { ...process.env, CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" }, timeout: 60_000 });
+// macOS: a mock keychain (no login-Keychain items or consent prompts on the runner). No system integration: the
+// smoke run must not register native-messaging hosts or a socket on the runner / this machine.
+const launchOnce = () =>
+  electron.launch({
+    executablePath: exe,
+    args: [`--user-data-dir=${home}`, ...(process.platform === "darwin" ? ["--use-mock-keychain"] : [])],
+    env: { ...process.env, CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" },
+    timeout: 30_000,
+  });
+// Playwright's attach to a packaged Electron app occasionally misses the app's start when it is very fast (seen on
+// Apple silicon: the app itself starts every time when run directly). Retry the attach, not the checks.
+let app;
+for (let attempt = 1; !app; attempt++) {
+  try {
+    app = await launchOnce();
+  } catch (e) {
+    if (attempt >= 3) throw e;
+    console.error(`launch attempt ${attempt} timed out; retrying`);
+  }
+}
 try {
   const win = await app.firstWindow();
   await win.waitForURL(/^clip-app:\/\/wallet\/wallet\//, { timeout: 30_000 });

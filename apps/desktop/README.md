@@ -83,7 +83,9 @@ extension show in this app's approval window (brought to the front, naming the a
 signs only what is approved here. The host runs with the app's own executable as Node (`ELECTRON_RUN_AS_NODE`), so
 the `RunAsNode` Electron fuse must stay enabled; a standalone host binary (Node SEA) would allow turning it off.
 Dev builds never write into real browser profiles unless "Set up again" is pressed (`CLIP_DESKTOP_NM_HOME`
-redirects tests).
+redirects tests). `CLIP_DESKTOP_NO_SYSTEM_INTEGRATION=1` (honoured in packaged builds too, since it only turns things
+off) skips host registration, the link socket and protocol registration; the e2e suite and the packaged smoke test
+use it, plus Chromium's `--use-mock-keychain` on macOS so tests never touch the login Keychain.
 
 ## Verified vs not
 

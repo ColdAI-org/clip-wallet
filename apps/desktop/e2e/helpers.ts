@@ -7,8 +7,11 @@ export const ROOT = fileURLToPath(new URL("..", import.meta.url));
 export const SHOTS = join(ROOT, "screenshots");
 export const PASSWORD = "calm orange harbour 42";
 
+/** macOS: a mock keychain, so tests never create or read items in the login Keychain (safeStorage, cookies). */
+export const TEST_ARGS = process.platform === "darwin" ? ["--use-mock-keychain"] : [];
+
 export function launch(env: Record<string, string>): Promise<ElectronApplication> {
-  return electron.launch({ args: ["."], cwd: ROOT, env: { ...process.env, ELECTRON_ENABLE_LOGGING: "0", ...env } as Record<string, string> });
+  return electron.launch({ args: [".", ...TEST_ARGS], cwd: ROOT, env: { ...process.env, ELECTRON_ENABLE_LOGGING: "0", ...env } as Record<string, string> });
 }
 
 export async function pageWhere(app: ElectronApplication, pred: (url: string) => boolean, timeout = 30_000): Promise<Page> {

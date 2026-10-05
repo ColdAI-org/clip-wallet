@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverMessageAddress } from "viem";
 import { startDapps, type Dapps } from "./dapp/server";
-import { onboard } from "./helpers";
+import { TEST_ARGS, onboard } from "./helpers";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const SHOTS = join(root, "screenshots");
@@ -29,7 +29,7 @@ test.beforeAll(async () => {
   dapps = await startDapps();
   userData = mkdtempSync(join(tmpdir(), "clip-desktop-e2e-"));
   app = await electron.launch({
-    args: ["."],
+    args: [".", ...TEST_ARGS],
     cwd: root,
     env: { ...process.env, CLIP_DESKTOP_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: "0", CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" },
   });
