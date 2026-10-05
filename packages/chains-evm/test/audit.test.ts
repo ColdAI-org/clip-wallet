@@ -54,3 +54,42 @@ describe("audit: EVM typed data", () => {
     expect(d.warnings.find((w) => w.code === "network-matters")?.level).toBe("danger");
   });
 });
+
+describe("audit: EVM fee terms are the ones shown (EVM-04)", () => {
+  const GWEI = 1_000_000_000n;
+  const hex = (n: bigint) => `0x${n.toString(16)}`;
+  const send = (id: string): DappRequest => ({ ...TYPED, id, method: "eth_sendTransaction", params: [{ from: ME, to: BOB, value: "0x1" }] });
+
+  async function run(id: string, after: { baseFee?: bigint; gas?: bigint }) {
+    let baseFee = GWEI;
+    let gas = 21_000n;
+    const fetch = mockFetch({
+      rpc: {
+        ...SEPOLIA_STATE.rpc,
+        eth_call: () => "0x",
+        eth_getBlockByNumber: () => ({ number: "0x100", baseFeePerGas: hex(baseFee) }),
+        eth_estimateGas: () => hex(gas),
+      },
+    });
+    const m = createEvmModule();
+    const ctx = ctxFor(SEPOLIA, fetch);
+    const d = await m.decode(send(id), ctx);
+    baseFee = after.baseFee ?? baseFee;
+    gas = after.gas ?? gas;
+    return { d, prepare: () => m.prepare(send(id), ctx, "ap") };
+  }
+
+  it("signs the fee caps quoted for the approval screen, not a new quote taken after approval", async () => {
+    const { d, prepare } = await run("fee-1", { baseFee: 500n * GWEI });
+    expect(d.lines.find((l) => l.label === "Network fee at most")).toBeTruthy();
+    const [p] = await prepare();
+    const { parseTransaction } = await import("viem");
+    const signed = parseTransaction(`0x${Buffer.from(p!.raw!.bytes).toString("hex")}`);
+    expect(signed.maxFeePerGas).toBe(3n * GWEI); // 2 × base (1 gwei at decode) + tip (1 gwei)
+  });
+
+  it("refuses when the transaction now needs much more gas than the screen was built on", async () => {
+    const { prepare } = await run("fee-2", { gas: 1_000_000n });
+    await expect(prepare()).rejects.toMatchObject({ code: "fee-changed" });
+  });
+});

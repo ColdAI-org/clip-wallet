@@ -13,7 +13,7 @@ import {
   parseAbi,
   toFunctionSelector,
 } from "viem";
-import { chainIdOf, quoteFees, tokenMeta } from "./chain.js";
+import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
 import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
 import { type TxParams, type TypedData, parsePersonalSign, parseTx, parseTypedData } from "./params.js";
@@ -57,10 +57,23 @@ function base(req: DappRequest): DecodedRequest {
   return { requestId: req.id, title: "", lines: [], balanceChanges: [], simulated: false, blind: false, warnings: [], networkId: req.networkId };
 }
 
-export async function decodeRequest(req: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
+/**
+ * The fee terms a transaction's approval screen was built on (audit 2026-10, EVM-04). prepare() signs these fee
+ * caps instead of re-quoting after approval, and refuses if the transaction now needs far more gas than shown.
+ */
+export interface FeeSnapshot {
+  fees: FeeQuote;
+  /** Gas the screen's fee was computed from; prepare() may use up to GAS_HEADROOM of it. */
+  gas: bigint;
+}
+
+/** prepare() may sign up to this multiple (numerator / 10) of the gas the screen was built on. */
+export const GAS_HEADROOM_TENTHS = 15n;
+
+export async function decodeRequest(req: DappRequest, ctx: ChainContext, onFee?: (s: FeeSnapshot) => void): Promise<DecodedRequest> {
   switch (req.method) {
     case "eth_sendTransaction":
-      return decodeTransaction(req, ctx);
+      return decodeTransaction(req, ctx, onFee);
     case "personal_sign":
     case "wallet_authenticate":
       return decodePersonalSign(req, ctx);
@@ -76,7 +89,7 @@ export async function decodeRequest(req: DappRequest, ctx: ChainContext): Promis
 
 /* ------------------------------------------------------------------ transactions */
 
-async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
+async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s: FeeSnapshot) => void): Promise<DecodedRequest> {
   const tx = parseTx(req, ctx);
   const d = base(req);
   const native = ctx.network.nativeAsset;
@@ -133,6 +146,11 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext): Promise<D
         }
       }
       d.fee = { asset: native, amount: amount.toString() };
+      // The most this can cost: what prepare() will sign at most (fee caps from this quote, gas with headroom).
+      const perGas = fees.type === "eip1559" ? fees.maxFeePerGas! : fees.gasPrice!;
+      const maxGas = tx.gas ?? (gas * GAS_HEADROOM_TENTHS) / 10n;
+      d.lines.push({ label: "Network fee at most", value: `${formatAmount(maxGas * perGas, native.decimals)} ${native.symbol}` });
+      onFee?.({ fees, gas });
     }
   } catch {
     /* fee unknown: the UI shows "fee unavailable" */
