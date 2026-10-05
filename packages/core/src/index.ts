@@ -291,7 +291,10 @@ export interface Warning {
     | "malicious-transaction"
     // Phase 2.5 (social)
     /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
-    | "public-record";
+    | "public-record"
+    // Internal audit 2026-10
+    /** A contract call or signed order the wallet can name but not fully read: its effects may not all be shown. */
+    | "unknown-call";
   message: string;
 }
 
