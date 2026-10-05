@@ -10,6 +10,7 @@ import { FAMILIES, type Nft } from "@clip-wallet/core";
 import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
 import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
 import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
+import { LINK_REQUESTS, type LinkResponseMap } from "@clip-wallet/link/messages";
 import { PluginsRequestSchema, type PendingInstallView, type PluginView, type PluginsStatusView } from "@clip-wallet/plugins";
 import type {
   AccountView,
@@ -138,6 +139,8 @@ export const Request = z.discriminatedUnion("type", [
   ...FEATURE_REQUESTS,
   ...SOCIAL_REQUESTS,
   ...SECURITY_REQUESTS,
+  // Linked devices (r1/connect, docs/r1/integration/connect.md)
+  ...LINK_REQUESTS,
   // Clip Plugins (Advanced mode; @clip-wallet/plugins validates again in PluginsService)
   ...PluginsRequestSchema.options,
   // Google / Apple sign-in for passkey backups (engine/social-signin)
@@ -175,7 +178,7 @@ export type Request = z.infer<typeof Request>;
 export type RequestType = Request["type"];
 
 /** What each request returns. Kept beside the schema so client and service can't drift. */
-export interface ResponseMap extends FeatureResponseMap, SocialResponseMap, SecurityResponseMap {
+export interface ResponseMap extends FeatureResponseMap, SocialResponseMap, SecurityResponseMap, LinkResponseMap {
   pluginsStatus: PluginsStatusView;
   pluginsSetEnabled: void;
   pluginsPrepareInstall: PendingInstallView;

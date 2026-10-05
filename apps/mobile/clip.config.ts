@@ -8,6 +8,7 @@ const MAINNET = false;
 const TESTNET_SERVICES = {
   backupUrl: "https://clip-backup.doyoka-platform.workers.dev",
   mediaProxyUrl: "https://clip-media-proxy.doyoka-platform.workers.dev",
+  linkRelayUrl: "https://clip-link-relay.doyoka-platform.workers.dev",
 };
 
 // Same brand as the extension (apps/extension/clip.config.ts). Schema: @clip-wallet/config.

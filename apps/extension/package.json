@@ -41,6 +41,7 @@
     "@clip-wallet/hardware": "workspace:*",
     "@clip-wallet/i18n": "workspace:*",
     "@clip-wallet/kit-modules": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
     "@clip-wallet/names": "workspace:*",
     "@clip-wallet/plugins": "workspace:*",
     "@clip-wallet/route": "workspace:*",

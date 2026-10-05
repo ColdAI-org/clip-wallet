@@ -15,6 +15,7 @@ import { SignAgent, withDeviceSteps } from "./hardware/agent";
 import { cancelDevice, deviceSigner, keystoneExchange, onDeviceChange } from "./hardware/devices";
 import { createSocialBusClient } from "../shared/social-bus";
 import { createSecurityBusClient } from "../shared/security-bus";
+import { createLinkBusClient } from "../shared/link-bus";
 import { createPasskeyFactory } from "../passkey/bridge";
 
 const options: Partial<UiOptions> = {
@@ -31,7 +32,7 @@ export function mountWallet(variant: Exclude<Variant, "window">) {
   const client = createBusClient(undefined, __CLIP_MOCKS__);
   // The action popup can't host a WebAuthn ceremony (the OS sheet closes it); the tab can.
   const passkeys = createPasskeyFactory(variant === "tab");
-  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} hardware={hardwareClient} social={createSocialBusClient()} security={createSecurityBusClient()} />);
+  render(<WalletApp client={client} config={config} options={options} variant={variant} passkeys={passkeys} features={createFeaturesBusClient()} hardware={hardwareClient} social={createSocialBusClient()} security={createSecurityBusClient()} link={createLinkBusClient()} />);
 }
 
 export function mountApprovalWindow() {

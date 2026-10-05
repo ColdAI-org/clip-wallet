@@ -13,6 +13,9 @@ export const RULES = {
   verifyPerIp: { scope: "verify-ip", limit: 30, windowMs: 60 * 60_000 },
   apiPerAccount: { scope: "api-account", limit: 120, windowMs: 60 * 60_000 },
   uploadPerAccount: { scope: "upload-account", limit: 20, windowMs: 24 * 60 * 60_000 },
+  // Settings sync: a device syncs on changes and every few minutes; a household's devices share one IP.
+  syncPerIp: { scope: "sync-ip", limit: 2000, windowMs: 60 * 60_000 },
+  syncPerSpace: { scope: "sync-space", limit: 600, windowMs: 60 * 60_000 },
 } as const satisfies Record<string, Rule>;
 
 /**

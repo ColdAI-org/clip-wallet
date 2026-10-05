@@ -27,6 +27,7 @@ import hardware from "./hardware";
 import security from "./security";
 import plugins from "./plugins";
 import settle from "./settle";
+import link from "./link";
 
 export const en = {
   ...common,
@@ -54,9 +55,10 @@ export const en = {
   ...security,
   ...plugins,
   ...settle,
+  ...link,
 };
 
-export const MOBILE_NAMESPACES = ['common', 'onboarding', 'home', 'collectibles', 'activity', 'receive', 'scan', 'browser', 'kit', 'app', 'send', 'approval', 'settings', 'explore', 'social', 'stake', 'swap', 'buy', 'trade', 'backup', 'accounts', 'hardware', 'security', 'plugins', 'settle'] as const;
+export const MOBILE_NAMESPACES = ['common', 'onboarding', 'home', 'collectibles', 'activity', 'receive', 'scan', 'browser', 'kit', 'app', 'send', 'approval', 'settings', 'explore', 'social', 'stake', 'swap', 'buy', 'trade', 'backup', 'accounts', 'hardware', 'security', 'plugins', 'settle', 'link'] as const;
 
 export type MobileMessages = typeof en;
 export type MobileMessageId = keyof MobileMessages;

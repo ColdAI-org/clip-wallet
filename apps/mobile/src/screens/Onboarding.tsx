@@ -53,7 +53,7 @@ function StrengthMeter(props: { password: string }) {
 }
 
 function Welcome(props: { onCreate: () => void; onImport: () => void }) {
-  const { theme } = useWallet();
+  const { theme, navigate } = useWallet();
   const t = useMobileT();
   return (
     <Screen
@@ -64,6 +64,10 @@ function Welcome(props: { onCreate: () => void; onImport: () => void }) {
           </Button>
           <Button block variant="secondary" onPress={props.onImport} testID="import">
             {t("m.onboarding.welcome.import")}
+          </Button>
+          {/* Copy a wallet from another device (r1/connect): scan the code "Add this wallet to another device" shows there. */}
+          <Button block variant="ghost" onPress={() => navigate({ name: "scan" })} testID="copy-from-device">
+            {t("m.link.receive")}
           </Button>
         </>
       }

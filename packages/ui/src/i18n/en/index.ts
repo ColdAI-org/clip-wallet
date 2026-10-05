@@ -26,6 +26,7 @@ import security from "./security";
 import plugins from "./plugins";
 import settle from "./settle";
 import privacy from "./privacy";
+import link from "./link";
 
 export const en = {
   ...common,
@@ -52,10 +53,11 @@ export const en = {
   ...plugins,
   ...settle,
   ...privacy,
+  ...link,
 };
 
 /** Namespaces in the order above; each locale folder has one file per namespace. */
-export const UI_NAMESPACES = ['common', 'settings', 'onboarding', 'backup', 'home', 'collectibles', 'activity', 'receive', 'accounts', 'approvals', 'components', 'stake', 'swap', 'buy', 'trade', 'hardware', 'send', 'approval', 'explore', 'social', 'security', 'plugins', 'settle', 'privacy'] as const;
+export const UI_NAMESPACES = ['common', 'settings', 'onboarding', 'backup', 'home', 'collectibles', 'activity', 'receive', 'accounts', 'approvals', 'components', 'stake', 'swap', 'buy', 'trade', 'hardware', 'send', 'approval', 'explore', 'social', 'security', 'plugins', 'settle', 'privacy', 'link'] as const;
 
 export type UiMessages = typeof en;
 export type UiMessageId = keyof UiMessages;

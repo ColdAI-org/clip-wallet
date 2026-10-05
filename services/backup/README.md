@@ -121,3 +121,12 @@ Set `APP_URL` (where the link lands; the wallet reads `#/backup/sign-in?token=�
 Sources: Workers Vitest integration <https://developers.cloudflare.com/workers/testing/vitest-integration/>;
 PKCE S256 RFC 7636 §4.2 (test vector in the client tests); WebAuthn credential id ≤ 1023 bytes
 (W3C WebAuthn L3 §5.1 `rawId`/Credential ID).
+
+## Settings sync (`/v1/sync`, @clip-wallet/link)
+
+No account and no email: each request is signed with the device's Ed25519 sync key (derived from the recovery
+phrase in the vault, label `clip/sync/v1`), and data is filed under `space = SHA-256(public key)`. D1 holds opaque
+128-bit record ids, sequence numbers and XChaCha20-Poly1305 ciphertext only (`migrations/0003_sync.sql`). Signed
+requests older or newer than 5 minutes, and reused nonces, are refused; 2000 requests/h per IP and 600/h per key;
+16 KiB per record, 100 records per push, 5000 records / 4 MiB per space. `DELETE /v1/sync` deletes everything for
+the key. Protocol and threat model: `packages/link/src/sync/protocol.ts`, `packages/link/README.md`.

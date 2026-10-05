@@ -41,6 +41,7 @@ import plugins from "./plugins";
 import settle from "./settle";
 import privacy from "./privacy";
 import security from "./security";
+import link from "./link";
 
 const messages: Translation<UiMessages> = {
   ...common,
@@ -67,5 +68,6 @@ const messages: Translation<UiMessages> = {
   ...privacy,
   ...security,
   ...settle,
+  ...link,
 };
 export default messages;
