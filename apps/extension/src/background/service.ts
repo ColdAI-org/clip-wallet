@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -209,7 +209,7 @@ export class WalletService implements DappHost {
   }
   /** Public facts for the social host: approvals waiting now (for notifications). */
   socialApprovals(): { id: string; app: string; title: string }[] {
-    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name }));
+    return [...this.approvals.values()].map((p) => ({ id: p.view.id, app: p.view.dapp.name, title: p.view.decoded?.title ?? p.view.dapp.name, ...(p.view.decoded?.titleMsg ? { titleMsg: p.view.decoded.titleMsg } : {}) }));
   }
 
   attachSecurity(s: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">, recipients?: RecipientLog) {
@@ -240,7 +240,7 @@ export class WalletService implements DappHost {
   }
   async decodeForFeatures(request: DappRequest): Promise<DecodedRequest> {
     const network = this.network(request.networkId);
-    return this.module(network.family).decode(request, await this.ctx(network.id, request.origin));
+    return attachMsgs(await this.module(network.family).decode(request, await this.ctx(network.id, request.origin)));
   }
 
   /* ------------------------------------------------------------------ bus entry */
@@ -732,7 +732,7 @@ export class WalletService implements DappHost {
     const ctx = await this.ctx(network.id, request.origin);
     let decoded: DecodedRequest;
     try {
-      decoded = await this.module(network.family).decode(request, ctx);
+      decoded = attachMsgs(await this.module(network.family).decode(request, ctx));
     } catch {
       decoded = {
         requestId: request.id,
@@ -753,6 +753,7 @@ export class WalletService implements DappHost {
         recipients: extra.recipient ? [extra.recipient] : [],
       });
     }
+    decoded = attachMsgs(decoded);
     if (decoded.fee) decoded.fee.fiatValue ??= await this.fiat(decoded.fee.asset, BigInt(decoded.fee.amount));
     let fiatValue: number | undefined;
     for (const c of decoded.balanceChanges) {
@@ -854,7 +855,7 @@ export class WalletService implements DappHost {
       });
       await this.kv.set(K.permissions, existing);
       this.approvals.delete(id);
-      await this.addActivity({ id, title: `Connected to ${p.view.dapp.name}`, kind: "connect", app: { name: p.view.dapp.name, origin: p.view.dapp.origin }, timestamp: Date.now(), status: "done", legs: [] });
+      await this.addActivity({ id, title: `Connected to ${p.view.dapp.name}`, titleMsg: connectedMsg(p.view.dapp.name), kind: "connect", app: { name: p.view.dapp.name, origin: p.view.dapp.origin }, timestamp: Date.now(), status: "done", legs: [] });
       p.resolve([p.connect.account]);
       this.env.broadcast();
       return;
@@ -922,9 +923,11 @@ export class WalletService implements DappHost {
         : d.title.startsWith("Sign in to")
           ? d.title.replace(/^Sign in/, "Signed in")
           : `Approved: ${d.title}`;
+    const titleMsg = activityTitleMsg(d, view.dapp, title);
     const txHash = result && typeof result === "object" && "txHash" in result ? String((result as { txHash: unknown }).txHash) : undefined;
     const legs: ActivityLeg[] = (view.plan?.steps ?? []).map((s) => ({
       title: s.kind === "funding" ? s.title.replace(/^Move/, "Moved") : s.kind === "gas" ? s.title : title,
+      ...(s.kind === "gas" && s.titleMsg ? { titleMsg: s.titleMsg } : s.kind === "action" && titleMsg ? { titleMsg } : {}),
       networkId: view.network.id,
       status: "done",
       txHash: s.kind === "action" ? txHash : undefined,
@@ -932,6 +935,7 @@ export class WalletService implements DappHost {
     return {
       id: view.id,
       title,
+      ...(titleMsg ? { titleMsg } : {}),
       kind: d.title.startsWith("Pay ") ? "pay" : d.title.startsWith("Send ") ? "send" : "sign",
       app: view.via === "wallet" ? undefined : { name: view.dapp.name, origin: view.dapp.origin },
       fiatValue: view.fiatValue !== undefined ? -view.fiatValue : undefined,

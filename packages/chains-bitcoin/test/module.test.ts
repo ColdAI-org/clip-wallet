@@ -211,8 +211,8 @@ describe("dapp PSBTs (Wallet Standard / sats-connect / WalletConnect)", () => {
     const r = req("bitcoin:signTransaction", { inputs: [{ psbt, inputsToSign: [{ address: MY_WPKH_T4, signingIndexes: [1], sigHash: SigHash.SINGLE_ANYONECANPAY }] }] });
     const d = await mod.decode(r, c);
     expect(d.title).toBe("Pay 0.00031 BTC in a transaction from market.example.com");
-    expect(d.lines).toContainEqual({ label: "Other coin 1", value: "0.0001 BTC" });
-    expect(d.lines).toContainEqual({ label: "Your coin 2", value: "0.0005 BTC" });
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Other coin 1", value: "0.0001 BTC" }));
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Your coin 2", value: "0.0005 BTC" }));
     expect(d.fee).toBeUndefined(); // not all inputs are ours: we don't claim who pays
     expect(d.warnings.find((w) => w.code === "blind-signing")?.level).toBe("caution");
     const payloads = await mod.prepare(r, c, "a");

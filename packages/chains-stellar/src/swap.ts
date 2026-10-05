@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN, msg } from "@clip-wallet/core";
 import { Account, type Asset, Operation, TransactionBuilder } from "@stellar/stellar-base";
 import { Horizon, type HorizonAccount } from "./horizon.js";
 import { type ClassicAsset, STELLAR_HORIZON, netOf, networkPassphrase, toStellarAsset } from "./networks.js";
@@ -50,7 +50,7 @@ function horizonOf(ctx: ChainContext): Horizon {
 /** A classic asset (XLM or CODE:ISSUER) as stellar-base sees it; SEP-41 contract tokens are refused. */
 export function swapAsset(a: AssetRef | ClassicAsset): Asset {
   if ("key" in a && a.address && isContract(a.address)) {
-    throw new ClipError(`Swapping ${a.symbol} isn't available yet.`, "stellar/swap-unsupported-asset");
+    throw new ClipError(msg("bg.err.swapAssetUnavailable", { symbol: a.symbol }), "stellar/swap-unsupported-asset");
   }
   try {
     return toStellarAsset(a);
@@ -100,7 +100,7 @@ async function check(p: { sell: AssetRef; buy: AssetRef; sendAmount: string }, c
   if (!sell.isNative()) {
     const h2 = holdingOf(acct, sell);
     const have = h2 ? toStroops(h2.balance) - toStroops(h2.selling_liabilities ?? "0") : 0n;
-    if (have < amount) throw new ClipError(`You don't have enough ${sell.getCode()} for this swap.`, "stellar/insufficient-token");
+    if (have < amount) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: sell.getCode() }), "stellar/insufficient-token");
   }
   if (xlmNeeded > free) {
     const why = addsTrustline ? ` Adding ${buy.getCode()} also sets aside 0.5 XLM of your balance.` : "";

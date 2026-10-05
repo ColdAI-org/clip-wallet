@@ -2,7 +2,7 @@
  * Adapters from the real packages to the background's seams (see wiring.ts).
  */
 import type { Family, Network, Warning } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, knownMsg, recallMsg, msg } from "@clip-wallet/core";
 import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
 import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
@@ -259,8 +259,8 @@ export class RoutePlannerAdapter implements RoutePlanner {
           filters: this.config.route.filters,
           portfolio: balances,
         });
-        if (!quote) throw new ClipError(`You don't have enough ${s.asset.symbol} for this.`, "route/no-quote");
-        steps.push({ kind: "funding", title: quote.title, detail: quote.steps.map((x) => x.text).join(" · ") });
+        if (!quote) throw new ClipError(msg("bg.err.notEnoughForThis", { symbol: s.asset.symbol }), "route/no-quote");
+        steps.push({ kind: "funding", title: quote.title, ...(recallMsg(quote.title) ? { titleMsg: recallMsg(quote.title) } : {}), detail: quote.steps.map((x) => x.text).join(" · ") });
         readyInSeconds = Math.max(readyInSeconds, quote.time.p90Seconds);
         const fx = this.prices.fx(await this.currency());
         feeFiat = (feeFiat ?? 0) + quote.fee.usd * fx;
@@ -274,8 +274,8 @@ export class RoutePlannerAdapter implements RoutePlanner {
       if (alt) steps.push({ kind: "funding", title: alt.title, detail: alt.detail });
     }
     const sponsored = !!decoded.fee?.sponsored;
-    if (decoded.fee) steps.push({ kind: "gas", title: sponsored ? "Network fee paid for you" : "Network fee" });
-    steps.push({ kind: "action", title: decoded.title, balanceChanges: decoded.balanceChanges });
+    if (decoded.fee) steps.push({ kind: "gas", title: sponsored ? "Network fee paid for you" : "Network fee", titleMsg: knownMsg(sponsored ? "Network fee paid for you" : "Network fee") });
+    steps.push({ kind: "action", title: decoded.title, titleMsg: decoded.titleMsg, balanceChanges: decoded.balanceChanges });
     return {
       source: "Your balance",
       feeFiat,

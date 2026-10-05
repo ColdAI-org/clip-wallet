@@ -12,8 +12,8 @@ export interface PublicSnapshotDeps {
   chains: Partial<Record<Family, ChainModule>>;
   /** The wallet's cached public accounts (engine/service KV_KEYS.accounts). */
   accounts(): Promise<Account[] | undefined>;
-  activity(): Promise<{ id: string; title: string; status: "done" | "pending" | "failed"; kind: string }[] | undefined>;
-  approvals(): Promise<{ id: string; app: string; title: string }[]>;
+  activity(): Promise<Snapshot["activity"] | undefined>;
+  approvals(): Promise<Snapshot["approvals"]>;
   /** USD price of an asset key and the FX rate for a currency (the wallet's price feed). */
   usd(assetKey: string): number | undefined;
   fx(currency: string): number;

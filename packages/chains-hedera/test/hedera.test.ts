@@ -170,6 +170,7 @@ describe("decode", () => {
       .addTokenTransfer("0.0.731861", ME, 1_000_000);
     const d = await m.decode(signAndExec(tx), ctx);
     expect(d.title).toBe("Trade 5 HBAR for 1 SAUCE with 0.0.1234");
+    expect(d.titleMsg).toEqual({ id: "bg.req.tradeWith", values: { give: "5 HBAR", get: "1 SAUCE", who: "0.0.1234" }, fallback: d.title });
     expect(d.lines).toContainEqual({ label: "Paid from an allowance", value: BOB });
   });
 

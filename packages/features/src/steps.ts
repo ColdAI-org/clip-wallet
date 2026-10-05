@@ -1,4 +1,4 @@
-import type { DappRequest, DecodedRequest, Warning } from "@clip-wallet/core";
+import { knownMsg, recallMsg, type DappRequest, type DecodedRequest, type Msg, type Warning } from "@clip-wallet/core";
 import type { FeatureHost } from "./host.js";
 import type { QueuedApprovals } from "./views.js";
 
@@ -9,6 +9,8 @@ import type { QueuedApprovals } from "./views.js";
  */
 export interface Step {
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   lines?: { label: string; value: string }[];
   request: DappRequest | (() => Promise<DappRequest>);
   /**
@@ -23,6 +25,7 @@ export interface Step {
 
 export interface Intent {
   title: string;
+  titleMsg?: Msg;
   lines: { label: string; value: string }[];
   verify?(request: DappRequest): boolean;
 }
@@ -43,6 +46,9 @@ export function refineDecoded(request: DappRequest, decoded: DecodedRequest): De
   const intent = intents.get(request);
   if (!intent) return decoded;
   const out: DecodedRequest = { ...decoded, title: intent.title, lines: [...intent.lines, ...decoded.lines] };
+  // The intent's title replaces the module's, so its Msg must too (never pair the module's Msg with the intent's English).
+  if (intent.titleMsg) out.titleMsg = intent.titleMsg;
+  else delete out.titleMsg;
   if (decoded.blind) {
     const simulatedOk = decoded.simulated && !decoded.warnings.some((w) => w.code === "simulation-failed");
     if (intent.verify?.(request) && simulatedOk) {
@@ -52,6 +58,8 @@ export function refineDecoded(request: DappRequest, decoded: DecodedRequest): De
       out.warnings.push(note);
     } else {
       out.title = decoded.title;
+      if (decoded.titleMsg) out.titleMsg = decoded.titleMsg;
+      else delete out.titleMsg;
       out.lines = decoded.lines;
     }
   }
@@ -68,7 +76,7 @@ export async function queueSteps(host: FeatureHost, steps: Step[], appName: stri
   const enqueue = async (i: number): Promise<string> => {
     const s = steps[i]!;
     const request = typeof s.request === "function" ? await s.request() : s.request;
-    registerIntent(request, { title: s.title, lines: s.lines ?? [], verify: s.verify });
+    registerIntent(request, { title: s.title, ...(s.titleMsg ? { titleMsg: s.titleMsg } : {}), lines: s.lines ?? [], verify: s.verify });
     const { id, result } = await host.enqueue(request, { appName });
     result
       .then(async (r) => {
@@ -80,5 +88,5 @@ export async function queueSteps(host: FeatureHost, steps: Step[], appName: stri
     return id;
   };
   const approvalId = await enqueue(0);
-  return { approvalId, steps: steps.map((s) => s.title) };
+  return { approvalId, steps: steps.map((s) => s.title), stepMsgs: steps.map((s) => s.titleMsg ?? recallMsg(s.title) ?? knownMsg(s.title)) };
 }

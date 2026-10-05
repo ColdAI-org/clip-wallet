@@ -7,6 +7,7 @@ import { useRouter, useUi } from "../context";
 import { IconAlert, IconBack, IconClock, IconCompass, IconGear, IconGrid, IconHome } from "./icons";
 import { useFeaturesOptional } from "../features/context";
 import { useUiT } from "../i18n";
+import { useBgText } from "../i18n/bg";
 
 /* ------------------------------------------------------------------ buttons */
 
@@ -180,11 +181,26 @@ export function Warnings(props: { warnings: Warning[] }) {
   return (
     <div className="clip-warnings">
       {sorted.map((w) => (
-        <div key={w.code + w.message} className={`clip-notice clip-notice--${w.level}`} role={w.level === "danger" ? "alert" : "status"}>
-          <IconAlert />
-          <span>{w.message}</span>
-        </div>
+        <WarningNotice key={w.code + w.message} warning={w} />
       ))}
+    </div>
+  );
+}
+
+function WarningNotice(props: { warning: Warning }) {
+  const w = props.warning;
+  const { text, detail } = useBgText().warning(w);
+  return (
+    <div className={`clip-notice clip-notice--${w.level}`} role={w.level === "danger" ? "alert" : "status"}>
+      <IconAlert />
+      <span>
+        {text}
+        {detail && (
+          <span className="clip-notice__detail" lang="en">
+            {detail}
+          </span>
+        )}
+      </span>
     </div>
   );
 }

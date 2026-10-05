@@ -6,6 +6,7 @@ import { tokensFor, type ColorMode } from "./theme/tokens";
 import type { PasskeyPrfFactory } from "./lib/passkey";
 import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
 import { LocaleProvider } from "@clip-wallet/i18n/react";
+import { BgTextProvider } from "./i18n/bg";
 import { setFormatLocale } from "./lib/format";
 
 function deviceLanguages(): readonly string[] {
@@ -102,7 +103,9 @@ export function ClipProvider(props: {
   );
   return (
     <UiContext.Provider value={value}>
-      <LocaleProvider locale={locale}>{props.children}</LocaleProvider>
+      <LocaleProvider locale={locale}>
+        <BgTextProvider>{props.children}</BgTextProvider>
+      </LocaleProvider>
     </UiContext.Provider>
   );
 }

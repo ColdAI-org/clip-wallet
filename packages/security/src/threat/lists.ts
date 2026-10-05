@@ -1,6 +1,7 @@
 import type { FeatureHost } from "@clip-wallet/features";
 import { fetchJson } from "../util.js";
 import type { ProviderStatus, ThreatFinding, ThreatIntelProvider } from "./types.js";
+import { say } from "@clip-wallet/core";
 
 /**
  * Open phishing lists, downloaded whole and matched on the device. Verified 2026-10-03:
@@ -274,7 +275,7 @@ export class ListProvider implements ThreatIntelProvider {
     const hit = this.matcher.site(host);
     if (!hit) return [];
     if (hit.kind === "fuzzy") {
-      return [{ level: "danger", code: "phishing-site", source: this.id, message: `This site's name is almost the same as ${hit.entry}, but it isn't ${hit.entry}. Copies like this steal wallets.` }];
+      return [{ level: "danger", code: "phishing-site", source: this.id, message: say("bg.security.lookAlikeSite", { site: hit.entry }) }];
     }
     return [{ level: "danger", code: "phishing-site", source: this.id, message: this.source.hitMessage(hit.entry) }];
   }

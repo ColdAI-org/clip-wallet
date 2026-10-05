@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled } from "@clip-wallet/core";
 import {
   buildAssociate,
   contractCallDraft,
@@ -176,14 +176,14 @@ export class SaucerSwap implements SwapProvider {
 
     if (quote.association) {
       const tokenId = quote.association.tokenId;
-      steps.push({ title: `Add ${quote.association.symbol} to your account`, request: () => buildAssociate(tokenId, ctx) });
+      steps.push({ ...titled(msg("bg.req.addToYourAccount", { symbol: quote.association.symbol })), request: () => buildAssociate(tokenId, ctx) });
     }
     if (quote.sell.address) {
       const have = await this.allowance(ctx, payer, c.router, quote.sell.address);
       if (have < BigInt(quote.sellAmount)) {
         const token = quote.sell.address;
         steps.push({
-          title: `Allow SaucerSwap to use exactly ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`,
+          ...titled(msg("bg.req.allowUseExactly", { spender: "SaucerSwap", amount: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}` })),
           lines: [{ label: "Limit", value: "Only this amount, for this swap" }],
           request: async () => {
             if (BigInt(quote.sellAmount) > BigInt(Number.MAX_SAFE_INTEGER)) throw new ClipError("That amount is too large to swap in one go.", "swap/amount-too-large");
@@ -195,7 +195,7 @@ export class SaucerSwap implements SwapProvider {
     }
 
     steps.push({
-      title: `Swap ${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol} for ~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}`,
+      ...titled(msg("bg.req.swap", { pay: `${formatUnits(quote.sellAmount, quote.sell.decimals)} ${quote.sell.symbol}`, get: `~${formatUnits(quote.buyAmount, quote.buy.decimals)} ${quote.buy.symbol}` })),
       lines: [{ label: "You get at least", value: `${formatUnits(quote.minBuyAmount, quote.buy.decimals)} ${quote.buy.symbol}` }],
       request: async () => {
         const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);

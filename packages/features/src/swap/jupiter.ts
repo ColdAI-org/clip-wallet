@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import { clusterOf } from "@clip-wallet/chains-solana";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -114,7 +114,7 @@ export class JupiterSwap implements SwapProvider {
     };
     return [
       {
-        title: `Swap ${quote.sell.symbol} for ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: quote.sell.symbol, get: quote.buy.symbol })),
         request,
         finish: async (result) => {
           const signed = Array.isArray(result) ? (result[0] as { signedTransaction?: string } | undefined)?.signedTransaction : undefined;

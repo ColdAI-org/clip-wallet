@@ -1,7 +1,7 @@
 import { HardwareApprovalGate } from "../hardware/HardwareApprovalGate";
 import { useHardwareOptional } from "../hardware/context";
 import { useId, useState } from "react";
-import type { BalanceChange } from "@clip-wallet/core";
+import { finalMsg, knownMsg, type BalanceChange } from "@clip-wallet/core";
 import type { ApprovalView } from "../client";
 import { userMessageOf } from "../client";
 import { useUi } from "../context";
@@ -10,6 +10,7 @@ import { PluginInsights, type PluginInsightView } from "../plugins";
 import { IconChevron, IconShield, IconAlert } from "../components/icons";
 import { formatFiat, formatLocale, formatUnits, readyInMessage } from "../lib/format";
 import { useUiT } from "../i18n";
+import { useBgText } from "../i18n/bg";
 import { RecipientCheck } from "../social/RecipientCheck";
 import { hueFor } from "../lib/media";
 
@@ -51,6 +52,7 @@ function ChangeLine(props: { change: BalanceChange }) {
 
 export function TransactionApproval(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
   const t = useUiT();
+  const bg = useBgText();
   const { client, state, config } = useUi();
   const a = props.approval;
   const d = a.decoded!;
@@ -91,7 +93,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 
   const ready = readyInMessage(a.plan?.readyInSeconds ?? 10);
   const steps = a.plan?.steps ?? [
-    { kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges },
+    { kind: "action" as const, title: d.title, titleMsg: d.titleMsg, balanceChanges: d.balanceChanges },
   ];
 
   return (
@@ -100,7 +102,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 
       <div className="clip-approval__hero">
         <h1 id={`${detailsId}-t`} className="clip-approval__title">
-          {d.blind ? t("approval.unreadable") : d.title}
+          {d.blind ? t("approval.unreadable") : bg.title(d)}
         </h1>
         {a.fiatValue !== undefined && !d.blind && <p className="clip-approval__fiat">{formatFiat(a.fiatValue, currency)}</p>}
       </div>
@@ -112,7 +114,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
         {d.fee && <Row label={t("approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("approval.feeCovered") : undefined} />}
         {(movesMoney || d.fee) && <Row label={t("approval.ready")} value={t(ready.id, ready)} />}
         {d.lines.map((l) => (
-          <Row key={l.label} label={l.label} value={l.value} />
+          <Row key={l.label} label={bg.label(l)} value={bg.value(l)} />
         ))}
       </div>
 
@@ -135,7 +137,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
                   {i + 1}
                 </span>
                 <div className="clip-step__body">
-                  <div className="clip-step__title">{s.title}</div>
+                  <div className="clip-step__title">{bg.title(s)}</div>
                   {s.detail && <div className="clip-step__detail">{s.detail}</div>}
                   {s.balanceChanges && s.balanceChanges.length > 0 && (
                     <ul className="clip-changes" aria-label={d.simulated ? t("approval.simulatedChanges") : t("approval.expectedChanges")}>
@@ -203,8 +205,10 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 
 export function ConnectApproval(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
   const t = useUiT();
+  const bg = useBgText();
   const { client, state, config } = useUi();
   const a = props.approval;
+  const unknownSite = t("approval.connect.unknown", { name: config.name, domain: a.dapp.domain });
   const advanced = !!state?.prefs.advanced;
   const phishing = !!a.connect?.warnings?.some((w) => w.level === "danger");
   const [busy, setBusy] = useState(false);
@@ -231,7 +235,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
       </div>
       <ul className="clip-bullets">
         {(a.connect?.permissions ?? []).map((p) => (
-          <li key={p}>{p}</li>
+          <li key={p}>{bg.msg(knownMsg(p), p)}</li>
         ))}
       </ul>
       {advanced && a.connect && <Row label={t("approval.connect.address")} value={<code className="clip-mono">{a.connect.address}</code>} />}
@@ -240,7 +244,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
         {!a.dapp.verified && !a.connect?.warnings?.some((w) => w.code === "domain-mismatch") && (
           <Warnings
             warnings={[
-              { level: "caution", code: "domain-mismatch", message: t("approval.connect.unknown", { name: config.name, domain: a.dapp.domain }) },
+              { level: "caution", code: "domain-mismatch", message: unknownSite, msg: finalMsg(unknownSite) },
             ]}
           />
         )}
@@ -261,6 +265,7 @@ export function ConnectApproval(props: { approval: ApprovalView; onDone?: (appro
 export function ApprovalScreen(props: { approval: ApprovalView; onDone?: (approved: boolean) => void }) {
   const hardware = useHardwareOptional();
   const { client } = useUi();
+  const bg = useBgText();
   if (props.approval.kind === "connect") return <ConnectApproval approval={props.approval} onDone={props.onDone} />;
   const tx = <TransactionApproval approval={props.approval} onDone={props.onDone} />;
   if (!hardware) return tx;
@@ -268,7 +273,7 @@ export function ApprovalScreen(props: { approval: ApprovalView; onDone?: (approv
   return (
     <HardwareApprovalGate
       approvalId={props.approval.id}
-      title={props.approval.decoded?.title ?? ""}
+      title={props.approval.decoded ? bg.title(props.approval.decoded) : ""}
       state={props.approval.hardware}
       client={hardware}
       onRetry={() => void client.approve(props.approval.id).then(() => props.onDone?.(true), () => undefined)}

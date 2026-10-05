@@ -6,7 +6,7 @@
  * Type-only module with no runtime imports, so `packages/ui` can import it (`@clip-wallet/features/views`)
  * without pulling in chain SDKs.
  */
-import type { BalanceChange, Family, NetworkId, Warning } from "@clip-wallet/core";
+import type { BalanceChange, Family, Msg, NetworkId, Warning } from "@clip-wallet/core";
 
 /** "Not available" in plain words. `code` is stable for tests and analytics. */
 export interface Unavailable {
@@ -22,6 +22,9 @@ export interface StakeOptionView {
   title: string;
   /** "Earns about 6.8% a year · keeps 5% of rewards". */
   detail: string;
+  /** Additive: translatable `title` / `detail`, when they are a known pattern. */
+  titleMsg?: Msg;
+  detailMsg?: Msg;
   /** Yearly reward rate as a percentage (6.8 = 6.8 %), when the network exposes enough to estimate it. */
   apy?: number;
   /** The option the wallet picks for you. */
@@ -92,6 +95,8 @@ export interface SwapQuoteView {
   route: string;
   /** Steps you'll approve, in order: "Allow 0x to use exactly 100 USDC", "Swap". */
   steps: string[];
+  /** Additive: `steps` as translatable Msgs (same order; undefined where a step has none). */
+  stepMsgs?: (Msg | undefined)[];
   warnings: Warning[];
   /** False for cross-network quotes in this build (quote only). */
   executable: boolean;
@@ -162,11 +167,14 @@ export interface TradeReviewView {
   offer: TradeOfferView;
   /** Decoded from the actual transaction, not from the link's claims. */
   title: string;
-  lines: { label: string; value: string }[];
+  titleMsg?: Msg;
+  lines: { label: string; value: string; labelMsg?: Msg; valueMsg?: Msg }[];
   balanceChanges: BalanceChange[];
   warnings: Warning[];
   /** Plain steps the wallet will queue for approval: "Add SAUCE to your account", "Accept the trade". */
   steps: string[];
+  /** Additive: `steps` as translatable Msgs (same order). */
+  stepMsgs?: (Msg | undefined)[];
   /** Plain reason the offer can't be accepted (expired, not for you, mismatch). Blocks Accept. */
   problem?: string;
 }
@@ -221,4 +229,6 @@ export interface QueuedApprovals {
   approvalId: string;
   /** Plain names of every step, in order. */
   steps: string[];
+  /** Additive: `steps` as translatable Msgs (same order). */
+  stepMsgs?: (Msg | undefined)[];
 }

@@ -511,6 +511,12 @@ code {
   font-size: 13px;
   margin: 0;
 }
+.clip-notice__detail {
+  display: block;
+  margin-top: var(--clip-space-1);
+  opacity: 0.8;
+  font-size: 12px;
+}
 .clip-notice svg {
   flex: none;
   margin-top: 1px;

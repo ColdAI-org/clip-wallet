@@ -9,7 +9,7 @@ import Svg, { Rect } from "react-native-svg";
 import QRCode from "qrcode";
 import * as Clipboard from "expo-clipboard";
 import type { Warning } from "@clip-wallet/core";
-import { hueFor } from "@clip-wallet/ui";
+import { hueFor, useBgText } from "@clip-wallet/ui";
 import { TABS, useWallet, type Route } from "./context";
 import { IconAlert, IconBack, IconCheck, IconChevron, IconClock, IconCompass, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
 import { useMobileT, type MobileMessageId } from "../i18n";
@@ -236,15 +236,19 @@ export function Notice(props: { level: Warning["level"]; children: ReactNode; te
 }
 
 export function Warnings(props: { warnings: Warning[] }) {
+  const bg = useBgText();
   if (!props.warnings.length) return null;
   const sorted = [...props.warnings].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
   return (
     <View style={{ gap: 8 }}>
-      {sorted.map((w) => (
-        <Notice key={w.code + w.message} level={w.level} testID={`warning-${w.code}`}>
-          {w.message}
-        </Notice>
-      ))}
+      {sorted.map((w) => {
+        const { text, detail } = bg.warning(w);
+        return (
+          <Notice key={w.code + w.message} level={w.level} testID={`warning-${w.code}`}>
+            {detail ? `${text}\n${detail}` : text}
+          </Notice>
+        );
+      })}
     </View>
   );
 }

@@ -6,21 +6,7 @@
  * State between prepare() and finalize() (and the PSBT built for a sendTransfer between decode() and
  * prepare()) is held in memory per module instance, keyed by request id.
  */
-import {
-  ClipError,
-  type AssetRef,
-  type ChainContext,
-  type ChildAddress,
-  type ChainModule,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { ClipError, type AssetRef, type ChainContext, type ChildAddress, type ChainModule, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, labelled, warning } from "@clip-wallet/core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { Address, OutScript, SigHash, Transaction } from "@scure/btc-signer";
@@ -225,9 +211,9 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
       }
       const signIn = text ? /^(\S+) wants you to sign in with your Bitcoin account/.exec(text) : null;
       if (signIn) {
-        d.title = `Sign in to ${signIn[1]}`;
-        if (signIn[1] !== host) d.warnings.push({ level: "danger", code: "domain-mismatch", message: `This sign-in is for ${signIn[1]}, but the request came from ${host}.` });
-      } else d.title = `Sign a message for ${host}`;
+        Object.assign(d, titled(msg("bg.req.signIn", { domain: signIn[1]! })));
+        if (signIn[1] !== host) d.warnings.push(warning("danger", "domain-mismatch", msg("bg.warn.signInFrom", { domain: signIn[1]!, host })));
+      } else Object.assign(d, titled(msg("bg.req.signMessage", { host })));
       d.lines.push({ label: "Message", value: text ?? hex.encode(op.message) }, { label: "Address", value: address }, { label: "Requested by", value: host });
       if (!text) d.warnings.push({ level: "caution", code: "blind-signing", message: "This message isn't readable text. It can't move coins by itself, but only sign it if you trust the site." });
       return d;
@@ -239,23 +225,25 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     const allOurs = a.inputs.every((x) => x.kind !== null);
     const sentOut = external.reduce((s, o) => s + o.amount, 0n);
 
-    if (allOurs && external.length === 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${shortBtcAddress(external[0]!.address ?? "an address")}`;
-    else if (allOurs && external.length > 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${external.length} addresses`;
-    else if (allOurs) d.title = "Move your BTC between your own addresses";
-    else if (a.net < 0n) d.title = `Pay ${formatBtc(-a.net)} BTC in a transaction from ${host}`;
-    else if (a.net > 0n) d.title = `Receive ${formatBtc(a.net)} BTC in a transaction from ${host}`;
-    else d.title = `Sign a Bitcoin transaction for ${host}`;
+    const btc = (v: bigint) => `${formatBtc(v)} BTC`;
+    if (allOurs && external.length === 1 && external[0]!.address) Object.assign(d, titled(msg("bg.req.sendTo", { amount: btc(sentOut), to: shortBtcAddress(external[0]!.address) })));
+    else if (allOurs && external.length === 1) d.title = `Send ${formatBtc(sentOut)} BTC to ${shortBtcAddress(external[0]!.address ?? "an address")}`;
+    else if (allOurs && external.length > 1) Object.assign(d, titled(msg("bg.req.sendToMany", { amount: btc(sentOut), count: external.length })));
+    else if (allOurs) Object.assign(d, titled(msg("bg.req.moveBetweenOwn", { symbol: "BTC" })));
+    else if (a.net < 0n) Object.assign(d, titled(msg("bg.req.payInTxFrom", { amount: btc(-a.net), host })));
+    else if (a.net > 0n) Object.assign(d, titled(msg("bg.req.receiveInTxFrom", { amount: btc(a.net), host })));
+    else Object.assign(d, titled(msg("bg.req.signChainTxFor", { chain: "Bitcoin", host })));
 
     let n = 0;
     for (const x of a.inputs) {
       n++;
       const amt = x.amount !== undefined ? `${formatBtc(x.amount)} BTC` : "amount unknown";
-      d.lines.push({ label: x.kind ? (x.sign ? `Your coin ${n}` : `Your coin ${n} (not signed now)`) : `Other coin ${n}`, value: amt });
+      d.lines.push(labelled(msg(x.kind ? (x.sign ? "bg.bitcoin.yourCoinN" : "bg.bitcoin.yourCoinNUnsigned") : "bg.bitcoin.otherCoinN", { n }), amt));
     }
     for (const o of a.outputs) {
       if (o.opReturn) d.lines.push({ label: "Data note", value: hex.encode(o.script.slice(1, 81)) });
       else if (o.ours) d.lines.push({ label: "Change back to you", value: `${formatBtc(o.amount)} BTC` });
-      else d.lines.push({ label: `To ${o.address ?? "a custom script"}`, value: `${formatBtc(o.amount)} BTC` });
+      else d.lines.push(o.address ? labelled(msg("bg.bitcoin.toAddress", { address: o.address }), `${formatBtc(o.amount)} BTC`) : { label: "To a custom script", value: `${formatBtc(o.amount)} BTC` });
     }
     if (a.fee !== undefined) d.lines.push({ label: "Network fee", value: `${formatBtc(a.fee)} BTC (${a.feeRate} sat/vB)` });
     d.lines.push({ label: "Can be sped up later", value: a.rbf ? "Yes" : "No" });

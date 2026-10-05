@@ -14,6 +14,7 @@ import { checkRefRoute, isRefContract, parseRefSwapMsg } from "./ref.js";
 import type { NearRpc } from "./rpc.js";
 import { assetFor, ftMetadata } from "./tokens.js";
 import { formatUnits, hex, short } from "./util.js";
+import { say } from "@clip-wallet/core";
 
 export const TGAS = 10n ** 12n;
 export const YOCTO_PER_NEAR = 10n ** 24n;
@@ -105,7 +106,7 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
     switch (a.kind) {
       case "Transfer": {
         gas += SIMPLE_ACTION_GAS;
-        titles.push(`Send ${near(a.deposit)} to ${short(tx.receiverId)}`);
+        titles.push(say("bg.req.sendTo", { amount: near(a.deposit), to: short(tx.receiverId) }));
         lines.push({ label: "To", value: tx.receiverId });
         acc.add(NEAR, -a.deposit);
         break;
@@ -130,7 +131,7 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
           const outAsset = unwraps ? NEAR : assetFor(networkId, refOut, outMeta);
           const inText = inMeta ? `${formatUnits(amt, inMeta.decimals, 6)} ${inMeta.symbol}` : `${amt} units of ${contract}`;
           const outText = unwraps ? near(refRoute.minOut) : outMeta ? `${formatUnits(refRoute.minOut, outMeta.decimals, 6)} ${outMeta.symbol}` : `${refRoute.minOut} units of ${refOut}`;
-          titles.push(`Swap ${inText} for at least ${outText}`);
+          titles.push(say("bg.near.swapAtLeast", { pay: inText, get: outText }));
           lines.push(
             { label: "You get at least", value: `${outText}, or the swap is undone and your tokens come back` },
             { label: "Exchange", value: `Ref Finance (${s(A.receiver_id)!})` },
@@ -139,7 +140,7 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
           acc.add(inAsset, -amt);
           acc.add(outAsset, refRoute.minOut);
           for (const [c, meta, asset] of [[contract, inMeta, inAsset], [refOut, outMeta, outAsset]] as const) {
-            if (asset.spam) warn({ level: "danger", code: "known-scam", message: `This token (${c}) looks like a copy of a well-known token. It isn't the real one.` });
+            if (asset.spam) warn({ level: "danger", code: "known-scam", message: say("bg.near.copyToken", { token: c }) });
             if (!meta && !(c === refOut && unwraps)) blindWarn("This token's details couldn't be read.");
           }
           break;
@@ -149,12 +150,12 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
           const asset = assetFor(networkId, contract, meta);
           const amt = BigInt(A.amount as string);
           const amountText = meta ? `${formatUnits(amt, meta.decimals)} ${meta.symbol}` : `${amt} units of ${contract}`;
-          titles.push(`Send ${amountText} to ${short(s(A.receiver_id)!)}`);
+          titles.push(say("bg.req.sendTo", { amount: amountText, to: short(s(A.receiver_id)!) }));
           lines.push({ label: "To", value: s(A.receiver_id)! }, { label: "Token", value: `${meta?.name ?? "Unknown token"} (${contract})` });
           if (s(A.memo)) lines.push({ label: "Memo", value: s(A.memo)! });
           if (m === "ft_transfer_call") lines.push({ label: "Also", value: `${short(s(A.receiver_id)!)} runs its own code with the tokens${s(A.msg) ? `: ${s(A.msg)!.slice(0, 200)}` : ""}` });
           acc.add(asset, -amt);
-          if (asset.spam) warn({ level: "danger", code: "known-scam", message: `This token (${contract}) looks like a copy of a well-known token. It isn't the real one.` });
+          if (asset.spam) warn({ level: "danger", code: "known-scam", message: say("bg.near.copyToken", { token: contract }) });
           if (!meta) blindWarn("This token's details couldn't be read.");
           break;
         }
@@ -165,11 +166,11 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
           break;
         }
         if (m === "storage_withdraw" || m === "storage_unregister") {
-          titles.push(`Withdraw your storage deposit from ${short(contract)}`);
+          titles.push(say("bg.near.withdrawStorage", { contract: short(contract) }));
           break;
         }
         if ((m === "nft_transfer" || m === "nft_transfer_call") && s(A.receiver_id) && s(A.token_id)) {
-          titles.push(`Send NFT ${s(A.token_id)!.slice(0, 40)} to ${short(s(A.receiver_id)!)}`);
+          titles.push(say("bg.near.sendNft", { id: s(A.token_id)!.slice(0, 40), to: short(s(A.receiver_id)!) }));
           lines.push({ label: "Collection", value: contract }, { label: "To", value: s(A.receiver_id)! });
           if (m === "nft_transfer_call") lines.push({ label: "Also", value: `${short(s(A.receiver_id)!)} runs its own code with the NFT` });
           break;
@@ -177,11 +178,11 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         if (net && WRAP_CONTRACTS[net] === contract && (m === "near_deposit" || m === "near_withdraw")) {
           const wnear = assetFor(networkId, contract, { name: "Wrapped NEAR", symbol: "wNEAR", decimals: 24 });
           if (m === "near_deposit") {
-            titles.push(`Wrap ${near(a.deposit)} into wNEAR`);
+            titles.push(say("bg.near.wrap", { amount: near(a.deposit) }));
             acc.add(wnear, a.deposit);
           } else if (isUint(A.amount)) {
             const amt = BigInt(A.amount as string);
-            titles.push(`Unwrap ${formatUnits(amt, 24, 6)} wNEAR into NEAR`);
+            titles.push(say("bg.near.unwrap", { amount: formatUnits(amt, 24, 6) }));
             acc.add(wnear, -amt);
             acc.add(NEAR, amt);
           } else titles.push("Unwrap wNEAR into NEAR");
@@ -190,28 +191,28 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         const pool = isPool(networkId, contract);
         const name = poolName(contract);
         if (m === "deposit_and_stake" || (pool && m === "deposit")) {
-          titles.push(`Stake ${near(a.deposit)} with ${name}`);
+          titles.push(say("bg.req.stakeWith", { amount: near(a.deposit), validator: name }));
           lines.push({ label: "Validator", value: contract }, { label: "Unstaking", value: `When you unstake later: ${UNSTAKE_NOTE}` });
           break;
         }
         if (pool && (m === "unstake" || m === "unstake_all")) {
-          titles.push(m === "unstake" && isUint(A.amount) ? `Unstake ${near(BigInt(A.amount as string))} from ${name}` : `Unstake everything from ${name}`);
+          titles.push(m === "unstake" && isUint(A.amount) ? say("bg.req.unstakeFrom", { amount: near(BigInt(A.amount as string)), validator: name }) : say("bg.near.unstakeAll", { validator: name }));
           lines.push({ label: "Validator", value: contract }, { label: "When", value: UNSTAKE_NOTE });
           break;
         }
         if (pool && (m === "withdraw" || m === "withdraw_all")) {
-          titles.push(m === "withdraw" && isUint(A.amount) ? `Withdraw ${near(BigInt(A.amount as string))} of unstaked NEAR from ${name}` : `Withdraw your unstaked NEAR from ${name}`);
+          titles.push(m === "withdraw" && isUint(A.amount) ? say("bg.near.withdrawFrom", { amount: near(BigInt(A.amount as string)), validator: name }) : say("bg.near.withdrawAllFrom", { validator: name }));
           lines.push({ label: "Validator", value: contract });
           if (m === "withdraw" && isUint(A.amount)) acc.add(NEAR, BigInt(A.amount as string));
           break;
         }
         if (pool && (m === "stake" || m === "stake_all")) {
-          titles.push(m === "stake" && isUint(A.amount) ? `Restake ${near(BigInt(A.amount as string))} with ${name}` : `Restake your unstaked NEAR with ${name}`);
+          titles.push(m === "stake" && isUint(A.amount) ? say("bg.near.restakeWith", { amount: near(BigInt(A.amount as string)), validator: name }) : say("bg.near.restakeAllWith", { validator: name }));
           lines.push({ label: "Validator", value: contract });
           break;
         }
         // Generic contract call.
-        titles.push(`Call ${m} on ${short(contract)}`);
+        titles.push(say("bg.near.call", { method: m, contract: short(contract) }));
         lines.push({ label: "App contract", value: contract }, { label: "Method", value: m });
         if (args) lines.push({ label: "Arguments", value: pretty(args) });
         else if (a.args.length) {
@@ -227,16 +228,16 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         const key = publicKeyToString(a.publicKey);
         const p = a.accessKey.permission;
         if (p === "FullAccess") {
-          titles.push(`Give ${host} full control of ${short(tx.receiverId)}`);
+          titles.push(say("bg.near.giveFullControl", { host, account: short(tx.receiverId) }));
           lines.push({ label: "New full-access key", value: key });
           warn({
             level: "danger",
             code: "account-takeover",
-            message: `This gives ${host} full control of your account ${tx.receiverId}. Whoever holds that key can move everything and lock you out.`,
+            message: say("bg.near.fullControlWarn", { host, account: tx.receiverId }),
           });
         } else {
           const methods = p.methodNames.length ? p.methodNames.join(", ") : "any method";
-          titles.push(`Let ${host} use ${short(p.receiverId)} for you`);
+          titles.push(say("bg.near.letUse", { host, account: short(p.receiverId) }));
           lines.push(
             { label: "New app key", value: key },
             { label: "Can call", value: `${methods} on ${p.receiverId} (it can't send your NEAR)` },
@@ -252,24 +253,24 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         gas += SIMPLE_ACTION_GAS;
         const key = publicKeyToString(a.publicKey);
         if (samePublicKey(a.publicKey, env.publicKey)) {
-          titles.push(`Remove this wallet's key from ${short(tx.receiverId)}`);
+          titles.push(say("bg.near.removeOwnKey", { account: short(tx.receiverId) }));
           warn({
             level: "danger",
             code: "account-takeover",
-            message: `This removes Clip Wallet's own key from ${tx.receiverId}. You'll lose access to the account from this wallet.`,
+            message: say("bg.near.removesOwnKeyWarn", { account: tx.receiverId }),
           });
-        } else titles.push(`Remove a key from ${short(tx.receiverId)}`);
+        } else titles.push(say("bg.near.removeKey", { account: short(tx.receiverId) }));
         lines.push({ label: "Key", value: key });
         break;
       }
       case "DeleteAccount": {
         gas += SIMPLE_ACTION_GAS;
-        titles.push(`Delete ${short(tx.receiverId)}`);
+        titles.push(say("bg.near.deleteAccount", { account: short(tx.receiverId) }));
         lines.push({ label: "Everything left goes to", value: a.beneficiaryId });
         warn({
           level: "danger",
           code: "account-closure",
-          message: `Deletes the account ${tx.receiverId} and sends everything left to ${a.beneficiaryId}. Tokens and NFTs held by the account are lost.`,
+          message: say("bg.near.deletesAccountWarn", { account: tx.receiverId, to: a.beneficiaryId }),
         });
         break;
       }
@@ -277,7 +278,7 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
       case "UseGlobalContract": {
         gas += SIMPLE_ACTION_GAS * 4n;
         const what = a.kind === "DeployContract" ? `${a.code.length} bytes of code` : "a shared (global) contract";
-        titles.push(`Replace the code on ${short(tx.receiverId)}`);
+        titles.push(say("bg.near.replaceCode", { account: short(tx.receiverId) }));
         lines.push({ label: "Code", value: what });
         if (a.kind === "UseGlobalContract") {
           const id = a.contractIdentifier;
@@ -292,22 +293,22 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
       }
       case "DeployGlobalContract":
         gas += SIMPLE_ACTION_GAS * 4n;
-        titles.push(`Publish a shared contract (${a.code.length} bytes)`);
+        titles.push(say("bg.near.publishShared", { bytes: a.code.length }));
         lines.push({ label: "Publishing cost", value: "Paid from your balance for storing the code" });
         warn({ level: "caution", code: "high-fee", message: "Publishing a shared contract locks NEAR for its storage." });
         break;
       case "CreateAccount":
         gas += SIMPLE_ACTION_GAS;
-        titles.push(`Create the account ${tx.receiverId}`);
+        titles.push(say("bg.near.createAccount", { account: tx.receiverId }));
         break;
       case "Stake":
         gas += SIMPLE_ACTION_GAS;
-        titles.push(`Lock ${near(a.stake)} as a validator stake`);
+        titles.push(say("bg.near.lockValidatorStake", { amount: near(a.stake) }));
         lines.push({ label: "Validator key", value: publicKeyToString(a.publicKey) });
         break;
       case "Delegate":
         gas += SIMPLE_ACTION_GAS;
-        titles.push(`Pay the fees for a request from ${short(a.delegateAction.senderId)}`);
+        titles.push(say("bg.near.payFeesFor", { account: short(a.delegateAction.senderId) }));
         lines.push({ label: "Relays", value: `${a.delegateAction.actions.length} action(s) from ${a.delegateAction.senderId} to ${a.delegateAction.receiverId}` });
         blindWarn("This relays someone else's signed request, and you pay its fees.");
         break;
@@ -318,7 +319,7 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
     }
   }
 
-  if (!tx.actions.length) titles.push(`Empty transaction to ${short(tx.receiverId)}`);
+  if (!tx.actions.length) titles.push(say("bg.near.emptyTx", { account: short(tx.receiverId) }));
   // Registration and wrapping NEAR are side effects: lead with the main action.
   const main = titles.findIndex((t) => !t.startsWith("Register ") && !t.startsWith("Wrap "));
   const title = titles.length <= 1 ? (titles[0] ?? "") : main > 0 ? titles[main]! : titles[0]!;

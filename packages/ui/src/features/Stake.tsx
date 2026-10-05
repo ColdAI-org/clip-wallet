@@ -4,6 +4,7 @@ import { useAsync, useRouter } from "../context";
 import { Button, Card, Chip, Empty, ErrorNote, Field, Screen, Spinner } from "../components";
 import { canonicalAmount, parseUnits } from "../lib/format";
 import { useUiT, type UiMessageId } from "../i18n";
+import { useBgText } from "../i18n/bg";
 import type { StakeAssetView, StakePositionView } from "./client";
 import { useFeatures } from "./context";
 
@@ -146,6 +147,7 @@ function claimChoiceText(c: { id: string; title: string; detail: string }, t: Re
 
 /** "Stake SOL": how it works, where (picked for you), how much. */
 export function StakeAsset(props: { assetKey: string }) {
+  const bg = useBgText();
   const t = useUiT();
   const features = useFeatures();
   const { navigate } = useRouter();
@@ -214,9 +216,9 @@ export function StakeAsset(props: { assetKey: string }) {
               <input type="radio" name="stake-option" checked={optionId === o.id} onChange={() => setOptionId(o.id)} />
               <span className="clip-asset-row__main">
                 <span className="clip-asset-row__symbol">
-                  {o.title} {o.recommended && <Chip tone="accent">{t("stake.pickedForYou")}</Chip>}
+                  {bg.msg(o.titleMsg, o.title)} {o.recommended && <Chip tone="accent">{t("stake.pickedForYou")}</Chip>}
                 </span>
-                <span className="clip-asset-row__name">{o.detail}</span>
+                <span className="clip-asset-row__name">{bg.msg(o.detailMsg, o.detail)}</span>
               </span>
             </label>
           </li>

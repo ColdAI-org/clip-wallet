@@ -7,3 +7,4 @@ export * from "./locales.js";
 export { formatMessage, parseMessage, messageArguments, messageTags, MessageSyntaxError, type MessageValues } from "./message.js";
 export * from "./numbers.js";
 export * from "./translator.js";
+export { formatMsg, type MsgLike } from "./msg.js";

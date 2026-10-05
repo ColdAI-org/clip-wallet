@@ -5,6 +5,7 @@ import { type AsaInfo, asaAsset, asaInfo } from "./assets.js";
 import { algoAsset } from "./networks.js";
 import type { Item, Normalized } from "./txn.js";
 import { abs, big, formatUnits, hex, short, textOf } from "./util.js";
+import { say } from "@clip-wallet/core";
 
 export interface Line {
   label: string;
@@ -127,8 +128,8 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
     case "pay": {
       const p = txn.payment!;
       const to = addr(p.receiver);
-      title = sender === me || to !== me ? `Send ${amountText(algo, p.amount)} to ${who(to, me)}` : `Receive ${amountText(algo, p.amount)} from ${short(sender)}`;
-      if (sender !== me && to !== me) title = `${short(sender)} sends ${amountText(algo, p.amount)} to ${short(to)}`;
+      title = sender === me || to !== me ? `Send ${amountText(algo, p.amount)} to ${who(to, me)}` : say("bg.req.receiveFrom", { amount: amountText(algo, p.amount), from: short(sender) });
+      if (sender !== me && to !== me) title = say("bg.req.othersSend", { from: short(sender), amount: amountText(algo, p.amount), to: short(to) });
       move(algo, sender, to, p.amount);
       if (p.closeRemainderTo) {
         const close = addr(p.closeRemainderTo);
@@ -164,16 +165,16 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
         lines.push({ label: "Then", value: `Any ${a.symbol} left goes to ${close}${toIssuer ? " (the token's issuer)" : ""}, and ${sender === me ? "your" : "the"} 0.1 ALGO deposit is unlocked` });
         move(a, sender, to, x.amount);
         if (toIssuer || close === sender) {
-          if (signed) warnings.push({ level: "caution", code: "account-closure", message: `Removes ${a.symbol}. Any ${a.symbol} still in the account goes back to its issuer.` });
+          if (signed) warnings.push({ level: "caution", code: "account-closure", message: say("bg.algorand.removesAsset", { symbol: a.symbol }) });
         } else {
           danger("account-closure", `Removes ${a.symbol} and sends every ${a.symbol} left to ${close}.`);
         }
       } else if (x.amount === 0n && to === sender) {
-        title = `Add ${a.symbol} to ${sender === me ? "your account" : short(sender)}`;
+        title = sender === me ? say("bg.req.addToYourAccount", { symbol: a.symbol }) : say("bg.req.addToAccount", { symbol: a.symbol, who: short(sender) });
         lines.push({ label: "Why", value: OPT_IN_LINE });
       } else {
-        title = sender === me || to !== me ? `Send ${amountText(a, x.amount)} to ${who(to, me)}` : `Receive ${amountText(a, x.amount)} from ${short(sender)}`;
-        if (sender !== me && to !== me) title = `${short(sender)} sends ${amountText(a, x.amount)} to ${short(to)}`;
+        title = sender === me || to !== me ? `Send ${amountText(a, x.amount)} to ${who(to, me)}` : say("bg.req.receiveFrom", { amount: amountText(a, x.amount), from: short(sender) });
+        if (sender !== me && to !== me) title = say("bg.req.othersSend", { from: short(sender), amount: amountText(a, x.amount), to: short(to) });
         move(a, sender, to, x.amount);
       }
       lines.push({ label: "Token", value: `${a.name} (asset ${x.assetIndex})` });
@@ -191,10 +192,10 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
         const a = asset(c.assetIndex);
         const destroy = !c.total && !c.decimals && !c.manager && !c.reserve && !c.freeze && !c.clawback && !c.unitName && !c.assetName && !c.assetURL && !c.assetMetadataHash;
         if (destroy) {
-          title = `Delete token ${a.symbol}`;
+          title = say("bg.req.deleteToken", { symbol: a.symbol });
           lines.push({ label: "Token", value: `${a.name} (asset ${c.assetIndex})` });
         } else {
-          title = `Change the settings of ${a.symbol}`;
+          title = say("bg.req.changeTokenSettings", { symbol: a.symbol });
           lines.push({ label: "Token", value: `${a.name} (asset ${c.assetIndex})` });
         }
       }
@@ -219,21 +220,21 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
       opaque = true;
       switch (c.onComplete) {
         case OnApplicationComplete.OptInOC:
-          title = `Join app ${app}`;
+          title = say("bg.algorand.joinApp", { app });
           lines.push({ label: "Locks", value: "0.1 ALGO or more while you're in the app" });
           break;
         case OnApplicationComplete.CloseOutOC:
-          title = `Leave app ${app}`;
+          title = say("bg.algorand.leaveApp", { app });
           break;
         case OnApplicationComplete.ClearStateOC:
-          title = `Leave app ${app} and erase your data in it`;
+          title = say("bg.algorand.leaveAppErase", { app });
           break;
         case OnApplicationComplete.UpdateApplicationOC:
-          title = `Replace the code of app ${app}`;
+          title = say("bg.algorand.replaceAppCode", { app });
           danger("blind-signing", `This replaces app ${app}'s code. Only approve if you run this app.`);
           break;
         case OnApplicationComplete.DeleteApplicationOC:
-          title = `Delete app ${app}`;
+          title = say("bg.algorand.deleteApp", { app });
           danger("blind-signing", `This deletes app ${app}. Only approve if you run this app.`);
           break;
         default:
@@ -257,7 +258,7 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
           warnings.push({ level: "danger", code: "unlimited-approval", message: `${spender} could take all of this token from you, at any time.` });
         }
       } else if (sel && c.onComplete === OnApplicationComplete.NoOpOC && app !== 0n) {
-        title = `Call app ${app} (method 0x${sel})`;
+        title = say("bg.algorand.callApp", { app, method: sel });
       }
       if (method) lines.push({ label: "Method", value: method });
       else if (sel) lines.push({ label: "Method", value: `0x${sel}` });
@@ -308,7 +309,7 @@ function describeOne(item: Item, dc: DescribeContext, assets: Map<string, AsaInf
     warnings.push({
       level: "danger",
       code: "durable-nonce",
-      message: `This transaction only becomes valid at round ${txn.firstValid}, long after you approve it. The app could send it much later.`,
+      message: say("bg.algorand.validLater", { round: txn.firstValid }),
     });
   }
   const one: One = { title, lines, warnings, blind, moves, fee: sender === me ? txn.fee : 0n, opaque };
@@ -465,7 +466,7 @@ export async function describeRequest(n: Normalized, dc: DescribeContext): Promi
   if (sim?.warning) warnings.push(sim.warning);
   const fee = n.items.reduce((a, it, i) => a + (it.sign || it.stxn ? ones[i]!.fee : 0n), 0n);
   if (fee > HIGH_FEE) {
-    warnings.push({ level: fee >= 10n * HIGH_FEE ? "danger" : "caution", code: "high-fee", message: `The network fee is unusually high: ${formatUnits(fee, 6)} ALGO.` });
+    warnings.push({ level: fee >= 10n * HIGH_FEE ? "danger" : "caution", code: "high-fee", message: say("bg.algorand.highFee", { fee: formatUnits(fee, 6) }) });
   }
 
   let title: string;
@@ -475,7 +476,7 @@ export async function describeRequest(n: Normalized, dc: DescribeContext): Promi
     lines = [...ones[0]!.lines];
   } else {
     const signedCount = n.items.filter((i) => i.sign).length;
-    title = `Approve ${ones.length} transactions`;
+    title = say("bg.req.approveCount", { count: ones.length });
     lines = [];
     const grouped = n.groups.some((g) => g.length > 1);
     if (grouped) lines.push({ label: "Together", value: "Transactions in a group all go through, or none do" });

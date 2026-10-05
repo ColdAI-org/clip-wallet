@@ -8,7 +8,7 @@
  * id (selectors like release() are too generic to name globally), and adds the "public-record" warning.
  */
 import type { ChainContext, DappRequest, DecodedRequest, Family, Warning } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, msg, titled } from "@clip-wallet/core";
 import { contractCallDraft, contractCallOf, freezeNew, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
 import { CLIP_HANDLES_ABI, isValidHandle } from "@clip-wallet/names";
 import { decodeFunctionData, encodeFunctionData, type Hex } from "viem";
@@ -82,7 +82,7 @@ export function refineHandleRequest(request: DappRequest, decoded: DecodedReques
       return {
         ...decoded,
         blind: false,
-        title: `Claim the handle @${call.args[0]}`,
+        ...titled(msg("bg.req.claimHandle", { handle: call.args[0] })),
         lines,
         warnings: [...warnings, pub(`Anyone can see that @${call.args[0]} belongs to your Hedera account.`)],
       };

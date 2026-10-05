@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@clip-wallet/core";
 import { MIN_DELEGATION_OCTAS, delegationPayload } from "@clip-wallet/chains-aptos";
 import { fetchJson } from "../http.js";
 import { formatUnits, percent, randomId, shortAddress } from "../util.js";
@@ -156,7 +156,7 @@ export class AptosStaking implements StakingProvider {
     return ranked.slice(0, 10).map((p, i) => {
       const o: StakeOptionView = {
         id: p.address,
-        title: `Pool ${shortAddress(p.address)}`,
+        title: say("bg.staking.pool", { address: shortAddress(p.address) }),
         detail: `${p.apy !== undefined ? `Earns about ${percent(p.apy)} a year · ` : ""}keeps ${percent(p.commission / 100)} of rewards · holds ${formatUnits(p.totalCoins, APT, 0)} APT`,
       };
       if (p.apy !== undefined) o.apy = p.apy;
@@ -183,7 +183,7 @@ export class AptosStaking implements StakingProvider {
     const out: StakePositionView[] = [];
     for (const pool of pools) {
       const s = await this.stakeIn(ctx, pool);
-      const base = { assetKey: "apt", symbol: "APT", decimals: APT, with: `Pool ${shortAddress(pool)}`, networkId: ctx.network.id };
+      const base = { assetKey: "apt", symbol: "APT", decimals: APT, with: say("bg.staking.pool", { address: shortAddress(pool) }), networkId: ctx.network.id };
       const disp = (v: bigint) => `${formatUnits(v, APT, 4)} APT`;
       if (s.active > 0n) {
         out.push({ ...base, id: `${pool}:active`, amount: s.active.toString(), amountDisplay: disp(s.active), status: "active", statusText: "Earning rewards", actions: ["unstake"], partialUnstake: true });
@@ -211,7 +211,7 @@ export class AptosStaking implements StakingProvider {
   async buildStake(p: { amount?: string; optionId?: string }, ctx: ChainContext): Promise<StakeBuild> {
     if (!p.amount || !/^\d+$/.test(p.amount) || BigInt(p.amount) <= 0n) throw new ClipError("Enter how much APT to stake.", "staking/bad-amount");
     const amount = BigInt(p.amount);
-    if (amount < MIN_DELEGATION_OCTAS) throw new ClipError(`Stake at least ${formatUnits(MIN_DELEGATION_OCTAS, APT)} APT.`, "staking/below-minimum");
+    if (amount < MIN_DELEGATION_OCTAS) throw new ClipError(msg("bg.err.stakeAtLeast", { amount: `${formatUnits(MIN_DELEGATION_OCTAS, APT)} APT` }), "staking/below-minimum");
     const { ranked, info } = await this.pools(ctx);
     let pool: AptosPool | undefined;
     if (p.optionId) {
@@ -237,7 +237,7 @@ export class AptosStaking implements StakingProvider {
     ];
     const [fee] = await view<[string]>(ctx, "0x1::delegation_pool::get_add_stake_fee", [pool.address, amount.toString()]).catch((): [string] => ["0"]);
     if (BigInt(fee) > 0n) lines.push({ label: "Held back this epoch", value: `${formatUnits(BigInt(fee), APT, 8)} APT, added back to your stake when the epoch ends` });
-    return { steps: [{ title: `Stake ${formatUnits(amount, APT)} APT`, request: this.request(delegationPayload("add_stake", pool.address, amount), ctx), lines }] };
+    return { steps: [{ ...titled(msg("bg.req.stake", { amount: `${formatUnits(amount, APT)} APT` })), request: this.request(delegationPayload("add_stake", pool.address, amount), ctx), lines }] };
   }
 
   private poolOf(positionId: string): string {
@@ -260,14 +260,14 @@ export class AptosStaking implements StakingProvider {
     // delegation_pool.move moves everything when the rest would fall under 10 APT, and moves at least 10 APT.
     if (amount < s.active && s.active - amount < MIN_DELEGATION_OCTAS) lines.push({ label: "Note", value: "Less than 10 APT would stay staked, so all of it unstakes" });
     if (amount < MIN_DELEGATION_OCTAS && amount < s.active) lines.push({ label: "Note", value: "At least 10 APT unstakes at a time" });
-    return { steps: [{ title: `Unstake ${formatUnits(amount, APT, 4)} APT`, request: this.request(delegationPayload("unlock", pool, amount), ctx), lines }] };
+    return { steps: [{ ...titled(msg("bg.req.unstake", { amount: `${formatUnits(amount, APT, 4)} APT` })), request: this.request(delegationPayload("unlock", pool, amount), ctx), lines }] };
   }
 
   async buildWithdraw(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild> {
     const pool = this.poolOf(p.positionId);
     const s = await this.stakeIn(ctx, pool);
     if (s.inactive <= 0n) throw new ClipError("This APT is still staked or unlocking. Try again once it's ready.", "staking/not-withdrawable");
-    return { steps: [{ title: `Move ${formatUnits(s.inactive, APT, 4)} APT back to your balance`, request: this.request(delegationPayload("withdraw", pool, s.inactive), ctx) }] };
+    return { steps: [{ ...titled(msg("bg.req.moveBack", { amount: `${formatUnits(s.inactive, APT, 4)} APT` })), request: this.request(delegationPayload("withdraw", pool, s.inactive), ctx) }] };
   }
 
   private request(payload: ReturnType<typeof delegationPayload>, ctx: ChainContext): DappRequest {

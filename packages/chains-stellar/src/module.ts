@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import {
@@ -252,7 +239,7 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
       const xlm = xlmAsset(ctx.network.id);
       const lines = [...d.lines, { label: "Network fee", value: `up to ${formatUnits(d.fee, 7)} XLM` }];
       if (!n.submit) lines.push({ label: "Sent by", value: `${host} (it gets the signed transaction)` });
-      return { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, fee: { asset: xlm, amount: d.fee.toString() }, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
+      return { ...base, title: d.title, ...msgOf(d), lines, balanceChanges: d.balanceChanges, fee: { asset: xlm, amount: d.fee.toString() }, simulated: d.simulated, blind: d.blind, warnings: d.warnings };
     }
 
     if (n.kind === "auth") {
@@ -266,11 +253,11 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
       }
       lines.push({ label: "Valid until", value: until }, { label: "Nonce", value: n.preimage.nonce().toString() });
       const root = n.preimage.invocation().function();
-      let title = `Approve a smart contract action for ${host}`;
+      let title = say("bg.req.contractActionFor", { host });
       if (root.switch().name === "sorobanAuthorizedFunctionTypeContractFn") {
         const c = root.contractFn();
         const fn = c.functionName().toString();
-        title = `Approve ${fn} on contract ${short(StrKey.encodeContract(c.contractAddress().contractId() as never))}`;
+        title = say("bg.req.approveFnOnContract", { fn, contract: short(StrKey.encodeContract(c.contractAddress().contractId() as never)) });
       }
       return { ...base, title, lines, balanceChanges: [], simulated: false, blind: false, warnings: [] };
     }
@@ -279,7 +266,7 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
     const warnings: Warning[] = readable ? [] : [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }];
     return {
       ...base,
-      title: `Sign a message for ${host}`,
+      ...titled(msg("bg.req.signMessage", { host })),
       lines: [{ label: "Message", value: readable ? n.message : JSON.stringify(n.message) }],
       balanceChanges: [],
       simulated: false,
@@ -448,7 +435,7 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
       const code = asset.getCode();
       const issuer = asset.getIssuer();
       const held = mine.balances.find((b) => b.asset_code === code && b.asset_issuer === issuer);
-      if (!held || BigInt(toBase(held.balance)) < amount) throw new ClipError(`You don't have enough ${code}.`, "stellar/insufficient-token");
+      if (!held || BigInt(toBase(held.balance)) < amount) throw new ClipError(msg("bg.err.notEnough", { symbol: code }), "stellar/insufficient-token");
       if (!dest) throw new ClipError(`That Stellar account isn't open yet. They need to open it and add ${code} before they can receive it.`, "stellar/no-destination");
       if (toG !== issuer && !dest.balances.some((b) => b.asset_code === code && b.asset_issuer === issuer)) {
         throw new ClipError(`They need to add ${code} to their Stellar account before they can receive it.`, "stellar/no-trustline");
@@ -562,3 +549,9 @@ export function isContractAddress(value: string): boolean {
 }
 
 export { HorizonError, RpcError, sep41Asset };
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

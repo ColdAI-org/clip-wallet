@@ -1,17 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base58 } from "@scure/base";
@@ -335,8 +322,8 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
     const warnings: Warning[] = [];
     for (const w of ds.flatMap((d) => d.warnings)) if (!warnings.some((x) => x.code === w.code && x.message === w.message)) warnings.push(w);
     return {
-      title: `Approve ${ds.length} transactions`,
-      lines: ds.flatMap((d, i) => [{ label: `Transaction ${i + 1}`, value: d.title }, ...d.lines]),
+      ...titled(msg("bg.req.approveCount", { count: ds.length })),
+      lines: ds.flatMap((d, i) => [{ label: say("bg.label.transactionN", { n: i + 1 }), value: d.title }, ...d.lines]),
       balanceChanges: [...sum.values()].filter((e) => e.delta !== 0n).map((e) => ({ asset: e.asset, delta: e.delta.toString() })),
       warnings,
       blind: ds.some((d) => d.blind),
@@ -364,7 +351,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
         warnings.push(
           looksLikeAccountId(recipient)
             ? { level: "caution", code: "domain-mismatch", message: `This message is addressed to the NEAR account ${recipient}, not to ${host}. Only sign if you expect ${host} to use it there.` }
-            : { level: "danger", code: "domain-mismatch", message: `This message is for ${recipient}, but the request comes from ${host}. It may be a phishing site.` },
+            : { level: "danger", code: "domain-mismatch", message: say("bg.near.messageForPhishing", { recipient, host }) },
         );
       }
       const lines = [
@@ -374,7 +361,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
         { label: "Nonce", value: b64encode(nonce) },
       ];
       if (callbackUrl) lines.push({ label: "Returns to", value: callbackUrl });
-      return { ...base, title: matches ? `Sign in to ${recipient}` : `Sign a message for ${host}`, lines, balanceChanges: [], simulated: false, blind: false, warnings };
+      return { ...base, title: matches ? say("bg.req.signIn", { domain: recipient }) : say("bg.req.signMessage", { host }), lines, balanceChanges: [], simulated: false, blind: false, warnings };
     }
 
     const rpc = rpcFor(ctx);
@@ -389,7 +376,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
     for (const tx of txs) {
       if (!tx.actions.some((a) => a.kind === "Transfer") || isImplicit(tx.receiverId)) continue;
       if (!(await accountExists(rpc, tx.receiverId))) {
-        warnings.push({ level: "caution", code: "new-recipient", message: `There's no NEAR account called ${tx.receiverId}. This transfer will fail and only the fee will be spent.` });
+        warnings.push({ level: "caution", code: "new-recipient", message: say("bg.near.noAccountFails", { account: tx.receiverId }) });
       }
     }
     const NEAR = nearAsset(ctx.network.id);
@@ -404,7 +391,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
       lines.push({ label: "Network fee", value: "A small amount of NEAR" });
     }
     if (n.kind === "signed") lines.push({ label: "Sent by", value: `${host} (it gets the signed transaction)` });
-    const out: DecodedRequest = { ...base, title: d.title, lines, balanceChanges: d.balanceChanges, simulated: false, blind: d.blind, warnings };
+    const out: DecodedRequest = { ...base, title: d.title, ...msgOf(d), lines, balanceChanges: d.balanceChanges, simulated: false, blind: d.blind, warnings };
     if (fee) out.fee = fee;
     return out;
   }
@@ -617,7 +604,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
     } catch (e) {
       throw netError(e);
     }
-    if (mine < amount) throw new ClipError(`You don't have enough ${meta.symbol}.`, "near/insufficient-token");
+    if (mine < amount) throw new ClipError(msg("bg.err.notEnough", { symbol: meta.symbol }), "near/insufficient-token");
     try {
       registered = await rpc.view<unknown>(contract, "storage_balance_of", { account_id: to });
     } catch (e) {
@@ -749,4 +736,10 @@ export function addressFromPublicKey(publicKey: Uint8Array): string {
 export function isAddress(value: string): boolean {
   const v = value.trim();
   return isImplicit(v) || isAccountId(v);
+}
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
 }

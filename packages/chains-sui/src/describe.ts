@@ -5,6 +5,7 @@ import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui/utils";
 import { type CoinMeta, type SimEffects, type SuiGraphQL, GraphQLError, Q, plainSuiError } from "./graphql.js";
 import { SUI_TYPE, coinAssetKey, suiAsset } from "./networks.js";
 import { b64decode, b64encode, formatUnits, short } from "./util.js";
+import { say } from "@clip-wallet/core";
 
 export interface Described {
   title: string;
@@ -263,11 +264,11 @@ export async function describeTransaction(data: TransactionData, bytes: Uint8Arr
   }
 
   // Title: the plainest true sentence we can say.
-  let title = `Approve a transaction for ${o.host}`;
+  let title = say("bg.req.approveTxFor", { host: o.host });
   const others = [...recipients].filter((r) => r !== me);
   if (stake) {
     const amt = changes.get(SUI_TYPE);
-    title = amt != null && amt < 0n ? `Stake ${formatUnits(-amt, 9)} SUI` : gasSplit && gasSplit > 0n ? `Stake ${formatUnits(gasSplit, 9)} SUI` : "Stake SUI";
+    title = amt != null && amt < 0n ? say("bg.req.stake", { amount: `${formatUnits(-amt, 9)} SUI` }) : gasSplit && gasSplit > 0n ? say("bg.req.stake", { amount: `${formatUnits(gasSplit, 9)} SUI` }) : "Stake SUI";
   } else if (unstake && targets.length === 0) {
     title = "Unstake SUI";
   } else if (onlyTransfers && others.length === 1) {
@@ -276,11 +277,11 @@ export async function describeTransaction(data: TransactionData, bytes: Uint8Arr
     if (got && got.size === 1) {
       const [type, amount] = [...got][0]!;
       const a = assetFor(o.networkId, type, await coinMeta(o.gql, type));
-      title = `Send ${formatUnits(amount, a.decimals)} ${a.symbol} to ${short(to)}`;
+      title = say("bg.req.sendSymbolTo", { amount: formatUnits(amount, a.decimals), symbol: a.symbol, to: short(to) });
     } else if (!simulated && gasSplit != null && gasSplit > 0n) {
-      title = `Send ${formatUnits(gasSplit, 9)} SUI to ${short(to)}`;
+      title = say("bg.req.sendTo", { amount: `${formatUnits(gasSplit, 9)} SUI`, to: short(to) });
     } else {
-      title = `Send to ${short(to)}`;
+      title = say("bg.req.sendToOnly", { to: short(to) });
     }
   } else if (targets.length === 1) {
     const fn = targets[0]!.split("::")[2] ?? "";

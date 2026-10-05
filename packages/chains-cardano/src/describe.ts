@@ -11,6 +11,7 @@ import { type ParsedTx, type TxInput, type TxOutput, addressCred, usesScripts } 
 import { type Value, addValue, displayAssetName, emptyValue, nameOf } from "./value.js";
 import { equal, formatUnits, hex, joinWords } from "./util.js";
 import { adaAsset } from "./networks.js";
+import { say } from "@clip-wallet/core";
 
 export interface Me {
   paymentKeyHash: Uint8Array;
@@ -184,7 +185,7 @@ export function describeTx(
       case 2:
       case 11:
         lines.push({ label: "Stake with", value: poolName });
-        if (mine) title ||= `Stake your ADA with ${poolName}`;
+        if (mine) title ||= say("bg.staking.stakeAdaWith", { name: poolName });
         if (c.type === 11 && mine) depositPaid += c.deposit ?? 0n;
         break;
       case 9:
@@ -196,7 +197,7 @@ export function describeTx(
       case 10:
       case 13:
         lines.push({ label: "Stake with", value: poolName }, { label: "Voting power", value: drepText(c.drep!) });
-        if (mine) title ||= `Stake your ADA with ${poolName}`;
+        if (mine) title ||= say("bg.staking.stakeAdaWith", { name: poolName });
         if (c.type === 13 && mine) depositPaid += c.deposit ?? 0n;
         break;
       default:
@@ -278,13 +279,13 @@ export function describeTx(
 
   if (!title) {
     const sends = [...sentTo];
-    if (scripts) title = `Approve a transaction for ${p.host}`;
-    else if (sends.length === 1 && payment) title = `Send ${valueText(sends[0]![1], metas)} to ${shortAddress(sends[0]![0])}`;
-    else if (sends.length > 1 && payment) title = `Send to ${sends.length} addresses`;
+    if (scripts) title = say("bg.req.approveTxFor", { host: p.host });
+    else if (sends.length === 1 && payment) title = say("bg.req.sendTo", { amount: valueText(sends[0]![1], metas), to: shortAddress(sends[0]![0]) });
+    else if (sends.length > 1 && payment) title = say("bg.req.sendToCount", { count: sends.length });
     else if (minted.length) title = `Create ${joinWords(minted)}`;
     else if (burned.length) title = `Destroy ${joinWords(burned)}`;
-    else if (!payment && !stake) title = `Co-sign a transaction for ${p.host}`;
-    else title = `Approve a transaction for ${p.host}`;
+    else if (!payment && !stake) title = say("bg.req.coSignTxFor", { host: p.host });
+    else title = say("bg.req.approveTxFor", { host: p.host });
   }
 
   const units = [...new Set([...b.mint.keys(), ...b.outputs.flatMap((o) => [...o.value.assets.keys()]), ...myIn.assets.keys()])];

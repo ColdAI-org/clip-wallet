@@ -1,19 +1,5 @@
 import "./buffer.js";
-import {
-  type AssetRef,
-  type BalanceChange,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-  type Warning,
-} from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { Address, Cell, type MessageRelaxed, type StateInit, internal, loadStateInit } from "@ton/core";
 import { type AccountEvent, HttpError, type JettonBalance, type JettonPreview, TonHttp, type TonapiNft, type WalletInformation } from "./api.js";
@@ -300,13 +286,13 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
       const body: Body = parseBody(msg.body);
       add(gram, -msg.amount);
       if (msg.testOnly && !m.testnet) {
-        d.warnings.push({ level: "caution", code: "network-matters", message: `${short(to)} is marked as a test-network address, but this is real TON.` });
+        d.warnings.push({ level: "caution", code: "network-matters", message: say("bg.ton.testAddressOnMainnet", { address: short(to) }) });
       }
       switch (body.kind) {
         case "empty":
         case "comment":
         case "encrypted-comment":
-          titles.push(`Send ${g(msg.amount)} to ${short(to)}`);
+          titles.push(say("bg.req.sendTo", { amount: g(msg.amount), to: short(to) }));
           d.lines.push({ label: "To", value: to }, { label: "Amount", value: g(msg.amount) });
           if (body.kind === "comment") d.lines.push({ label: "Comment", value: body.text });
           if (body.kind === "encrypted-comment") d.lines.push({ label: "Comment", value: "Encrypted" });
@@ -316,7 +302,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
           const asset = data ? await jettonMeta(ctx, m, data.master) : null;
           if (!data || !data.owner.equals(m.address) || !asset) {
             d.blind = true;
-            titles.push(`Send tokens from ${short(to)}`);
+            titles.push(say("bg.ton.sendTokensFrom", { from: short(to) }));
             d.lines.push({ label: "Token wallet", value: to }, { label: "Amount", value: `${body.amount} units` });
             d.warnings.push({
               level: "danger",
@@ -326,11 +312,11 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
             break;
           }
           const amt = `${formatUnits(body.amount, asset.decimals)} ${asset.symbol}`;
-          titles.push(`Send ${amt} to ${short(addr(body.destination))}`);
+          titles.push(say("bg.req.sendTo", { amount: amt, to: short(addr(body.destination)) }));
           d.lines.push({ label: "To", value: addr(body.destination) }, { label: "Amount", value: amt }, { label: "Covers token fees", value: `${g(msg.amount)} (unused part comes back)` });
           if (body.forwardComment) d.lines.push({ label: "Comment", value: body.forwardComment });
           if (body.forwardTon > 1n) d.lines.push({ label: "Also forwards", value: g(body.forwardTon) });
-          if (asset.spam) d.warnings.push({ level: "danger", code: "known-scam", message: `This ${asset.symbol} isn't the real one. It only copies the name.` });
+          if (asset.spam) d.warnings.push({ level: "danger", code: "known-scam", message: say("bg.starknet.notReal", { symbol: asset.symbol }) });
           add(asset, -body.amount);
           break;
         }
@@ -338,7 +324,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
           const data = await jettonWalletData(ctx, m, msg.to);
           const asset = data ? await jettonMeta(ctx, m, data.master) : null;
           const amt = asset ? `${formatUnits(body.amount, asset.decimals)} ${asset.symbol}` : `${body.amount} token units`;
-          titles.push(`Burn ${amt}`);
+          titles.push(say("bg.ton.burn", { amount: amt }));
           d.lines.push({ label: "Burns", value: amt });
           d.warnings.push({ level: "caution", code: "blind-signing", message: "Burned tokens are destroyed for good." });
           if (asset) add(asset, -body.amount);
@@ -355,13 +341,13 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
           } catch {
             /* name stays generic */
           }
-          titles.push(`Send ${name} to ${short(addr(body.newOwner))}`);
+          titles.push(say("bg.req.sendTo", { amount: name, to: short(addr(body.newOwner)) }));
           d.lines.push({ label: "To", value: addr(body.newOwner) }, { label: "NFT", value: name }, { label: "Covers fees", value: `${g(msg.amount)} (unused part comes back)` });
           break;
         }
         case "unknown":
           d.blind = true;
-          titles.push(`Send ${g(msg.amount)} to an app contract`);
+          titles.push(say("bg.ton.sendToAppContract", { amount: g(msg.amount) }));
           d.lines.push({ label: "To", value: to }, { label: "Amount", value: g(msg.amount) }, { label: "Data", value: body.op === null ? "Unreadable" : `Operation 0x${body.op.toString(16).padStart(8, "0")}` });
           d.warnings.push({ level: "danger", code: "blind-signing", message: "We can't read what this message tells the contract to do. Only continue if you fully trust this app." });
           break;
@@ -369,7 +355,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
       if (msg.init) d.lines.push({ label: "Also", value: `Creates a new contract at ${short(to)}` });
     }
     d.title = titles.length === 1 ? titles[0]! : `Approve ${titles.length} transfers for ${host}`;
-    if (titles.length > 1) d.lines.unshift(...titles.map((t, i) => ({ label: `Transfer ${i + 1}`, value: t })));
+    if (titles.length > 1) d.lines.unshift(...titles.map((t, i) => ({ label: say("bg.label.transferN", { n: i + 1 }), value: t })));
     return d;
   }
 
@@ -442,7 +428,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
     if (n.kind === "proof") {
       return {
         ...base,
-        title: `Prove to ${host} that this wallet is yours`,
+        ...titled(msg("bg.req.proveOwnership", { host })),
         lines: [
           { label: "Wallet", value: m.friendly },
           { label: "Website", value: host },
@@ -458,7 +444,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
       checkPayload(n.payload, ctx, m);
       const p = n.payload;
       if (p.type === "text") {
-        return { ...base, title: `Sign a message for ${host}`, lines: [{ label: "Message", value: p.text }], balanceChanges: [], simulated: false, blind: false, warnings: [] };
+        return { ...base, ...titled(msg("bg.req.signMessage", { host })), lines: [{ label: "Message", value: p.text }], balanceChanges: [], simulated: false, blind: false, warnings: [] };
       }
       const lines =
         p.type === "binary"
@@ -467,7 +453,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
       if (p.type === "cell") cellFromB64(p.cell, "cell");
       return {
         ...base,
-        title: `Sign data for ${host}`,
+        ...titled(msg("bg.req.signData", { host })),
         lines,
         balanceChanges: [],
         simulated: false,
@@ -506,7 +492,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
     const out = msgs.reduce((a, x) => a + x.amount, 0n);
     if (pl.balance < out + (fee ?? 0n)) warnings.push({ level: "danger", code: "high-fee", message: "You don't have enough GRAM for this and its network fee." });
     if (!n.wc && n.payload.valid_until === undefined) lines.push({ label: "Valid for", value: "5 minutes" });
-    const res: DecodedRequest = { ...base, title: d.title, lines, balanceChanges, simulated, blind: d.blind, warnings };
+    const res: DecodedRequest = { ...base, title: d.title, ...msgOf(d), lines, balanceChanges, simulated, blind: d.blind, warnings };
     if (fee !== null) res.fee = { asset: gramAsset(ctx.network.id), amount: fee.toString() };
     return res;
   }
@@ -645,7 +631,7 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
     const r = await http(ctx)
       .json<JettonBalance>(`${m.tonapi}/v2/accounts/${m.raw}/jettons/${master.toRawString()}`)
       .catch(() => null);
-    if (!r || BigInt(r.balance) < amount) throw new ClipError(`You don't have enough ${p.asset.symbol}.`, "ton/insufficient-token");
+    if (!r || BigInt(r.balance) < amount) throw new ClipError(msg("bg.err.notEnough", { symbol: p.asset.symbol }), "ton/insufficient-token");
     if (balance < DEFAULT_ATTACH + 1n) throw new ClipError("You need a little GRAM to send tokens (about 0.05).", "ton/insufficient");
     return {
       ...base,
@@ -694,4 +680,10 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
     },
     features,
   };
+}
+
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
 }

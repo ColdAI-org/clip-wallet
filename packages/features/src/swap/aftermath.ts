@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
 import {
   SuiGraphQL,
   type TransactionData,
@@ -276,7 +276,7 @@ export class AftermathSwap implements SwapProvider {
         body: { walletAddress: me, completeRoute: route, slippage: req.slippageBps / 10_000 },
       });
     } catch (e) {
-      if (e instanceof ClipError && e.code.startsWith("features/http-")) throw new ClipError(`You don't have enough ${req.sell.symbol} for this swap, including the network fee.`, "swap/insufficient", e);
+      if (e instanceof ClipError && e.code.startsWith("features/http-")) throw new ClipError(msg("bg.err.notEnoughForSwapFee", { symbol: req.sell.symbol }), "swap/insufficient", e);
       throw e;
     }
     if (!tx.txKind) throw new ClipError("Aftermath couldn't prepare this swap. Try again in a moment.", "swap/aftermath-build");
@@ -308,7 +308,7 @@ export class AftermathSwap implements SwapProvider {
     const { transaction } = quote.data as { transaction: string };
     return [
       {
-        title: `Swap ${quote.sell.symbol} for ${quote.buy.symbol}`,
+        ...titled(msg("bg.req.swap", { pay: quote.sell.symbol, get: quote.buy.symbol })),
         request: {
           id: randomId(),
           origin: WALLET_ORIGIN,

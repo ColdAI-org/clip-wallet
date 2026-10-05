@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, msg } from "@clip-wallet/core";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -27,11 +27,11 @@ export async function fetchJson<T>(fetchImpl: typeof fetch, url: string, what: s
       signal: ctl?.signal,
     });
   } catch (cause) {
-    throw new ClipError(`Couldn't reach ${what} right now. Check your connection and try again.`, "security/unreachable", cause);
+    throw new ClipError(msg("bg.err.couldntReach", { what }), "security/unreachable", cause);
   } finally {
     if (timer) clearTimeout(timer);
   }
-  if (res.status === 429) throw new ClipError(`${what} is busy right now. Try again in a minute.`, "security/rate-limited");
+  if (res.status === 429) throw new ClipError(msg("bg.err.isBusy", { what }), "security/rate-limited");
   if (!res.ok) throw new ClipError(`${what} couldn't answer that right now. Try again in a moment.`, `security/http-${res.status}`);
   return (opts.as === "text" ? await res.text() : await res.json()) as T;
 }

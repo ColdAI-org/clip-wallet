@@ -9,6 +9,10 @@
  *    `networkId` is carried for the "network chip" and Advanced mode only.
  */
 
+import { knownMsg, type Msg } from "./messages/msg.js";
+import { recallMsg } from "./messages/recall.js";
+import type { WarningCode } from "./messages/warnings.js";
+
 /* ------------------------------------------------------------------ networks */
 
 /** Network families. Phase 1: evm, hedera, solana, bitcoin. Phase 2 adds the rest. */
@@ -262,37 +266,22 @@ export interface BalanceChange {
 
 export interface Warning {
   level: "info" | "caution" | "danger";
-  code:
-    | "blind-signing"
-    | "unlimited-approval"
-    | "approval-for-all"
-    | "permit"
-    | "durable-nonce"
-    | "known-scam"
-    | "domain-mismatch"
-    | "new-recipient"
-    | "network-matters"
-    | "simulation-failed"
-    | "inscribed-utxo"
-    | "high-fee"
-    // Phase 2 (near-stellar-tezos-algorand)
-    /** Hands control of the account to another key (Algorand rekey, NEAR full-access AddKey, Stellar setOptions signer/master weight). */
-    | "account-takeover"
-    /** Closes the account and sends everything left to someone (Algorand close-to, NEAR DeleteAccount, Stellar accountMerge). */
-    | "account-closure"
-    /** The recipient (an exchange, usually) needs a memo, or the funds may be lost (Stellar SEP-29). */
-    | "memo-required"
-    // Phase 2.5 (security)
-    /** The site is on a phishing list (MetaMask, ScamSniffer, Phantom, PolkadotJS) or a scanning provider flagged it. */
-    | "phishing-site"
-    /** The recipient looks like an address you used before but isn't (look-alike / zero-value transfer poisoning). */
-    | "address-poisoning"
-    /** A scanning provider or a scam address list says this transaction would hurt you. */
-    | "malicious-transaction"
-    // Phase 2.5 (social)
-    /** Writes something anyone can read, forever (publishing addresses on a Clip handle links them together). */
-    | "public-record";
+  /**
+   * What kind of risk (WARNING_CODES in ./messages/warnings.ts, with notes):
+   * blind-signing, unlimited-approval, approval-for-all, permit, durable-nonce, known-scam, domain-mismatch,
+   * new-recipient, network-matters, simulation-failed, inscribed-utxo, high-fee;
+   * Phase 2: account-takeover (hands control of the account to another key: Algorand rekey, NEAR full-access
+   * AddKey, Stellar setOptions signer/master weight), account-closure (closes the account and sends what's left:
+   * Algorand close-to, NEAR DeleteAccount, Stellar accountMerge), memo-required (the recipient, usually an
+   * exchange, needs a memo: Stellar SEP-29);
+   * Phase 2.5 security: phishing-site (the site is on a phishing list or a scanner flagged it), address-poisoning
+   * (looks like an address you used but isn't), malicious-transaction (a scanner or scam list says this hurts you);
+   * Phase 2.5 social: public-record (writes something anyone can read, forever).
+   */
+  code: WarningCode;
   message: string;
+  /** Additive: `message` as a translatable Msg. Absent → warningMsg() derives one (exact sentence or the code's general message). */
+  msg?: Msg;
 }
 
 /** What the approval screen shows. Plain language first; the network is a chip. */
@@ -300,7 +289,10 @@ export interface DecodedRequest {
   requestId: string;
   /** "Swap 100 USDC for 0.03 ETH on Uniswap", "Pay 25 USDC", "Sign in to magiceden.io". */
   title: string;
-  lines: { label: string; value: string }[];
+  /** Additive: `title` as a translatable Msg (titleMsgOf() also knows fixed titles). */
+  titleMsg?: Msg;
+  /** labelMsg/valueMsg (additive): translatable versions; fixed labels are known by text (lineLabelMsg()). */
+  lines: { label: string; value: string; labelMsg?: Msg; valueMsg?: Msg }[];
   balanceChanges: BalanceChange[];
   fee?: { asset: AssetRef; amount: string; fiatValue?: number; sponsored?: boolean };
   simulated: boolean;
@@ -372,12 +364,23 @@ export function isWalletOrigin(origin: string | undefined): boolean {
 }
 
 export class ClipError extends Error {
+  /** Shown to the user. Plain words and a next step, never a raw RPC error. */
+  public readonly userMessage: string;
+  /** Additive: `userMessage` as a translatable Msg (given, or the catalog's exact sentence). errorMsg() also knows error kinds. */
+  public readonly msg?: Msg;
+
   constructor(
-    /** Shown to the user. Plain words and a next step, never a raw RPC error. */
-    public readonly userMessage: string,
+    /** A plain-words sentence, or a Msg (its English becomes `userMessage`). */
+    message: string | Msg,
     public readonly code: string,
     public readonly cause?: unknown,
   ) {
+    const userMessage = typeof message === "string" ? message : message.fallback;
     super(`${code}: ${userMessage}`);
+    this.userMessage = userMessage;
+    const m = typeof message === "string" ? (knownMsg(message) ?? recallMsg(message)) : message;
+    if (m) this.msg = m;
   }
 }
+
+export * from "./messages/index.js";

@@ -13,8 +13,10 @@ import type {
   NetworkId,
   Nft,
   TokenBalance,
+  Msg,
   Warning,
 } from "@clip-wallet/core";
+import { currentBgText } from "./i18n/bg";
 import type { PasskeyCeremony } from "./lib/passkey";
 import type { LocalePref } from "@clip-wallet/i18n";
 
@@ -71,6 +73,8 @@ export interface PortfolioView {
 export interface ActivityLeg {
   /** "Moved 25 USDC to pay", "Network fee (sponsored)". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   networkId: NetworkId;
   status: "done" | "pending" | "failed";
   txHash?: string;
@@ -81,6 +85,8 @@ export interface ActivityEntry {
   id: string;
   /** "Paid Magic Eden 25 USDC", "Received 0.1 ETH", "Sent 40 HBAR to alice". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   kind: "pay" | "send" | "receive" | "swap" | "connect" | "sign" | "mint";
   app?: { name: string; origin: string };
   /** Signed fiat amount in display currency (negative = money out). */
@@ -104,6 +110,8 @@ export interface PlanStep {
   kind: "funding" | "gas" | "action";
   /** "Move 25 USDC to the right place", "Network fee paid for you", "Pay Magic Eden". */
   title: string;
+  /** Additive: `title` as a translatable Msg. */
+  titleMsg?: Msg;
   detail?: string;
   balanceChanges?: DecodedRequest["balanceChanges"];
 }
@@ -242,11 +250,16 @@ export interface WalletClient extends PlatformClient {
 export interface UserFacingError {
   userMessage: string;
   code: string;
+  /** Additive: the translatable version (ClipError.msg), when the background sent one. */
+  msg?: Msg;
 }
 
 export function userMessageOf(err: unknown): string {
+  const bg = currentBgText();
   if (err && typeof err === "object" && "userMessage" in err && typeof (err as UserFacingError).userMessage === "string") {
-    return (err as UserFacingError).userMessage;
+    return bg.error(err) ?? (err as UserFacingError).userMessage;
   }
-  return "Something went wrong. Please try again.";
+  return bg.error({ userMessage: GENERIC_ERROR, code: "internal" }) ?? GENERIC_ERROR;
 }
+
+const GENERIC_ERROR = "Something went wrong. Please try again.";

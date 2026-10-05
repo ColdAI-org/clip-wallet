@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@clip-wallet/core";
 import { SolanaRpc, clusterOf } from "@clip-wallet/chains-solana";
 import {
   type Address,
@@ -166,7 +166,7 @@ export class SolanaStaking implements StakingProvider {
     return ranked.slice(0, 10).map((c, i) => {
       const v: StakeOptionView = {
         id: c.vote.votePubkey,
-        title: `Validator ${shortAddress(c.vote.votePubkey)}`,
+        title: say("bg.staking.validator", { name: shortAddress(c.vote.votePubkey) }),
         detail: `${c.apy !== undefined ? `Earns about ${percent(c.apy)} a year · ` : ""}keeps ${c.vote.commission}% of rewards · online ${percent(c.uptime * 100, 0)}`,
       };
       if (c.apy !== undefined) v.apy = c.apy;
@@ -205,7 +205,7 @@ export class SolanaStaking implements StakingProvider {
         decimals: 9,
         amount,
         amountDisplay: `${formatUnits(amount, 9, 4)} SOL`,
-        with: d ? `Validator ${shortAddress(d.voter)}` : "No validator yet",
+        with: d ? say("bg.staking.validator", { name: shortAddress(d.voter) }) : "No validator yet",
         ...statusOf(a.account.data.parsed.type, d, epoch),
         networkId: ctx.network.id,
       };
@@ -232,7 +232,7 @@ export class SolanaStaking implements StakingProvider {
     if (!p.amount || !/^\d+$/.test(p.amount) || BigInt(p.amount) <= 0n) throw new ClipError("Enter how much SOL to stake.", "staking/bad-amount");
     const amount = BigInt(p.amount);
     const min = BigInt((await rpc.call<{ value: number }>("getStakeMinimumDelegation", [{ commitment: "confirmed" }])).value);
-    if (amount < min) throw new ClipError(`Stake at least ${formatUnits(min, 9)} SOL.`, "staking/below-minimum");
+    if (amount < min) throw new ClipError(msg("bg.err.stakeAtLeast", { amount: `${formatUnits(min, 9)} SOL` }), "staking/below-minimum");
     const rent = BigInt(await rpc.call<number>("getMinimumBalanceForRentExemption", [STAKE_ACCOUNT_SIZE]));
     const balance = BigInt((await rpc.call<{ value: number }>("getBalance", [ctx.account.address, { commitment: "confirmed" }])).value);
     const feeBuffer = 10_000n;
@@ -262,10 +262,10 @@ export class SolanaStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Stake ${formatUnits(amount, 9)} SOL`,
+          ...titled(msg("bg.req.stake", { amount: `${formatUnits(amount, 9)} SOL` })),
           request,
           lines: [
-            { label: "With", value: `Validator ${shortAddress(vote)}` },
+            { label: "With", value: say("bg.staking.validator", { name: shortAddress(vote) }) },
             { label: "Opening cost", value: `${formatUnits(rent, 9)} SOL, returned when you withdraw` },
             { label: "Starts earning", value: "In about 2 days" },
           ],
@@ -290,7 +290,7 @@ export class SolanaStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Unstake ${formatUnits(String(acct.account.lamports), 9, 4)} SOL`,
+          ...titled(msg("bg.req.unstake", { amount: `${formatUnits(String(acct.account.lamports), 9, 4)} SOL` })),
           request,
           lines: [{ label: "Ready", value: "In about 2 days, then move it back to your balance" }],
         },
@@ -310,7 +310,7 @@ export class SolanaStaking implements StakingProvider {
       [getWithdrawInstruction({ stake: address(acct.pubkey), recipient: me, withdrawAuthority: createNoopSigner(me), args: lamports })],
       ctx,
     );
-    return { steps: [{ title: `Move ${formatUnits(lamports, 9, 4)} SOL back to your balance`, request }] };
+    return { steps: [{ ...titled(msg("bg.req.moveBack", { amount: `${formatUnits(lamports, 9, 4)} SOL` })), request }] };
   }
 
   private async toRequest(instructions: Instruction[], ctx: ChainContext): Promise<DappRequest> {

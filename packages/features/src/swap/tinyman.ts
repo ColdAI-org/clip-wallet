@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, msg, say } from "@clip-wallet/core";
 import { type GroupTxnSpec, buildGroup, encodeUint64, logicSigAddress, netOf, readAccount, readLocalState } from "@clip-wallet/chains-algorand";
 import type { Step } from "../steps.js";
 import { b64ToBytes, formatUnits } from "../util.js";
@@ -55,7 +55,7 @@ export function fixedInputSwap(inputSupply: bigint, outputSupply: bigint, amount
 
 function assetIdOf(a: AssetRef): bigint {
   if (!a.address) return 0n;
-  if (!/^\d+$/.test(a.address)) throw new ClipError(`Swapping ${a.symbol} isn't available yet.`, "swap/tinyman-bad-asset");
+  if (!/^\d+$/.test(a.address)) throw new ClipError(msg("bg.err.swapAssetUnavailable", { symbol: a.symbol }), "swap/tinyman-bad-asset");
   return BigInt(a.address);
 }
 
@@ -95,7 +95,7 @@ export class TinymanSwap implements SwapProvider {
     if (buyId > 0n && acct.holdings.get(buyId.toString())?.frozen) throw new ClipError(`Your ${buy.symbol} is frozen by its issuer, so you can't receive more.`, "swap/frozen");
     if (sellId > 0n) {
       const h = acct.holdings.get(sellId.toString());
-      if (!h || h.amount < amount) throw new ClipError(`You don't have enough ${sell.symbol} for this swap.`, "swap/insufficient");
+      if (!h || h.amount < amount) throw new ClipError(msg("bg.err.notEnoughForSwap", { symbol: sell.symbol }), "swap/insufficient");
       if (h.frozen) throw new ClipError(`Your ${sell.symbol} is frozen by its issuer, so it can't move right now.`, "swap/frozen");
     }
     const fees = ASSUMED_MIN_FEE * (optIn ? 4n : 3n);
@@ -183,7 +183,7 @@ export class TinymanSwap implements SwapProvider {
     if (d.optIn) lines.push({ label: "Also", value: `Adds ${buy} to your account first. That locks 0.1 ALGO while ${buy} is in your account.` });
     return [
       {
-        title: d.optIn ? `Add ${buy} and swap ${sell} for ${buy}` : `Swap ${sell} for ${buy}`,
+        title: d.optIn ? `Add ${buy} and swap ${sell} for ${buy}` : say("bg.req.swap", { pay: sell, get: buy }),
         lines,
         request: async () => {
           const optIn = await this.check(quote.sell, quote.buy, amount, ctx);

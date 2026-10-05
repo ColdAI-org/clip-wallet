@@ -1,16 +1,4 @@
-import {
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  ClipError,
-  type DappRequest,
-  type DecodedRequest,
-  type Network,
-  type Nft,
-  type Signature,
-  type SignablePayload,
-  type TokenBalance,
-} from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, msg, type Msg } from "@clip-wallet/core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
   type SuggestedParams,
@@ -169,7 +157,7 @@ export function createAlgorandModule(options: AlgorandModuleOptions = {}): Chain
     return {
       requestId: req.id,
       networkId: req.networkId,
-      title: d.title,
+      title: d.title, ...msgOf(d),
       lines,
       balanceChanges: d.balanceChanges,
       fee: { asset: algoAsset(ctx.network.id), amount: d.fee.toString() },
@@ -374,7 +362,7 @@ export function createAlgorandModule(options: AlgorandModuleOptions = {}): Chain
     const symbol = info.unitName || p.asset.symbol;
     const held = await algod.holding(me, id);
     if (!held) throw new ClipError(`You haven't added ${symbol} to your account.`, "algorand/not-opted-in");
-    if (held.amount < amount) throw new ClipError(`You don't have enough ${symbol}.`, "algorand/insufficient-token");
+    if (held.amount < amount) throw new ClipError(msg("bg.err.notEnough", { symbol: symbol }), "algorand/insufficient-token");
     if (held.frozen) throw new ClipError(`Your ${symbol} is frozen by its issuer, so it can't move right now.`, "algorand/frozen");
     if (fee > mine.spendable) throw new ClipError("You need a little ALGO to pay the network fee.", "algorand/insufficient-funds");
     const theirs = await algod.holding(to, id);
@@ -462,3 +450,8 @@ export function createAlgorandModule(options: AlgorandModuleOptions = {}): Chain
   };
 }
 
+/** The Msg a described title carries (explicit titles keep it through the mapping to a DecodedRequest). */
+function msgOf(d: { title: string }): { titleMsg?: Msg } {
+  const m = (d as { titleMsg?: Msg }).titleMsg;
+  return m ? { titleMsg: m } : {};
+}

@@ -279,7 +279,9 @@ describe("SwapService", () => {
     expect(v.warnings.map((w) => w.level)).toEqual(["danger", "caution"]);
     expect(v.warnings[0]!.message).toBe("You'd get about 80% less value than you put in.");
     const queued = await svc.execute(v.id);
-    expect(queued).toEqual({ approvalId: "approval-1", steps: ["Add SAUCE to your account", "Swap 1 HBAR for ~5 SAUCE"] });
+    expect(queued).toMatchObject({ approvalId: "approval-1", steps: ["Add SAUCE to your account", "Swap 1 HBAR for ~5 SAUCE"] });
+    expect(queued.stepMsgs?.map((m) => m?.id)).toEqual(["bg.req.addToYourAccount", "bg.req.swap"]);
+    expect(queued.stepMsgs?.[1]?.values).toEqual({ pay: "1 HBAR", get: "~5 SAUCE" });
     // The swap is queued only after the association went through.
     expect(host.enqueued).toHaveLength(1);
     host.enqueued[0]!.resolve({ transactionId: "0.0.1001@1.1" });

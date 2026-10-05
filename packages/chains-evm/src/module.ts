@@ -6,16 +6,7 @@
  * digest the user approved is exactly what gets broadcast. It is kept in memory per module instance,
  * keyed by request id, and dropped after finalize(). Use one module instance per wallet session.
  */
-import {
-  ClipError,
-  type AssetRef,
-  type ChainContext,
-  type ChainModule,
-  type DappRequest,
-  type Network,
-  type Signature,
-  type SignablePayload,
-} from "@clip-wallet/core";
+import { ClipError, type AssetRef, type ChainContext, type ChainModule, type DappRequest, type Network, type Signature, type SignablePayload, msg } from "@clip-wallet/core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import {
   type Hex,
@@ -171,7 +162,7 @@ export function createEvmModule(opts: EvmModuleOptions = {}): ChainModule & { pe
         return await rpc<Hex>(ctx.network, ctx.fetch, "eth_sendRawTransaction", [signed]);
       } catch (e) {
         if (e instanceof RpcError) {
-          if (/insufficient funds/i.test(e.message)) throw new ClipError(`You don't have enough ${ctx.network.nativeAsset.symbol} to pay for this and its fee.`, "insufficient-funds", e);
+          if (/insufficient funds/i.test(e.message)) throw new ClipError(msg("bg.err.notEnoughForFee", { symbol: ctx.network.nativeAsset.symbol }), "insufficient-funds", e);
           if (/nonce too low|already known/i.test(e.message)) throw new ClipError("This was already sent.", "already-sent", e);
           throw new ClipError("The network rejected this. Nothing was sent.", "broadcast-rejected", e);
         }

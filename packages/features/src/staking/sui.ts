@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@clip-wallet/core";
 import { MIN_STAKE_MIST, STAKED_SUI_TYPE, SuiGraphQL, buildStakeTransaction, buildUnstakeTransaction, normalizeSuiAddress } from "@clip-wallet/chains-sui";
 import { formatUnits, percent, randomId, shortAddress } from "../util.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
@@ -179,7 +179,7 @@ export class SuiStaking implements StakingProvider {
     return ranked.slice(0, 10).map((v, i) => {
       const o: StakeOptionView = {
         id: v.address,
-        title: `Validator ${v.name}`,
+        title: say("bg.staking.validator", { name: v.name }),
         detail: `${v.apy !== undefined ? `Earns about ${percent(v.apy)} a year · ` : ""}keeps ${percent(v.commissionBps / 100)} of rewards`,
       };
       if (v.apy !== undefined) o.apy = v.apy;
@@ -241,7 +241,7 @@ export class SuiStaking implements StakingProvider {
           decimals: SUI,
           amount: s.principal.toString(),
           amountDisplay: `${formatUnits(s.principal, SUI, 4)} SUI`,
-          with: v ? `Validator ${v.name}` : "A validator that has left",
+          with: v ? say("bg.staking.validator", { name: v.name }) : "A validator that has left",
           status: activating ? "activating" : "active",
           statusText: activating ? "Starts earning in about a day" : v ? "Earning rewards" : "Not earning: unstake to get it back",
           actions: ["unstake"],
@@ -259,7 +259,7 @@ export class SuiStaking implements StakingProvider {
   async buildStake(p: { amount?: string; optionId?: string }, ctx: ChainContext): Promise<StakeBuild> {
     if (!p.amount || !/^\d+$/.test(p.amount) || BigInt(p.amount) <= 0n) throw new ClipError("Enter how much SUI to stake.", "staking/bad-amount");
     const amount = BigInt(p.amount);
-    if (amount < MIN_STAKE_MIST) throw new ClipError(`Stake at least ${formatUnits(MIN_STAKE_MIST, SUI)} SUI.`, "staking/below-minimum");
+    if (amount < MIN_STAKE_MIST) throw new ClipError(msg("bg.err.stakeAtLeast", { amount: `${formatUnits(MIN_STAKE_MIST, SUI)} SUI` }), "staking/below-minimum");
     const { validators } = await this.validators(ctx);
     let v: SuiValidator | undefined;
     if (p.optionId) {
@@ -278,11 +278,11 @@ export class SuiStaking implements StakingProvider {
     }
     const transaction = await buildStakeTransaction({ sender: ctx.account.address, validator: v.address, amount });
     const lines = [
-      { label: "With", value: `Validator ${v.name}` },
+      { label: "With", value: say("bg.staking.validator", { name: v.name }) },
       { label: "Starts earning", value: "In about a day" },
     ];
     if (v.apy !== undefined) lines.push({ label: "Earns", value: `About ${percent(v.apy)} a year` });
-    return { steps: [{ title: `Stake ${formatUnits(amount, SUI)} SUI`, request: this.request(transaction, ctx), lines }] };
+    return { steps: [{ ...titled(msg("bg.req.stake", { amount: `${formatUnits(amount, SUI)} SUI` })), request: this.request(transaction, ctx), lines }] };
   }
 
   async buildUnstake(p: StakeActionParams, ctx: ChainContext): Promise<StakeBuild> {
@@ -294,7 +294,7 @@ export class SuiStaking implements StakingProvider {
     return {
       steps: [
         {
-          title: `Unstake ${formatUnits(s.principal, SUI, 4)} SUI`,
+          ...titled(msg("bg.req.unstake", { amount: `${formatUnits(s.principal, SUI, 4)} SUI` })),
           request: this.request(transaction, ctx),
           lines: [{ label: "Back in your balance", value: "Right away, with its rewards" }],
         },
