@@ -1,0 +1,96 @@
+# Internal security audit, October 2026
+
+Scope: the whole monorepo at `e8f463d` (branch `r1/audit`), highest risk first: vault, approval-path integrity
+for all 14 families, 1Mask, WalletConnect, plugins, hardware signing, names/display, media proxy, backup
+service, security package, features (swap/stake), route/settle, and the supply chain. Internal review by the
+team; not a substitute for the external audit planned before mainnet.
+
+Method: read the code against AGENTS.md rules 1–6 and the `ChainModule` contract ("what `decode()` shows is what
+`prepare()` makes the vault sign"). Each fixed finding has a regression test that fails on the old code and
+passes on the fix (checked by reverting the `src/` change). `pnpm -r typecheck`, `pnpm -r test`, `pnpm harness`
+and the extension e2e pass on the final tree.
+
+Severity: **Critical** = a site can get something signed or sent that the user wasn't shown, with funds at risk;
+**High** = same with a realistic precondition, or the user is shown something materially misleading;
+**Medium** = misleading or under-specified approvals, fee/limit drift, privacy leaks with a real attacker;
+**Low** = defence in depth, narrow preconditions; **Info** = notes.
+
+## Findings
+
+| ID | Sev | Area | Finding | Status | Commit | Regression test |
+|---|---|---|---|---|---|---|
+| HED-01 | Critical | chains-hedera | A `TransactionList` was described from its first body, every body was signed, and submit skips bodies for unknown nodes, so a hidden second transaction (another transfer) could be signed and sent. | Fixed: bodies must be identical except `nodeAccountID`. | 1dc420c | `packages/chains-hedera/test/audit.test.ts` |
+| EVM-01 | Critical | chains-evm | EIP-712 permits were described from the raw `message`, but only fields declared in `types` are hashed: an undeclared `allowed: false` showed an unlimited USDC permit as "0 USDC". | Fixed: the description uses the hashed view of the message. | f81abc5 | `packages/chains-evm/test/audit.test.ts` |
+| EVM-02 | High | chains-evm | Unrecognised typed data (Seaport/Blur orders, intents) was non-blind with no warning; only the first 8 message keys were shown, so padding hid real fields. | Fixed: `unknown-call` caution; 16 hashed fields shown, the rest counted. | f81abc5 | same |
+| WC-01 | High | 1mask/walletconnect | When Verify wasn't VALID the peer's self-declared `metadata.url` became the request origin: registry name + verified shield, no unknown-site caution, sign-in (SIWE / `ton_proof`) domain checks passed for the claimed site, and the WalletConnect approval wrote a permission the injected provider honoured for the real site (WC-03). | Fixed: unconfirmed claims become `https://<host>.unverified.invalid` (core `unverifiedOrigin`), shown as "<host> (unverified)" with a caution. | 4c03b8e | `packages/1mask/test/walletconnect.test.ts`, `apps/extension/test/audit-approvals.test.ts` |
+| WC-02 | High | 1mask/walletconnect | A peer with `metadata.url = "clip-wallet"` passed `isWalletOrigin`: labelled "wallet", skipped domain and new-contract checks, signed with the default account. | Fixed (same change). | 4c03b8e | `packages/1mask/test/walletconnect.test.ts` |
+| NEAR-01 | High | chains-near | `near_signTransaction(s)` (WalletConnect) never checked the block hash, which is what ties a NEAR transaction to a network; implicit accounts are identical on mainnet, so a testnet build could sign a mainnet transfer. | Fixed: decode and prepare require the network's RPC to know the block. | 6c94014 | `packages/chains-near/test/near.test.ts` ("audit NEAR-01") |
+| UNK-01 | High | chains-sui, -aptos, -starknet | App-specific Move entry functions / MoveCalls (Sui, Aptos) and unrecognised Starknet entrypoints were non-blind with no warning while previews show coin balances only; objects, NFTs, caps, session keys or delegates handed to them were invisible. | Fixed: `unknown-call` caution (danger for Starknet approve/delegate/session/owner-style calls). Sui/Aptos object-level previews remain future work. | a7938f9 | assertions added to the three modules' existing generic-call tests |
+| APPR-01 | Medium | extension service, engine | A second Approve while the first was broadcasting prepared, signed and broadcast again (the vault approval was fully consumed, so its id could be registered again): a double click could pay twice. | Fixed: one Approve per request (checked and set before any await). | b84466f | `apps/extension/test/audit-approvals.test.ts` |
+| APPR-02 | Medium | extension service, engine | `approve()` re-resolved the site's account, so switching accounts after a request arrived signed it with an account the screen never showed. | Fixed: the request is pinned to the account it was decoded for. | b84466f | same |
+| EVM-03 | Medium | chains-evm | Typed data with another `domain.chainId` only got a caution; the same key signs on mainnet. | Fixed: danger. | f81abc5 | `packages/chains-evm/test/audit.test.ts` |
+| EVM-04 | Medium | chains-evm | `prepare()` re-quoted fees after approval and signed `2·base + tip` of the new quote (up to ~2× the fee shown plus any spike). | Fixed: decode-time quote reused; gas above 1.5× the shown estimate refused; "Network fee at most" shown. | 55c402d | same |
+| TOK-01 | Medium | chains-evm | A non-curated token named USDC/USDT/ETH… was flagged only in the portfolio, not in decode/simulation ("you receive 1,000 USDC"); a single U+202E/U+200B passed the spam check. | Fixed. | ec0e5db | `packages/chains-evm/test/audit.test.ts` |
+| DISP-01 | Medium | engine, extension, core | Token names/symbols, NFT names, memos and site names reached approval screens with bidi overrides and zero-width characters. No shared sanitizer. | Fixed: core `displaySafe` / `sanitizeDecoded` on every decoded request and site name (extension and mobile). | ec0e5db | `apps/extension/test/audit-approvals.test.ts` |
+| WC-04 | Medium | 1mask/walletconnect | The connect screen showed one network/address while the session also shared every other requested family's addresses. | Fixed: the screen says how many networks get addresses, and which. | 4c03b8e | `packages/1mask/test/walletconnect.test.ts` |
+| HED-02 | Medium | chains-hedera | `decodeBody` kept the last of repeated `cryptoTransfer`/data fields while protobuf merges them, so one body could be shown as one transfer and parsed by nodes as another. | Fixed: repeated singular fields / data cases refused. | 1dc420c | `packages/chains-hedera/test/audit.test.ts` |
+| ADA-01 | Medium | chains-cardano | Inputs Koios couldn't resolve were dropped with a caution while the payment key signed the body. | Fixed: blind. | 3dc1173 | `packages/chains-cardano/test/cardano.test.ts` ("audit ADA-01") |
+| BTC-01 | Medium | chains-bitcoin | Segwit v0 `witnessUtxo` amounts were trusted (BIP-143 two-signature fee attack). | Fixed: our coins' amount and script checked against Esplora for dapp PSBTs; mismatch refused, unreachable = caution. | 7a7bd05 | `packages/chains-bitcoin/test/module.test.ts` ("audit BTC-01") |
+| TON-01 | Medium | chains-ton | Jetton/NFT transfers said "(unused part comes back)" whatever `response_destination` the app set; custom payloads weren't shown. | Fixed: destination shown, danger above 1 GRAM when it isn't you. | e7f3e01 | `packages/chains-ton/test/ton.test.ts` ("audit TON-01") |
+| TEZ-01 | Medium | chains-tezos | A Micheline node with both `string` and `bytes` was described by one and forged by the other. | Fixed: one value per node. | 8164e3d | `packages/chains-tezos/test/tezos.test.ts` ("audit TEZ-01") |
+| TEZ-02 | Medium | chains-tezos | After 120 s `prepare()` rebuilt with fresh fees and storage limits nobody saw. | Fixed: a rebuild may not cost more than the original. | 8164e3d | same ("audit TEZ-02") |
+| STK-02 | Medium | chains-starknet | `prepare()` re-estimated and signed 1.5× amount × 1.5× price of the new estimate; never compared with what was shown. | Fixed: decode-time estimate reused; "Network fee at most" shown. | 68254a6 | `packages/chains-starknet/test/starknet.test.ts` ("audit STK-02") |
+| STL-01 | Medium | chains-stellar | Soroban sub-invocations show names only; with no simulation (pubnet has no RPC configured, or RPC down) the call stayed non-blind with a caution. | Fixed: blind. | f236074 | `packages/chains-stellar/test/stellar.test.ts` ("audit STL-01") |
+| FEAT-01 | Medium | features/swap | 0x: only `transaction.to` was checked; the API's `sellAmount` set the approval amount and `exec()` was never read. Jupiter: no checks on `/order`. | Fixed: 0x sellAmount, value and `exec` token/amount/operator checked; Jupiter mints, amount and minimum checked. The Settler recipient/min-out is left to EVM simulation. | e4021a0 | `packages/features/test/swap.test.ts` |
+| SEC-04 | Medium | security/cleanup | Solana cleanup preselected "destroy" from creator-controlled name heuristics (any two non-ASCII chars, "reward"…), matching real assets. | Fixed: preselected only on a list verdict or an advertised link, never for priced assets. | 47f8233 | `packages/security/test/cleanup.test.ts` ("audit SEC-04") |
+| SUP-01 | Medium | supply chain | `axios@1.13.5` (12 high advisories) in the extension/mobile bundles via `@ledgerhq/hw-app-eth`; `http-cache-semantics@4.2.0` (high) via the Aptos SDK. | Fixed: pnpm overrides to 1.20.0 / 4.3.0. | c8006d6 | `pnpm audit --prod` |
+| SUB-01 | Low | chains-substrate | `ChargeAssetTxPayment` asset id signed but never shown. | Fixed. | 6cb2621 | `packages/chains-substrate/test/substrate.test.ts` ("audit SUB-01") |
+| FEAT-02 | Low | features | The provider-derived title replaced the module's own reading for wallet-built requests. | Fixed: the module's title stays as a line. | e4021a0 | `packages/features/test/swap.test.ts` |
+| HED-03 | Low | chains-hedera | The internal `clip_hedera_signTransactionBytes` (returns signed bytes) was accepted from any origin by the module (1Mask doesn't expose it). | Fixed: wallet origin only. | 1dc420c | `packages/chains-hedera/test/audit.test.ts` |
+| 1MASK-01 | Low | 1mask | Unconnected pages learned the wallet's lock state and a default network chosen by the user's largest balance. | Fixed: both need a connection. | 1e29be8 | `packages/1mask/test/router.test.ts` ("audit 1MASK-01") |
+| 1MASK-02 | Low | extension, engine | Disconnecting one family of a site revoked every family and told the site nothing. | Fixed. | 1e29be8 | `packages/engine/test/audit.test.ts` |
+| NAME-01 | Low | names | SNS labels allowed zero-width/bidi characters; ENS reverse names weren't checked for ENSIP-15 normal form. | Fixed. | 022c654 | `packages/names/test/names.test.ts` |
+| MOB-01 | Low | mobile bridge | "Local" http hosts matched by prefix (`10.evil.com`, `*.local`). | Fixed: private IP literals and localhost only. | 022c654 | `apps/mobile/test/bridge.vitest.ts` |
+| PLG-01 | Low | plugins | Network permissions accepted IP literals (`https://192.168.1.1`) and local names. | Fixed. | 9c3b771 | `packages/plugins/test/install.test.ts` |
+| VAULT-01 | Low | vault | `sign()` read payload fields several times, across an await for sub-path payloads: a payload with getters (or a buffer changed meanwhile) could be hashed as one thing and signed as another. Needs code inside the background. | Fixed: one private copy. | 3c754d8 | `packages/vault/test/vault.test.ts` |
+| VAULT-03 | Low | vault | `passkeyBackup.decrypt` lacked the 32-byte PRF floor `encrypt` has. | Fixed. | 3c754d8 | same |
+| VAULT-04 | Low | vault | Account labels kept bidi/zero-width characters. | Fixed. | 4ed0c3c | `packages/vault/test/vault-phase2.test.ts` |
+| MOB-02 | Low | mobile | On Android WebViews without `WEB_MESSAGE_LISTENER`, react-native-webview falls back to `addJavascriptInterface`, visible to every frame, and attributes messages to the top page's URL. | Open: refuse the bridge (or require `isMainFrame`) when the modern listener is missing. | | |
+| HW-01 | Low | hardware | A hardware account's `address` is taken from the page/QR without deriving it from the public key (signing still fails safe; receiving could go to a wrong address). | Open: derive in the background. | | |
+| WC-05 | Low | walletconnect | Request accounts aren't checked against the session's accounts (EVM checks against the site account); Verify `isScam` only warns. | Open (mitigated by WC-01 and EVM `from` checks). | | |
+| PLG-02 | Low | plugins | Response bodies are read fully before the 256 KB cut; bundles of 256 KB–1 MB install but never start. | Open. | | |
+| MEDIA-01 | Low | media-proxy | Host checks are string-based (no DNS-rebinding defence); open bandwidth proxy at 300 req/min/IP; `http:` sources allowed. Mitigated on Cloudflare Workers (private targets blocked by the platform). | Open. | | |
+| BKP-01 | Low | backup service | Backup-count check and insert aren't atomic; chunked bodies are read before the size check. | Open. | | |
+| ROUTE-01 | Low | route | Test-verifier detection is name-based; fine with the bundled graph, not with a fetched one. | Open: allowlist verifier families for mainnet. | | |
+| CHAIN-L | Low | several modules | EVM: data < 4 bytes shown as a plain send; hex `personal_sign` said to be harmless (Safe owners sign `safeTxHash` this way). Cardano: CBOR duplicate keys first-wins. Solana: SIWS `chainId` / `notBefore` not checked or shown. Aptos: max fee not shown after simulation. NEAR: JSON args truncated at 600 chars. Starknet typed data: missing `chainId` accepted, 8 fields shown. TON `v4r2` option: wallet id not network-bound. Substrate: stale-runtime decode; `transfer_approved` field name. Stellar: `signAuthEntry` has no warnings. | Open. | | |
+| 1MASK-L | Low | 1mask | Any page can use the wallet's (possibly private) RPC endpoint for read calls (rate-limited); Beacon `pending` map can grow; no cooldown after a declined connect (capped at 5 pending). | Open. | | |
+| SUP-02 | Low | supply chain | Crypto-critical deps (`@noble/*`, `@scure/*`, `hash-wasm`, `@walletconnect/*`, `@ledgerhq/*`, `@keystonehq/*`) use caret ranges; the lockfile protects installs but a regeneration could pull a bad patch. Remaining prod-path advisories are build tooling (expo CLI `node-forge`, metro `braces`) or unfixed (`elliptic`, low). Dev-only: vitest 2.1.9 (critical, UI server), vite/esbuild, protobufjs, ws, undici. | Open: pin crypto deps exactly; bump vitest ≥ 4.1.11. | | |
+| VAULT-I | Info | vault | Stored Argon2 parameters have only a sanity floor (8 KiB) — a tampered record can't decrypt anyway and `changePassword` writes defaults; `passkeyRemove` works while locked (extension pages only, DoS at most); the vault ignores `SignablePayload.raw` by design (the hardware registry hashes it); JS strings (phrase during unlock) can't be wiped. | Noted. | | |
+| APPR-I | Info | approvals | Queued `DappRequest` objects aren't deep-copied (all current callers pass message-cloned or wallet-built objects). chains-bitcoin's `buildTransfer` uses origin `clip-wallet://send`, which `isWalletOrigin` doesn't recognise. | Noted. | | |
+
+## Reviewed with no finding
+
+- **Vault**: BIP-39 12/24 words with checksum, NFKD; Argon2id 64 MiB/t=3/p=1 by default, parameters range-checked,
+  password NFKC; mobile native Argon2id self-tested against cross-implementation vectors before use; XChaCha20-
+  Poly1305 with random 24-byte nonces and distinct AADs per box (password wrap, blob, per-credential passkey wrap,
+  meta, per-namespace app data with per-namespace HKDF keys); passkey PRF → HKDF(salt) wrap; passkey backup
+  header authenticated; `restorePasskeyBackup` only into an empty vault; approvals: hash covers account, scheme,
+  bytes, taproot tweak and `derivationSubPath`, single use, ≤ 10 min, cleared on lock; scheme/curve checks before
+  consuming; lazy auto-lock for suspended service workers; derivation for all 14 families covered by official or
+  cross-library KATs (`packages/vault/test/vectors.test.ts`, `families.test.ts`).
+- **1Mask**: origin from `port.sender`, page-supplied origins rejected; content scripts top-frame only; strict
+  zod schemas; UI bus limited to extension pages; per-origin/per-family permissions checked on every call;
+  `eth_sign` refused; method allowlists per family; events only to the origin's ports; frozen providers.
+- **Plugins**: sandbox pages with `allow-scripts` only, SES lockdown, strict message schemas both ways, bundle
+  hash pinned, https-only exact-origin network allowlist with `redirect: "error"`, no access to signing.
+- **Hardware**: the host keeps its own payload copy; signatures verified over `bytes` with the stored key before
+  the approval (which also hashes `raw`) is consumed; jobs single use.
+- **Backup service, OIDC, route/settle, revoker**: see the strong points listed in the review notes (ownership-scoped
+  queries, hashed session tokens, PKCE, full OIDC claim checks, exact-match return URLs, locally built router
+  calls with deployment-registry addresses, settle quote cross-checks, exact `approve(spender, 0)` revokes).
+
+## Follow-ups
+
+1. External audit before any mainnet build; re-run this list against it.
+2. Object-level previews for Sui/Aptos (owned-object changes from dry runs) so UNK-01 calls can show what leaves.
+3. Close the open Lows above, starting with MOB-02, HW-01 and SUP-02.
