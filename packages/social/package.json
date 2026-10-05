@@ -1,20 +1,121 @@
 {
   "name": "@clip-wallet/social",
   "version": "0.1.0",
+  "description": "Clip Wallet social layer: contacts, Clip handles on Hedera, notifications and Discover",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/social#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/social"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./messages": "./src/messages.ts",
-    "./views": "./src/views.ts",
-    "./contacts": "./src/contacts/index.ts",
-    "./discover": "./src/discover/index.ts",
-    "./notifications": "./src/notifications/index.ts",
-    "./handles": "./src/handles/index.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./messages": {
+      "development": "./src/messages.ts",
+      "types": "./dist/messages.d.ts",
+      "import": "./dist/messages.js",
+      "default": "./dist/messages.js"
+    },
+    "./views": {
+      "development": "./src/views.ts",
+      "types": "./dist/views.d.ts",
+      "import": "./dist/views.js",
+      "default": "./dist/views.js"
+    },
+    "./contacts": {
+      "development": "./src/contacts/index.ts",
+      "types": "./dist/contacts/index.d.ts",
+      "import": "./dist/contacts/index.js",
+      "default": "./dist/contacts/index.js"
+    },
+    "./discover": {
+      "development": "./src/discover/index.ts",
+      "types": "./dist/discover/index.d.ts",
+      "import": "./dist/discover/index.js",
+      "default": "./dist/discover/index.js"
+    },
+    "./notifications": {
+      "development": "./src/notifications/index.ts",
+      "types": "./dist/notifications/index.d.ts",
+      "import": "./dist/notifications/index.js",
+      "default": "./dist/notifications/index.js"
+    },
+    "./handles": {
+      "development": "./src/handles/index.ts",
+      "types": "./dist/handles/index.d.ts",
+      "import": "./dist/handles/index.js",
+      "default": "./dist/handles/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./messages": {
+        "types": "./dist/messages.d.ts",
+        "import": "./dist/messages.js",
+        "default": "./dist/messages.js"
+      },
+      "./views": {
+        "types": "./dist/views.d.ts",
+        "import": "./dist/views.js",
+        "default": "./dist/views.js"
+      },
+      "./contacts": {
+        "types": "./dist/contacts/index.d.ts",
+        "import": "./dist/contacts/index.js",
+        "default": "./dist/contacts/index.js"
+      },
+      "./discover": {
+        "types": "./dist/discover/index.d.ts",
+        "import": "./dist/discover/index.js",
+        "default": "./dist/discover/index.js"
+      },
+      "./notifications": {
+        "types": "./dist/notifications/index.d.ts",
+        "import": "./dist/notifications/index.js",
+        "default": "./dist/notifications/index.js"
+      },
+      "./handles": {
+        "types": "./dist/handles/index.d.ts",
+        "import": "./dist/handles/index.js",
+        "default": "./dist/handles/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },

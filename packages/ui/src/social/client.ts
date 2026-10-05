@@ -1,6 +1,6 @@
 /**
  * The social screens' door to the background (contacts, Clip handles, notifications, Discover). Implemented over
- * the extension bus (apps/extension/src/shared/social-bus.ts) and the mobile engine; a fake in tests. Nothing here
+ * the extension bus (packages/extension-kit/src/shared/social-bus.ts) and the mobile engine; a fake in tests. Nothing here
  * carries key material: handle actions return the approval they queued on the normal approval path.
  *
  * View types come from @clip-wallet/social/views (type-only).

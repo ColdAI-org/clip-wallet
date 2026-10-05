@@ -1,21 +1,132 @@
 {
   "name": "@clip-wallet/link",
   "version": "0.1.0",
+  "description": "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/link#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/link"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./messages": "./src/service/messages.ts",
-    "./views": "./src/service/views.ts",
-    "./sync-server": "./src/sync/server.ts",
-    "./relay-protocol": "./src/relay/protocol.ts",
-    "./handoff": "./src/handoff/handoff.ts",
-    "./native": "./src/native/index.ts",
-    "./node": "./src/native/node.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./messages": {
+      "development": "./src/service/messages.ts",
+      "types": "./dist/service/messages.d.ts",
+      "import": "./dist/service/messages.js",
+      "default": "./dist/service/messages.js"
+    },
+    "./views": {
+      "development": "./src/service/views.ts",
+      "types": "./dist/service/views.d.ts",
+      "import": "./dist/service/views.js",
+      "default": "./dist/service/views.js"
+    },
+    "./sync-server": {
+      "development": "./src/sync/server.ts",
+      "types": "./dist/sync/server.d.ts",
+      "import": "./dist/sync/server.js",
+      "default": "./dist/sync/server.js"
+    },
+    "./relay-protocol": {
+      "development": "./src/relay/protocol.ts",
+      "types": "./dist/relay/protocol.d.ts",
+      "import": "./dist/relay/protocol.js",
+      "default": "./dist/relay/protocol.js"
+    },
+    "./handoff": {
+      "development": "./src/handoff/handoff.ts",
+      "types": "./dist/handoff/handoff.d.ts",
+      "import": "./dist/handoff/handoff.js",
+      "default": "./dist/handoff/handoff.js"
+    },
+    "./native": {
+      "development": "./src/native/index.ts",
+      "types": "./dist/native/index.d.ts",
+      "import": "./dist/native/index.js",
+      "default": "./dist/native/index.js"
+    },
+    "./node": {
+      "development": "./src/native/node.ts",
+      "types": "./dist/native/node.d.ts",
+      "import": "./dist/native/node.js",
+      "default": "./dist/native/node.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./messages": {
+        "types": "./dist/service/messages.d.ts",
+        "import": "./dist/service/messages.js",
+        "default": "./dist/service/messages.js"
+      },
+      "./views": {
+        "types": "./dist/service/views.d.ts",
+        "import": "./dist/service/views.js",
+        "default": "./dist/service/views.js"
+      },
+      "./sync-server": {
+        "types": "./dist/sync/server.d.ts",
+        "import": "./dist/sync/server.js",
+        "default": "./dist/sync/server.js"
+      },
+      "./relay-protocol": {
+        "types": "./dist/relay/protocol.d.ts",
+        "import": "./dist/relay/protocol.js",
+        "default": "./dist/relay/protocol.js"
+      },
+      "./handoff": {
+        "types": "./dist/handoff/handoff.d.ts",
+        "import": "./dist/handoff/handoff.js",
+        "default": "./dist/handoff/handoff.js"
+      },
+      "./native": {
+        "types": "./dist/native/index.d.ts",
+        "import": "./dist/native/index.js",
+        "default": "./dist/native/index.js"
+      },
+      "./node": {
+        "types": "./dist/native/node.d.ts",
+        "import": "./dist/native/node.js",
+        "default": "./dist/native/node.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
   },

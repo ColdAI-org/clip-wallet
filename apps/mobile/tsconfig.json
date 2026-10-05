@@ -4,9 +4,10 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": false,
-    // Type-check workspace packages against their default (Node/browser) typings. Metro still bundles the
-    // "react-native" export condition at runtime (see docs/phase2/integration/mobile.md, Hedera note).
-    "customConditions": [],
+    // Type-check workspace packages against their TypeScript source ("development"), not the react-native
+    // condition. Metro still bundles the "react-native" export condition at runtime (see
+    // docs/phase2/integration/mobile.md, Hedera note).
+    "customConditions": ["development"],
     "types": ["jest"]
   },
   "include": ["index.ts", "app.config.ts", "clip.config.ts", "src", "test", "scripts/*.d.ts"],

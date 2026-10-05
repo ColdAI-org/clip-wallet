@@ -10,7 +10,11 @@ import {
   enabledFamilies,
   includesEvmChain,
   isMainnetEnabled,
+  isPlaceholderRdns,
+  mainnetProblems,
+  rdnsDomain,
   validateConfig,
+  walletKey,
 } from "../src/index.js";
 
 const base = { name: "Clip", rdns: "org.coldai.clip" };
@@ -31,6 +35,7 @@ describe("defaults", () => {
     expect(c).toEqual({
       ...base,
       icon: "./icon.svg",
+      extension: {},
       theme: { accent: "#4F46E5", accentText: "#FFFFFF", font: "Inter", radius: 12 },
       networks: ["evm:*", "hedera", "solana", "bitcoin"],
       route: { mode: "balanced", filters: {}, settleOnHedera: false },
@@ -148,5 +153,41 @@ describe("mainnet", () => {
       expect((e as ConfigError).problems).toHaveLength(3);
       expect((e as Error).message).toMatch(/^clip.config.ts has 3 problems:\n {2}- name: /);
     }
+  });
+});
+
+describe("identity", () => {
+  it("derives the wallet key and the rdns domain", () => {
+    expect(walletKey({ name: "Clip Wallet", rdns: "org.coldai.clipwallet" })).toBe("clipwallet");
+    expect(walletKey({ name: "Acme Wallet 2", rdns: "com.acme.wallet" })).toBe("acmewallet2");
+    expect(walletKey({ name: "Кошелёк", rdns: "com.acme.koshelek" })).toBe("koshelek");
+    expect(rdnsDomain("org.coldai.clipwallet")).toBe("coldai.org");
+    expect(isPlaceholderRdns("com.example.mywallet")).toBe(true);
+    expect(isPlaceholderRdns("com.acme.wallet")).toBe(false);
+  });
+
+  it("checks homepage, description and the extension public key", () => {
+    expect(problems({ ...base, homepage: "http://acme.example" })[0]).toMatch(/^homepage: use the https address/);
+    expect(problems({ ...base, description: "x".repeat(133) })).toEqual(["description: keep the description to 132 characters or fewer"]);
+    expect(problems({ ...base, extension: { key: "-----BEGIN PRIVATE KEY-----" } })[0]).toMatch(/^extension.key: use the base64 public key/);
+    expect(defineConfig({ ...base, extension: { key: "A".repeat(392) } }).extension.key).toHaveLength(392);
+  });
+});
+
+describe("mainnet checklist", () => {
+  const ack = { enabled: true as const, acknowledged: MAINNET_ACKNOWLEDGEMENT };
+  it("lists what a mainnet build still needs, in plain words", () => {
+    const c = defineConfig({ name: "Acme", rdns: "com.example.acme", icon: "https://cdn.example/icon.png", mainnet: ack });
+    expect(mainnetProblems(c)).toEqual([
+      "rdns: com.example.acme is a placeholder; use a reverse domain you own",
+      "homepage: set your wallet's https website (WalletConnect and the wallet listings link to it)",
+      "extension.key: set the extension's public key so its id stays the same in every store (create-clip-wallet identity writes one)",
+      "walletConnect: set CLIP_WALLETCONNECT_PROJECT_ID to your own WalletConnect Cloud project id",
+      "icon: ship the icon inside the extension (./icon.svg or ./icon.png), not from a URL",
+    ]);
+    expect(mainnetProblems(defineConfig({ name: "Acme", rdns: "org.coldai.clipwallet", homepage: "https://acme.example", extension: { key: "A".repeat(392) }, mainnet: ack }), { [WALLETCONNECT_ENV]: "0".repeat(32) })).toEqual([
+      "rdns: org.coldai.clipwallet is Clip Wallet's; announce your own reverse domain",
+    ]);
+    expect(mainnetProblems(defineConfig({ name: "Acme", rdns: "com.acme.wallet", homepage: "https://acme.example", extension: { key: "A".repeat(392) }, walletConnect: { projectId: "0".repeat(32) }, mainnet: ack }))).toEqual([]);
   });
 });

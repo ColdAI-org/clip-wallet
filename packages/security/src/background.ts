@@ -1,7 +1,7 @@
 import type { DappRequest, DecodedRequest, Network, Warning } from "@clip-wallet/core";
 import { ApprovalsService } from "./approvals/service.js";
 import { CleanupService } from "./cleanup/service.js";
-import type { SecurityConfig, SecurityHost } from "./host.js";
+import { assertSecurityFloor, type SecurityConfig, type SecurityHost } from "./host.js";
 import type { SecurityRequest, SecurityResponseMap } from "./messages.js";
 import { ThreatIntel } from "./threat/service.js";
 import type { ThreatIntelProvider } from "./threat/types.js";
@@ -22,6 +22,7 @@ export class SecurityService {
     config: SecurityConfig,
     deps: { providers?: ThreatIntelProvider[] } = {},
   ) {
+    assertSecurityFloor(config);
     this.threat = new ThreatIntel(host, config.threat, deps.providers);
     this.approvals = new ApprovalsService(host, config, this.threat.isFlaggedAddress);
     this.cleanup = new CleanupService(host);

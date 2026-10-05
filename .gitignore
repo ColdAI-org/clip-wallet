@@ -16,3 +16,5 @@ coverage/
 apps/extension/release/
 .repro/
 apps/extension/store/screenshots/raw/
+# pnpm pack-all output
+.packs/

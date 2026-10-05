@@ -5,7 +5,7 @@
  *  - asks running insight plugins about each readable request and attaches their notes as
  *    `decoded.pluginInsights` (never merged into the wallet's own lines or warnings);
  *  - re-syncs after a prefs change (Advanced mode gates every plugin).
- * Same rules as the extension's background (apps/extension/src/background/plugins.ts).
+ * Same rules as the extension's background (packages/extension-kit/src/background/plugins.ts).
  */
 import type { InsightInput, PluginInsight, PluginsService } from "@clip-wallet/plugins";
 

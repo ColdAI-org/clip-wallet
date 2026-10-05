@@ -22,6 +22,8 @@ const out = await build({
   minify: true,
   legalComments: "none",
   logLevel: "warning",
+  // Workspace packages: their "development" export condition is the TypeScript source (no build needed).
+  conditions: ["development"],
 });
 // Inline <script>: never let the bundle close the tag early.
 const js = out.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");

@@ -1,28 +1,124 @@
 {
   "name": "@clip-wallet/1mask",
   "version": "0.1.0",
+  "description": "1Mask: one wallet for every dapp. EIP-1193/6963, Wallet Standard, CIP-30, TON Connect, NEAR, Stellar, Algorand, Beacon and WalletConnect connectors",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/1mask#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/1mask"
+  },
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./inpage": "./src/inpage/index.ts",
-    "./inpage/p2": "./src/inpage/p2.ts",
-    "./content": "./src/content/index.ts",
-    "./background": "./src/background/index.ts",
-    "./background/p2": "./src/background/p2-families.ts",
-    "./walletconnect": "./src/walletconnect/index.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./inpage": {
+      "development": "./src/inpage/index.ts",
+      "types": "./dist/inpage/index.d.ts",
+      "import": "./dist/inpage/index.js",
+      "default": "./dist/inpage/index.js"
+    },
+    "./inpage/p2": {
+      "development": "./src/inpage/p2.ts",
+      "types": "./dist/inpage/p2.d.ts",
+      "import": "./dist/inpage/p2.js",
+      "default": "./dist/inpage/p2.js"
+    },
+    "./content": {
+      "development": "./src/content/index.ts",
+      "types": "./dist/content/index.d.ts",
+      "import": "./dist/content/index.js",
+      "default": "./dist/content/index.js"
+    },
+    "./background": {
+      "development": "./src/background/index.ts",
+      "types": "./dist/background/index.d.ts",
+      "import": "./dist/background/index.js",
+      "default": "./dist/background/index.js"
+    },
+    "./background/p2": {
+      "development": "./src/background/p2-families.ts",
+      "types": "./dist/background/p2-families.d.ts",
+      "import": "./dist/background/p2-families.js",
+      "default": "./dist/background/p2-families.js"
+    },
+    "./walletconnect": {
+      "development": "./src/walletconnect/index.ts",
+      "types": "./dist/walletconnect/index.d.ts",
+      "import": "./dist/walletconnect/index.js",
+      "default": "./dist/walletconnect/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./inpage": {
+        "types": "./dist/inpage/index.d.ts",
+        "import": "./dist/inpage/index.js",
+        "default": "./dist/inpage/index.js"
+      },
+      "./inpage/p2": {
+        "types": "./dist/inpage/p2.d.ts",
+        "import": "./dist/inpage/p2.js",
+        "default": "./dist/inpage/p2.js"
+      },
+      "./content": {
+        "types": "./dist/content/index.d.ts",
+        "import": "./dist/content/index.js",
+        "default": "./dist/content/index.js"
+      },
+      "./background": {
+        "types": "./dist/background/index.d.ts",
+        "import": "./dist/background/index.js",
+        "default": "./dist/background/index.js"
+      },
+      "./background/p2": {
+        "types": "./dist/background/p2-families.d.ts",
+        "import": "./dist/background/p2-families.js",
+        "default": "./dist/background/p2-families.js"
+      },
+      "./walletconnect": {
+        "types": "./dist/walletconnect/index.d.ts",
+        "import": "./dist/walletconnect/index.js",
+        "default": "./dist/walletconnect/index.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^30.0.0",
-    "happy-dom": "^20.14.5",
-    "jsdom": "^30.1.1",
-    "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^7.3.0",
@@ -39,5 +135,12 @@
     "@walletconnect/types": "^2.25.0",
     "@walletconnect/utils": "^2.25.0",
     "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "happy-dom": "^20.14.5",
+    "jsdom": "^30.1.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
   }
 }

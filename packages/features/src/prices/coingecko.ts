@@ -1,6 +1,6 @@
 import { COINGECKO_IDS, PEGGED_USD, TESTNET_ALIASES } from "./ids.js";
 
-/** The background's PriceFeed seam (apps/extension/src/background/wiring.ts): synchronous reads. */
+/** The background's PriceFeed seam (packages/extension-kit/src/background/wiring.ts): synchronous reads. */
 export interface SyncPriceFeed {
   usd(assetKey: string): number | undefined;
   fx(currency: string): number;

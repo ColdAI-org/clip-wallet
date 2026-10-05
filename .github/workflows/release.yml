@@ -1,20 +1,32 @@
-# Release: for a signed version tag vX.Y.Z, builds the testnet extension packages in the same pinned container
-# the reproducible-build check uses, writes SHA256SUMS, attests SLSA build provenance for every file
-# (actions/attest-build-provenance, Sigstore-backed, verifiable with `gh attestation verify`), and opens a DRAFT
-# GitHub release. Nothing is uploaded to any store.
+# Release, two streams in one workflow.
+#
+# Store stream (Clip Wallet's own extension). For a signed version tag vX.Y.Z, builds the testnet extension
+# packages in the same pinned container the reproducible-build check uses, writes SHA256SUMS, attests SLSA build
+# provenance for every file (actions/attest-build-provenance, Sigstore-backed, verifiable with
+# `gh attestation verify`), and opens a DRAFT GitHub release. Nothing is uploaded to any store.
+#
+# Kit stream (@clip-wallet/* and create-clip-wallet on npm; the only way they reach npm). On every push to main,
+# Changesets opens or updates a "Version packages" pull request (pnpm version-packages: versions, changelogs, and the
+# Scaffold-HBAR template pinned to the new version). Publishing happens only from a signed version tag: after that
+# pull request is merged, the same tag runs pnpm release (pack-all: build + manifest and tarball checks, then
+# changeset publish) with npm provenance, so every tarball carries a Sigstore-signed attestation naming this
+# repository, this workflow and the tagged commit. Versions already on npm are skipped.
 #
 # Tags must be annotated and signed (`git tag -s vX.Y.Z -m "Clip Wallet vX.Y.Z"`, SSH or GPG signing key
-# registered on GitHub). The first job refuses an unsigned or unverified tag, a version that differs from
-# apps/extension/package.json, or a missing CHANGELOG.md section.
+# registered on GitHub). verify-tag refuses an unsigned or unverified tag, a version that differs from
+# apps/extension/package.json, or a missing CHANGELOG.md section; both streams' tag jobs need it.
+#
+# Every third-party action is pinned by full commit SHA; the tag is in the trailing comment.
 name: Release
 
 on:
   push:
+    branches: [main]
     tags: ["v[0-9]+.[0-9]+.[0-9]+", "v[0-9]+.[0-9]+.[0-9]+-*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to (re)build, e.g. v0.1.0"
+        description: "Existing tag to (re)build and publish, e.g. v0.1.0"
         required: true
 
 permissions:
@@ -26,10 +38,40 @@ concurrency:
 
 env:
   TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  NODE_VERSION: "24"
 
 jobs:
+  # ---- Kit stream, main: the "Version packages" pull request (no publishing here) ----
+  version-packages:
+    name: changesets version pull request
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write # the changeset-release/main branch
+      pull-requests: write # the "Version packages" pull request
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          version: pnpm version-packages
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---- Both streams, tags: refuse anything but a signed tag that matches the version ----
   verify-tag:
     name: tag is signed and matches the version
+    if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -59,8 +101,9 @@ jobs:
           [ "$verified" = "true" ] || { echo "::error::tag signature not verified by GitHub ($reason)"; exit 1; }
           echo "$TAG: signed, verified ($reason)"
 
+  # ---- Store stream ----
   build:
-    name: build packages (pinned container)
+    name: build store packages (pinned container)
     needs: verify-tag
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -137,3 +180,37 @@ jobs:
             echo '```'
           } > notes.md
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --title "Clip Wallet $TAG" --notes-file notes.md dist/*
+
+  # ---- Kit stream, tags: npm publish with provenance ----
+  npm:
+    name: npm publish with provenance (changesets)
+    needs: verify-tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # npm provenance (OIDC → Sigstore)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Version packages pull request is merged (no pending changesets)
+        run: |
+          pending="$(find .changeset -name '*.md' ! -name README.md)"
+          [ -z "$pending" ] || { echo "::error::pending changesets; merge the \"chore: version packages\" pull request, then tag again:"; echo "$pending"; exit 1; }
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck, test, harness
+        run: pnpm typecheck && pnpm test && pnpm harness
+      - name: pack-all, then changeset publish (versions already on npm are skipped)
+        run: pnpm release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

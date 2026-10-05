@@ -1,23 +1,65 @@
-# create-clip-wallet (EXPERIMENTAL)
+# create-clip-wallet
 
-> **Experimental.** The `@clip-wallet/*` packages this template depends on are pre-release and not published yet.
-> Expect breaking changes. Generated wallets run on **test networks only** unless you complete the mainnet checklist.
+Start your own non-custodial wallet on the [Clip Wallet](https://github.com/ColdAI-org/clip-wallet) kit: a branded
+browser extension for 14 network families, plus a Scaffold-HBAR dapp that connects to it on Hedera testnet.
 
 ```sh
 npx create-clip-wallet my-wallet
-# or, without prompts
-npx create-clip-wallet my-wallet --name "My Wallet" --accent "#4F46E5" --networks "evm:*,hedera" --yes
+# or, without questions
+npx create-clip-wallet my-wallet --name "Acme Wallet" --rdns com.acme.wallet --accent "#0B7A3B" \
+  --networks "evm:*,hedera,solana,bitcoin" --homepage https://wallet.acme.com --yes
+cd my-wallet && pnpm install && pnpm extension:build && pnpm next:dev
 ```
 
-It copies `templates/extension` into `my-wallet/`, asks for a name, an accent colour and the networks
-(`evm:*`, `evm:<chain id>`, `hedera`, `solana`, `bitcoin`), validates the answers with `@clip-wallet/config`,
-writes `clip.config.ts`, copies the harness to `tools/harness/check.mjs`, and prints the next steps:
+It makes **the same project** as the Scaffold-HBAR template followed by its identity step:
 
-1. `pnpm install`
-2. `cp .env.example .env` and set `CLIP_WALLETCONNECT_PROJECT_ID` (never commit `.env`)
-3. set `rdns` in `clip.config.ts` to a reverse domain you own
-4. `pnpm harness` (must pass before every commit)
+```sh
+npm create scaffold-hbar@latest -- --template ColdAI-org/scaffold-hbar-clip-wallet
+cd <project> && pnpm install && pnpm wallet:identity --name "Acme Wallet" --rdns com.acme.wallet
+```
 
-Mainnet stays off until `clip.config.ts` has `mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT }`.
+Both copy the template the same way (create-scaffold-hbar's copy step: skip `.git`/`node_modules`/`.env`, apply
+`template.json`'s rename map, delete it, `git init`), then write the identity.
 
-The harness is bundled at `prepack` from the monorepo's `tools/harness/check.mjs` (`scripts/copy-harness.mjs`).
+## What the identity step writes
+
+| | |
+| --- | --- |
+| `packages/extension/wallet.identity.json` | name, description, rdns (EIP-6963), homepage, icon, `extension.key` |
+| `packages/extension/.keys/extension.pem` | the extension's private key: 0600, gitignored, never printed; the public half fixes the Chrome extension id |
+| `packages/extension/icon.svg`, `public/icon/*.png` | a starter mark in your accent colour, or your `--icon` |
+| `packages/extension/clip.config.ts` | `theme.accent` and `networks`, when given |
+| `packages/extension/.env`, `packages/nextjs/.env.local` | your WalletConnect project id (`--walletconnect-project-id`), never committed |
+| `docs/listings/` | listing-submission drafts for this identity: EIP-6963, WalletConnect Explorer and, for the families you turn on, TON Connect, NEAR, Stellar Wallets Kit, Tezos Beacon, Algorand use-wallet |
+
+It refuses Clip Wallet's own identity (`org.coldai.*`, the name "Clip Wallet") and anything `@clip-wallet/config`
+rejects, and writes nothing then. Run again, it keeps the extension key unless you pass `--new-key`.
+
+## Commands
+
+```
+create-clip-wallet <folder> [options]   new project
+create-clip-wallet identity [options]   in a project (pnpm wallet:identity)
+create-clip-wallet listings             in a project (pnpm wallet:listings)
+create-clip-wallet mainnet-check        in a project (pnpm wallet:mainnet-check): exit 0 ready, 2 work left, 1 mainnet on but not ready
+```
+
+Options: `--name`, `--rdns`, `--accent`, `--networks`, `--homepage`, `--description`, `--icon`,
+`--walletconnect-project-id`, `--new-key`, `--no-git`, `--root <dir>`, `--yes`. Run with `--help` for details.
+
+## Testnet first
+
+New wallets run on test networks. There is no `--mainnet`: mainnet is a later decision by the wallet's owner, after
+`packages/extension/MAINNET.md`. `pnpm harness` and the extension build both refuse mainnet while a box is open, and the
+build also while `mainnetProblems()` (placeholder rdns, no homepage, no extension key, no WalletConnect project id, a
+remote icon) lists anything.
+
+## Versioning and provenance
+
+create-clip-wallet is released with the `@clip-wallet/*` packages, one version for all, by CI with npm provenance. The
+projects it makes pin that version exactly; `pnpm verify:provenance` checks every kit package's attestation.
+
+The template (`template/` in the package) is bundled at `prepack` from `templates/scaffold-hbar-clip-wallet` in the
+monorepo; files npm won't pack (`.gitignore`, `.npmrc`) travel as `_gitignore` / `_npmrc` and are renamed back.
+
+MIT licence.

@@ -1,43 +1,66 @@
 # Clip Wallet
 
-> Non-custodial multi-chain browser wallet for every CLPR network. Pre-release: test networks only. pnpm monorepo, TypeScript, MIT.
+> Non-custodial multi-chain wallet for every CLPR network (14 families), and a kit for building your own: @clip-wallet/* packages, @clip-wallet/extension-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, MIT.
 
-Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract).
+Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract), packages/config/src/index.ts (clip.config.ts schema).
 
 ## Commands
 - pnpm install && pnpm typecheck && pnpm test && pnpm harness   (all must pass)
+- pnpm --filter @clip-wallet/extension e2e   (extension, Playwright, after extension changes)
+- pnpm pack-all   (build + pack every publishable package into .packs; publishes nothing)
+- pnpm kit:e2e | pnpm kit:e2e:scaffold-hbar   (a kit-built wallet / the Scaffold-HBAR template, end to end from the tarballs)
+- pnpm changeset   (with every change to a published package); releases happen in CI only
 - node --test tools/harness/test/*.test.mjs   (harness unit tests)
-- pnpm --filter <package> test
 
 ## Rules (enforced by pnpm harness)
 - Only packages/vault touches phrases, seeds, private keys, signing and Argon2.
-- Only packages/vault, the extension background and the onboarding screen import @clip-wallet/vault.
+- Only packages/vault, the extension background (packages/extension-kit/src/background, apps/extension background), the mobile background and the onboarding screen import @clip-wallet/vault.
 - Chain modules (packages/chains-*) implement ChainModule and never import or depend on the vault.
-- Never log or commit phrases, keys, secrets or .env values. Tests use public BIP-39 vectors only.
+- Never log or commit phrases, keys, secrets, .env values or key files (*.pem, .keys/). Tests use public BIP-39 vectors only.
 - Every dapp request becomes a DecodedRequest before approval; blind signing is off by default.
-- Networks are invisible in the default UI; testnet by default; mainnet needs the clip.config.ts checklist.
+- Networks are invisible in the default UI; testnet by default; mainnet needs the clip.config.ts checklist and mainnetProblems() empty.
+- The security floor (open phishing lists, decode-before-approve) has no switch; securityFloorProblems() refuses mainnet configs below it.
+- Kit-built wallets (packages/extension/clip.config.ts, no packages/vault): own identity (never org.coldai.* / "Clip Wallet"), clipWallet() build, MAINNET.md boxes before mainnet, kit packages pinned exactly.
+- Published packages: runtime imports declared as dependencies/peers; manifests in the published shape (tools/release/check-manifests.mjs); template in sync (tools/release/sync-template.mjs --check).
 - User-facing errors are ClipError(userMessage in plain words, code).
 
 ## Contract (packages/core/src/index.ts)
-- Network, AssetRef (key merges same-issuer assets across networks), TokenBalance, Nft, Account
+- Network, Family (14), AssetRef (key merges same-issuer assets across networks), TokenBalance, Nft, Account
 - Vault: create, importPhrase, unlock, deriveAccount, sign(SignablePayload) -> Signature
 - DappRequest -> ChainModule.decode -> DecodedRequest -> approve -> prepare -> vault.sign -> finalize
 - ChainModule: derivationPath, addressFromPublicKey, getBalances, getNfts, decode, prepare, finalize, buildTransfer
 - ClipError(userMessage, code, cause)
 
-## Packages
-- packages/core: shared types (the contract). Additive changes only.
-- packages/vault: phrase, derivation, encrypted storage, approval-bound signing, passkey unlock. KATs in packages/vault/test/vectors.test.ts.
-- packages/1mask: dapp connectors (EIP-1193/6963, Solana Wallet Standard, Bitcoin, Hedera, WalletConnect).
-- packages/chains-evm, chains-hedera, chains-solana, chains-bitcoin: ChainModule per family.
-- packages/route: "Route and fund" on CLPRouter. findShortfall, RouteClient.quote / planPayOnHedera / trackRoute; Phase 3 settleOnHedera typed, throws "phase3". Planner vendored from ColdAI-org/clprouter@564e29e (src/vendor/clprouter-sdk); testnet deployment in src/deployments.ts, route graph in src/graph.ts.
-- packages/config: clip.config.ts schema (zod), defaults, defineConfig, MAINNET_ACKNOWLEDGEMENT.
-- packages/ui: React screens and theme tokens (packages/ui/src/screens, packages/ui/src/theme).
-- packages/create-clip-wallet: EXPERIMENTAL scaffolder (templates/extension).
-- apps/extension: MV3 extension (WXT); background owns the vault.
-- tools/harness/check.mjs: the rules above as checks (file:line, plain words).
+## Packages (all published from packages/*, one version, npm provenance)
+- core: shared types (the contract). Additive changes only.
+- config: clip.config.ts schema (zod): name, description, rdns, homepage, icon, extension.key, theme, networks, route {mode, filters, settleOnHedera}, compatibilityMode, hardware, walletConnect, passkeys, services {backupUrl, mediaProxyUrl, linkRelayUrl, clipHandles}, mainnet. defineConfig, validateConfig, mainnetProblems, walletKey, MAINNET_ACKNOWLEDGEMENT.
+- vault: phrase, derivation (14 families), encrypted storage, approval-bound signing, passkey unlock, passkey backup blob. KATs in packages/vault/test.
+- chains-evm, -hedera, -solana, -bitcoin, -sui, -aptos, -cardano, -substrate, -starknet, -ton, -near, -stellar, -tezos, -algorand: ChainModule per family.
+- 1mask: connectors (EIP-1193/6963, Wallet Standard, AIP-62, CIP-30, injectedWeb3, get-starknet, TON Connect, NEAR/Stellar/Algorand globals, Beacon relay, WalletConnect v2) announcing the wallet's identity.
+- engine: approvals, permissions, portfolio, catalog (engine/catalog), wiring shared by extension and mobile.
+- extension-kit: the MV3 extension as a library. /wxt clipWallet({config}) (Node), /background, /content, /inpage, /pages, /plugin-host, /plugin-sandbox. Security floor and mainnet checklist enforced at build.
+- ui: React screens and theme tokens. i18n: English + 11 languages.
+- route: findShortfall, RouteClient.quote / planPayOnHedera / trackRoute; settleOnHedera (Phase 3, SETTLE_DEPLOYMENTS). Planner vendored from ColdAI-org/clprouter.
+- security: threat intel (open lists, heuristics, optional Blockaid), approvals review/revoke, spam cleanup, securityFloorProblems.
+- features: staking, swaps, on-ramps, Secure Trade (Hedera), prices, Explore, LP positions.
+- social: contacts, Clip handles (contracts/handles), notifications, Discover.
+- plugins: Clip Plugins (SES sandbox page, offscreen host, npm install with integrity checks).
+- hardware: Ledger (WebHID), Keystone (QR). names: ENS, SNS, HNS, Clip handles.
+- link: linked devices: phone or Clip Desktop as signer (relay / native messaging), end-to-end encrypted settings sync, handoffs ("continue elsewhere").
+- kit-modules: NEAR Wallet Selector, Stellar Wallets Kit, use-wallet, Beacon peer.
+- backup-client, media-client: clients for services/backup and services/media-proxy.
+- create-clip-wallet: npx create-clip-wallet <folder> (template + identity + listing drafts); identity | listings | mainnet-check.
+
+## Apps, services, template
+- apps/extension: Clip Wallet's own identity on extension-kit; Playwright e2e; store packages (pnpm --filter @clip-wallet/extension package, scripts/repro-check.sh). brand/: the Clip Wallet mark (tools/brand/render.mjs).
+- apps/mobile: Expo app on engine.
+- services/backup, services/media-proxy, services/link-relay: Cloudflare Workers. contracts/handles: ClipHandles (Foundry).
+- templates/scaffold-hbar-clip-wallet: the Scaffold-HBAR template (ColdAI-org/scaffold-hbar-clip-wallet): packages/extension (wallet) + packages/nextjs (dapp, /debug), AGENTS.md, .harness, llms.txt, CI and fresh-scaffold workflows.
+- tools/harness/check.mjs: the rules above as checks (file:line, plain words). tools/release: build, manifests, pack-all, template sync. tools/kit: e2e.
 
 ## Optional
 - .harness/README.md: every harness rule and what to do when one is wrong
-- packages/create-clip-wallet/README.md
+- .changeset/README.md: versioning and the CI-only release
+- packages/create-clip-wallet/README.md, packages/extension-kit/README.md
+- templates/scaffold-hbar-clip-wallet/README.md
 - https://github.com/ColdAI-org/clprouter: CLPRouter contracts, SDK, services, deployments
