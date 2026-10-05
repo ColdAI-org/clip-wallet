@@ -88,6 +88,20 @@ export class NearRpc {
     return b.header.hash;
   }
 
+  /**
+   * True when this network has a block with this hash. A NEAR transaction names a recent block hash, which is
+   * what ties it to one network (audit NEAR-01); nodes answer UNKNOWN_BLOCK for another network's hash.
+   */
+  async hasBlock(hashBase58: string): Promise<boolean> {
+    try {
+      await this.call<{ header: { hash: string } }>("block", { block_id: hashBase58 });
+      return true;
+    } catch (e) {
+      if (e instanceof RpcError && /UNKNOWN_BLOCK/i.test(`${e.name} ${e.message}`)) return false;
+      throw e;
+    }
+  }
+
   async gasPrice(): Promise<bigint> {
     const r = await this.call<{ gas_price: string }>("gas_price", [null]);
     return BigInt(r.gas_price);
