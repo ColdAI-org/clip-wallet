@@ -10,7 +10,10 @@
  *
  * The checks are lexical (comments stripped, strings understood), not a full parser. They catch the
  * mistakes agents actually make: importing key-material libraries outside the vault, importing the
- * vault from the wrong place, logging secrets, committing .env files, losing the vault's test vectors.
+ * vault from the wrong place, logging secrets, committing .env files or key files, losing the vault's test vectors.
+ *
+ * In a wallet built on the kit (packages/extension/clip.config.ts, no packages/vault) it also checks the wallet's own
+ * identity, the security floor, the mainnet checklist and that kit packages are pinned (kitChecks below).
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -31,6 +34,8 @@ export const VAULT_DIRS = ["packages/vault/"];
 export const VAULT_IMPORT_ALLOW = [
   /^packages\/vault\//,
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
+  // The extension background as a library (@clip-wallet/extension-kit), which every kit-built wallet runs.
+  /^packages\/extension-kit\/src\/background\//,
   // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
   /^apps\/mobile\/src\/background\//,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
@@ -436,11 +441,20 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
       if (/^\.env(?:\..+)?$/.test(base) && !/^\.env\.(?:example|sample|template)$/.test(base)) {
         fail("env-tracked", f, 0, `${f} is tracked by git. .env files hold secrets: run \`git rm --cached ${f}\` and keep it in .gitignore.`);
       }
+      if (/\.pem$/.test(base) || /(?:^|\/)\.keys\//.test(f)) {
+        fail("key-file-tracked", f, 0, `${f} is tracked by git. It looks like a private key (the extension's signing key lives in packages/extension/.keys): run \`git rm --cached ${f}\` and keep it out of git.`);
+      }
     }
   }
 
+  // A wallet built on the kit (create-clip-wallet / the Scaffold-HBAR template) has its own rules.
+  const kit = isKitProject(root);
+  if (kit) kitChecks(root, files, parsed, fail, warn);
+
   // The vault's known-answer tests must exist.
-  if (!existsSync(join(root, "packages/vault"))) {
+  if (kit) {
+    // The vault ships inside @clip-wallet/vault; its known-answer tests run in the kit's own CI.
+  } else if (!existsSync(join(root, "packages/vault"))) {
     warn("vault-kat-missing", "packages/vault", 0, "packages/vault is not in this checkout, so its test vectors were not checked.");
   } else {
     const tests = files.filter((f) => f.startsWith("packages/vault/") && /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(f));
@@ -459,6 +473,94 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
     warn("phrase-literal", ".", 0, "The BIP-39 wordlist isn't installed (run pnpm install), so phrase literals were matched by shape only.");
   }
   return { failures, warnings, scanned: sources.length };
+}
+
+/* ------------------------------------------------------------------ kit-built wallets */
+
+/** Clip Wallet's own identity, which no kit-built wallet may announce. */
+export const CLIP_WALLET_RDNS = "org.coldai.clipwallet";
+export const KIT_EXTENSION = "packages/extension";
+export const KIT_PACKAGES = /^(?:@clip-wallet\/[\w-]+|create-clip-wallet)$/;
+const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[\w.]+)?$/;
+
+/** A wallet made from the template: its extension is packages/extension with clip.config.ts, and there is no vault source. */
+export function isKitProject(root) {
+  return existsSync(join(root, KIT_EXTENSION, "clip.config.ts")) && !existsSync(join(root, "packages/vault"));
+}
+
+function kitChecks(root, files, parsed, fail, warn) {
+  const ext = KIT_EXTENSION;
+
+  // kit-identity: the wallet announces its own identity, never Clip Wallet's, and never carries a private key.
+  const idFile = `${ext}/wallet.identity.json`;
+  let id;
+  try {
+    const text = readFileSync(join(root, idFile), "utf8");
+    if (/PRIVATE KEY/.test(text)) {
+      fail("kit-identity", idFile, 0, "wallet.identity.json contains a private key. Only the public key belongs here (extension.key); the private key stays in packages/extension/.keys, out of git.");
+    }
+    id = JSON.parse(text);
+  } catch {
+    fail("kit-identity", idFile, 0, "wallet.identity.json is missing or isn't valid JSON. Run `pnpm wallet:identity` to write it.");
+  }
+  if (id) {
+    if (id.rdns === CLIP_WALLET_RDNS || /^org\.coldai\./.test(String(id.rdns))) {
+      fail("kit-identity", idFile, 0, `rdns ${id.rdns} belongs to Clip Wallet. Announce your own: \`pnpm wallet:identity --rdns <a reverse domain you own>\`.`);
+    }
+    if (String(id.name).trim().toLowerCase() === "clip wallet") {
+      fail("kit-identity", idFile, 0, "The name Clip Wallet is taken. Give your wallet its own: `pnpm wallet:identity --name \"…\"`.");
+    }
+    if (/^(?:com|org|net)\.example\./.test(String(id.rdns)) || !id.extension?.key) {
+      warn("kit-identity", idFile, 0, "This wallet still has the template's placeholder identity (example rdns or no extension key). Run `pnpm wallet:identity` before you share a build.");
+    }
+  }
+
+  // kit-security: the build goes through clipWallet(), which has no switch for the security floor.
+  const wxtFile = `${ext}/wxt.config.ts`;
+  const wxt = parsed.get(wxtFile);
+  const usesKit =
+    wxt &&
+    findImports(wxt.src, wxt.lexed).some((i) => i.module === "@clip-wallet/extension-kit/wxt" && /\bclipWallet\b/.test(i.clause)) &&
+    /\bclipWallet\s*\(/.test(wxt.lexed.code);
+  if (!usesKit) {
+    fail("kit-security", wxtFile, 0, "wxt.config.ts must build the extension with clipWallet() from @clip-wallet/extension-kit/wxt: it carries the security floor and the mainnet checklist. Restore it from the template.");
+  }
+  for (const [f, { src, lexed }] of parsed) {
+    if (!f.startsWith("packages/")) continue;
+    const off = /\bopenLists\s*:\s*false\b/.exec(lexed.code);
+    if (off) fail("kit-security", f, lineOf(src, off.index), "The open phishing lists can't be switched off in a kit-built wallet. Remove `openLists: false`.");
+    const def = /\b__CLIP_SECURITY__\b/.exec(lexed.code);
+    if (def) fail("kit-security", f, lineOf(src, def.index), "Security settings come from @clip-wallet/extension-kit only; don't define or override __CLIP_SECURITY__.");
+  }
+
+  // kit-mainnet: mainnet on means every box in MAINNET.md is ticked.
+  const cfgFile = `${ext}/clip.config.ts`;
+  const cfg = parsed.get(cfgFile);
+  const on = cfg && /\bmainnet\s*:\s*\{/.exec(cfg.lexed.code);
+  if (on) {
+    const listFile = `${ext}/MAINNET.md`;
+    const list = existsSync(join(root, listFile)) ? readFileSync(join(root, listFile), "utf8") : "";
+    const open = list.split(/\r?\n/).filter((l) => /^\s*- \[ \]/.test(l)).length;
+    if (!list) fail("kit-mainnet", listFile, 0, "Mainnet is on in clip.config.ts but MAINNET.md is missing. Restore it from the template and work through it.");
+    else if (open) fail("kit-mainnet", cfgFile, lineOf(cfg.src, on.index), `Mainnet is on but ${open} item${open === 1 ? " is" : "s are"} still open in ${listFile}. Only the wallet's owner ticks them; set mainnet: false until then.`);
+  }
+
+  // kit-pinned: kit packages are pinned to one exact, signed release.
+  for (const f of files.filter((x) => x === "package.json" || /^packages\/[^/]+\/package\.json$/.test(x))) {
+    let pkg;
+    try {
+      pkg = JSON.parse(readFileSync(join(root, f), "utf8"));
+    } catch {
+      continue;
+    }
+    for (const field of ["dependencies", "devDependencies"]) {
+      for (const [name, range] of Object.entries(pkg[field] ?? {})) {
+        if (KIT_PACKAGES.test(name) && !EXACT_VERSION.test(String(range))) {
+          fail("kit-pinned", f, 0, `${name} is "${range}". Pin kit packages to one exact release (e.g. "0.1.0") so every build runs the code you verified (pnpm verify:provenance).`);
+        }
+      }
+    }
+  }
 }
 
 export function format({ failures, warnings, scanned }) {
