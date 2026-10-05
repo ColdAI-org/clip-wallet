@@ -68,9 +68,11 @@ export default defineConfig({
       name: clipConfig.name,
       description: "A calm, non-custodial wallet for every CLPR network. Test networks only.",
       // offscreen: the plugin host document; identity: Google / Apple sign-in for backups (launchWebAuthFlow).
-      permissions: ["storage", "alarms", "identity", ...(plugins ? ["offscreen"] : [])],
+      // activeTab: "Continue this page on your phone" reads the current tab's URL when the person opens the popup.
+      permissions: ["storage", "alarms", "identity", "activeTab", ...(plugins ? ["offscreen"] : [])],
       // Asked for when the user turns notifications on (Settings → Notifications), never at install.
-      optional_permissions: ["notifications"],
+      // nativeMessaging: asked for when the person taps "Use Clip Desktop" (Settings → Linked devices).
+      optional_permissions: ["notifications", "nativeMessaging"],
       // Koios (Cardano) is CORS-restricted on its public tier, so the background needs host access.
       host_permissions: [
         ...rpHost,
@@ -95,7 +97,7 @@ export default defineConfig({
         // Blockaid scanning, only in builds that set a key.
         ...(BLOCKAID_KEY ? ["https://api.blockaid.io/*"] : []),
         // Optional hosted services from clip.config (unset by default).
-        ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
+        ...[clipConfig.services.backupUrl, clipConfig.services.mediaProxyUrl, clipConfig.services.linkRelayUrl].filter((u): u is string => !!u).map((u) => `${new URL(u).origin}/*`),
       ],
       action: { default_title: clipConfig.name },
       icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },

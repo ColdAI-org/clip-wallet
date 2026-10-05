@@ -9,6 +9,7 @@ import { passkeyErrorText, runPasskeyCeremony } from "../lib/passkey";
 import { ConnectHardware } from "../hardware/ConnectHardware";
 import { useHardwareOptional } from "../hardware/context";
 import { useUiT } from "../i18n";
+import { useLinkOptional } from "../link/context";
 
 type Step =
   | { s: "welcome" }
@@ -35,6 +36,7 @@ function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware
   const { navigate } = useRouter();
   // Offered only when this build has a backup service (services/backup); otherwise there's nothing to restore from.
   const backup = useAsync(async () => (typeof client.backupStatus === "function" ? (await client.backupStatus()).available : false), [client]);
+  const linkClient = useLinkOptional();
   return (
     <div className="clip-onboard clip-onboard--welcome">
       <img className="clip-brand-icon" src={options.iconUrl} alt="" width={64} height={64} />
@@ -50,6 +52,11 @@ function Welcome(props: { onCreate: () => void; onImport: () => void; onHardware
         {props.onHardware && (
           <Button block variant="ghost" onClick={props.onHardware}>
             {t("onboarding.welcome.hardware")}
+          </Button>
+        )}
+        {linkClient && (
+          <Button block variant="ghost" onClick={() => navigate("/link/receive")}>
+            {t("link.action.receive")}
           </Button>
         )}
         {backup.data && (

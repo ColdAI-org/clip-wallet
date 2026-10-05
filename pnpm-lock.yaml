@@ -244,6 +244,9 @@ importers:
       '@clip-wallet/kit-modules':
         specifier: workspace:*
         version: link:../../packages/kit-modules
+      '@clip-wallet/link':
+        specifier: workspace:*
+        version: link:../../packages/link
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../../packages/names
@@ -1320,6 +1323,9 @@ importers:
       '@clip-wallet/i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@clip-wallet/link':
+        specifier: workspace:*
+        version: link:../link
       '@clip-wallet/media-client':
         specifier: workspace:*
         version: link:../media-client

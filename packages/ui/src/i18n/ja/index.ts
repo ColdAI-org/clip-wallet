@@ -43,6 +43,7 @@ import explore from "./explore";
 import social from "./social";
 import plugins from "./plugins";
 import security from "./security";
+import link from "./link";
 
 const messages: Translation<UiMessages> = {
   ...common,
@@ -67,5 +68,6 @@ const messages: Translation<UiMessages> = {
   ...social,
   ...plugins,
   ...security,
+  ...link,
 };
 export default messages;
