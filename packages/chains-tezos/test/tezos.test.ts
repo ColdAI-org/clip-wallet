@@ -332,6 +332,29 @@ describe("tezos_send", () => {
     await expectClip(m.decode(send([xtzOp("1", "tz1notanaddress")]), ctxFor(fetch)), "tezos/bad-operation");
   });
 
+  it("audit TEZ-01: refuses Micheline nodes that carry two values (shown as one address, forged as another)", async () => {
+    const { fetch } = chain({ sim: xtzSim });
+    const smuggled = {
+      kind: "transaction",
+      amount: "0",
+      destination: FA2,
+      parameters: { entrypoint: "transfer", value: [{ prim: "Pair", args: [{ string: ME }, [{ prim: "Pair", args: [{ string: BOB, bytes: "0000" + "11".repeat(20) }, { prim: "Pair", args: [{ int: "0" }, { int: "5" }] }] }]] }] },
+    };
+    await expectClip(createTezosModule().decode(send([smuggled]), ctxFor(fetch)), "tezos/bad-operation");
+  });
+
+  it("audit TEZ-02: a rebuild after approval can't cost more than the screen showed", async () => {
+    let t = 1_000_000;
+    let captured: unknown = SIM.xtz;
+    const m = createTezosModule({ now: () => t, reuseMs: 1000 });
+    const { fetch } = chain({ sim: (b: never) => simEcho(captured as never)(b) });
+    const r = send([xtzOp("1")]);
+    await m.decode(r, ctxFor(fetch));
+    t += 5000;
+    captured = SIM.alloc; // the destination now needs a new-account storage burn
+    await expectClip(m.prepare(r, ctxFor(fetch), "a"), "tezos/fee-changed");
+  });
+
   it("simulation failures: danger in decode, plain error in prepare", async () => {
     const m = createTezosModule();
     const fail = chain({ sim: simEcho(SIM.fa2_fail as never) });
