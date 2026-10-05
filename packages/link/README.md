@@ -1,7 +1,7 @@
 # @clip-wallet/link — one wallet on every platform
 
 Settings sync, a phone or Clip Desktop as the signer for the browser extension, moving a wallet to another device,
-and "continue elsewhere". Used by the extension service worker (`apps/extension/src/background/link.ts`), the mobile
+and "continue elsewhere". Used by the extension service worker (`packages/extension-kit/src/background/link.ts`), the mobile
 app (`apps/mobile/src/background/link.ts`) and Clip Desktop (wiring: `docs/r1/integration/connect.md`).
 
 **This package holds no seed and no private key.** X25519 and Ed25519 run in `@clip-wallet/vault`

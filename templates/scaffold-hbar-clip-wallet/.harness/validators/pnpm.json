@@ -1,0 +1,20 @@
+{
+  "name": "clip-wallet-commands",
+  "description": "Every gate CI runs: the harness rules, both type checks, the extension build and the dapp build. No secrets, no network writes, no identity or key changes.",
+  "requiresNoSecrets": true,
+  "forbiddenCommands": [
+    "npm publish",
+    "pnpm publish",
+    "yarn install",
+    "pnpm wallet:identity",
+    "create-clip-wallet identity",
+    "git push"
+  ],
+  "commands": [
+    { "name": "install", "command": "pnpm install", "timeoutMs": 900000, "purpose": "Install the workspace (kit packages pinned from npm)." },
+    { "name": "harness", "command": "pnpm harness", "timeoutMs": 120000, "purpose": "Key material, identity, security floor, mainnet checklist, pins." },
+    { "name": "types", "command": "pnpm check-types", "timeoutMs": 600000, "purpose": "Strict types for the extension and the dapp." },
+    { "name": "extension", "command": "pnpm extension:build", "timeoutMs": 900000, "purpose": "The wallet extension builds with its identity." },
+    { "name": "dapp", "command": "pnpm next:build", "timeoutMs": 900000, "purpose": "Production build of the dapp." }
+  ]
+}

@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+
+# builds
+.next
+.output
+.output-fixtures
+.wxt
+dist
+*.tsbuildinfo
+
+# secrets: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+.keys/
+
+# misc
+.DS_Store
+.vscode
+.idea
+.eslintcache
+.harness/runs/

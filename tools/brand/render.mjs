@@ -22,8 +22,10 @@ const { chromium } = require("@playwright/test");
 
 const read = (p) => readFileSync(join(ROOT, p), "utf8");
 const svgUri = (p) => `data:image/svg+xml;base64,${Buffer.from(read(p)).toString("base64")}`;
+// Inter ships with the extension's pages, which live in @clip-wallet/extension-kit.
+const kitRequire = createRequire(join(ROOT, "packages/extension-kit/package.json"));
 const INTER = `data:font/woff2;base64,${readFileSync(
-  join(dirname(require.resolve("@fontsource-variable/inter/package.json")), "files/inter-latin-wght-normal.woff2"),
+  join(dirname(kitRequire.resolve("@fontsource-variable/inter/package.json")), "files/inter-latin-wght-normal.woff2"),
 ).toString("base64")}`;
 
 const MARK = svgUri("brand/clip-mark.svg");

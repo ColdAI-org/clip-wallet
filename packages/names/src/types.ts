@@ -34,7 +34,7 @@ export interface ResolvedName {
 }
 
 /**
- * Structurally compatible with apps/extension/src/background/wiring.ts `NameResolver`
+ * Structurally compatible with packages/extension-kit/src/background/wiring.ts `NameResolver`
  * (`resolve(name) → { address, displayName } | null`), plus the family/networks the name implies.
  */
 export interface NameResolver {

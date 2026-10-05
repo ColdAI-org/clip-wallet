@@ -18,7 +18,7 @@ import type { PrfProvider } from "./types.js";
 
 /**
  * PRF input (eval.first) for backup passkeys: the vault's BACKUP_PRF_INPUT, restated so the engine stays
- * vault-free (apps/extension/test/platform.test.ts checks the two are equal).
+ * vault-free (packages/extension-kit/test/platform.test.ts checks the two are equal).
  */
 export const BACKUP_PRF_INPUT: Uint8Array = sha256(new TextEncoder().encode("clip-wallet/passkey-backup/prf-input/v1"));
 

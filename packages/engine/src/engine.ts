@@ -1,6 +1,6 @@
 /**
  * WalletEngine: the wallet's orchestration, environment-agnostic. A reimplementation of the extension's
- * background service (apps/extension/src/background/service.ts) on injected seams so the same logic runs in
+ * background service (packages/extension-kit/src/background/service.ts) on injected seams so the same logic runs in
  * an MV3 service worker, a React Native app (Hermes) or a test:
  *
  *   storage  KV (public data) + the host-constructed vault (ciphertext via its own VaultStorage)

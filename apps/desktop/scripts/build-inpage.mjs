@@ -22,6 +22,8 @@ const aptosEntryKeepsInit = {
 const out = await build({
   entryPoints: [join(root, "src/preload/inpage-entry.ts")],
   bundle: true,
+  // Workspace packages: their "development" export condition is the TypeScript source.
+  conditions: ["development"],
   write: false,
   format: "iife",
   platform: "browser",

@@ -1,8 +1,27 @@
 {
   "name": "create-clip-wallet",
-  "version": "0.0.1-experimental.0",
-  "description": "EXPERIMENTAL: scaffold a branded Clip Wallet browser extension (testnets by default)",
+  "version": "0.1.0",
+  "description": "Scaffold your own wallet on the Clip Wallet kit: its own name, icon, extension id and rdns, testnet by default",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "scaffold-hbar",
+    "hedera",
+    "create",
+    "template",
+    "browser-extension"
+  ],
   "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/create-clip-wallet#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/create-clip-wallet"
+  },
   "type": "module",
   "bin": {
     "create-clip-wallet": "bin/create-clip-wallet.mjs"
@@ -14,17 +33,22 @@
   "files": [
     "bin",
     "src",
-    "templates",
-    "harness",
-    "README.md"
+    "template",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run",
-    "prepack": "node scripts/copy-harness.mjs"
+    "prepack": "node scripts/bundle-template.mjs",
+    "postpack": "node scripts/bundle-template.mjs --clean"
   },
   "dependencies": {
     "@clip-wallet/config": "workspace:*"

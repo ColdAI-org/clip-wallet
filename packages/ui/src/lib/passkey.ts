@@ -5,9 +5,9 @@
  * per-credential `prfInput`, calls `enroll(prfInput)` / `evaluate(credentialId, prfInput)`, and derives
  * its wrapping key from the PRF output. The vault lives in the background service worker, which can't
  * run WebAuthn, so the background implements PasskeyPrf as a proxy that hands each call to a page
- * (see `runPasskeyCeremony` and apps/extension/src/background/passkey-proxy.ts).
+ * (see `runPasskeyCeremony` and packages/extension-kit/src/background/passkey-proxy.ts).
  *
- * Where the ceremony runs (verified; sources in apps/extension/src/passkey/bridge.ts):
+ * Where the ceremony runs (verified; sources in packages/extension-kit/src/passkey/bridge.ts):
  *  - Chrome 122+ lets an extension page call navigator.credentials with rp.id = its own extension id,
  *    or a registrable domain it holds host permissions for. Firefox 150+ allows the host-permission form.
  *  - The service worker has no navigator.credentials.

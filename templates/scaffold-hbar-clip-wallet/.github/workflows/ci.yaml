@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  wallet:
+    name: Harness, types, extension and dapp builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: pnpm install
+
+      - name: Harness (key material, identity, security floor, mainnet checklist, pins)
+        run: pnpm harness
+
+      - name: Kit provenance (every @clip-wallet package built by the kit's CI)
+        run: pnpm verify:provenance
+
+      - name: Types
+        run: pnpm check-types
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Extension build
+        run: pnpm extension:build
+
+      - name: Dapp build
+        run: pnpm next:build
+
+      - name: Mainnet stays off until its checklist is done
+        run: |
+          set +e
+          pnpm wallet:mainnet-check
+          code=$?
+          # 0 = checklist done, 2 = mainnet off with work left: both fine. 1 = mainnet on but not ready.
+          [ "$code" != 1 ]

@@ -1,0 +1,51 @@
+name: Fresh scaffold
+
+# Creates a project from this template with the latest Scaffold-HBAR CLI, exactly as a developer would
+# (npm create scaffold-hbar@latest -- --template ColdAI-org/scaffold-hbar-clip-wallet), gives it an identity, and
+# checks it item by item (.github/scripts/check-scaffold.sh). It also creates the same wallet with create-clip-wallet
+# and compares the two. The daily run catches new CLI releases. It only runs in the template's own repository; in a
+# project made from it, it does nothing.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scaffold:
+    if: github.repository == 'ColdAI-org/scaffold-hbar-clip-wallet'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Git identity for the scaffold's first commit
+        run: |
+          git config --global user.name "Fresh scaffold check"
+          git config --global user.email "fresh-scaffold@users.noreply.github.com"
+
+      - name: Scaffold from the template
+        working-directory: ${{ runner.temp }}
+        run: npx --yes create-scaffold-hbar@latest app --template "${{ github.repository }}" --yes --skip-install --skip-hedera-skills --ci
+
+      - name: The same wallet with create-clip-wallet
+        working-directory: ${{ runner.temp }}
+        run: npx --yes create-clip-wallet@latest cli/app --name "Fresh Scaffold" --rdns com.example.freshscaffold --yes
+
+      - name: Check the project
+        run: .github/scripts/check-scaffold.sh "${{ runner.temp }}/app" "${{ runner.temp }}/cli/app"

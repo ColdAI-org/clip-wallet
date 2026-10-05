@@ -1,7 +1,8 @@
 packages:
+  # templates/ is not a workspace: it is the standalone Scaffold-HBAR template (its own pnpm workspace, kit
+  # packages pinned from npm). tools/kit/*.mjs build and test it from packed tarballs.
   - packages/*
   - apps/*
-  - templates/*
   - services/*
 allowBuilds:
   '@parcel/watcher': false

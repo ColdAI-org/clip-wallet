@@ -1,0 +1,15 @@
+<!doctype html>
+<!--
+  Offscreen document that hosts the plugin sandbox iframes (background/plugins.ts opens and closes it). Plugins run
+  here, never in the popup or the approval window, so a plugin that hangs can only freeze this document.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Plugin host</title>
+    <meta name="manifest.include" content="['chrome']" />
+  </head>
+  <body>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

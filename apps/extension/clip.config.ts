@@ -14,7 +14,10 @@ const TESTNET_SERVICES = {
 // Clip Wallet's own brand. Every setting is documented in @clip-wallet/config.
 export default defineConfig({
   name: "Clip Wallet",
+  // The manifest adds " Test networks only." while mainnet is off (scripts/package.mjs checks for it).
+  description: "A calm, non-custodial wallet for every CLPR network.",
   rdns: "org.coldai.clipwallet",
+  homepage: "https://coldai.org/clip-wallet",
   icon: "./icon.svg",
   // ColdAI orange; white text on orange buttons is the owner's preference (contrast 3.6:1 ≥ the schema's 3:1).
   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },

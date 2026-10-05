@@ -9,6 +9,8 @@ await build({
   entryPoints: [join(root, "src/native-host/main.ts")],
   outfile: join(root, "out/native-host/clip-native-host.cjs"),
   bundle: true,
+  // Workspace packages: their "development" export condition is the TypeScript source.
+  conditions: ["development"],
   platform: "node",
   format: "cjs",
   target: "node22",

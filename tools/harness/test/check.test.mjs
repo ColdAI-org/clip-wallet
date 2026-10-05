@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -110,6 +110,7 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "apps/desktop/src/main/host/wallet.ts",
     "apps/desktop/src/main/host/link.ts",
     "apps/desktop/e2e/mock-extension.ts",
+    "packages/extension-kit/src/background/wiring.ts",
   ]) assert.ok(allowed(f), f);
   for (const f of [
     "packages/ui/src/screens/Send.tsx",
@@ -129,5 +130,48 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "apps/desktop/e2e/desktop.spec.ts",
     "apps/desktop/e2e/link.spec.ts",
     "apps/desktop/e2e/mock-extension.tsx",
+    "packages/extension-kit/src/pages/mount.tsx",
+    "packages/extension-kit/src/wxt.ts",
   ]) assert.ok(!allowed(f), f);
+});
+
+test("kit-built wallets: the template passes, with a reminder to set the identity", () => {
+  const dir = mkdtempSync(join(tmpdir(), "clip-kit-"));
+  try {
+    cpSync(join(repo, "templates", "scaffold-hbar-clip-wallet"), dir, { recursive: true });
+    const r = runChecks({ root: dir, tracked: [], wordlistFrom: repo });
+    assert.deepEqual(r.failures, []);
+    assert.deepEqual(r.warnings.map((w) => w.rule), ["kit-identity"]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("kit-built wallets: Clip Wallet's identity, a switched-off security floor, an unready mainnet and loose pins fail", () => {
+  const dir = mkdtempSync(join(tmpdir(), "clip-kit-"));
+  try {
+    cpSync(join(repo, "templates", "scaffold-hbar-clip-wallet"), dir, { recursive: true });
+    const ext = join(dir, "packages", "extension");
+    writeFileSync(join(ext, "wallet.identity.json"), JSON.stringify({ name: "Clip Wallet", rdns: "org.coldai.clipwallet", icon: "./icon.svg" }));
+    writeFileSync(join(ext, "wxt.config.ts"), 'import { defineConfig } from "wxt";\nexport default defineConfig({ srcDir: "src" });\n');
+    writeFileSync(join(ext, "src", "security.ts"), "export const threat = {\n  openLists: false,\n};\n");
+    const cfg = join(ext, "clip.config.ts");
+    const on = readFileSync(cfg, "utf8").replace(/^(\s*)mainnet: false,$/m, "$1mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT },");
+    writeFileSync(cfg, on);
+    const mainnetLine = on.split("\n").findLastIndex((l) => l.includes("mainnet: { enabled")) + 1;
+    const pkg = join(ext, "package.json");
+    writeFileSync(pkg, readFileSync(pkg, "utf8").replace('"@clip-wallet/extension-kit": "0.1.0"', '"@clip-wallet/extension-kit": "^0.1.0"'));
+    const r = runChecks({ root: dir, tracked: ["packages/extension/.keys/extension.pem"], wordlistFrom: repo });
+    assert.deepEqual(where(r), [
+      "key-file-tracked packages/extension/.keys/extension.pem:0",
+      "kit-identity packages/extension/wallet.identity.json:0",
+      "kit-identity packages/extension/wallet.identity.json:0",
+      `kit-mainnet packages/extension/clip.config.ts:${mainnetLine}`,
+      "kit-pinned packages/extension/package.json:0",
+      "kit-security packages/extension/src/security.ts:2",
+      "kit-security packages/extension/wxt.config.ts:0",
+    ]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

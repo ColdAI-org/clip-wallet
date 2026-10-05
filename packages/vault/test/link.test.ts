@@ -89,7 +89,11 @@ describe("sync keys (label clip/sync/v1)", () => {
     await ea.sync();
     await eb.sync();
     expect((await eb.values("prefs"))[0]!.v).toBe("ko");
-    expect(JSON.stringify([...store.spaces.values()].map((s) => [...s.rows.values()]))).not.toContain("ko");
+    // The server holds ciphertext only. (Base64url ciphertext can contain the letters "ko" by chance; it can never
+    // contain a quoted JSON value or the key name.)
+    const stored = JSON.stringify([...store.spaces.values()].map((s) => [...s.rows.values()]));
+    expect(stored).not.toContain('"ko"');
+    expect(stored).not.toContain("locale");
   });
 });
 

@@ -1,20 +1,77 @@
 {
   "name": "@clip-wallet/ui",
   "version": "0.1.0",
+  "description": "Clip Wallet's React screens, components and theme tokens",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
   "license": "MIT",
-  "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/ui#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/ui"
+  },
+  "type": "module",
   "sideEffects": [
     "*.css"
   ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": {
+      "development": "./src/styles.css",
+      "default": "./dist/styles.css"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./styles.css": "./dist/styles.css"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
     "typecheck": "tsc -p . --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/config": "workspace:*",
+    "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
+    "@clip-wallet/media-client": "workspace:*",
+    "@clip-wallet/security": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
+    "qrcode": "^1.5.4"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -32,17 +89,5 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "vitest": "^2.1.9"
-  },
-  "dependencies": {
-    "@clip-wallet/config": "workspace:*",
-    "@clip-wallet/core": "workspace:*",
-    "@clip-wallet/features": "workspace:*",
-    "@clip-wallet/hardware": "workspace:*",
-    "@clip-wallet/i18n": "workspace:*",
-    "@clip-wallet/link": "workspace:*",
-    "@clip-wallet/media-client": "workspace:*",
-    "@clip-wallet/security": "workspace:*",
-    "@clip-wallet/social": "workspace:*",
-    "qrcode": "^1.5.4"
   }
 }

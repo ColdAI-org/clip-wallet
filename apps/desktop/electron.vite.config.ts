@@ -23,10 +23,19 @@ const WC = JSON.stringify(process.env.CLIP_WC_PROJECT_ID?.trim() || "");
 const UPDATES = JSON.stringify(process.env.CLIP_UPDATES === "1");
 // Chromium extension ids the desktop trusts for native messaging (comma-separated; store ids + the dev id).
 const EXTENSION_IDS = JSON.stringify(process.env.CLIP_EXTENSION_IDS?.trim() || "");
+/**
+ * Workspace packages export their TypeScript source under the "development" condition (dist/ is what npm users get);
+ * this app bundles the source directly, like the extension and the phone (docs: tools/release, packages' exports).
+ */
+const NODE_CONDITIONS = ["development", "module", "node", "development|production"];
+const BROWSER_CONDITIONS = ["development", "module", "browser", "development|production"];
+const nodeResolve = { resolve: { conditions: NODE_CONDITIONS }, ssr: { resolve: { conditions: NODE_CONDITIONS, externalConditions: ["development", "node"] } } };
+
 const empty = fileURLToPath(new URL("./src/renderer/shared/empty-module.ts", import.meta.url));
 
 export default defineConfig({
   main: {
+    ...nodeResolve,
     define: { __CLIP_WC_PROJECT_ID__: WC, __CLIP_UPDATES__: UPDATES, __CLIP_EXTENSION_IDS__: EXTENSION_IDS },
     build: {
       outDir: "out/main",
@@ -41,6 +50,7 @@ export default defineConfig({
     },
   },
   preload: {
+    ...nodeResolve,
     build: {
       outDir: "out/preload",
       externalizeDeps: false,
@@ -58,7 +68,7 @@ export default defineConfig({
     publicDir: "public",
     plugins: [react()],
     define: { global: "globalThis", __CLIP_WC_PROJECT_ID__: WC },
-    resolve: { alias: { crypto: empty, stream: empty } },
+    resolve: { conditions: BROWSER_CONDITIONS, alias: { crypto: empty, stream: empty } },
     build: {
       outDir: "out/renderer",
       target: "chrome140",
