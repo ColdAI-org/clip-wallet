@@ -369,6 +369,31 @@ export interface ChainModule {
  */
 export const WALLET_ORIGIN = "clip-wallet";
 
+/**
+ * Internal audit 2026-10 (WC-01): a WalletConnect app's self-declared URL that Verify didn't confirm is never used as
+ * a web origin. It becomes `https://<claimed host>.unverified.invalid` (RFC 2606 `.invalid` can't be a real site), so
+ * it can't borrow a real site's registry entry, permissions, per-site account or sign-in domain, and can't pass for
+ * the wallet. Screens show it as "<claimed host> (unverified)".
+ */
+export const UNVERIFIED_ORIGIN_SUFFIX = ".unverified.invalid";
+
+/** The pseudo-origin for an unconfirmed claim (`claimedUrl` may be anything a peer sent). */
+export function unverifiedOrigin(claimedUrl: string | undefined): string {
+  let host = "unknown";
+  try {
+    const u = new URL(claimedUrl ?? "");
+    if ((u.protocol === "https:" || u.protocol === "http:") && u.hostname) host = u.hostname.replace(/\.unverified\.invalid$/, "");
+  } catch {
+    /* not a URL: "unknown" */
+  }
+  return `https://${host}${UNVERIFIED_ORIGIN_SUFFIX}`;
+}
+
+/** "app.example (unverified)" for a pseudo-origin from unverifiedOrigin(); undefined for anything else. */
+export function unverifiedLabel(hostname: string): string | undefined {
+  return hostname.endsWith(UNVERIFIED_ORIGIN_SUFFIX) ? `${hostname.slice(0, -UNVERIFIED_ORIGIN_SUFFIX.length)} (unverified)` : undefined;
+}
+
 /** True for wallet-built requests. Also accepts the shell's older `"wallet"` spelling. */
 export function isWalletOrigin(origin: string | undefined): boolean {
   return origin === WALLET_ORIGIN || origin === "wallet";

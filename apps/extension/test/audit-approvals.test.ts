@@ -4,7 +4,7 @@
  *  APPR-02  the account that signs is the account the approval screen was built for.
  */
 import { describe, expect, it, vi } from "vitest";
-import type { Signature } from "@clip-wallet/core";
+import { unverifiedOrigin, type Signature } from "@clip-wallet/core";
 import { makeService, PASSWORD } from "./helpers";
 
 async function ready() {
@@ -59,5 +59,24 @@ describe("audit: approval path", () => {
     await expect(service.handle({ type: "approve", id })).rejects.toMatchObject({ code: "approval/account-changed" });
     expect(sign).not.toHaveBeenCalled();
     expect(shown.decoded).toBeTruthy();
+  });
+
+  it("WC-01: a WalletConnect app claiming a known site is shown unverified, under its own pseudo-origin", async () => {
+    const { service } = await ready();
+    const origin = unverifiedOrigin("https://magiceden.io");
+    const p = service.request(
+      { id: "wc1", origin, via: "walletconnect", family: "evm", networkId: "eip155:84532", method: "personal_sign", params: ["0x00"] },
+      { name: "Magic Eden" },
+    );
+    p.catch(() => undefined);
+    let view;
+    for (let i = 0; i < 100 && !view; i++) {
+      view = (await service.handle({ type: "listApprovals" }))[0];
+      if (!view) await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(view!.dapp).toMatchObject({ verified: false, domain: "magiceden.io (unverified)" });
+    expect(view!.decoded!.warnings.map((w) => w.code)).toContain("domain-mismatch");
+    expect(await service.accountsFor("https://magiceden.io", "evm")).toHaveLength(0);
+    await service.handle({ type: "reject", id: view!.id });
   });
 });

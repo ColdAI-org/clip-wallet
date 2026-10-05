@@ -5,7 +5,7 @@
  * revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, type ChainModule } from "@clip-wallet/core";
+import { ClipError, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, isWalletOrigin, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -135,7 +135,8 @@ function short(a: string): string {
 
 function domainOf(origin: string): string {
   try {
-    return new URL(origin).hostname.replace(/^www\./, "");
+    const host = new URL(origin).hostname;
+    return unverifiedLabel(host) ?? host.replace(/^www\./, "");
   } catch {
     return origin;
   }
