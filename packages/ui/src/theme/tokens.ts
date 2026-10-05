@@ -17,6 +17,66 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function luminance(hex: string): number {
+  const lin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = hexToRgb(hex);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/** WCAG 2.2 contrast ratio (https://www.w3.org/TR/WCAG22/#dfn-contrast-ratio). */
+export function contrast(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)];
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+/** Composite `fg` at `alpha` over the opaque `bg` (for the accent-soft tint). */
+function over(fg: string, alpha: number, bg: string): string {
+  const [a, b] = [hexToRgb(fg), hexToRgb(bg)];
+  return `#${a.map((v, i) => Math.round(v * alpha + b[i]! * (1 - alpha)).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function hslHex(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))));
+  };
+  return `#${[f(0), f(8), f(4)].map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+}
+
+function toHsl(hex: string): [number, number, number] {
+  const [r, g, b] = hexToRgb(hex).map((v) => v / 255) as [number, number, number];
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d === 0) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+  return [(h + 360) % 360, s, l];
+}
+
+/**
+ * The accent as small text ("ink"): the same hue, darkened (light mode) or lightened (dark mode) just enough to
+ * reach WCAG AA 4.5:1 on every surface it sits on, accent-soft chips included. A bright brand accent such as
+ * ColdAI orange #FF3C00 is only 3.6:1 on white, which is fine for large text, icons and button fills (3:1) but
+ * not for 14 px links and labels. The accent itself stays as configured for fills, focus rings and the brand.
+ */
+export function accentInk(accent: string, mode: ColorMode): string {
+  const surfaces = mode === "light" ? ["#FFFFFF", "#FAFAF9", "#F3F3F1"] : ["#18181A", "#0F0F10", "#222225"];
+  const soft = surfaces.map((s) => over(accent, mode === "light" ? 0.1 : 0.18, s));
+  const ok = (c: string) => [...surfaces, ...soft].every((s) => contrast(c, s) >= 4.5);
+  if (ok(accent)) return accent.toUpperCase();
+  const [h, s, l0] = toHsl(accent);
+  for (let i = 1; i <= 100; i++) {
+    const l = mode === "light" ? l0 - i * 0.005 : l0 + i * 0.005;
+    if (l <= 0 || l >= 1) break;
+    const c = hslHex(h, s, l);
+    if (ok(c)) return c;
+  }
+  return mode === "light" ? "#141414" : "#F4F4F2";
+}
+
 /** "Inter" → a stack that prefers the bundled variable font, then the system UI font. */
 export function fontStack(font: string): string {
   const name = font.replace(/["\\]/g, "");
@@ -29,6 +89,8 @@ export function tokensFor(config: ClipConfig, mode: ColorMode): Tokens {
   const shared: Tokens = {
     "--clip-accent": accent,
     "--clip-accent-text": accentText,
+    // Accent-coloured text (links, active tabs, chips): AA 4.5:1 on every surface. See accentInk().
+    "--clip-accent-ink": accentInk(accent, mode),
     "--clip-accent-soft": rgba(accent, mode === "light" ? 0.1 : 0.18),
     "--clip-focus": rgba(accent, 0.55),
     "--clip-font": fontStack(font),

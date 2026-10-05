@@ -284,6 +284,9 @@ export function Settings() {
               {t("settings.security")}
             </button>
           )}
+          <button type="button" className="clip-menu__item" onClick={() => navigate("/settings/privacy")}>
+            {t("privacy.menu")}
+          </button>
         </nav>
         <Button
           variant="secondary"

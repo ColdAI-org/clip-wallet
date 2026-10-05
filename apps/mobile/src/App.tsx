@@ -27,6 +27,7 @@ import { ConnectHardware, HardwareSettings, HardwareStep } from "./screens/Hardw
 import { Contacts } from "./screens/Contacts";
 import { ContactEdit } from "./screens/ContactEdit";
 import { Notifications } from "./screens/Notifications";
+import { DataUse } from "./screens/DataUse";
 import { useNotificationBridge } from "./ui/notifications";
 import { parseDeepLink, type DeepLink } from "./lib/deeplinks";
 import { APP } from "./env";
@@ -86,6 +87,8 @@ function Routes(props: { route: Route }) {
       return <ContactEdit key={r.id ?? "new"} id={r.id} address={r.address} family={r.family} />;
     case "notifications":
       return <Notifications />;
+    case "data-use":
+      return <DataUse />;
   }
 }
 

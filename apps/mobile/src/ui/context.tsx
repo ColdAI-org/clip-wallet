@@ -40,7 +40,8 @@ export type Route =
   | { name: "contacts" }
   /** Edit a contact (`id`) or add one, optionally prefilled with an address. */
   | { name: "contact"; id?: string; address?: string; family?: Family }
-  | { name: "notifications" };
+  | { name: "notifications" }
+  | { name: "data-use" };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 

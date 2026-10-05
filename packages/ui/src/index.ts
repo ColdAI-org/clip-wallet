@@ -17,6 +17,7 @@ export { Activity } from "./screens/Activity";
 export { Send } from "./screens/Send";
 export { Receive } from "./screens/Receive";
 export { Settings, ScanWalletConnect, isWalletConnectUri } from "./screens/Settings";
+export { DataUse } from "./screens/DataUse";
 export { ApprovalQueue } from "./screens/Approvals";
 export { PasskeyEnroll, PasskeyPage } from "./screens/Passkey";
 export * from "./features";
@@ -45,4 +46,5 @@ export {
 export type { HardwareKindView, HardwareFamilyView, PathStyleView, HardwareAccountView, KeystoneRequestView, HardwareClient, HardwareApprovalState, HardwareApprovalClient } from "./hardware/types";
 export * from "./security";
 export { useUiT, UI_CATALOGS, PROTECTED_TERMS, type UiMessages, type UiMessageId } from "./i18n";
+export { PRIVACY_CATALOGS, PRIVACY_SECTIONS, type PrivacyMessages } from "./i18n/privacy";
 export * from "./social";

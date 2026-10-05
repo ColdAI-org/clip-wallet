@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "你的数据",
+  "privacy.title": "你的数据",
+  "privacy.lede": "{name} 没有为你建立账户。你的助记词和密钥留在这台设备上，用你的密码锁定。我们永远看不到它们。",
+  "privacy.device.title": "只留在这台设备上",
+  "privacy.device.body": "你的助记词、私钥、密码、联系人、设置和活动记录。这些都不会发送给我们。",
+  "privacy.network.title": "钱包会查询什么",
+  "privacy.network.body": "为了显示余额和发送付款，钱包会向公共网络服务（节点和索引器）查询你的公开地址。价格来自 CoinGecko 和 DEX Screener。",
+  "privacy.scam.title": "防诈骗检查",
+  "privacy.scam.body": "公开的诈骗名单会下载到这台设备并在本地检查，因此它们永远不知道你访问了哪些网站。如果此版本开启了 Blockaid，Blockaid 会看到网站、请求和你的地址。",
+  "privacy.partners.title": "仅在你使用时",
+  "privacy.partners.body": "兑换、购买和质押会把你的地址和金额发送给你选择的服务商，并适用其自己的隐私政策。",
+  "privacy.backup.title": "通行密钥备份（如果你开启）",
+  "privacy.backup.body": "我们的备份服务只保存一份只有你的通行密钥才能打开的加密副本，以及你的邮箱或 Google、Apple 账户的带密钥哈希，方便你再次找到它。你可以随时删除。",
+  "privacy.media.title": "收藏品图片",
+  "privacy.media.body": "图片通过我们的媒体代理加载，托管图片的网站永远看不到你的设备。我们不记录是谁请求的。",
+  "privacy.never.title": "绝不",
+  "privacy.never.body": "没有分析，没有广告，没有追踪，我们也绝不出售数据。",
+} satisfies Record<keyof typeof en, string>;

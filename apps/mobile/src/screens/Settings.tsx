@@ -5,6 +5,8 @@ import { LOCALES, localeInfo, resolveLocale, type LocalePref } from "@clip-walle
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, MenuItem, Notice, Row, Screen, T, Toggle } from "../ui/kit";
 import { APP } from "../env";
+import { useT } from "@clip-wallet/i18n/react";
+import { PRIVACY_CATALOGS } from "@clip-wallet/ui";
 import { useMobileT } from "../i18n";
 import { deviceLanguages } from "../i18n/device";
 
@@ -240,6 +242,7 @@ function AdvancedNetworks(props: { prefs: Prefs; setPrefs: (p: Partial<Prefs>) =
 export function Settings() {
   const { client, state, refresh, wallet, navigate } = useWallet();
   const t = useMobileT();
+  const tp = useT(PRIVACY_CATALOGS);
   const [err, setErr] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   if (!state) return null;
@@ -285,6 +288,7 @@ export function Settings() {
           <MenuItem title={t("m.settings.menu.backup")} hint={t("m.settings.menu.backupHint")} testID="menu-backup" onPress={() => navigate({ name: "backup" })} />
           <MenuItem title={t("m.settings.menu.accounts")} hint={t("m.settings.menu.accountsHint")} testID="menu-accounts" onPress={() => navigate({ name: "accounts" })} />
           <MenuItem title={t("m.settings.menu.hardware")} hint={t("m.settings.menu.hardwareHint")} testID="menu-hardware" onPress={() => navigate({ name: "hardware" })} />
+          <MenuItem title={tp("privacy.menu")} testID="menu-data-use" onPress={() => navigate({ name: "data-use" })} />
         </Card>
       </View>
       <Section title={t("m.settings.social")}>

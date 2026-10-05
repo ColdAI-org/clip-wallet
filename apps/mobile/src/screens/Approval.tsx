@@ -196,7 +196,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
         ))}
       </Card>
       <Pressable onPress={() => setOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <T color={theme.c.accent} style={{ fontWeight: "600" }}>
+        <T color={theme.c.accentInk} style={{ fontWeight: "600" }}>
           {t("m.approval.details")}
         </T>
         <View style={{ transform: [{ rotate: open ? "90deg" : "0deg" }] }}>

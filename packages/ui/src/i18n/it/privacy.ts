@@ -1,0 +1,20 @@
+import type en from "../en/privacy";
+export default {
+  "privacy.menu": "I tuoi dati",
+  "privacy.title": "I tuoi dati",
+  "privacy.lede": "{name} non ha un tuo account. La tua frase di recupero e le tue chiavi restano su questo dispositivo, bloccate dalla tua password. Non le vediamo mai.",
+  "privacy.device.title": "Resta su questo dispositivo",
+  "privacy.device.body": "La tua frase di recupero, le chiavi private, la password, i contatti, le impostazioni e l'attività. Niente di tutto questo ci viene inviato.",
+  "privacy.network.title": "Cosa consulta il wallet",
+  "privacy.network.body": "Per mostrare i saldi e inviare pagamenti, il wallet chiede a servizi di rete pubblici (nodi e indicizzatori) dei tuoi indirizzi pubblici. I prezzi arrivano da CoinGecko e DEX Screener.",
+  "privacy.scam.title": "Controlli anti-truffa",
+  "privacy.scam.body": "Le liste aperte di truffe vengono scaricate su questo dispositivo e controllate qui, così non sanno mai quali siti visiti. Se in questa versione Blockaid è attivo, Blockaid vede il sito, la richiesta e il tuo indirizzo.",
+  "privacy.partners.title": "Solo quando li usi",
+  "privacy.partners.body": "Scambio, acquisto e staking inviano il tuo indirizzo e l'importo al fornitore che scegli, e vale la sua informativa sulla privacy.",
+  "privacy.backup.title": "Backup con passkey, se lo attivi",
+  "privacy.backup.body": "Il nostro servizio di backup conserva una copia bloccata che solo la tua passkey può aprire, e un hash con chiave della tua email o del tuo account Google o Apple per ritrovarla. Puoi eliminarla quando vuoi.",
+  "privacy.media.title": "Immagini dei collezionabili",
+  "privacy.media.body": "Le immagini passano dal nostro proxy multimediale, così i siti che le ospitano non vedono mai il tuo dispositivo. Non teniamo traccia di chi le ha chieste.",
+  "privacy.never.title": "Mai",
+  "privacy.never.body": "Niente statistiche, niente pubblicità, niente tracciamento, e non vendiamo mai dati.",
+} satisfies Record<keyof typeof en, string>;

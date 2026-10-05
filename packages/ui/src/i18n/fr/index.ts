@@ -41,6 +41,7 @@ import approval from "./approval";
 import explore from "./explore";
 import social from "./social";
 import plugins from "./plugins";
+import privacy from "./privacy";
 import security from "./security";
 
 const messages: Translation<UiMessages> = {
@@ -65,6 +66,7 @@ const messages: Translation<UiMessages> = {
   ...explore,
   ...social,
   ...plugins,
+  ...privacy,
   ...security,
 };
 export default messages;
