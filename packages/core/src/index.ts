@@ -458,4 +458,15 @@ export class ClipError extends Error {
   }
 }
 
+/**
+ * A chain module that can't decode a request and throws a ClipError has said why in plain words (no coins to build
+ * the transaction from, the account isn't on the network yet). The approval stays blocked as unreadable; this
+ * warning carries that reason so the user isn't told only "can't read this request". Anything else adds nothing.
+ */
+export function decodeFailureReason(e: unknown): Warning[] {
+  const c = e as Partial<ClipError> | null;
+  if (!c || typeof c !== "object" || typeof c.userMessage !== "string" || typeof c.code !== "string") return [];
+  return [{ level: "danger", code: "simulation-failed", message: c.userMessage, ...(c.msg ? { msg: c.msg } : {}) }];
+}
+
 export * from "./messages/index.js";

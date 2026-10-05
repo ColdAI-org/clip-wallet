@@ -198,7 +198,10 @@ export function createAptosModule(options: AptosModuleOptions = {}): ChainModule
         maxGas = (used * 3n + 1n) / 2n;
         if (maxGas < 2_000n) maxGas = 2_000n;
       } else {
-        throw new ClipError(plainAptosError(sim.vm_status), "aptos/simulation-failed");
+        // The estimate sizes max gas from the balance, so "below the minimum" here means the account can't pay any
+        // fee at all (an empty or not-yet-created account), not that the app set too little gas.
+        const plain = /MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS/i.test(sim.vm_status) ? "You don't have enough APT to pay the network fee." : plainAptosError(sim.vm_status);
+        throw new ClipError(plain, "aptos/simulation-failed");
       }
     } catch (e) {
       if (e instanceof ClipError && e.code === "aptos/simulation-failed") throw e;

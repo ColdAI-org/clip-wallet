@@ -73,3 +73,25 @@ export async function onboard(page: Page, opts: { shots?: (name: string) => Prom
   await expect(page.getByRole("heading", { name: "Unlock with Face ID or Touch ID?" })).toBeVisible();
   return password;
 }
+
+/**
+ * Imports an existing phrase through the real onboarding "I already have a recovery phrase" flow. The phrase is typed
+ * into the field and nothing else: callers must not log it, and must not screenshot or trace while it is on screen
+ * (the dapp matrix runs with trace, screenshot and video off).
+ */
+export async function importWallet(page: Page, phrase: string, opts: { password?: string } = {}) {
+  const password = opts.password ?? "calm orange harbour 42";
+  await page.getByRole("button", { name: "I already have a recovery phrase" }).click();
+  await page.getByLabel("Recovery phrase").fill(phrase);
+  await page.getByRole("button", { name: "Continue" }).click();
+  // The phrase field is gone before anything else happens on this page.
+  await expect(page.getByLabel("Recovery phrase")).toHaveCount(0);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByLabel("Type it again").fill(password);
+  await page.getByRole("button", { name: "Import wallet" }).click();
+  await expect(page.getByRole("heading", { name: "Unlock with Face ID or Touch ID?" })).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Not now" }).click();
+  await page.getByRole("button", { name: "Open my wallet" }).click();
+  await expect(page.getByTestId("total")).toBeVisible({ timeout: 60_000 });
+  return password;
+}

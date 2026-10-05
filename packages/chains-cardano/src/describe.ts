@@ -289,6 +289,12 @@ export function describeTx(
     if (scripts) title = say("bg.req.approveTxFor", { host: p.host });
     else if (sends.length === 1 && payment) title = say("bg.req.sendTo", { amount: valueText(sends[0]![1], metas), to: shortAddress(sends[0]![0]) });
     else if (sends.length > 1 && payment) title = say("bg.req.sendToCount", { count: sends.length });
+    else if (payment && b.outputs.length > 0 && !b.certs.length && !b.withdrawals.length && !minted.length && !burned.length) {
+      // Every output comes back to you (a self-transfer or consolidation): say so and how much, instead of only
+      // "Approve a transaction" (dapp matrix regression).
+      title = say("bg.req.moveBetweenOwn", { symbol: "ADA" });
+      lines.unshift({ label: "To", value: `Your own address: ${valueText(myOut, metas)}` });
+    }
     else if (minted.length) title = `Create ${joinWords(minted)}`;
     else if (burned.length) title = `Destroy ${joinWords(burned)}`;
     else if (!payment && !stake) title = say("bg.req.coSignTxFor", { host: p.host });

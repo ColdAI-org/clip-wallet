@@ -82,15 +82,16 @@
       "detect": {
         "ok": {
           "name": "Clip Wallet",
-          "chains": [],
+          "chains": [
+            "sui:testnet"
+          ],
           "features": [
-            "solana:signAndSendTransaction",
-            "solana:signIn",
-            "solana:signMessage",
-            "solana:signTransaction",
             "standard:connect",
             "standard:disconnect",
-            "standard:events"
+            "standard:events",
+            "sui:signAndExecuteTransaction",
+            "sui:signPersonalMessage",
+            "sui:signTransaction"
           ]
         }
       },
@@ -98,7 +99,7 @@
         "ok": {
           "accounts": 1,
           "chains": [
-            "solana:devnet"
+            "sui:testnet"
           ]
         }
       }
@@ -106,10 +107,10 @@
     "wire": {
       "requests": [
         "{\"family\":\"evm\",\"method\":\"1mask_getProviderState\",\"result\":{\"accounts\":[],\"chainId\":\"0x4cef52\",\"isUnlocked\":\"boolean\",\"networkVersion\":\"5042002\"}}",
-        "{\"family\":\"solana\",\"method\":\"standard:connect\",\"result\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+        "{\"family\":\"sui\",\"method\":\"standard:connect\",\"result\":[{\"address\":\"<hex 32 bytes>\",\"publicKey\":\"<base64>\"}]}"
       ],
       "events": [
-        "{\"family\":\"solana\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<base58>\",\"publicKey\":\"<base64>\"}]}"
+        "{\"family\":\"sui\",\"event\":\"accountsChanged\",\"data\":[{\"address\":\"<hex 32 bytes>\",\"publicKey\":\"<base64>\"}]}"
       ]
     }
   },

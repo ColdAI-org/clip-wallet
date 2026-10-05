@@ -116,6 +116,18 @@ describe("decode", () => {
     expect(d.lines).toContainEqual({ label: "To", value: `${BOB} gets 1.5 SOL` });
   });
 
+  it("SOL transfer to yourself names the amount and recipient (dapp matrix regression)", async () => {
+    const { m, ctx } = setup();
+    const wire = build([getTransferSolInstruction({ source: createNoopSigner(address(ME)), destination: address(ME), amount: 1n })], ME);
+    const d = await m.decode(ws("solana:signAndSendTransaction", wire), ctx);
+    // It used to fall through to "Approve a transaction" with no amount or recipient at all.
+    expect(d.title).toBe(`Send 0.000000001 SOL to ${ME.slice(0, 4)}…${ME.slice(-4)}`);
+    expect(d.titleMsg).toMatchObject({ id: "bg.req.sendTo" });
+    expect(d.blind).toBe(false);
+    expect(d.balanceChanges).toEqual([]);
+    expect(d.lines).toContainEqual({ label: "To", value: `${ME} (you) gets 0.000000001 SOL` });
+  });
+
   it("USDC transfer that opens the recipient's account", async () => {
     const { m, ctx } = setup();
     const d = await m.decode(ws("solana:signAndSendTransaction", FIX.usdcTransfer), ctx);

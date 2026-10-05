@@ -13,6 +13,7 @@ import {
   coinAssetKey,
   createSuiModule,
   fromChainId,
+  plainSuiError,
   serializeSignature,
   suiAddressFromPublicKey,
   toWalletStandardChain,
@@ -208,6 +209,12 @@ describe("prepare and finalize", () => {
     });
   });
 
+  it("says an empty account can't pay the fee instead of \"couldn't run\" (dapp matrix regression)", () => {
+    // Real testnet answer while building a transaction for an address with no SUI (2026-10).
+    const raw = "Invalid argument: Unable to perform gas selection due to insufficient SUI balance (in address balance or coins) for account 0x6103 to satisfy required budget 2988000.";
+    expect(plainSuiError(raw)).toBe("You don't have enough SUI to pay the network fee.");
+  });
+
   it("signs personal messages over the PersonalMessage intent", async () => {
     const m = mockGql({});
     const r = req("sui:signPersonalMessage", { inputs: [{ account: ME, message: btoa("Hello Sui") }] });
@@ -342,6 +349,21 @@ describe("buildTransfer and unresolved transactions", () => {
       code: "sui/insufficient",
       userMessage: "You don't have enough USDC.",
     });
+  });
+
+  it("names the amount of SUI sent back to yourself (dapp matrix regression)", async () => {
+    const tx = new Transaction();
+    tx.setSender(ME);
+    tx.setGasPrice(1000);
+    tx.setGasBudget(3_000_000);
+    tx.setGasPayment([{ objectId: `0x${"ab".repeat(32)}`, version: "1", digest: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi" }]);
+    const [c] = tx.splitCoins(tx.gas, [1]);
+    tx.transferObjects([c!], ME);
+    const bytes = b64encode(await tx.build());
+    const m = mockGql({ ...meta(), clipSimulate: () => simResult([[ME, SUI, (-FEE).toString()]]) });
+    const d = await sui.decode(ws("sui:signAndExecuteTransaction", bytes), ctxFor(m.fetch));
+    expect(d.title).toBe(`Send 0.000000001 SUI to ${ME.slice(0, 6)}…${ME.slice(-4)}`);
+    expect(d.lines).toContainEqual({ label: "Sends to", value: "Your own account" });
   });
 
   it("resolves Wallet Standard transaction JSON once and signs the same bytes it showed", async () => {

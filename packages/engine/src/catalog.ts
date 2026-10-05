@@ -5,7 +5,7 @@
  */
 import type { AssetRef, Network } from "@clip-wallet/core";
 import { enabledFamilies, includesEvmChain, isMainnetEnabled, type ClipConfig } from "@clip-wallet/config";
-import { EVM_NETWORKS, CURATED_TOKENS } from "@clip-wallet/chains-evm";
+import { EVM_NETWORKS, CURATED_TOKENS, HEDERA_EVM_NETWORKS } from "@clip-wallet/chains-evm";
 
 type CuratedToken = (typeof CURATED_TOKENS)[number];
 import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
@@ -55,6 +55,18 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     ...ALGORAND_NETWORKS,
   ];
   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
+}
+
+/**
+ * Networks dapps may use and the wallet signs on, but never lists or scans: Hedera's EVM (eip155:296 testnet, 295
+ * mainnet), whenever the wallet has Hedera. Hedera EVM dapps (wagmi's hederaTestnet, Scaffold-HBAR, MetaMask-style
+ * Hedera dapps) connect over EIP-1193 and ask for chain 296; without it in 1Mask's registry they got "Clip Wallet only
+ * connects to the networks it ships with". It stays out of walletNetworks() so HBAR isn't counted twice (see
+ * HEDERA_EVM_SPECS). Settle on Hedera also signs here (its claim / withdraw), so it is included when `settleOnHedera`.
+ */
+export function dappRequestNetworks(networks: Network[], opts: { mainnet: boolean; settleOnHedera?: boolean }): Network[] {
+  if (!opts.settleOnHedera && !networks.some((n) => n.family === "hedera")) return [];
+  return HEDERA_EVM_NETWORKS.filter((n) => opts.mainnet || n.testnet);
 }
 
 /**

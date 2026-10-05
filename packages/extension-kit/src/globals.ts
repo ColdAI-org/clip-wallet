@@ -29,6 +29,8 @@ declare global {
   const __CLIP_WALLET_KEY__: string;
   /** The Chrome extension id fixed by clip.config extension.key, or null (no key: the browser assigns one). */
   const __CLIP_EXTENSION_ID__: string | null;
+  /** WalletConnect is on in this build (a project id was configured): gates Hedera extension discovery. */
+  const __CLIP_WALLETCONNECT__: boolean;
   /** EIP-6963 / Wallet Standard identity from clip.config. */
   const __CLIP_IDENTITY__: { name: string; icon: `data:image/svg+xml;base64,${string}`; rdns: string };
   /** Feature partner keys and switches (wxt.config.ts FEATURES). */

@@ -292,6 +292,7 @@ code {
 }
 .clip-row__label {
   color: var(--clip-text-2);
+  flex-shrink: 0;
 }
 .clip-row__value {
   text-align: end;
@@ -300,6 +301,8 @@ code {
   flex-direction: column;
   align-items: flex-end;
   min-width: 0;
+  /* Full addresses and hashes have no spaces: wrap them inside the row instead of running over the label. */
+  overflow-wrap: anywhere;
 }
 .clip-row__hint {
   color: var(--clip-text-3);

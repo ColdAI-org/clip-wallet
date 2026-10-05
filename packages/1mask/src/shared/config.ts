@@ -50,6 +50,8 @@ export interface InpageConfig {
     substrate?: boolean;
     starknet?: boolean;
     ton?: boolean;
+    /** Hedera extension discovery for @hashgraph/hedera-wallet-connect's DAppConnector (inpage/hedera.ts). */
+    hedera?: boolean;
   };
   /** Also set legacy window.starknet (only if nothing owns it). Default false: window.starknet_<id> only. */
   claimWindowStarknet?: boolean;
@@ -66,7 +68,10 @@ export interface InpageConfig {
   };
   /** Global the NEAR/Stellar/Algorand providers hang off (window[globalKey].<family>). Default "clipwallet". */
   globalKey?: string;
-  /** Beacon extension id (Beacon's wallet list matches the browser extension id). Default: identity.rdns. */
+  /**
+   * The browser extension id (chrome.runtime.id). Beacon's wallet list and Hedera's DAppConnector address the wallet
+   * by it. Default: identity.rdns.
+   */
   beaconExtensionId?: string;
   /** Per-site compatibility mode. Typed stub, NOT implemented in v1. */
   compatibility?: CompatibilityModeConfig;

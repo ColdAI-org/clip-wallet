@@ -48,6 +48,8 @@ export class OneMaskConnector implements DappConnector {
       isUnlocked: () => host.isUnlocked(),
       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
       cancel: (requestId) => host.cancel(requestId),
+      // Hedera DAppConnector / HashConnect find the wallet as an extension and hand over their WalletConnect code.
+      ...(host.pairWalletConnect ? { walletConnectPair: (_origin: string, uri: string) => host.pairWalletConnect!(uri) } : {}),
       starknetDeploymentData: async (origin, net) => {
         const [account] = await host.accountsFor(origin, "starknet");
         return account && this.mods.starknet ? this.mods.starknet.deploymentDataFor({ network: net, account, fetch: globalThis.fetch.bind(globalThis) }) : null;

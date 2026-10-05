@@ -1,0 +1,74 @@
+{
+  "//": "Public receive addresses of the dapp matrix wallet (account 0 per family, testnet), derived from DAPP_MATRIX_MNEMONIC with ClipVault defaults, exactly as the extension background derives them. The phrase lives only in the git-excluded .env.dapp-matrix. matrix.spec.ts checks every dapp connect returns these.",
+  "evm": {
+    "address": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
+    "publicKey": "03d8ac1935c3bae4c197bd79e641ec34d576d58fb3c3fcf0dbc466b6a34b342928",
+    "path": "m/44'/60'/0'/0/0"
+  },
+  "hedera": {
+    "address": "0xa3a57dB2a5237bD72D5d05cBdD797fEe21A0Fc92",
+    "publicKey": "0368049caabb6779c03728b4f93df9b405852da22874013b99d226239c122727af",
+    "path": "m/44'/3030'/0'/0/0"
+  },
+  "solana": {
+    "address": "G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk",
+    "publicKey": "df203a917aed336884738193a5c47898e0c4df04c699715b0e8b68ae16350c81",
+    "path": "m/44'/501'/0'/0'"
+  },
+  "bitcoin": {
+    "address": "tb1q4j5qk5zu6ervj79ewph4zw3lukn9dhpdl6ydnr",
+    "publicKey": "0286e2d398acee22ac6ca6a2b659e19ed6637d83bfcbae4b491cdb331b1551c445",
+    "path": "m/84'/1'/0'/0/0",
+    "taproot": "tb1pwq39p98u4vpl6r5366qhecy0rlc9mtcawux93f2n6d02gp7kuj0qkrf3vu"
+  },
+  "sui": {
+    "address": "0x610339995017916d583f600d0796603136f24fcb271cde2ddecb50db9a6fc5f9",
+    "publicKey": "76856f13dcc06bcee0d61ca0cb8a0ebb210860a630b72e00056ca521608464df",
+    "path": "m/44'/784'/0'/0'/0'"
+  },
+  "aptos": {
+    "address": "0xf250c99c6586caefd617a38b184dff03ca467ce35268563c907b0d71489d2de9",
+    "publicKey": "5b49e47e523b47b88eb736baf93e4426446dbaa7bd824f93b143df68f74eee40",
+    "path": "m/44'/637'/0'/0'/0'"
+  },
+  "cardano": {
+    "address": "addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79",
+    "publicKey": "7d27c0349bac0dd519d81aff14c89d60ad4e869b16c5f2e21d98ff6d95fa0d22",
+    "path": "m/1852'/1815'/0'/0/0"
+  },
+  "substrate": {
+    "address": "5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb",
+    "publicKey": "ce36fef24a0cbca4fff77554417922d15290a8296c08ef0759845140c1eab52d",
+    "path": ""
+  },
+  "starknet": {
+    "address": "0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8",
+    "publicKey": "0504efd6c0501964839cafacfafb5dd9e3603921cba08d7c5961bde2292e302d",
+    "path": "argent-x:m/44'/9004'/0'/0/0"
+  },
+  "ton": {
+    "address": "0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi",
+    "publicKey": "c241bf86c79727f9e316f1b7f02d57af2ebe54c6e8ac9dd18761657966bf84aa",
+    "path": "m/44'/607'/0'"
+  },
+  "near": {
+    "address": "1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272",
+    "publicKey": "1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272",
+    "path": "m/44'/397'/0'"
+  },
+  "stellar": {
+    "address": "GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ",
+    "publicKey": "78d36c9e91e5d7aab5446584e4a6e994b0aceb8fc3cf1747497abd172851b01a",
+    "path": "m/44'/148'/0'"
+  },
+  "tezos": {
+    "address": "tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud",
+    "publicKey": "73e859d25c9e563e0c1907bad69297568cd4003d729ba75c9ccdd5f442b3a421",
+    "path": "m/44'/1729'/0'/0'"
+  },
+  "algorand": {
+    "address": "4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4",
+    "publicKey": "e0640c843fdc1868d5d4907f84154752b3d10c27d3ec39e4d692c57a7d03f7c6",
+    "path": "m/44'/283'/0'/0/0"
+  }
+}

@@ -12,7 +12,7 @@
  * except revealPhrase for the onboarding screen.
  */
 import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import { ClipError, decodeFailureReason, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -739,7 +739,7 @@ export class WalletEngine implements DappHost {
     let decoded: DecodedRequest;
     try {
       decoded = attachMsgs(await this.module(network.family).decode(request, ctx));
-    } catch {
+    } catch (e) {
       decoded = {
         requestId: request.id,
         title: "Unreadable request",
@@ -747,7 +747,7 @@ export class WalletEngine implements DappHost {
         balanceChanges: [],
         simulated: false,
         blind: true,
-        warnings: [{ level: "danger", code: "blind-signing", message: `${this.env.walletName} can't read this request.` }],
+        warnings: [{ level: "danger", code: "blind-signing", message: `${this.env.walletName} can't read this request.` }, ...decodeFailureReason(e)],
         networkId: network.id,
       };
     }
@@ -779,7 +779,7 @@ export class WalletEngine implements DappHost {
     }
     // Audit DISP-01: token names, NFT names, memos and plugin notes can't disguise what the screen says.
     decoded = sanitizeDecoded(decoded);
-    const { balances } = await this.portfolio();
+    const balances = await this.balancesForPlan(ctx);
     const plan = decoded.blind ? undefined : await this.deps.route.plan({ request, decoded, balances, networks: this.deps.networks, account: ctx.account.address });
 
     const id = this.env.randomUUID();
@@ -933,7 +933,7 @@ export class WalletEngine implements DappHost {
       },
       replan: async () => {
         this.cache.clear();
-        const { balances } = await this.portfolio(true);
+        const balances = await this.balancesForPlan(ctx, true);
         return this.deps.route.plan({ request: req, decoded: p.view.decoded!, balances, networks: this.deps.networks, account: ctx.account.address });
       },
       changed: () => this.env.broadcast(),
@@ -1135,6 +1135,23 @@ export class WalletEngine implements DappHost {
         this.env.broadcast();
       }
     }
+  }
+
+  /**
+   * Balances the route planner checks a request against: the portfolio, plus, for a request network the portfolio
+   * never scans (Hedera's EVM, chain 296), the account's balance there read from its chain module. Without it a funded
+   * account on 296 looked empty and every send was blocked as "couldn't find a way to pay HBAR".
+   */
+  private async balancesForPlan(ctx: ChainContext, fresh = false): Promise<TokenBalance[]> {
+    const { balances } = await this.portfolio(fresh);
+    if (this.deps.networks.some((n) => n.id === ctx.network.id)) return balances;
+    const here = await this.module(ctx.network.family).getBalances(ctx).catch(() => [] as TokenBalance[]);
+    return [...balances, ...here];
+  }
+
+  /** DappHost: a WalletConnect code handed over by a page's Hedera DAppConnector (1Mask inpage/hedera.ts). */
+  async pairWalletConnect(uri: string): Promise<void> {
+    await this.deps.walletConnect.pair(uri);
   }
 
   async chainRead(req: DappRequest): Promise<unknown> {

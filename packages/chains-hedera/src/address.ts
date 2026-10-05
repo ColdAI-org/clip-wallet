@@ -30,6 +30,18 @@ export function aliasAddress(publicKey: Uint8Array | string): string {
   return `0x${hex(keccak_256(uncompressed.subarray(1)).subarray(12))}`;
 }
 
+/**
+ * EIP-55 mixed-case form of an EVM address. The wallet shows Hedera aliases this way (the vault's account address is
+ * checksummed), so `addressFromPublicKey` returns it too; mirror-node lookups keep using the lowercase `aliasAddress`.
+ */
+export function checksumAlias(address: string): string {
+  const lower = address.toLowerCase().replace(/^0x/, "");
+  const h = hex(keccak_256(new TextEncoder().encode(lower)));
+  let out = "0x";
+  for (let i = 0; i < lower.length; i++) out += parseInt(h[i]!, 16) >= 8 ? lower[i]!.toUpperCase() : lower[i]!;
+  return out;
+}
+
 /** If an EVM address is a "long-zero" address (0x000…0000<num>), the 0.0.num it stands for. */
 export function longZeroToAccountId(evm: string): string | null {
   const h = evm.toLowerCase().replace(/^0x/, "");

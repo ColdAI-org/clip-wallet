@@ -23,6 +23,7 @@ import { BITCOIN_METHODS_ALLOWED, EVM_METHODS, SOLANA_METHODS, injectedAllowlist
 import { METHOD_APTOS_NETWORK } from "../shared/move-methods.js";
 import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families.js";
 import { dispatchCardanoSubstrate, type CardanoSubstrateRouterHelpers } from "./cardano-substrate.js";
+import { HEDERA_WC_PAIR, isWalletConnectPairingUri } from "../shared/hedera.js";
 import type { PermissionStore } from "./permissions.js";
 import { createStarknetTonDispatch, type StarknetTonOptions } from "./starknet-ton.js";
 import { createCallsDispatch } from "./eip5792.js";
@@ -72,6 +73,11 @@ export interface OneMaskRouterOptions extends StarknetTonOptions {
   /** Told when the router gives up on a request (timeout) so the approval window can close. */
   cancel?(requestId: string, reason: "timeout"): void;
   timeouts?: { approvalMs?: number; readMs?: number };
+  /**
+   * Hedera extension discovery (inpage/hedera.ts): pair with the WalletConnect code a page's DAppConnector handed us,
+   * exactly as if the user had pasted it (the proposal still needs the user's approval). Absent = refused (4200).
+   */
+  walletConnectPair?(origin: string, uri: string): Promise<void>;
   /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
   tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
   rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
@@ -553,6 +559,13 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "cardano" || family === "substrate") return dispatchCardanoSubstrate(cardanoSubstrateHelpers, origin, family, method, params, chain);
     if (family === "starknet") return starknetTon.starknet(origin, method, params);
     if (family === "ton") return starknetTon.ton(origin, method, params);
+    if (family === "hedera" && method === HEDERA_WC_PAIR) {
+      const uri = (params as { uri?: unknown } | undefined)?.uri;
+      if (!opts.walletConnectPair) throw rpcError.unsupportedMethod(method);
+      if (typeof uri !== "string" || !isWalletConnectPairingUri(uri)) throw rpcError.invalidParams("Expected { uri: \"wc:…\" }.");
+      await opts.walletConnectPair(origin, uri);
+      return null;
+    }
     throw rpcError.unsupportedMethod(method);
   };
 

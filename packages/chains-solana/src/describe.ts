@@ -145,6 +145,8 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
   let cuPrice = 0n;
   let nonCbIxs = 0;
   let opened = 0n;
+  /** SOL sent from the account to itself: moves nothing, but the user must still see what they're signing. */
+  let toSelf = 0n;
 
   const ownerOfTokenAccount = (a: string) => accounts.get(a)?.owner ?? ataOwner.get(a)?.owner ?? null;
   const mintOfTokenAccount = (a: string) => accounts.get(a)?.mint ?? ataOwner.get(a)?.mint ?? null;
@@ -178,7 +180,8 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
         const lamports = u64(data, 4);
         if (from === dc.me && ownerOfTokenAccount(to) === dc.me && mintOfTokenAccount(to) === WSOL_MINT) {
           lines.push({ label: "Wraps", value: `${amountText(sol(dc.networkId), lamports)} into wrapped SOL for the swap` });
-        } else if (from === dc.me && to !== dc.me) moves.push({ asset: sol(dc.networkId), amount: -lamports, counterparty: to });
+        } else if (from === dc.me && to === dc.me) toSelf += lamports;
+        else if (from === dc.me && to !== dc.me) moves.push({ asset: sol(dc.networkId), amount: -lamports, counterparty: to });
         else if (to === dc.me && from !== dc.me) moves.push({ asset: sol(dc.networkId), amount: lamports, counterparty: from });
         else if (from !== dc.me) lines.push({ label: "Transfer", value: `${amountText(sol(dc.networkId), lamports)}: ${short(from)} → ${short(to)}` });
       } else if (kind === SystemInstruction.AdvanceNonceAccount) {
@@ -518,6 +521,12 @@ export async function describeTransaction(p: ParsedTransaction, dc: DescribeCont
     const give = one(mergeText(outs));
     const get = one(mergeText(ins));
     if (give && get) titleMsg = msg("bg.req.trade", { give, get });
+  } else if (toSelf > 0n && !approvals.length && !lines.some((l) => l.label === "Also")) {
+    // A transfer to yourself (consolidating, testing): name the amount and the recipient like any other send.
+    const amount = amountText(sol(dc.networkId), toSelf);
+    title = `Send ${amount} to ${short(dc.me)}`;
+    titleMsg = msg("bg.req.sendTo", { amount, to: short(dc.me) });
+    lines.unshift({ label: "To", value: `${dc.me} (you) gets ${amount}` });
   } else if (approvals.length === 1) {
     title = `Allow ${approvals[0]!.value.replace(" can ", " to ")}`;
   } else if (lines.some((l) => l.label === "Also")) {

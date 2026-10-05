@@ -190,8 +190,21 @@ function myRewardAddress(ctx: ChainContext): Uint8Array | null {
   return me.stake ? rewardAddress(me.networkId, me.stake) : null;
 }
 
+/**
+ * Where this account's coins can sit: the base address it shows and uses everywhere (payment + stake key, CIP-1852),
+ * plus the enterprise address of the same payment key. Coins sent there (e.g. by a tool that derived the address from
+ * the payment key alone) are spendable with the same key, so balances and coin selection include them; change and
+ * every address the wallet hands out stay the base address.
+ */
+function lookupAddresses(ctx: ChainContext): string[] {
+  const me = meOf(ctx);
+  const shown = addressToBech32(myAddress(ctx));
+  const enterprise = addressToBech32(enterpriseAddress(me.networkId, me.paymentKeyHash));
+  return shown === enterprise ? [shown] : [shown, enterprise];
+}
+
 async function myUtxos(ctx: ChainContext): Promise<Utxo[]> {
-  const list = await koiosFor(ctx).addressUtxos([addressToBech32(myAddress(ctx))]);
+  const list = await koiosFor(ctx).addressUtxos(lookupAddresses(ctx));
   // UTxOs carrying reference scripts would add a reference-script fee; leave them out of automatic selection.
   return list.filter((u: KoiosUtxo) => !u.is_spent && !u.reference_script).map(utxoFromKoios);
 }
@@ -439,7 +452,7 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
 
   async function getBalances(ctx: ChainContext): Promise<TokenBalance[]> {
     const total = emptyValue();
-    for (const u of await koiosFor(ctx).addressUtxos([addressToBech32(myAddress(ctx))])) if (!u.is_spent) addValue(total, utxoFromKoios(u).value);
+    for (const u of await koiosFor(ctx).addressUtxos(lookupAddresses(ctx))) if (!u.is_spent) addValue(total, utxoFromKoios(u).value);
     const out: TokenBalance[] = [{ asset: adaAsset(ctx.network.id), amount: total.coin.toString() }];
     const metas = await assetMetas(koiosFor(ctx), ctx.network.id, [...total.assets.keys()]);
     for (const [unit, q] of total.assets) {
@@ -452,7 +465,7 @@ export function createCardanoModule(options: CardanoModuleOptions = {}): Cardano
 
   async function getNfts(ctx: ChainContext): Promise<Nft[]> {
     const units = new Set<string>();
-    for (const u of await koiosFor(ctx).addressUtxos([addressToBech32(myAddress(ctx))])) {
+    for (const u of await koiosFor(ctx).addressUtxos(lookupAddresses(ctx))) {
       if (u.is_spent) continue;
       for (const a of u.asset_list ?? []) units.add(a.policy_id + (a.asset_name ?? ""));
     }

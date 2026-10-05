@@ -87,6 +87,23 @@ describe("signTx (CIP-30)", () => {
     await expect(m.decode(req(CARDANO_METHODS.signTx, [txHex, false]), ctx)).rejects.toMatchObject({ userMessage: PROOF_GENERATION_MESSAGE, code: "cardano/proof-generation" });
   });
 
+  it("says a transaction whose outputs all come back to you moves ADA between your own addresses (dapp matrix regression)", async () => {
+    const { m, ctx } = setup();
+    const me = addressToBytes(FIX.address);
+    const body = new CborMap([
+      [0, [[fromHex(TX_A), 0]]],
+      [1, [[me, 1_000_000], [me, [8_800_000, new CborMap([[fromHex(FIX.policy), new CborMap([[fromHex(TOKEN_NAME), 5]])]])]]]],
+      [2, 200_000],
+      [3, FIX.slot + 3600],
+    ]);
+    const tx = hex(encodeCbor([body, new CborMap(), true, null]));
+    const d = await m.decode(req(CARDANO_METHODS.signTx, [tx, false]), ctx);
+    // Was "Approve a transaction for dapp.example" with nothing about where the ADA goes.
+    expect(d.title).toBe("Move your ADA between your own addresses");
+    expect(d.lines[0]).toEqual({ label: "To", value: "Your own address: 9.8 ADA and 5 CLIP" });
+    expect(d.blind).toBe(false);
+  });
+
   it("describes inputs, outputs, mint and metadata in plain words with partialSign", async () => {
     const { m, ctx } = setup();
     const d = await m.decode(req(CARDANO_METHODS.signTx, { tx: txHex, partialSign: true }), ctx);
@@ -321,6 +338,32 @@ describe("balances, NFTs and CIP-30 reads", () => {
         attributes: [{ trait: "rarity", value: "rare" }],
       },
     ]);
+  });
+
+  it("counts coins at the payment key's enterprise address too, but shows and hands out only the base address (dapp matrix regression)", async () => {
+    // The dapp matrix's tooling derived the enterprise address (addr_test1v…) from the payment key alone while the
+    // wallet shows the base address (addr_test1q…, CIP-1852 stake key 2/0). Coins at either are this account's.
+    const { m } = setup();
+    const enterprise = m.addressFromPublicKey(fromHex(FIX.paymentPub), CARDANO_PREPROD);
+    const asked: string[][] = [];
+    const k = mockKoios(
+      standardRoutes(FIX, [
+        [
+          "POST",
+          "/address_utxos",
+          (b: { _addresses: string[] }) => {
+            asked.push(b._addresses);
+            return [koiosUtxo(TX_A, 0, FIX.address, 10_000_000n), koiosUtxo("dd".repeat(32), 0, enterprise, 2_000_000n)].filter((u) => b._addresses.includes(u.address));
+          },
+        ],
+      ]),
+    );
+    const ctx = ctxFor(account, k.fetch);
+    expect((await m.getBalances(ctx))[0]!.amount).toBe("12000000");
+    expect(asked[0]).toEqual([FIX.address, enterprise]);
+    expect(await m.read("cardano_getUtxos", [], ctx)).toHaveLength(2);
+    expect(await m.read("cardano_getChangeAddress", [], ctx)).toBe(hex(addressToBytes(FIX.address)));
+    expect(await m.read("cardano_getUsedAddresses", [], ctx)).toEqual([hex(addressToBytes(FIX.address))]);
   });
 
   it("answers getBalance, getUtxos (amount + paginate), addresses and network id", async () => {

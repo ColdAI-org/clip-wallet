@@ -86,7 +86,10 @@ export interface ObjectNode {
 /** Plain words for the usual Sui failures. */
 export function plainSuiError(raw: string): string {
   const s = raw.toLowerCase();
-  if (s.includes("insufficientgas") || s.includes("insufficient gas") || s.includes("gas balance")) return "You don't have enough SUI to pay the network fee.";
+  // "Unable to perform gas selection due to insufficient SUI balance …" is what an empty account gets while building.
+  if (s.includes("insufficientgas") || s.includes("insufficient gas") || s.includes("gas balance") || s.includes("gas selection") || s.includes("insufficient sui balance")) {
+    return "You don't have enough SUI to pay the network fee.";
+  }
   if (s.includes("insufficientcoinbalance") || s.includes("insufficient balance") || s.includes("insufficientfunds")) return "You don't have enough of that coin for this.";
   if (s.includes("moveabort")) return "The app's contract refused this transaction. Nothing was sent.";
   if (s.includes("object") && (s.includes("not available") || s.includes("locked") || s.includes("version"))) return "Something in this transaction changed since the app built it. Ask the app to try again.";

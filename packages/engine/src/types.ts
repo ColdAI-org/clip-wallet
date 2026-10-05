@@ -92,6 +92,11 @@ export interface DappHost {
   rpc(networkId: string, method: string, params: unknown): Promise<unknown>;
   /** Read-only chain calls answered by a chain module (CIP-30 getUtxos/getBalance/…/submitTx). */
   chainRead(req: DappRequest): Promise<unknown>;
+  /**
+   * Hedera extension discovery: pair with a WalletConnect code a page's DAppConnector handed the wallet, as if the
+   * user had pasted it (the proposal still needs approval). Optional: hosts without WalletConnect leave it out.
+   */
+  pairWalletConnect?(uri: string): Promise<void>;
   isUnlocked(): Promise<boolean>;
   cancel(requestId: string): void;
   /** A site on a loaded phishing list (security stream). Sync: WalletConnect's Verify check calls it. */

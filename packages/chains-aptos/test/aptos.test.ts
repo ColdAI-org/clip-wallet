@@ -349,6 +349,12 @@ describe("building transactions", () => {
     await expect(aptos.buildTransfer({ asset: APTOS_TESTNET.nativeAsset, to: BOB, amount: "1" }, ctxFor(poor.fetch))).rejects.toMatchObject({
       userMessage: "You don't have enough APT to pay the network fee.",
     });
+    // Dapp matrix regression: an empty account's estimate fails "below the minimum gas"; that was reported as
+    // "This transaction needs more network fee than the app allowed." (the app set no gas at all).
+    const empty = mockAptos([...chainRoutes().slice(0, 2), simRoute(simulation([], { success: false, vm_status: "MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS" }))]);
+    await expect(aptos.buildTransfer({ asset: APTOS_TESTNET.nativeAsset, to: BOB, amount: "1" }, ctxFor(empty.fetch))).rejects.toMatchObject({
+      userMessage: "You don't have enough APT to pay the network fee.",
+    });
   });
 
   it("builds a dapp's entry-function payload from its on-chain ABI", async () => {

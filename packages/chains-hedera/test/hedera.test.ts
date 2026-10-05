@@ -99,9 +99,17 @@ describe("networks & addresses", () => {
     const g = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
     expect(aliasAddress(g)).toBe("0x7e5f4552091a69125d5dfcb7b8c2659029395bdf");
     const m = createHederaModule();
+    // EIP-55 (the well-known checksum of the generator's address), as the vault and the UI show it.
     expect(m.addressFromPublicKey(b64decode(b64encode(Uint8Array.from(g.match(/../g)!.map((x) => parseInt(x, 16))))), HEDERA_TESTNET)).toBe(
-      "0x7e5f4552091a69125d5dfcb7b8c2659029395bdf",
+      "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf",
     );
+  });
+
+  it("derives the same checksummed alias the vault shows (dapp matrix regression: they differed only in case)", () => {
+    // Public key and EIP-55 address of the dapp matrix wallet's Hedera account (apps/extension/e2e/matrix/addresses.json).
+    const m = createHederaModule();
+    const pk = Uint8Array.from("0368049caabb6779c03728b4f93df9b405852da22874013b99d226239c122727af".match(/../g)!.map((x) => parseInt(x, 16)));
+    expect(m.addressFromPublicKey(pk, HEDERA_TESTNET)).toBe("0xa3a57dB2a5237bD72D5d05cBdD797fEe21A0Fc92");
   });
 
   it("recognizes addresses and narrows networks by HIP-15 checksum", () => {

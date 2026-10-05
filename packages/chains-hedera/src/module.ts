@@ -15,7 +15,7 @@ import {
   type TokenBalance,
   type Warning,
 } from "@clip-wallet/core";
-import { aliasAddress, isAccountId, isEvmAddress, stripChecksum } from "./address.js";
+import { aliasAddress, checksumAlias, isAccountId, isEvmAddress, stripChecksum } from "./address.js";
 import {
   SIGN_TRANSACTION_BYTES,
   buildAssociate,
@@ -493,7 +493,8 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
      * The vault owns derivation; this is the path it is told to use.
      */
     derivationPath: (index: number) => `m/44'/60'/0'/0/${index}`,
-    addressFromPublicKey: (publicKey: Uint8Array) => aliasAddress(publicKey),
+    // EIP-55, like the vault's account address the wallet shows (dapp matrix: the two differed only in case).
+    addressFromPublicKey: (publicKey: Uint8Array) => checksumAlias(aliasAddress(publicKey)),
     isAddress: (value: string) => isAccountId(value) || isEvmAddress(value),
     networksForAddress(value: string, candidates: Network[]): Network[] {
       const v = value.trim();

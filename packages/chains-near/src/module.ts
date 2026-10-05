@@ -261,6 +261,11 @@ async function accessKey(rpc: NearRpc, signerId: string, pk: PublicKey, me: stri
       throw new ClipError(`There's no NEAR account called ${signerId}.`, "near/account-not-found", e);
     }
     if (e instanceof RpcError && (e.name === "UNKNOWN_ACCESS_KEY" || e.name === "QUERY_ERROR")) {
+      // Testnet nodes answer UNKNOWN_ACCESS_KEY, not UNKNOWN_ACCOUNT, for an implicit account nobody has funded yet:
+      // that is "receive some NEAR first", not "someone else's account".
+      if (signerId === me && isImplicit(me) && !(await accountExists(rpc, me).catch(() => true))) {
+        throw new ClipError("This account doesn't exist on NEAR yet. Receive some NEAR first, then try again.", "near/account-not-found", e);
+      }
       throw new ClipError("This NEAR account isn't controlled by this wallet's key.", "near/not-your-account", e);
     }
     throw netError(e);

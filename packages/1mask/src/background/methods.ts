@@ -4,6 +4,7 @@ import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS, SUI_
 import { p2InjectedAllowlist } from "./p2-families.js";
 import { cardanoSubstrateAllowlist } from "./cardano-substrate.js";
 import { starknetTonAllowlist } from "./starknet-ton.js";
+import { HEDERA_INJECTED_METHODS } from "../shared/hedera.js";
 
 /**
  * Method allowlists per family. Anything not listed is answered with 4200 (unsupported method)
@@ -107,7 +108,8 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
     case "aptos":
       return new Set<string>([...APTOS_METHODS_ALLOWED.local, ...APTOS_METHODS_ALLOWED.connect, ...APTOS_METHODS_ALLOWED.signing]);
     case "hedera":
-      return new Set<string>();
+      // Discovery only: a DAppConnector's WalletConnect pairing code (inpage/hedera.ts). Signing stays on WalletConnect.
+      return new Set<string>(HEDERA_INJECTED_METHODS);
     case "near":
     case "stellar":
     case "tezos":

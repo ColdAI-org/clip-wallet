@@ -1,0 +1,934 @@
+{
+  "evm": {
+    "target": "evm",
+    "network": "eip155:11155111",
+    "dapp": "wagmi 3 + viem (EIP-6963 discovery) in a local page, Sepolia",
+    "dappWhy": "wagmi/viem is what most EVM dapps run; a local page keeps the run deterministic (live test-dapp: see the EVM live test)",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
+        "detail": {
+          "address": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
+          "chainId": 11155111
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "viem verifyMessage (EIP-191)",
+        "detail": {
+          "valid": true,
+          "how": "viem verifyMessage (EIP-191)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Sepolia",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Requested by matrix-dapp.example",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send <0.000001 ETH to 0x05AC…2717",
+        "detail": {
+          "title": "Send <0.000001 ETH to 0x05AC…2717",
+          "network": "Sepolia",
+          "rows": "From Your balance Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 ETH Requested by matrix-dapp.example",
+          "details": "1 Send <0.000001 ETH to 0x05AC…2717 −<0.000001 ETH Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
+            "This is expected to fail and would still cost a fee. Reason: err: insufficient funds for gas * price + value: address 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 have 0 want 1 (supplied gas 18446744073709551615)",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": [],
+          "declinedAs": "TransactionExecutionError"
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.001 ETH on Sepolia at 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717; has 0",
+        "detail": {
+          "declinedAs": "TransactionExecutionError"
+        }
+      }
+    },
+    "shots": [
+      "evm-sign.png",
+      "evm-approval.png"
+    ],
+    "at": "2026-10-05T13:20:42.113Z"
+  },
+  "hedera-evm": {
+    "target": "hedera-evm",
+    "network": "eip155:296",
+    "dapp": "wagmi 3 + viem hederaTestnet (EIP-6963, Hashio JSON-RPC) in a local page, Hedera testnet",
+    "dappWhy": "the injected EIP-1193 path every Hedera EVM dapp uses; a local page pins chain 296",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
+        "detail": {
+          "address": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
+          "chainId": 296
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "viem verifyMessage (EIP-191)",
+        "detail": {
+          "valid": true,
+          "how": "viem verifyMessage (EIP-191)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Hedera Testnet (EVM)",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Requested by matrix-dapp.example",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send <0.000001 HBAR to 0x05AC…2717",
+        "detail": {
+          "title": "Send <0.000001 HBAR to 0x05AC…2717",
+          "network": "Hedera Testnet (EVM)",
+          "rows": "From Your balance Fee $0.0023 Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 HBAR Requested by matrix-dapp.example Network fee at most 0.067385 HBAR",
+          "details": "1 Network fee 2 Send <0.000001 HBAR to 0x05AC…2717 −<0.000001 HBAR If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "We couldn't preview the exact result of this on the network. Check the details before you approve.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://hashscan.io/testnet/transaction/0x1f0b2a5c8a93f3fef500ecc632f8f6f84e10cdf97cd0ddae212ec8cfa78f19fc",
+        "detail": {
+          "id": "0x1f0b2a5c8a93f3fef500ecc632f8f6f84e10cdf97cd0ddae212ec8cfa78f19fc"
+        }
+      }
+    },
+    "shots": [
+      "hedera-evm-sign.png",
+      "hedera-evm-approval.png"
+    ],
+    "at": "2026-10-05T13:34:40.861Z"
+  },
+  "hedera": {
+    "target": "hedera",
+    "network": "hedera:testnet",
+    "dapp": "@hashgraph/hedera-wallet-connect DAppConnector (HashConnect v3 path)",
+    "dappWhy": "needs a WalletConnect project id",
+    "levels": {
+      "connect": {
+        "status": "skip",
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+      },
+      "sign": {
+        "status": "skip",
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+      },
+      "approval": {
+        "status": "skip",
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+      },
+      "send": {
+        "status": "skip",
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+      }
+    },
+    "shots": [],
+    "at": "2026-10-05T13:35:11.202Z"
+  },
+  "solana": {
+    "target": "solana",
+    "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+    "dapp": "@solana/wallet-adapter (StandardWalletAdapter) + @solana/web3.js in a local page, devnet",
+    "dappWhy": "the wallet-adapter example dapp is this library in a React shell; a local page avoids its build and CDN",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk",
+        "detail": {
+          "address": "G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@solana/wallet-standard-util verifyMessageSignature (ed25519)",
+        "detail": {
+          "valid": true,
+          "how": "@solana/wallet-standard-util verifyMessageSignature (ed25519)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Solana Devnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000000001 SOL to G1zR…dxzk",
+        "detail": {
+          "title": "Send 0.000000001 SOL to G1zR…dxzk",
+          "network": "Solana Devnet",
+          "rows": "Fee $0.0006 Ready in a moment To G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk (you) gets 0.000000001 SOL Network fee 0.000005 SOL",
+          "details": "1 Network fee 2 Send 0.000000001 SOL to G1zR…dxzk If it fails, nothing leaves your balance.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://explorer.solana.com/tx/5U5HuDQSpAc3bW1J7mZz5RYtyCMAiicXiStjVwRQk2X6rNGWNxA7KZRqxt8y4h5WzTUVycN5RBGPraZvHXVFVz4R?cluster=devnet",
+        "detail": {
+          "id": "5U5HuDQSpAc3bW1J7mZz5RYtyCMAiicXiStjVwRQk2X6rNGWNxA7KZRqxt8y4h5WzTUVycN5RBGPraZvHXVFVz4R"
+        }
+      }
+    },
+    "shots": [
+      "solana-sign.png",
+      "solana-approval.png"
+    ],
+    "at": "2026-10-05T13:36:19.439Z"
+  },
+  "bitcoin": {
+    "target": "bitcoin",
+    "network": "bip122:00000000da84f2bafbbc53dee25a72ae",
+    "dapp": "Wallet Standard bitcoin:* + sats-connect v4 request API in a local page, testnet4",
+    "dappWhy": "Bitcoin has no single example dapp; sats-connect's request API over the Wallet Standard is what Xverse/Magic Eden-style dapps call",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account tb1q4j5qk5zu6ervj79ewph4zw3lukn9dhpdl6ydnr",
+        "detail": {
+          "address": "tb1q4j5qk5zu6ervj79ewph4zw3lukn9dhpdl6ydnr",
+          "addressType": "p2wpkh"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "bip322-js Verifier.verifySignature (BIP-322 simple)",
+        "detail": {
+          "valid": true,
+          "how": "bip322-js Verifier.verifySignature (BIP-322 simple)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Bitcoin Testnet4",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Address tb1q4j5qk5zu6ervj79ewph4zw3lukn9dhpdl6ydnr Requested by matrix-dapp.example",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Move your BTC between your own addresses",
+        "detail": {
+          "title": "Move your BTC between your own addresses",
+          "network": "Bitcoin Testnet4",
+          "rows": "From Your balance Fee $0.12 Ready in about 10 minutes Your coin 1 0.005 BTC Change back to you 0.00000546 BTC Change back to you 0.00499313 BTC Network fee 0.00000141 BTC (1 sat/vB) Can be sped up later Yes Sends now Yes Requested by matrix-dapp.example",
+          "details": "1 Network fee 2 Move your BTC between your own addresses −0.000001 BTC If it fails, nothing leaves your balance.",
+          "notices": [
+            "We can't check whether these coins hold collectibles (ordinals). If they do, sending could lose them.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://mempool.space/testnet4/tx/1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386",
+        "detail": {
+          "id": "1a80e46e71e401055f6f610c66f4eb71e33beb9e35ecc55e74a97925a5bd3386"
+        }
+      }
+    },
+    "shots": [
+      "bitcoin-sign.png",
+      "bitcoin-approval.png"
+    ],
+    "at": "2026-10-05T13:36:48.402Z"
+  },
+  "sui": {
+    "target": "sui",
+    "network": "sui:testnet",
+    "dapp": "@mysten/wallet-standard (dapp-kit's detection) + @mysten/sui in a local page, testnet",
+    "dappWhy": "the dapp-kit example is React around these calls; a local page runs the same detection and Transaction builder",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0x610339995017916d583f600d0796603136f24fcb271cde2ddecb50db9a6fc5f9",
+        "detail": {
+          "address": "0x610339995017916d583f600d0796603136f24fcb271cde2ddecb50db9a6fc5f9",
+          "chains": [
+            "sui:testnet"
+          ]
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@mysten/sui verifyPersonalMessageSignature",
+        "detail": {
+          "valid": true,
+          "how": "@mysten/sui verifyPersonalMessageSignature",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Sui Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000000001 SUI to 0x6103…c5f9",
+        "detail": {
+          "title": "Send 0.000000001 SUI to 0x6103…c5f9",
+          "network": "Sui Testnet",
+          "rows": "Fee $0.0012 Ready in a moment Sends to Your own account Network fee 0.00100988 SUI (at most 0.002988)",
+          "details": "1 Network fee 2 Send 0.000000001 SUI to 0x6103…c5f9 If it fails, nothing leaves your balance.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://suiscan.xyz/testnet/tx/G61Mg4WVn55s6o5XQa96RyTtY8a5YYjHU4ZtiEQh9Zwk",
+        "detail": {
+          "id": "G61Mg4WVn55s6o5XQa96RyTtY8a5YYjHU4ZtiEQh9Zwk"
+        }
+      }
+    },
+    "shots": [
+      "sui-sign.png",
+      "sui-approval.png"
+    ],
+    "at": "2026-10-05T13:38:49.620Z"
+  },
+  "aptos": {
+    "target": "aptos",
+    "network": "aptos:2",
+    "dapp": "@aptos-labs/wallet-standard getAptosWallets + @aptos-labs/ts-sdk in a local page, testnet",
+    "dappWhy": "the wallet-adapter example dapp is a Next.js app over these calls; a local page keeps the run fast",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0xf250c99c6586caefd617a38b184dff03ca467ce35268563c907b0d71489d2de9",
+        "detail": {
+          "address": "0xf250c99c6586caefd617a38b184dff03ca467ce35268563c907b0d71489d2de9",
+          "network": "testnet",
+          "chainId": 2
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@aptos-labs/ts-sdk Ed25519PublicKey.verifySignature (AIP-62 fullMessage)",
+        "detail": {
+          "valid": true,
+          "how": "@aptos-labs/ts-sdk Ed25519PublicKey.verifySignature (AIP-62 fullMessage)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Aptos Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) For https://matrix-dapp.example",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first; the approval says: \"You don't have enough APT to pay the network fee.\"",
+        "detail": {
+          "title": "Unreadable request",
+          "network": "Aptos Testnet",
+          "rows": "",
+          "details": "1 Unreadable request",
+          "notices": [
+            "Clip Wallet can't read this request, so it's blocked. Signing something you can't read can empty your wallet. Only Advanced mode can override this.",
+            "You don't have enough APT to pay the network fee.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.01 APT on Aptos Testnet at 0xf250c99c6586caefd617a38b184dff03ca467ce35268563c907b0d71489d2de9; has 0",
+        "detail": {
+          "declinedAs": "Error 4001"
+        }
+      }
+    },
+    "shots": [
+      "aptos-sign.png",
+      "aptos-approval.png"
+    ],
+    "at": "2026-10-05T13:22:49.663Z"
+  },
+  "cardano": {
+    "target": "cardano",
+    "network": "cip34:0-1",
+    "dapp": "CIP-30 window.cardano + cborg tx building in a local page, preprod; signData verified with @cardano-foundation/cardano-verify-datasignature",
+    "dappWhy": "CIP-30 has no single example dapp; these are the standard dapp-side calls (Mesh/Lucid wrap the same API) and the Cardano Foundation's verifier",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79",
+        "detail": {
+          "address": "addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79",
+          "networkId": 0
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@cardano-foundation/cardano-verify-datasignature (CIP-8 COSE_Sign1, message and address checked)",
+        "detail": {
+          "valid": true,
+          "how": "@cardano-foundation/cardano-verify-datasignature (CIP-8 COSE_Sign1, message and address checked)",
+          "verify": {
+            "kind": "cip8",
+            "signature": "845846a201276761646472657373583900f7f4c966ead6be06f8990554be4c71776ef64690e5ed5dec39ea2f7d8164fb62b57fbd71bc18daa0d7f8b445c26d84ec47b09fa009a6c5cea166686173686564f45830436c69702057616c6c65742064617070206d61747269783a207369676e2d696e20636865636b2028746573746e6574295840fcdfb6747068ef9451632a56943c4eec275765c8e0f070292b032fff182e9b21b60d53e71ffe1abe82a15bad5477b0b56317435c566cd95478e76a5273f38a03",
+            "key": "a40101032720062158207d27c0349bac0dd519d81aff14c89d60ad4e869b16c5f2e21d98ff6d95fa0d22",
+            "message": "Clip Wallet dapp matrix: sign-in check (testnet)",
+            "address": "addr_test1qrmlfjtxatttuphcnyz4f0jvw9mkaajxjrj76h0v884z7lvpvnak9dtlh4cmcxx65rtl3dz9cfkcfmz8kz06qzdxch8qv5dr79"
+          },
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Cardano Preprod",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Signed as addr_test1qr…v5dr79",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Move your ADA between your own addresses",
+        "detail": {
+          "title": "Move your ADA between your own addresses",
+          "network": "Cardano Preprod",
+          "rows": "Fee $0.05 Ready in about 40 seconds To Your own address: 9999.659254 ADA Valid until slot 135528144 Network fee 0.171165 ADA Sent by matrix-dapp.example (it gets your signature)",
+          "details": "1 Network fee 2 Move your ADA between your own addresses If it fails, nothing leaves your balance.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://preprod.cardanoscan.io/transaction/7033ff42dea5cd01e2e5a07ee4ed6f5a128394d9f98541a913e435e2d9c64e88",
+        "detail": {
+          "id": "7033ff42dea5cd01e2e5a07ee4ed6f5a128394d9f98541a913e435e2d9c64e88"
+        }
+      }
+    },
+    "shots": [
+      "cardano-sign.png",
+      "cardano-approval.png"
+    ],
+    "at": "2026-10-05T13:42:41.733Z"
+  },
+  "substrate": {
+    "target": "substrate",
+    "network": "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
+    "dapp": "@polkadot/extension-dapp + @polkadot/api in a local page, Westend",
+    "dappWhy": "the same libraries polkadot.js apps uses; apps' UI is too large to drive reliably (live run: see the doc)",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb",
+        "detail": {
+          "address": "5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb",
+          "source": "clip-wallet"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@polkadot/util-crypto signatureVerify over <Bytes>-wrapped message",
+        "detail": {
+          "valid": true,
+          "how": "@polkadot/util-crypto signatureVerify over <Bytes>-wrapped message",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Westend",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000000000001 WND to 5Gj64M…HCQb",
+        "detail": {
+          "title": "Send 0.000000000001 WND to 5Gj64M…HCQb",
+          "network": "Westend",
+          "rows": "Fee $0.02 Ready in about 10 seconds To 5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb Amount 0.000000000001 WND Network fee 0.015627473774 WND Valid for about 6 minutes Sent by matrix-dapp.example (it gets your signature)",
+          "details": "1 Network fee 2 Send 0.000000000001 WND to 5Gj64M…HCQb If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://westend.subscan.io/extrinsic/0xceb9bc6ce2c132e540ee21967b77089a26b3810b3436e0cbed9640e6e6901253",
+        "detail": {
+          "id": "0xceb9bc6ce2c132e540ee21967b77089a26b3810b3436e0cbed9640e6e6901253"
+        }
+      }
+    },
+    "shots": [
+      "substrate-sign.png",
+      "substrate-approval.png"
+    ],
+    "at": "2026-10-05T13:39:59.914Z"
+  },
+  "starknet": {
+    "target": "starknet",
+    "network": "starknet:SN_SEPOLIA",
+    "dapp": "get-starknet-core v4 + starknet.js in a local page, Starknet Sepolia",
+    "dappWhy": "get-starknet is the discovery every Starknet dapp (and starknetkit) uses; the example app is React around it",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8",
+        "detail": {
+          "address": "0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8",
+          "chainId": "0x534e5f5345504f4c4941"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "starknet.js typedData.verifyMessage (SNIP-12) with the account's Stark key",
+        "detail": {
+          "valid": true,
+          "how": "starknet.js typedData.verifyMessage (SNIP-12) with the account's Stark key",
+          "signatureLength": 2,
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Starknet Sepolia",
+            "rows": "App Clip matrix Type Message Text matrix sign-in check Requested by matrix-dapp.example",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000000000000000001 STRK to 0x014f…e6b8",
+        "detail": {
+          "title": "Send 0.000000000000000001 STRK to 0x014f…e6b8",
+          "network": "Starknet Sepolia",
+          "rows": "Fee $0.003 Ready in about 10 seconds To 0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8 Amount 0.000000000000000001 STRK Account Not active yet. This first transaction also activates it (one-time fee). Network fee 0.055643718708031624 STRK Network fee at most 0.12519967671358782 STRK",
+          "details": "1 Network fee 2 Send 0.000000000000000001 STRK to 0x014f…e6b8 If it fails, nothing leaves your balance.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://sepolia.voyager.online/tx/0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb",
+        "detail": {
+          "id": "0x019466e35039dd3de3a79ac1a0a58bdfd389d98437c322a74979826230640feb"
+        }
+      }
+    },
+    "shots": [
+      "starknet-sign.png",
+      "starknet-approval.png"
+    ],
+    "at": "2026-10-05T13:43:52.160Z"
+  },
+  "ton": {
+    "target": "ton",
+    "network": "ton:-3",
+    "dapp": "@tonconnect/sdk 4 (injected JS bridge) + @ton/core in a local page, TON testnet",
+    "dappWhy": "the TON Connect demo dapp needs a wallets-list entry Clip doesn't have yet; the SDK's injected-bridge path is the same protocol",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi",
+        "detail": {
+          "address": "0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi",
+          "chain": "-3",
+          "isTestnet": true
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "TON Connect sign-data (text) hash, @ton/crypto signVerify with the ton_addr public key",
+        "detail": {
+          "valid": true,
+          "how": "TON Connect sign-data (text) hash, @ton/crypto signVerify with the ton_addr public key",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "TON Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000000001 GRAM to 0QBQ…aXFi",
+        "detail": {
+          "title": "Send 0.000000001 GRAM to 0QBQ…aXFi",
+          "network": "TON Testnet",
+          "rows": "From Your balance Fee $0.0011 Ready in about 5 seconds To 0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi Amount 0.000000001 GRAM Wallet Not active yet. This first transfer also activates it. Network fee ≈ 0.000742136 GRAM",
+          "details": "1 Network fee 2 Send 0.000000001 GRAM to 0QBQ…aXFi −<0.000001 GRAM Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
+            "You don't have enough GRAM for this and its network fee.",
+            "We couldn't preview this on TON right now. Check the details carefully.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": [],
+          "declinedAs": "Error"
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.2 GRAM on TON Testnet at 0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi; has 0",
+        "detail": {
+          "declinedAs": "Error"
+        }
+      }
+    },
+    "shots": [
+      "ton-sign.png",
+      "ton-approval.png"
+    ],
+    "at": "2026-10-05T13:24:27.102Z"
+  },
+  "near": {
+    "target": "near",
+    "network": "near:testnet",
+    "dapp": "@near-wallet-selector/core v10 + @clip-wallet/kit-modules/near in a local page, NEAR testnet",
+    "dappWhy": "the wallet-selector example is a Next.js app over this; NEAR Connect (no module) is covered by 1Mask's unit tests",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272",
+        "detail": {
+          "address": "1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "NEP-413 payload hash, @near-js/crypto PublicKey.verify",
+        "detail": {
+          "valid": true,
+          "how": "NEP-413 payload hash, @near-js/crypto PublicKey.verify",
+          "approval": {
+            "title": "Sign in to matrix-dapp.example",
+            "network": "NEAR Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) For matrix-dapp.example Account 1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272 Nonce FWlIx6mgW1ETQTWNcY0VytzsqS+QsJTSCi9ELnZjuw8=",
+            "details": "1 Sign in to matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first; the approval says: \"This account doesn't exist on NEAR yet. Receive some NEAR first, then try again.\"",
+        "detail": {
+          "title": "Unreadable request",
+          "network": "NEAR Testnet",
+          "rows": "",
+          "details": "1 Unreadable request",
+          "notices": [
+            "Clip Wallet can't read this request, so it's blocked. Signing something you can't read can empty your wallet. Only Advanced mode can override this.",
+            "This account doesn't exist on NEAR yet. Receive some NEAR first, then try again.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.1 NEAR on NEAR Testnet at 1641bf02168b03b9bd0cae9c1892095688a55b624b93cce04223aac388e3f272; has 0",
+        "detail": {
+          "declinedAs": "ProviderRpcError 4001"
+        }
+      }
+    },
+    "shots": [
+      "near-sign.png",
+      "near-approval.png"
+    ],
+    "at": "2026-10-05T13:24:56.128Z"
+  },
+  "stellar": {
+    "target": "stellar",
+    "network": "stellar:testnet",
+    "dapp": "Stellar Wallets Kit module API (ClipWalletModule) + @stellar/stellar-base + Horizon in a local page, testnet",
+    "dappWhy": "the kit's own package pulls in Reown/Ledger/Trezor; Clip's module implements the kit's ModuleInterface, which is what the kit calls",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ",
+        "detail": {
+          "address": "GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ",
+          "network": "TESTNET",
+          "passphrase": "Test SDF Network ; September 2015"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "SEP-53 hash, @stellar/stellar-base Keypair.verify",
+        "detail": {
+          "valid": true,
+          "how": "SEP-53 hash, @stellar/stellar-base Keypair.verify",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Stellar Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.0000001 XLM to GB4N…VYVJ",
+        "detail": {
+          "title": "Send 0.0000001 XLM to GB4N…VYVJ",
+          "network": "Stellar Testnet",
+          "rows": "Fee $0.00 Ready in about 5 seconds To GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ Asset XLM (native) Valid until 2026-10-05T13:40:47Z Network fee up to 0.00001 XLM Sent by matrix-dapp.example (it gets the signed transaction)",
+          "details": "1 Network fee 2 Send 0.0000001 XLM to GB4N…VYVJ If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://stellar.expert/explorer/testnet/tx/5fcf453495774302cd7a9edce45039c5b103aa624bdb699861bab1eedafb7f33",
+        "detail": {
+          "id": "5fcf453495774302cd7a9edce45039c5b103aa624bdb699861bab1eedafb7f33"
+        }
+      }
+    },
+    "shots": [
+      "stellar-sign.png",
+      "stellar-approval.png"
+    ],
+    "at": "2026-10-05T13:35:31.713Z"
+  },
+  "tezos": {
+    "target": "tezos",
+    "network": "tezos:NetXsqzbfFenSTS",
+    "dapp": "@airgap/beacon-dapp DAppClient (Beacon pairing modal, postMessage transport) + @taquito/utils in a local page, shadownet",
+    "dappWhy": "Beacon is how every Tezos dapp (and Taquito's BeaconWallet) reaches an extension; a local page pins shadownet",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud",
+        "detail": {
+          "address": "tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud",
+          "network": "shadownet"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@taquito/utils verifySignature (Micheline payload)",
+        "detail": {
+          "valid": true,
+          "how": "@taquito/utils verifySignature (Micheline payload)",
+          "approval": {
+            "title": "Sign in to matrix-dapp.example",
+            "network": "Tezos Shadownet",
+            "rows": "Time 2026-10-05T13:44:24.985Z Statement Clip Wallet dapp matrix: sign-in check (testnet) Message Tezos Signed Message: matrix-dapp.example 2026-10-05T13:44:24.985Z Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign in to matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000001 XTZ to yourself",
+        "detail": {
+          "title": "Send 0.000001 XTZ to yourself",
+          "network": "Tezos Shadownet",
+          "rows": "Fee $0.0002 Ready in about 10 seconds Account setup First transaction from this account: it also publishes your account's public key (a one-time step). To tz1YwrrznvbVETNaxxfqZrtbStX5tBFfVJud (you) Network fee 0.000665 XTZ",
+          "details": "1 Network fee 2 Send 0.000001 XTZ to yourself If it fails, nothing leaves your balance.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://shadownet.tzkt.io/opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X",
+        "detail": {
+          "id": "opUyZvDLicpwx9Ewf5Kp2NMch8VarW5FiQbza43jppU1nmA5A2X"
+        }
+      }
+    },
+    "shots": [
+      "tezos-sign.png",
+      "tezos-approval.png"
+    ],
+    "at": "2026-10-05T13:44:23.675Z"
+  },
+  "algorand": {
+    "target": "algorand",
+    "network": "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe",
+    "dapp": "@txnlab/use-wallet v5 + @clip-wallet/kit-modules/algorand + algosdk in a local page, TestNet",
+    "dappWhy": "use-wallet is what Algorand dapps (and the use-wallet examples) use; a local page avoids the example's build",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4",
+        "detail": {
+          "address": "4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4"
+        }
+      },
+      "sign": {
+        "status": "n/a",
+        "why": "Algorand's dapp APIs (use-wallet v5, ARC-1) have no message signing; ARC-60 signData is a draft Clip doesn't offer."
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000001 ALGO to you",
+        "detail": {
+          "title": "Send 0.000001 ALGO to you",
+          "network": "Algorand TestNet",
+          "rows": "Fee $0.0001 Ready in about 5 seconds Network fee 0.001 ALGO Sent by matrix-dapp.example (it gets the signed transactions)",
+          "details": "1 Network fee 2 Send 0.000001 ALGO to you Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
+            "You don't have enough ALGO for this, including the network fee. (found in a test run)",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": [],
+          "declinedAs": "SignTxnsError 4001"
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.2 ALGO on Algorand TestNet at 4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4; has 0",
+        "detail": {
+          "declinedAs": "SignTxnsError 4001"
+        }
+      }
+    },
+    "shots": [
+      "algorand-approval.png"
+    ],
+    "at": "2026-10-05T13:26:18.779Z"
+  },
+  "evm-live": {
+    "target": "evm-live",
+    "network": "eip155:11155111",
+    "dapp": "MetaMask test dapp, live: https://metamask.github.io/test-dapp/",
+    "dappWhy": "the public EVM test dapp; no account, no captcha, discovers wallets over EIP-6963",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "EIP-6963 \"Use Clip Wallet\" → eth_requestAccounts → 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
+      },
+      "sign": {
+        "status": "n/a",
+        "why": "the test dapp enables personal_sign/Send only for providers with isMetaMask (its isMetaMaskInstalled()); Clip doesn't impersonate MetaMask. Covered by the wagmi page (row evm)"
+      },
+      "approval": {
+        "status": "n/a",
+        "why": "the test dapp enables personal_sign/Send only for providers with isMetaMask (its isMetaMaskInstalled()); Clip doesn't impersonate MetaMask. Covered by the wagmi page (row evm)"
+      },
+      "send": {
+        "status": "n/a",
+        "why": "see sign"
+      }
+    },
+    "shots": [
+      "evm-live-connected.png"
+    ],
+    "at": "2026-10-05T13:26:34.576Z"
+  }
+}

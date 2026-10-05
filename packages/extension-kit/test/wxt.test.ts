@@ -50,6 +50,8 @@ describe("clipWallet()", () => {
     expect(JSON.parse(v.define.__CLIP_TON_CONNECT__!)).toMatchObject({ key: "acmewallet", appName: "acmewallet", appVersion: "1.2.3" });
     expect(JSON.parse(v.define.__CLIP_CHANNEL__!)).toMatch(/^acmewallet-/);
     expect(JSON.parse(v.define.__CLIP_EXTENSION_ID__!)).toBe(extensionIdFromKey(publicKey));
+    // A project id in the build env switches on Hedera extension discovery (it pairs over WalletConnect).
+    expect(JSON.parse(v.define.__CLIP_WALLETCONNECT__!)).toBe(true);
     expect(v.resolve).toBeUndefined();
     // The pages get the resolved config, with the WalletConnect project id from .env.
     expect(v.plugin.resolveId(CONFIG_MODULE)).toBe(`\0${CONFIG_MODULE}`);

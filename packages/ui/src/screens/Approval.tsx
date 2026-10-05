@@ -40,9 +40,16 @@ function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
   );
 }
 
+/** Smallest amount the approval shows in full (6 decimals); anything smaller but not zero reads "<0.000001". */
+const SHOWN_DECIMALS = 6;
+
 function ChangeLine(props: { change: BalanceChange }) {
   const neg = props.change.delta.startsWith("-");
-  const amount = formatUnits(neg ? props.change.delta.slice(1) : props.change.delta, props.change.asset.decimals);
+  const raw = neg ? props.change.delta.slice(1) : props.change.delta;
+  const { decimals } = props.change.asset;
+  // 1 wei used to read "−0 ETH" here while the title said "<0.000001 ETH": a real amount must never look like zero.
+  const tiny = decimals > SHOWN_DECIMALS && BigInt(raw || "0") > 0n && BigInt(raw) < 10n ** BigInt(decimals - SHOWN_DECIMALS);
+  const amount = tiny ? `<${formatUnits(10n ** BigInt(decimals - SHOWN_DECIMALS), decimals)}` : formatUnits(raw, decimals);
   return (
     <li className={`clip-change ${neg ? "is-out" : "is-in"}`}>
       {neg ? "−" : "+"}

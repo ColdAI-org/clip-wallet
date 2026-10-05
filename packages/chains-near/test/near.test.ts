@@ -386,6 +386,11 @@ describe("decode", () => {
     const fresh = chain({ [`view_access_key:${ME}`]: () => { throw new RpcFail("UNKNOWN_ACCOUNT", "does not exist"); } });
     const e2 = await rejects(near.decode(send([{ type: "Transfer", params: { deposit: "1" } }]), fresh.ctx), "near/account-not-found");
     expect(e2.userMessage).toMatch(/Receive some NEAR first/);
+    // Dapp matrix regression: testnet answers an unfunded implicit account with UNKNOWN_ACCESS_KEY (the mock's
+    // default for a missing key) while view_account says UNKNOWN_ACCOUNT; it was "isn't controlled by this wallet's key".
+    const unfunded = chain({ [`view_access_key:${ME}`]: undefined, [`view_account:${ME}`]: undefined });
+    const e3 = await rejects(near.decode(send([{ type: "Transfer", params: { deposit: "1" } }]), unfunded.ctx), "near/account-not-found");
+    expect(e3.userMessage).toMatch(/Receive some NEAR first/);
   });
 
   it("enforces function-call key limits", async () => {

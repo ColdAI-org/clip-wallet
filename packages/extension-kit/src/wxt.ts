@@ -249,6 +249,8 @@ export function clipWallet(options: ClipWalletOptions): UserConfig {
         __CLIP_EXTENSION_ID__: JSON.stringify(config.extension.key ? extensionIdFromKey(config.extension.key) : null),
         __CLIP_IDENTITY__: JSON.stringify({ name: config.name, icon, rdns: config.rdns }),
         __CLIP_TON_CONNECT__: JSON.stringify(tonConnect),
+        // Hedera extension discovery hands over WalletConnect codes: only announce it when this build can pair.
+        __CLIP_WALLETCONNECT__: JSON.stringify(!!config.walletConnect.projectId),
         __CLIP_FEATURES__: JSON.stringify(features),
         __CLIP_SECURITY__: JSON.stringify(security),
       },

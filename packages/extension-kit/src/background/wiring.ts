@@ -23,7 +23,7 @@ import { ClipError } from "@clip-wallet/core";
 import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
 import type { ClipConfig } from "@clip-wallet/config";
 import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
-import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
+import { createEvmModule } from "@clip-wallet/chains-evm";
 import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
 import { SettleFunding, settleClientFor, settleSourceNetworks } from "@clip-wallet/route";
 import { isMainnetEnabled } from "@clip-wallet/config";
@@ -35,7 +35,7 @@ import type { createTonModule } from "@clip-wallet/chains-ton";
 import type { RouterPort } from "@clip-wallet/1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
-import { walletAssets, walletNetworks } from "../shared/catalog";
+import { dappRequestNetworks, walletAssets, walletNetworks } from "../shared/catalog";
 import { createMockChains } from "./mocks/mock-chains";
 import { knownAssets, MOCK_NETWORKS } from "./mocks/networks";
 import { MockWalletConnect } from "./mocks/mock-dapps";
@@ -121,6 +121,11 @@ export interface DappHost {
   rpc(networkId: string, method: string, params: unknown): Promise<unknown>;
   /** Read-only chain calls answered by a chain module (CIP-30 getUtxos/getBalance/…/submitTx). */
   chainRead(req: DappRequest): Promise<unknown>;
+  /**
+   * Hedera extension discovery: pair with a WalletConnect code a page's DAppConnector handed the wallet, as if the
+   * user had pasted it (the proposal still needs approval). Optional: hosts without WalletConnect leave it out.
+   */
+  pairWalletConnect?(uri: string): Promise<void>;
   isUnlocked(): Promise<boolean>;
   /** The connector gave up on a request (timeout / relay expiry): drop its approval. */
   cancel(requestId: string): void;
@@ -346,6 +351,8 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const mainnetOn = isMainnetEnabled(opts.config);
   const settle = settleClientFor({ enabled: opts.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
   const settleFunding = settle ? new SettleFunding(settle) : null;
+  // Hedera's EVM (296/295): dapps reach it over EIP-1193 and the wallet signs there, but it is never listed or scanned.
+  const requestNetworks = dappRequestNetworks(networks, { mainnet: mainnetOn, settleOnHedera: !!settle });
   return {
     mocks: false,
     vault,
@@ -362,8 +369,8 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency, settleFunding),
     settleFunding,
     auxiliaryFundsSources: settleFunding ? settleSourceNetworks(mainnetOn) : [],
-    ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
-    dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
+    ...(requestNetworks.length ? { requestNetworks } : {}),
+    dapps: new OneMaskConnector([...networks, ...requestNetworks], { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
     prices,
     // ENS (.eth), SNS (.sol), Hedera names (.hbar …) and Clip handles, limited to the networks this wallet has;

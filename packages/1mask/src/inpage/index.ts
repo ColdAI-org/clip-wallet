@@ -19,6 +19,7 @@ import { installSubstrate, type ClipSubstrateProvider } from "./substrate.js";
 import { ClipStarknetWallet, injectStarknet } from "./starknet.js";
 import { ClipTonConnectBridge, injectTonConnect } from "./ton.js";
 import { createInpageTransport, type InpageTransport } from "./transport.js";
+import { installHederaExtensionDiscovery } from "./hedera.js";
 
 export interface InstalledOneMask {
   identity: WalletIdentity;
@@ -34,6 +35,8 @@ export interface InstalledOneMask {
   ton?: ClipTonConnectBridge;
   /** NEAR (window.clipwallet.near + NEAR Connect), Stellar (SEP-43), Algorand, Tezos (Beacon relay). */
   p2?: InstalledP2;
+  /** Hedera extension discovery (DAppConnector / HashConnect): the id dApps address the wallet by. */
+  hedera?: { extensionId: string };
   destroy(): void;
 }
 
@@ -97,6 +100,11 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
     out.ton = new ClipTonConnectBridge(transport, device, walletInfo);
     stops.push(injectTonConnect(win, key, out.ton).stop);
   }
+  if (config.providers?.hedera !== false && config.networks.some((n) => n.family === "hedera")) {
+    const h = installHederaExtensionDiscovery(win, identity, transport, config.beaconExtensionId ? { extensionId: config.beaconExtensionId } : {});
+    out.hedera = { extensionId: h.extensionId };
+    stops.push(h.stop);
+  }
   const p2 = installP2Providers(win, identity, config.networks, transport, {
     want: { near: want.near ?? true, stellar: want.stellar ?? true, tezos: want.tezos ?? true, algorand: want.algorand ?? true },
     ...(config.globalKey ? { globalKey: config.globalKey } : {}),
@@ -108,6 +116,7 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
 }
 
 export { ClipEthereumProvider, announceEip6963, claimWindowEthereum } from "./evm.js";
+export { HEDERA_EXTENSION_EVENTS, installHederaExtensionDiscovery, isWalletConnectPairingUri, type HederaDiscoveryOptions } from "./hedera.js";
 export type { EIP6963ProviderDetail, EIP6963ProviderInfo, RequestArguments } from "./evm.js";
 export { ClipSolanaWallet, SOLANA_FEATURES } from "./solana.js";
 export { ClipBitcoinWallet, BITCOIN_FEATURES, BITCOIN_METHODS } from "./bitcoin.js";

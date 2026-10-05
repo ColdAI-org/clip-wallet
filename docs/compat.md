@@ -47,6 +47,18 @@ In practice:
   the line that failed. It is writable now, like every other extension's. The compat suite found this bug. The
   Polkadot snapshot was recorded on the fixed build; every other snapshot was recorded on main before any change.
 
+- **Fixes from the testnet dapp matrix** ([r1/dapp-matrix.md](r1/dapp-matrix.md)):
+  - `wallet_switchEthereumChain` to Hedera's EVM (`0x128` testnet, `0x127` mainnet with mainnet on) now succeeds
+    whenever the wallet has Hedera. Before, it was only reachable with settle on Hedera, so wagmi's `hederaTestnet` and
+    Scaffold-HBAR got "Clip Wallet only connects to the networks it ships with". No other chain id answers differently,
+    and the network a new site starts on is unchanged.
+  - 1Mask answers `@hashgraph/hedera-wallet-connect`'s extension discovery (`hedera-extension-query` →
+    `hedera-extension-response`; `hedera-extension-connect-<id>` → WalletConnect pairing). It is a new message pair
+    that only Hedera DAppConnector pages send, and it is installed only in builds with a WalletConnect project id.
+  - The compat suite's Sui scenario now filters wallets as dapp-kit does (required `sui:signTransaction`, a `sui:`
+    chain). Before, it picked Clip's Solana wallet (also named "Clip Wallet", registered first) and never exercised Sui.
+    Its snapshot was re-recorded for that reason only; the Sui wallet itself didn't change.
+
 ## The compat suite
 
 `apps/extension/e2e/compat.spec.ts` runs real, unmodified dapp-side libraries against the built extension, with no

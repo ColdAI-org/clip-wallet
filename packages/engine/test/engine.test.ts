@@ -3,7 +3,7 @@ import { WalletEngine } from "../src/engine.js";
 import { MemoryKV, JsonKV } from "../src/kv.js";
 import { createEngineClient } from "../src/client.js";
 import { createFeatureHost } from "../src/features.js";
-import { WALLET_ORIGIN, isWalletOrigin, type DappRequest } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN, isWalletOrigin, type DappRequest } from "@clip-wallet/core";
 import { BASE_SEPOLIA, EVM_ADDRESS, FakeVault, SEPOLIA, fakePort, makeDeps, makeEnv, tick } from "./fixtures.js";
 
 const ORIGIN = "https://dapp.test";
@@ -78,6 +78,35 @@ describe("WalletEngine: portfolio, send, receive", () => {
   it("rejects text that isn't an address", async () => {
     const { engine } = await unlocked();
     expect(await engine.handle({ type: "resolveRecipient", input: "hello", assetKey: "eth" })).toMatchObject({ kind: "invalid" });
+  });
+
+  it("keeps the chain module's reason when it can't decode a request (dapp matrix regression)", async () => {
+    const { engine, deps } = await unlocked();
+    deps.evm.decode = async () => {
+      throw new ClipError("You don't have enough ETH to send this amount and pay the network fee.", "insufficient-funds");
+    };
+    const id = await engine.handle({ type: "send", assetKey: "eth", networkId: SEPOLIA.id, to: "0x000000000000000000000000000000000000dEaD", amount: "0.1" });
+    const d = (await engine.handle({ type: "getApproval", id }))!.decoded!;
+    expect(d).toMatchObject({ title: "Unreadable request", blind: true });
+    expect(d.warnings).toContainEqual(expect.objectContaining({ code: "simulation-failed", message: "You don't have enough ETH to send this amount and pay the network fee." }));
+  });
+
+  it("plans a request on an unscanned request network (Hedera EVM) with that network's own balance (dapp matrix regression)", async () => {
+    const HEDERA_EVM = { ...SEPOLIA, id: "eip155:296", chainId: 296, name: "Hedera Testnet (EVM)", nativeAsset: { ...SEPOLIA.nativeAsset, key: "hbar", symbol: "HBAR", networkId: "eip155:296" } };
+    const vault = new FakeVault();
+    const deps = makeDeps(vault);
+    deps.requestNetworks = [HEDERA_EVM];
+    const getBalances = deps.evm.getBalances.bind(deps.evm);
+    deps.evm.getBalances = async (ctx) => (ctx.network.id === HEDERA_EVM.id ? [{ asset: HEDERA_EVM.nativeAsset, amount: "10000000000000000000" }] : getBalances(ctx));
+    const seen: { networkId: string; amount: string }[][] = [];
+    deps.route = { async plan({ balances, decoded }) { seen.push(balances.map((b) => ({ networkId: b.asset.networkId, amount: b.amount }))); return { source: "Your balance", sponsored: false, readyInSeconds: 4, steps: [{ kind: "action", title: decoded.title }], settlement: "" }; } };
+    const engine = new WalletEngine(deps, new MemoryKV(), makeEnv());
+    engine.start();
+    await engine.handle({ type: "createWallet", password: "a long test password" });
+    void engine.request({ id: "h1", origin: ORIGIN, via: "injected", family: "evm", networkId: HEDERA_EVM.id, method: "eth_sendTransaction", params: [{ value: "10000000000" }] });
+    for (let i = 0; i < 50 && !seen.length; i++) await new Promise((r) => setTimeout(r, 5));
+    // The portfolio never scans 296; before, the planner saw no HBAR there and blocked the send as a shortfall.
+    expect(seen[0]).toContainEqual({ networkId: "eip155:296", amount: "10000000000000000000" });
   });
 
   it("queues a send as an approval and signs only after approve", async () => {

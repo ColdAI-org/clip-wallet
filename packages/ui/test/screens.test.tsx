@@ -55,6 +55,24 @@ describe("Approval screen", () => {
     expect(screen.queryByLabelText("Raw request")).not.toBeInTheDocument();
   });
 
+  it("never shows a non-zero balance change as zero (1 wei reads <0.000001, dapp matrix regression)", async () => {
+    const user = userEvent.setup();
+    const eth = { key: "eth", symbol: "ETH", name: "Ether", decimals: 18, networkId: "eip155:84532" };
+    renderUi(
+      <TransactionApproval
+        approval={payApproval(
+          { plan: { source: "Your balance", sponsored: false, settlement: "", readyInSeconds: 10, steps: [{ kind: "action", title: "Send <0.000001 ETH to 0x05AC…2717", balanceChanges: [{ asset: eth, delta: "-1" }, { asset: eth, delta: "2000000000000" }] }] } },
+          { title: "Send <0.000001 ETH to 0x05AC…2717" },
+        )}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /Details/ }));
+    const changes = screen.getByRole("list", { name: "Simulated balance changes" });
+    expect(changes).toHaveTextContent("−<0.000001 ETH");
+    expect(changes).toHaveTextContent("+0.000002 ETH");
+    expect(changes).not.toHaveTextContent("−0 ETH");
+  });
+
   it("orders warnings by level above the buttons", () => {
     renderUi(
       <TransactionApproval
@@ -381,5 +399,17 @@ describe("Approval paid through a bonded Connector (settle on Hedera)", () => {
     renderUi(<TransactionApproval approval={withFunding(funding({ stage: "delivered", arrived: true }))} />);
     expect(screen.getByText("13 USDC arrived. Approve to finish.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
+  });
+});
+
+describe("approval rows (dapp matrix regression)", () => {
+  it("wrap long values (full addresses) instead of running over the label", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const css = readFileSync(resolve(__dirname, "../src/styles.css"), "utf8");
+    const rule = (sel: string) => css.slice(css.indexOf(`${sel} {`), css.indexOf("}", css.indexOf(`${sel} {`)));
+    expect(rule(".clip-row__value")).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rule(".clip-row__value")).toMatch(/min-width:\s*0/);
+    expect(rule(".clip-row__label")).toMatch(/flex-shrink:\s*0/);
   });
 });

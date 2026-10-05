@@ -293,6 +293,10 @@ export async function describeTransaction(data: TransactionData, bytes: Uint8Arr
     } else {
       title = say("bg.req.sendToOnly", { to: short(to) });
     }
+  } else if (onlyTransfers && others.length === 0 && recipients.has(me) && gasSplit != null && gasSplit > 0n) {
+    // SUI split off the gas coin and sent back to yourself: name the amount like any send (dapp matrix regression:
+    // this was "Approve a transaction for <site>" with no amount).
+    title = say("bg.req.sendTo", { amount: `${formatUnits(gasSplit, 9)} SUI`, to: short(me) });
   } else if (targets.length === 1) {
     const fn = targets[0]!.split("::")[2] ?? "";
     const words = fn.replace(/_/g, " ").trim();

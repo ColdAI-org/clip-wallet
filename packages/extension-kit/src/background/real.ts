@@ -80,6 +80,8 @@ export class OneMaskConnector implements DappConnector {
       isUnlocked: () => host.isUnlocked(),
       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
       cancel: (requestId) => host.cancel(requestId),
+      // Hedera DAppConnector / HashConnect find the wallet as an extension and hand over their WalletConnect code.
+      ...(host.pairWalletConnect ? { walletConnectPair: (_origin: string, uri: string) => host.pairWalletConnect!(uri) } : {}),
       // EIP-5792 + ERC-7682 (opt-in per host; dapps that never call them see no difference).
       ...(host.calls ? { calls: host.calls } : {}),
       ...(this.mods.beacon ? { tezosBeacon: lazyBeacon(this.mods.beacon.kv, this.mods.beacon.name, this.mods.beacon.iconUrl, () => this.router) } : {}),

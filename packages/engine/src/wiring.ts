@@ -4,7 +4,7 @@
  */
 import type { ChainModule, Family, SignablePayload } from "@clip-wallet/core";
 import type { ClipConfig } from "@clip-wallet/config";
-import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
+import { createEvmModule } from "@clip-wallet/chains-evm";
 import { MIRROR_NODE_URLS, createHederaModule } from "@clip-wallet/chains-hedera";
 import { SettleFunding, settleClientFor } from "@clip-wallet/route";
 import { isMainnetEnabled } from "@clip-wallet/config";
@@ -23,12 +23,12 @@ import { createAlgorandModule } from "@clip-wallet/chains-algorand";
 import { BackupClient } from "@clip-wallet/backup-client";
 import { MultiNameResolver, type Backend as NameBackend } from "@clip-wallet/names";
 import { KnownDappRegistry, OneMaskConnector, ReferencePriceFeed, RoutePlannerAdapter, WalletConnectAdapter, type WalletConnectAdapterOptions } from "./adapters.js";
-import { walletAssets, walletNetworks } from "./catalog.js";
+import { dappRequestNetworks, walletAssets, walletNetworks } from "./catalog.js";
 import { createPriceFeed } from "./features.js";
 import type { KV } from "./kv.js";
 import type { Dependencies, WalletVault } from "./types.js";
 
-export { walletNetworks, walletAssets } from "./catalog.js";
+export { dappRequestNetworks, walletNetworks, walletAssets } from "./catalog.js";
 
 export interface EngineWiringOptions {
   config: ClipConfig;
@@ -79,6 +79,8 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   const mainnetOn = isMainnetEnabled(o.config);
   const settle = settleClientFor({ enabled: o.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
   const settleFunding = settle ? new SettleFunding(settle) : null;
+  // Hedera's EVM (296/295): dapps reach it over EIP-1193 and the wallet signs there, but it is never listed or scanned.
+  const requestNetworks = dappRequestNetworks(networks, { mainnet: mainnetOn, settleOnHedera: !!settle });
   return {
     mocks: false,
     vault: o.vault,
@@ -88,8 +90,8 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(o.config, prices, o.currency, settleFunding),
     settleFunding,
-    ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
-    dapps: new OneMaskConnector(networks, { starknet: families.has("starknet") ? starknet : undefined, ton: families.has("ton") ? ton : undefined }),
+    ...(requestNetworks.length ? { requestNetworks } : {}),
+    dapps: new OneMaskConnector([...networks, ...requestNetworks], { starknet: families.has("starknet") ? starknet : undefined, ton: families.has("ton") ? ton : undefined }),
     walletConnect: new WalletConnectAdapter({ ...o.walletConnect, name: o.config.name, networks }),
     prices,
     // ENS (.eth), SNS (.sol), Hedera names and Clip handles, limited to the networks this wallet has. Handle records
