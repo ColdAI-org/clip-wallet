@@ -10,7 +10,7 @@ export default {
   "m.approval.blindToggleHint": "Solo se ti fidi completamente di questo sito.",
   "m.approval.reject": "Rifiuta",
   "m.approval.approve": "Approva",
-  "m.approval.approving": "Approvazione in corso…",
+  "m.approval.approving": "Approvazione…",
   "m.approval.unreadable": "Richiesta illeggibile",
   "m.approval.from": "Da",
   "m.approval.yourBalance": "Il tuo saldo",

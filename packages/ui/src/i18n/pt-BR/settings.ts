@@ -1,6 +1,6 @@
 import type en from "../en/settings";
 export default {
-  "settings.title": "Configurações",
+  "settings.title": "Ajustes",
   "settings.more": "Mais",
   "settings.more.stake": "Staking",
   "settings.more.swap": "Trocar",
@@ -59,7 +59,7 @@ export default {
   "settings.about": "{name} · apenas redes de teste",
   "settings.scan.title": "Escanear para conectar",
   "settings.scan.point": "Aponte a câmera para o código QR do app.",
-  "settings.scan.noDetector": "Este navegador não consegue ler códigos QR pela câmera. Cole o código de conexão em Configurações.",
+  "settings.scan.noDetector": "Este navegador não consegue ler códigos QR pela câmera. Cole o código de conexão em Ajustes.",
   "settings.scan.found": "Encontrado. Conectando…",
   "settings.scan.started": "Pareamento iniciado. Volte ao app para concluir a conexão.",
   "settings.scan.blocked": "O acesso à câmera foi bloqueado. Permita o acesso ou cole o código.",

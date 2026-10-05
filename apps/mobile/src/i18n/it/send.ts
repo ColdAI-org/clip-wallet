@@ -17,7 +17,7 @@ export default {
   "m.send.review": "Controlla",
   "m.send.preparing": "Preparazione…",
   "m.send.preparingRequest": "Preparazione della richiesta…",
-  "m.send.ask.title": "Dove devono arrivare i {symbol}?",
+  "m.send.ask.title": "Dove deve arrivare il pagamento in {symbol}?",
   "m.send.ask.lede": "{who} può ricevere {symbol} in più di un posto. Se si tratta di un exchange o del wallet di qualcun altro, chiedi quale rete usare: inviare sulla rete sbagliata può far perdere il denaro.",
   "m.send.ask.haveThere": "Lì hai {amount} {symbol}",
   "m.send.ask.moveThere": "Sposteremo noi i tuoi {symbol} lì",

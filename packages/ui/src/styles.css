@@ -149,6 +149,16 @@ code {
 .clip-tabbar__item.is-active {
   color: var(--clip-accent);
 }
+/* Long single-word labels (de "Einstellungen", pt-BR "Configurações") hyphenate onto a second line instead of
+   spilling into the next tab; <html lang> is set from the locale, so the browser picks the language's rules. */
+.clip-tabbar__item span {
+  max-width: 100%;
+  padding: 0 2px;
+  text-align: center;
+  line-height: 1.15;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
 
 /* ------------------------------------------------------------------ buttons */
 

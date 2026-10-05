@@ -6,5 +6,5 @@ export default {
   "m.kit.ur.preview": "معاينة الكاميرا",
   "m.kit.ur.hold": "أبقِ الرمز ثابتًا أمام الكاميرا.",
   "m.kit.ur.cameraWhy": "تُستخدم الكاميرا فقط لقراءة رموز QR الخاصة بجهاز Keystone.",
-  "m.kit.ur.reading": "جارٍ القراءة… {percent}",
+  "m.kit.ur.reading": "جارٍ القراءة… \u2068{percent}\u2069",
 } satisfies Record<keyof typeof en, string>;

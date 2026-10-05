@@ -23,7 +23,7 @@ export default {
   "m.approval.networkValue": "{name} ({id})",
   "m.approval.via": "경유",
   "m.approval.connect.title": "{app}에 연결할까요?",
-  "m.approval.connect.lede": "{app}에서 내 {account}을(를) 볼 수 있게 돼요. 승인을 요청할 수는 있지만, 내 허락 없이는 아무것도 옮길 수 없어요.",
+  "m.approval.connect.lede": "{app}에서 내 {account}을 볼 수 있게 돼요. 승인을 요청할 수는 있지만, 내 허락 없이는 아무것도 옮길 수 없어요.",
   "m.approval.connect.account": "계정",
   "m.approval.connect.address": "주소",
   "m.approval.connect.unknown": "{name}에서 {domain}을(를) 알아보지 못했어요. 직접 연 사이트인 경우에만 연결하세요.",

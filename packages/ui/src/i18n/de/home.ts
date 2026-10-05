@@ -24,7 +24,7 @@ export default {
   "home.stale": "Manche Guthaben sind eventuell ein paar Minuten alt.",
   "home.asset.title": "Asset",
   "home.asset.notHeld": "Du besitzt das nicht mehr",
-  "home.asset.unpin": "Lösen",
+  "home.asset.unpin": "Loslösen",
   "home.asset.pin": "Oben anheften",
   "home.asset.bridgedCopy": "gebridgte Kopie – nicht das originale {symbol}",
   "home.asset.whereItIs": "Wo es liegt",

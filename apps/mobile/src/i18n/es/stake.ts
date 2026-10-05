@@ -15,7 +15,7 @@ export default {
   "m.stake.action.change": "Cambiar",
   "m.stake.amount": "Cantidad",
   "m.stake.amountMissing": "Escribe cuánto quieres poner en staking.",
-  "m.stake.amountBad": "Escribe una cantidad como 2 o 0.5.",
+  "m.stake.amountBad": "Escribe una cantidad como 2 o 0,5.",
   "m.stake.where": "Dónde",
   "m.stake.whereLabel": "Dónde hacer staking",
   "m.stake.pickedForYou": "Elegido para ti",

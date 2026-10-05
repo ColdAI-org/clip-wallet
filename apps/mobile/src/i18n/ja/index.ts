@@ -12,9 +12,12 @@
  *   activity → アクティビティ, settings → 設定, explore → 探す, discover → ディスカバー,
  *   hardware wallet → ハードウェアウォレット, advanced mode → 詳細モード, bridged → ブリッジ済み,
  *   look-alike address → よく似たアドレス, trade → 取引, exchange → 取引所, QR code → QRコード,
- *   "Didn't go through" → 完了しませんでした.
- *   Kept verbatim: Clip Wallet, Secure Trade, WalletConnect, Ledger, Keystone, Face ID, Touch ID,
- *   asset symbols, network names, CoinGecko, DEX Screener.
+ *   "Didn't go through" → 完了しませんでした, transaction → 取引 (same word as trade), scam → 詐欺,
+ *   scammer → 詐欺師, suspicious (token) → 不審な, unreadable request → 読み取れないリクエスト,
+ *   permission → 権限, spam → スパム, phone → スマートフォン.
+ *   Kept verbatim: Clip Wallet, Clip (Clip ハンドル), Secure Trade, WalletConnect, Ledger, Ledger Live,
+ *   Keystone, Face ID, Touch ID, MetaMask, Phantom, Google, Apple, asset symbols, network names,
+ *   CoinGecko, DEX Screener, on-device menu labels (e.g. 「Connect Software Wallet」).
  *   Mobile extras: browse (tab) → ブラウズ, biometrics → 生体認証, in-app browser → アプリ内ブラウザ.
  */
 import type { Translation } from "@clip-wallet/i18n";

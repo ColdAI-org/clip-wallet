@@ -54,7 +54,7 @@ export default {
   "m.hardware.before": "Avant de vous connecter",
   "m.hardware.ledgerStep1": "Allumez votre Ledger et déverrouillez-le avec votre code PIN.",
   "m.hardware.ledgerStep2": "Activez le Bluetooth sur votre Ledger ({menu}).",
-  "m.hardware.useAgain": "Utiliser à nouveau {device}",
+  "m.hardware.useAgain": "Réutiliser {device}",
   "m.hardware.checkingBluetooth": "Vérification du Bluetooth…",
   "m.hardware.lookFor": "Rechercher mon Ledger",
   "m.hardware.nearby": "Ledger à proximité",

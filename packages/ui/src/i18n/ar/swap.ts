@@ -4,7 +4,7 @@ export default {
   "swap.youPayWith": "تدفع باستخدام",
   "swap.sellAsset": "الأصل المراد مبادلته",
   "swap.amount": "المبلغ",
-  "swap.youHave": "لديك {amount} {symbol}",
+  "swap.youHave": "لديك \u2068{amount}\u2069 \u2068{symbol}\u2069",
   "swap.youGet": "تحصل على",
   "swap.buyAsset": "الأصل المراد الحصول عليه",
   "swap.slippage": "الحد الأقصى لتغيّر السعر",

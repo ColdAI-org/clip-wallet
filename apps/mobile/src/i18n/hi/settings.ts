@@ -36,7 +36,7 @@ export default {
   "m.settings.sessions.disconnect": "डिस्कनेक्ट करें",
   "m.settings.sessions.disconnectApp": "{app} को डिस्कनेक्ट करें",
   "m.settings.wc.title": "कोड से कनेक्ट करें",
-  "m.settings.wc.off": "कोड से कनेक्ट करना (WalletConnect) इस बिल्ड में अभी चालू नहीं है। ब्राउज़ करें टैब के ऐप्स अब भी काम करते हैं।",
+  "m.settings.wc.off": "कोड से कनेक्ट करना (WalletConnect) इस बिल्ड में अभी चालू नहीं है। ब्राउज़र टैब के ऐप्स अब भी काम करते हैं।",
   "m.settings.wc.intro": "किसी दूसरे डिवाइस के ऐप्स के लिए: उनका WalletConnect QR कोड स्कैन करें, या कोड पेस्ट करें (यह \"wc:\" से शुरू होता है)।",
   "m.settings.wc.code": "कनेक्शन कोड",
   "m.settings.wc.bad": "यह WalletConnect कोड जैसा नहीं लगता।",

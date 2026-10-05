@@ -72,7 +72,7 @@ export default {
   "backup.hub.passkeyManage": "管理通行密钥备份",
   "backup.hub.passkeyStart": "使用通行密钥备份",
   "backup.ceremony.unknownPasskey": "我们无法确定是哪个通行密钥创建了这份备份。",
-  "backup.family.evm": "以太坊类（ETH、USDC、Base、Arbitrum…）",
+  "backup.family.evm": "Ethereum 类（ETH、USDC、Base、Arbitrum…）",
   "backup.family.hedera": "Hedera（HBAR）",
   "backup.family.solana": "Solana（SOL）",
   "backup.family.bitcoin": "Bitcoin（BTC）",

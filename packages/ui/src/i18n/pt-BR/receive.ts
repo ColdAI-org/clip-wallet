@@ -10,5 +10,5 @@ export default {
   "receive.qr": "Código QR do seu endereço {symbol}",
   "receive.copyAddress": "Copiar endereço",
   "receive.manyNetworks": "Este endereço recebe {symbol} em {networks}. Peça a quem envia para usar uma dessas redes.",
-  "receive.oneNetwork": "Peça a quem envia para enviar pela {network}.",
+  "receive.oneNetwork": "Peça a quem envia para enviar pela rede {network}.",
 } satisfies Record<keyof typeof en, string>;

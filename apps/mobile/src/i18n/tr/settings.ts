@@ -27,7 +27,7 @@ export default {
   "m.settings.passkey.on": "Açık",
   "m.settings.passkey.available": "Kullanılabilir",
   "m.settings.passkey.notInBuild": "Bu sürümde yok",
-  "m.settings.lockNow": "Şimdi kilitle",
+  "m.settings.lockNow": "Kilitle",
   "m.settings.confirmPassword": "Parolanızı onaylayın",
   "m.settings.sessions.title": "Bağlı uygulamalar",
   "m.settings.sessions.none": "Bağlı uygulama yok.",

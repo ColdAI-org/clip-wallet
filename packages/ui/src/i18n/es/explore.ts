@@ -10,7 +10,7 @@ export default {
   "explore.category.tools": "Herramientas",
   "explore.liquidity": "Tu liquidez",
   "explore.liquidityEmpty": "Cuando añadas liquidez en una app compatible, aparecerá aquí.",
-  "explore.earning": "Generando rendimiento",
+  "explore.earning": "Con rendimiento",
   "explore.notEarning": "Sin rendimiento",
   "explore.manageIn": "Gestionar en {app}",
   "explore.featured": "Apps destacadas",

@@ -32,7 +32,7 @@ export default {
   "onboarding.confirm.lede": "Saisissez les mots à ces positions.",
   "onboarding.confirm.word": "Mot n° {n}",
   "onboarding.confirm.mismatch": "Ces mots ne correspondent pas. Vérifiez votre copie écrite et réessayez.",
-  "onboarding.confirm.showAgain": "Afficher à nouveau la phrase",
+  "onboarding.confirm.showAgain": "Revoir la phrase",
   "onboarding.confirm.submit": "Confirmer",
   "onboarding.import.title": "Importer votre portefeuille",
   "onboarding.import.lede": "Saisissez votre phrase de récupération de 12 ou 24 mots, séparés par des espaces.",

@@ -16,7 +16,7 @@ export default {
   "send.approx": "≈ {value}",
   "send.review": "Controlla",
   "send.preparing": "Preparazione…",
-  "send.ask.title": "Dove devono arrivare i {symbol}?",
+  "send.ask.title": "Dove deve arrivare il pagamento in {symbol}?",
   "send.ask.lede": "{who} può ricevere {symbol} in più di un posto. Se si tratta di un exchange o del wallet di qualcun altro, chiedi quale rete usare: inviare sulla rete sbagliata può far perdere il denaro.",
   "send.ask.legend": "Rete per questo destinatario",
   "send.ask.haveThere": "Lì hai {amount} {symbol}",

@@ -10,9 +10,16 @@
  *   contact → 联系人, notification → 通知, price alert → 价格提醒, fee → 手续费, bridged → 跨链桥接,
  *   liquidity → 流动性, pool → 资金池, look-alike address → 相似地址, suspicious token → 可疑代币,
  *   scammer → 诈骗者, Advanced mode → 高级模式, Activity → 活动, Explore → 探索, Discover → 发现,
- *   Home → 首页, Settings → 设置, pin → 置顶, QR code → 二维码, chain id → 链 ID, publish → 公开.
+ *   Home → 首页, Settings → 设置, pin → 置顶, QR code → 二维码, chain id → 链 ID, publish → 公开,
+ *   "Checking…" by context → 正在核对… (against the written-down phrase) / 正在验证… (sign-in link) /
+ *   正在检查… (lookups: handle, plugin, Bluetooth), "Address" of the in-app browser bar → 网址 (a URL, not a wallet address).
+ * Kept verbatim (never translated): Clip Wallet, Clip, Secure Trade, WalletConnect, Ledger, Ledger Live, Keystone,
+ *   Face ID, Touch ID, MetaMask, Phantom, Google, Apple, CoinGecko, DEX Screener, network names (Ethereum,
+ *   Bitcoin, Solana, Hedera, Base, Arbitrum…; "Ethereum-style" → "Ethereum 类", never 以太坊), asset symbols
+ *   (ETH, USDC, HBAR, SOL, BTC), PRF, EVM, and labels shown on a device's own screen (quoted, in English).
  * Style: "你"; full-width punctuation; a half-width space between Chinese and Latin words, numbers and
- * {variables} (e.g. "发送 {amount} {symbol}"), none next to full-width punctuation.
+ * {variables} (e.g. "发送 {amount} {symbol}"), none next to full-width punctuation. Exception: no space around a
+ * {variable} that always holds Chinese text (e.g. "你的{account}" in approval.connect.lede).
  */
 import type { Translation } from "@clip-wallet/i18n";
 import type { MobileMessages } from "../en";

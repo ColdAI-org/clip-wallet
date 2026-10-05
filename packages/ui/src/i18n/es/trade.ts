@@ -28,7 +28,7 @@ export default {
   "trade.amount": "Cantidad",
   "trade.collection": "Colección",
   "trade.itemNumber": "Número de artículo",
-  "trade.amountBad": "Escribe una cantidad como 25 o 0.5.",
+  "trade.amountBad": "Escribe una cantidad como 25 o 0,5.",
   "trade.counterpartyBad": "Escribe su cuenta, como 0.0.1234.",
   "trade.tradeWith": "Operar con",
   "trade.whenAccept": "Cuándo acepta",
