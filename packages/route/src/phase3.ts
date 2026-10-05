@@ -169,7 +169,8 @@ export interface SettleOnHederaOptions {
 }
 
 /**
- * Known "settle on Hedera" deployments. Testnet: CLPRouter `deployments/README.md` ("Settle on Hedera (testnet)",
+ * Known "settle on Hedera" deployments. Testnet (v2, over the rotating v2 Sepolia -> Hedera Channel; the v1 order book
+ * 0xB7C8…e895 is retired): CLPRouter `deployments/README.md` ("Settle on Hedera (testnet)",
  * branch feat/settle-testnet): SettleOrderBook on Hedera testnet, SettleDeposit on Sepolia, and the test Connector,
  * whose reference service runs locally (`script/deploy/settle-connector.sh serve`, 127.0.0.1:8787).
  */
@@ -184,8 +185,8 @@ export const SETTLE_DEPLOYMENTS: readonly SettleDeployment[] = [
   {
     network: "testnet",
     hederaChainId: 296,
-    orderBook: "0xB7C875E6EB4a9D470BBccFecbA6256342676e895",
-    deposits: { "eip155:11155111": "0x249f83524D0827840237e751981B804D99bB5bD6" },
+    orderBook: "0x28c14e4BAd929e27902149674CCe79b34E5b8B1f",
+    deposits: { "eip155:11155111": "0x86ED95936E516742cC4d54657f66831775282875" },
     connectors: [{ id: "0x316323692104293b58366e6Bc66a796B919108E7", name: "Clip testnet Connector", url: "http://127.0.0.1:8787" }],
   },
 ];
