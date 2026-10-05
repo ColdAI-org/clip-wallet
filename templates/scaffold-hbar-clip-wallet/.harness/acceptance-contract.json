@@ -1,0 +1,47 @@
+{
+  "name": "clip-wallet-typed-data",
+  "description": "Graded against the running dapp. Without the extension installed the page must explain how to load it; with it, each step goes through the wallet's approval window.",
+  "baseUrl": "http://localhost:3000",
+  "assertions": [
+    {
+      "id": "C1",
+      "statement": "The home page names this wallet (not Clip Wallet) and explains how to load the extension when it isn't installed.",
+      "howToVerify": [
+        "Open http://localhost:3000/ in a browser without the extension.",
+        "Confirm the heading is the name in packages/extension/wallet.identity.json.",
+        "Confirm step 1 says the wallet isn't installed and lists pnpm extension:build and Load unpacked."
+      ],
+      "severity": "critical",
+      "walletRequired": false,
+      "verifiableWithoutCredentials": true
+    },
+    {
+      "id": "C2",
+      "statement": "The debug page lists Hedera's PRNG and exchange-rate system contracts on Hedera testnet.",
+      "howToVerify": ["Open http://localhost:3000/debug.", "Confirm HederaPrng and HederaExchangeRate are listed with addresses 0x…0169 and 0x…0168."],
+      "severity": "major",
+      "walletRequired": false,
+      "verifiableWithoutCredentials": true
+    },
+    {
+      "id": "C3",
+      "statement": "A 'Sign typed data' step exists and is disabled until the wallet is connected.",
+      "howToVerify": ["Open http://localhost:3000/.", "Confirm a 'Sign typed data' card with a disabled button."],
+      "severity": "major",
+      "walletRequired": false,
+      "verifiableWithoutCredentials": true
+    },
+    {
+      "id": "C4",
+      "statement": "With the extension loaded and a testnet wallet created, signing typed data opens the wallet's approval window and the page reports a valid signature.",
+      "howToVerify": [
+        "pnpm extension:build; load packages/extension/.output/chrome-mv3 unpacked; create a wallet.",
+        "Connect on http://localhost:3000/, click the typed-data Sign button, approve.",
+        "Confirm the page reports a valid signature."
+      ],
+      "severity": "major",
+      "walletRequired": true,
+      "verifiableWithoutCredentials": false
+    }
+  ]
+}

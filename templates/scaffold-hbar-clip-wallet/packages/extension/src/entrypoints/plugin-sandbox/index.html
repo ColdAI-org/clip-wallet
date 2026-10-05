@@ -1,0 +1,16 @@
+<!doctype html>
+<!--
+  Clip Plugins sandbox page (from packages/plugins/extension/plugin-sandbox.html). Listed under the manifest's
+  "sandbox.pages" with CSP = SANDBOX_CSP (wxt.config.ts): Chrome serves it in a unique opaque origin with no
+  extension APIs; one iframe runs exactly one plugin under SES.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Plugin sandbox</title>
+    <meta name="manifest.include" content="['chrome']" />
+  </head>
+  <body>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+schemaVersion: 2
+
+name: clip-wallet-typed-data
+description: >-
+  Add a "Sign typed data" step (EIP-712) to the demo dapp by following AGENTS.md
+  ("Change the dapp"): a card on packages/nextjs/app/page.tsx that asks the
+  connected wallet to sign a small typed message on Hedera testnet (chain 296)
+  with wagmi's useSignTypedData and shows whether the signature verifies. The
+  wallet's identity, its security floor and testnet-only stay untouched.
+
+agent: claude
+constraints:
+  packageManager: pnpm
+maxAttempts: 3
+prd:
+  - .harness/prd.md
+  - .harness/spec.md
+
+# Is the project healthy before the agent touches it?
+baseline:
+  commands:
+    - name: install
+      command: pnpm install
+      timeoutMs: 900000
+    - name: harness
+      command: pnpm harness
+      timeoutMs: 120000
+    - name: build
+      command: pnpm build
+      timeoutMs: 900000
+
+validators:
+  static: .harness/validators/static.json
+  commands: .harness/validators/pnpm.json
+  playwright: .harness/validators/playwright-smoke.yaml
+
+contract: .harness/acceptance-contract.json
+validator:
+  enabled: true

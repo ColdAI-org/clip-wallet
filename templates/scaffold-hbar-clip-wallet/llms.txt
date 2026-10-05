@@ -1,0 +1,45 @@
+# Scaffold-HBAR × Clip Wallet
+
+> A non-custodial browser wallet with its own identity, built on the Clip Wallet kit (@clip-wallet/extension-kit), plus a Scaffold-HBAR Next.js dapp that connects to it on Hedera testnet. pnpm workspace, TypeScript, MIT. Test networks by default.
+
+Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (stories), packages/extension/clip.config.ts (typed config), packages/extension/wallet.identity.json (identity).
+
+## Commands
+- pnpm install && pnpm harness && pnpm check-types && pnpm build   (all must pass)
+- pnpm extension:build | extension:dev | extension:zip | extension:build:fixtures
+- pnpm next:dev | next:build | next:serve | lint
+- pnpm wallet:identity [--name --rdns --homepage --description --accent --icon --walletconnect-project-id --new-key]
+- pnpm wallet:listings | wallet:mainnet-check | verify:provenance
+
+## Rules (enforced by pnpm harness, tools/harness/check.mjs)
+- No key material in this project: phrases, keys and signing live in @clip-wallet/vault inside the kit.
+- The wallet's identity is its own: never org.coldai.* or "Clip Wallet".
+- wxt.config.ts builds through clipWallet(); the phishing lists can't be switched off; never define __CLIP_SECURITY__.
+- Mainnet only when every box in packages/extension/MAINNET.md is ticked by the owner (never by an agent).
+- .env, .env.local, .keys/ and *.pem are never tracked; secrets are never logged.
+- @clip-wallet/* and create-clip-wallet are pinned to one exact version.
+
+## Wallet: packages/extension
+- wallet.identity.json: name, description, rdns (EIP-6963), homepage, icon, extension.key (public key; fixes the Chrome extension id).
+- clip.config.ts (@clip-wallet/config defineConfig): theme {accent, accentText, font, radius}; networks ("evm:*", "evm:<id>", hedera, solana, bitcoin, sui, aptos, cardano, substrate, starknet, ton, near, stellar, tezos, algorand); route {mode, filters, settleOnHedera}; hardware [ledger, keystone]; passkeys {enabled, rpOrigin}; services {backupUrl, mediaProxyUrl, clipHandles}; compatibilityMode; mainnet (false | {enabled, acknowledged: MAINNET_ACKNOWLEDGEMENT}).
+- wxt.config.ts: clipWallet({ config }) from @clip-wallet/extension-kit/wxt: manifest identity, 1Mask identity, security floor, mainnet checklist.
+- src/entrypoints: background (startBackground), content (startContentBridge), inpage.content (installInpage), popup/tab (mountWallet), approval (mountApprovalWindow), plugin-host (startPluginHost), plugin-sandbox.
+- .env: CLIP_WALLETCONNECT_PROJECT_ID, CLIP_0X_API_KEY, CLIP_JUPITER_API_KEY, CLIP_COINGECKO_DEMO_KEY, CLIP_MOONPAY_*, CLIP_BANXA_PARTNER, CLIP_C14_*, CLIP_BLOCKAID_API_KEY.
+
+## Dapp: packages/nextjs (Scaffold-HBAR, Next.js app router, wagmi + RainbowKit)
+- app/page.tsx: finds the wallet by EIP-6963 rdns, connect, sign (EIP-191, verified), send 0.1 HBAR, link to /debug.
+- app/debug: Scaffold-HBAR contract debugger; contracts/externalContracts.ts lists Hedera PRNG (0x169) and exchange rate (0x168) on chain 296.
+- utils/wallet.ts: WALLET_NAME, WALLET_RDNS from wallet.identity.json; findWallet() (EIP-6963).
+- scaffold.config.ts: targetNetworks [hederaTestnet].
+
+## Kit packages (npm, provenance, one version)
+- @clip-wallet/extension-kit: the extension (background, pages, 1Mask wiring, WXT config).
+- @clip-wallet/config: clip.config.ts schema, mainnetProblems, walletKey.
+- Underneath: core, vault, 1mask, engine, ui, i18n, route, security, features, social, plugins, hardware, names, chains-* (14 families).
+- create-clip-wallet: npx create-clip-wallet <folder>; identity | listings | mainnet-check.
+
+## Optional
+- packages/extension/MAINNET.md: what mainnet takes
+- docs/listings/README.md: listing drafts for this identity
+- .harness/README.md: the hedera-harness recipe and validators
+- https://github.com/ColdAI-org/clip-wallet: the kit (AGENTS.md there for kit changes)

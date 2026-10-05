@@ -1,0 +1,36 @@
+{
+  "name": "clip-wallet-project",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Your own non-custodial wallet on the Clip Wallet kit, with a Scaffold-HBAR dapp that connects to it on Hedera testnet",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm extension:build && pnpm next:build",
+    "check-types": "pnpm extension:check-types && pnpm next:check-types",
+    "extension:build": "pnpm --filter @sh/extension build",
+    "extension:build:fixtures": "pnpm --filter @sh/extension build:fixtures",
+    "extension:check-types": "pnpm --filter @sh/extension check-types",
+    "extension:dev": "pnpm --filter @sh/extension dev",
+    "extension:zip": "pnpm --filter @sh/extension zip",
+    "format": "pnpm next:format",
+    "harness": "node tools/harness/check.mjs",
+    "lint": "pnpm next:lint",
+    "next:build": "pnpm --filter @sh/nextjs build",
+    "next:check-types": "pnpm --filter @sh/nextjs check-types",
+    "next:dev": "pnpm --filter @sh/nextjs dev",
+    "next:format": "pnpm --filter @sh/nextjs format",
+    "next:lint": "pnpm --filter @sh/nextjs lint",
+    "next:serve": "pnpm --filter @sh/nextjs serve",
+    "verify:provenance": "node tools/verify-provenance.mjs",
+    "wallet:identity": "create-clip-wallet identity",
+    "wallet:listings": "create-clip-wallet listings",
+    "wallet:mainnet-check": "create-clip-wallet mainnet-check"
+  },
+  "devDependencies": {
+    "create-clip-wallet": "0.1.0"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  }
+}
