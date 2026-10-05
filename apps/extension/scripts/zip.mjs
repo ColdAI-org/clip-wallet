@@ -1,6 +1,7 @@
 /**
  * Deterministic ZIP writer (no dependencies). Same input tree → same bytes: entries sorted by path, one fixed
- * timestamp (SOURCE_DATE_EPOCH, clamped to the DOS epoch 1980-01-01), fixed permissions (0644), no extra fields,
+ * timestamp (SOURCE_DATE_EPOCH, clamped to the DOS epoch 1980-01-01), permissions normalised to 0644 or 0755 (owner
+ * execute bit only, so umask can't leak in), no extra fields,
  * no directory entries, DEFLATE at level 9 through Node's bundled zlib.
  *
  * Format: PKWARE APPNOTE.TXT 6.3.10 (https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT), sections 4.3.7
@@ -50,6 +51,7 @@ export function zipDirectory(dir, opts = {}) {
   let offset = 0;
   for (const path of listFiles(dir)) {
     const data = readFileSync(join(dir, path));
+    const exec = (statSync(join(dir, path)).mode & 0o100) !== 0;
     const name = Buffer.from(path, "utf8");
     const deflated = deflateRawSync(data, { level: 9 });
     const stored = deflated.length >= data.length;
@@ -86,7 +88,7 @@ export function zipDirectory(dir, opts = {}) {
     central.writeUInt16LE(0, 32); // comment
     central.writeUInt16LE(0, 34); // disk
     central.writeUInt16LE(0, 36); // internal attrs
-    central.writeUInt32LE((0o100644 << 16) >>> 0, 38); // regular file, rw-r--r--
+    central.writeUInt32LE(((exec ? 0o100755 : 0o100644) << 16) >>> 0, 38); // regular file, 0755 or 0644
     central.writeUInt32LE(offset, 42);
     centrals.push(central, name);
 

@@ -8,7 +8,7 @@
  * Writes apps/extension/release/:
  *   clip-wallet-<version>-chrome.zip    Chrome Web Store and Microsoft Edge Add-ons (same MV3 package)
  *   clip-wallet-<version>-firefox.zip   addons.mozilla.org (MV3, background as an ES-module event page)
- *   clip-wallet-<version>-source.zip    AMO source-code submission: `git archive` of HEAD (tracked files only)
+ *   clip-wallet-<version>-source.zip    AMO source-code submission: HEAD's tracked files + README-AMO.md at the root
  *   SHA256SUMS                          sha256sum format, for the release and the reproducible-build check
  *   TREE-DIGESTS                        content digest of each unpacked build (architecture-independent)
  *   BUILD-INFO                          version, commit, SOURCE_DATE_EPOCH, Node version and platform
@@ -20,7 +20,8 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { treeDigest, zipDirectory } from "./zip.mjs";
@@ -76,9 +77,16 @@ for (const t of TARGETS) {
 // AMO asks for the exact sources of a minified/bundled add-on. git archive is deterministic per commit; the
 // reviewer README goes at the archive root.
 if (withSource) {
+  // Extract the commit's tree, add the reviewer README at the root, and zip with the same deterministic writer
+  // (git archive --add-file would take that file's mode and mtime from the working tree).
   const source = `clip-wallet-${version}-source.zip`;
-  const prefix = `clip-wallet-${version}/`;
-  execFileSync("git", ["archive", "--format=zip", `--prefix=${prefix}`, `--add-file=${join(APP, "store/README-AMO.md")}`, "-o", join(OUT, source), "HEAD"], { cwd: REPO });
+  const tmp = mkdtempSync(join(tmpdir(), "clip-source-"));
+  const root = join(tmp, `clip-wallet-${version}`);
+  mkdirSync(root);
+  execFileSync("sh", ["-c", `git archive --format=tar HEAD | tar -x -C "${root}"`], { cwd: REPO });
+  copyFileSync(join(APP, "store/README-AMO.md"), join(root, "README-AMO.md"));
+  writeFileSync(join(OUT, source), zipDirectory(tmp));
+  rmSync(tmp, { recursive: true, force: true });
   files.push(source);
 }
 
