@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Variazioni del saldo simulate",
   "approval.expectedChanges": "Variazioni del saldo previste",
   "approval.estimated": "Queste variazioni sono stimate: questa rete non può mostrarle in anteprima.",
+  "approval.batch.sequential": "Questi passaggi vengono eseguiti uno dopo l’altro. Se uno non va a buon fine, quelli successivi non vengono eseguiti.",
   "approval.network": "Rete",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "Tramite",

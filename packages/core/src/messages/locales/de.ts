@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "Netzwerkgebühr höchstens",
   "bg.label.whatTheTransactionDoes": "Was die Transaktion tut",
   "bg.label.hostUnverified": "{host} (nicht verifiziert)",
+  "bg.req.batchSteps": "{count} Schritte für {host}",
+  "bg.label.appSaysNeeds": "Laut der App nötig",
+  "bg.act.batch": "{count} Schritte auf {app}",
+  "bg.act.batchStopped": "{count} Schritte auf {app}, bei Schritt {n} gestoppt",
+  "bg.err.batchHardware": "Mehrere Schritte in einer Genehmigung gehen mit Hardware-Wallets noch nicht. Bitte die App, sie einzeln zu senden.",
 };
 export default messages;

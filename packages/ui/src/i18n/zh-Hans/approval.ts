@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "模拟的余额变化",
   "approval.expectedChanges": "预计的余额变化",
   "approval.estimated": "这些变化为估算值；此网络无法预览。",
+  "approval.batch.sequential": "这些步骤会依次执行。如果其中一步失败，后面的步骤不会执行。",
   "approval.network": "网络",
   "approval.networkValue": "{name}（{id}）",
   "approval.via": "通过",

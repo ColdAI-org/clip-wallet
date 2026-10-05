@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "シミュレーションによる残高の変化",
   "approval.expectedChanges": "予想される残高の変化",
   "approval.estimated": "これらの変化は推定です。このネットワークでは事前に確認できません。",
+  "approval.batch.sequential": "これらのステップは順番に実行されます。途中で1つが失敗すると、それ以降のステップは実行されません。",
   "approval.network": "ネットワーク",
   "approval.networkValue": "{name}（{id}）",
   "approval.via": "経由",

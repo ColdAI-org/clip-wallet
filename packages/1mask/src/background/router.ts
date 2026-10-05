@@ -25,6 +25,8 @@ import { P2_FAMILIES, createP2Dispatcher, type BeaconRelay } from "./p2-families
 import { dispatchCardanoSubstrate, type CardanoSubstrateRouterHelpers } from "./cardano-substrate.js";
 import type { PermissionStore } from "./permissions.js";
 import { createStarknetTonDispatch, type StarknetTonOptions } from "./starknet-ton.js";
+import { createCallsDispatch } from "./eip5792.js";
+import { isCallsMethod, type CallsHost } from "../shared/calls.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
 export interface RouterPort {
@@ -73,6 +75,11 @@ export interface OneMaskRouterOptions extends StarknetTonOptions {
   /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
   tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
   rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
+  /**
+   * EIP-5792 Wallet Call API (+ ERC-7682 auxiliaryFunds) on the EVM provider. Opt-in: without it the four
+   * wallet_*Calls / wallet_getCapabilities methods stay unsupported (4200), exactly as before.
+   */
+  calls?: CallsHost;
   newId?(): string;
   now?(): number;
 }
@@ -387,6 +394,8 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       return approve(makeReq(origin, "evm", net, method, params));
     }
 
+    if (callsOn() && isCallsMethod(method)) return callsDispatch!(origin, method, params);
+
     // Read-only JSON-RPC: proxied to the background's RPC, no prompt.
     const req = makeReq(origin, "evm", net, method, params);
     return withTimeout(opts.handle(req), readMs, req.id);
@@ -514,6 +523,11 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     opts,
   );
 
+  /* ------------------------------------------------------------ EIP-5792 (opt-in) */
+
+  const callsDispatch = opts.calls ? createCallsDispatch({ permitted, accounts, approve, makeReq, candidates }, opts.calls) : undefined;
+  const callsOn = () => !!callsDispatch && opts.calls!.enabled?.() !== false;
+
   /* ------------------------------------------------------------ public */
 
   /** Errors leave the router as ProviderRpcError {code,message} only: no stacks, no causes. */
@@ -528,7 +542,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "evm" && (EVM_METHODS.rejected as readonly string[]).includes(method)) {
       return dispatchEvm(origin, method, params);
     }
-    if (!injectedAllowlist(family).has(method)) throw rpcError.unsupportedMethod(method);
+    if (!injectedAllowlist(family).has(method) && !(family === "evm" && callsOn() && isCallsMethod(method))) throw rpcError.unsupportedMethod(method);
     // Refresh knownPermitted first, so a connected site's network is the same from its very first call.
     if (FAMILIES.includes(family)) await permitted(origin, family);
     if (family === "evm") return dispatchEvm(origin, method, params);

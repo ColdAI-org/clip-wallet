@@ -86,6 +86,8 @@ export interface NamespaceMappingInput {
    * Hedera: account ids ("0.0.1234"). Return [] if the wallet has none there yet.
    */
   addressesFor(chainId: string, family: Family): string[];
+  /** Methods served on top of WC_SUPPORTED_METHODS (opt-in features, e.g. EIP-5792 on eip155). */
+  extraMethods?: Partial<Record<WcNamespaceKey, readonly string[]>>;
 }
 
 export interface UnsupportedReport {
@@ -181,7 +183,7 @@ export function mapProposalNamespaces(proposal: ProposalLike, input: NamespaceMa
     }
     if (chains.length === 0) continue;
 
-    const supportedMethods = WC_SUPPORTED_METHODS[key];
+    const supportedMethods = [...WC_SUPPORTED_METHODS[key], ...(input.extraMethods?.[key] ?? [])];
     const supportedEvents = WC_SUPPORTED_EVENTS[key];
     const methods = new Set<string>();
     for (const m of req?.methods ?? []) {
@@ -215,8 +217,8 @@ export function mapProposalNamespaces(proposal: ProposalLike, input: NamespaceMa
 }
 
 /** Is `method` one Clip actually serves on this namespace (vs. merely listed for conformance)? */
-export function isServedMethod(nsKey: string, method: string): boolean {
-  return isKnownKey(nsKey) && WC_SUPPORTED_METHODS[nsKey].includes(method);
+export function isServedMethod(nsKey: string, method: string, extra?: Partial<Record<WcNamespaceKey, readonly string[]>>): boolean {
+  return isKnownKey(nsKey) && (WC_SUPPORTED_METHODS[nsKey].includes(method) || !!extra?.[nsKey]?.includes(method));
 }
 
 export function namespaceOf(chainId: string): string {

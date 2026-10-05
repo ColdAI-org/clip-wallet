@@ -12,6 +12,7 @@
     "start": "next dev"
   },
   "dependencies": {
+    "@clip-wallet/connect": "0.1.0",
     "@heroicons/react": "^2.1.5",
     "@hiero-ledger/sdk": "^2.80.0",
     "@rainbow-me/rainbowkit": "2.2.9",

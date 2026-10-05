@@ -192,6 +192,39 @@ describe("decode eth_sendTransaction", () => {
   });
 });
 
+describe("decode: EIP-5792 batch calls (DappRequest.batch)", () => {
+  const approve = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [BOB, 25_000_000n] });
+  const batched = (p: Record<string, unknown>, prior: unknown[]): DappRequest => ({ ...tx(p), batch: { index: prior.length, count: prior.length + 1, prior } });
+
+  it("previews a later call on top of the earlier ones: one eth_simulateV1 block with every call in order", async () => {
+    let sent: { calls: { to?: string; data: string }[] } | undefined;
+    const logs = [{ address: SEPOLIA_USDC, topics: [TRANSFER_TOPIC, addressTopic(ME), addressTopic(BOB)], data: numberToHex(25_000_000n, { size: 32 }) }];
+    const d = await decode(
+      batched({ to: BOB, data: "0x12345678" }, [{ from: ME, to: SEPOLIA_USDC, data: approve }]),
+      spec({
+        eth_simulateV1: (params: unknown[]) => {
+          sent = (params[0] as { blockStateCalls: { calls: { to?: string; data: string }[] }[] }).blockStateCalls[0];
+          return [{ calls: [{ status: "0x1", gasUsed: "0xb000", logs: [] }, { status: "0x1", gasUsed: "0x30d40", logs }] }];
+        },
+      }),
+    );
+    expect(sent!.calls.map((c) => c.data.slice(0, 10))).toEqual(["0x095ea7b3", "0x12345678"]);
+    expect(d.simulated).toBe(true);
+    expect(d.balanceChanges).toEqual([{ asset: expect.objectContaining({ key: "usdc" }), delta: "-25000000" }]);
+    // The fee is this call's own gas, not the batch's.
+    expect(d.fee?.amount).toBe(((200_000n * 12n) / 10n * 2_000_000_000n).toString());
+  });
+
+  it("without eth_simulateV1 a later call says 'couldn't preview' (caution), never a revert that may not happen", async () => {
+    const d = await decode(
+      batched({ to: BOB, data: "0x12345678" }, [{ from: ME, to: SEPOLIA_USDC, data: approve }]),
+      { rpc: { ...SEPOLIA_STATE.rpc, eth_call: new RpcErr(3, "execution reverted: allowance") } },
+    );
+    const w = d.warnings.find((x) => x.code === "simulation-failed")!;
+    expect(w.level).toBe("caution");
+  });
+});
+
 describe("decode personal_sign", () => {
   const ps = (message: string, origin = "https://app.example.com"): DappRequest => ({
     id: "p", origin, via: "injected", family: "evm", networkId: SEPOLIA, method: "personal_sign", params: [message, ME],

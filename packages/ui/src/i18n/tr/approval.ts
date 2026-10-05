@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Simüle edilen bakiye değişiklikleri",
   "approval.expectedChanges": "Beklenen bakiye değişiklikleri",
   "approval.estimated": "Bu değişiklikler tahminidir; bu ağ bunları önceden gösteremiyor.",
+  "approval.batch.sequential": "Bu adımlar art arda çalışır. Biri başarısız olursa sonrakiler çalışmaz.",
   "approval.network": "Ağ",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "Aracı",

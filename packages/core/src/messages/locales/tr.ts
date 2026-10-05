@@ -582,5 +582,10 @@ const messages: BgTranslation = {
   "bg.label.networkFeeAtMost": "En fazla ağ ücreti",
   "bg.label.whatTheTransactionDoes": "İşlemin yaptığı",
   "bg.label.hostUnverified": "{host} (doğrulanmadı)",
+  "bg.req.batchSteps": "{host} için {count} adım",
+  "bg.label.appSaysNeeds": "Uygulamaya göre gereken",
+  "bg.act.batch": "{app} üzerinde {count} adım",
+  "bg.act.batchStopped": "{app} üzerinde {count} adım, {n}. adımda durdu",
+  "bg.err.batchHardware": "Tek onayda birden fazla adım donanım cüzdanlarında henüz kullanılamıyor. Uygulamadan adımları tek tek göndermesini isteyin.",
 };
 export default messages;

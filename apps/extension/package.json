@@ -24,11 +24,23 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@clip-wallet/connect": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
+    "@mysten/wallet-standard": "^0.21.32",
     "@playwright/test": "^1.63.0",
+    "@polkadot/extension-dapp": "^0.64.1",
+    "@reown/appkit": "^1.8.24",
+    "@reown/appkit-adapter-wagmi": "^1.8.24",
+    "@solana/wallet-adapter-base": "^0.9.28",
+    "@solana/wallet-standard-wallet-adapter-base": "^1.1.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@wagmi/core": "^3.6.5",
+    "@wallet-standard/app": "^1.1.1",
     "@wxt-dev/module-react": "^1.2.2",
+    "esbuild": "^0.28.2",
+    "viem": "^2.57.1",
+    "wagmi": "^3.7.7",
     "wxt": "^0.21.4"
   }
 }

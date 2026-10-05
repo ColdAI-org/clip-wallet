@@ -31,6 +31,22 @@ export const EXTRA = {
     peerDependencies: { react: "^19.0.0" },
     peerDependenciesMeta: { react: { optional: true } },
   },
+  "@clip-wallet/connect": {
+    description: "Clip Connect: wallet-agnostic dapp SDK. One connect() for Clip Wallet and any EIP-6963, Wallet Standard or WalletConnect wallet; CAIP-10 accounts, pay() with EIP-5792 + ERC-7682 auxiliary funds, React, wagmi and Solana adapters",
+    keywords: ["clip-wallet", "wallet", "web3", "eip-6963", "eip-5792", "erc-7682", "wallet-standard", "walletconnect", "wagmi", "react"],
+    peerDependencies: {
+      react: "^18.0.0 || ^19.0.0",
+      "@wagmi/core": "^2.0.0 || ^3.0.0",
+      "@solana/wallet-standard-wallet-adapter-base": "^1.1.0",
+      "@walletconnect/ethereum-provider": "^2.0.0",
+    },
+    peerDependenciesMeta: {
+      react: { optional: true },
+      "@wagmi/core": { optional: true },
+      "@solana/wallet-standard-wallet-adapter-base": { optional: true },
+      "@walletconnect/ethereum-provider": { optional: true },
+    },
+  },
   "@clip-wallet/route": { description: "Route and fund on CLPRouter: shortfalls, quotes, pay-on-Hedera and settle-on-Hedera planning" },
   "@clip-wallet/security": { description: "Clip Wallet security services: phishing lists, transaction checks, approvals review, address poisoning and hidden-token cleanup" },
   "@clip-wallet/features": { description: "Clip Wallet features as background services: staking, swaps, on-ramps, prices, featured dapps" },

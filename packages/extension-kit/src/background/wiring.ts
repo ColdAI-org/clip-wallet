@@ -6,7 +6,7 @@
  *   vault              @clip-wallet/vault ClipVault                          same (always real)
  *   chain modules      @clip-wallet/chains-* (all 14 families)               mocks/mock-chains.ts
  *   networks/assets    chain packages via shared/catalog.ts + clip.config    mocks/networks.ts
- *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        mocks/mock-dapps.ts
+ *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        same router over the fixture networks
  *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
  *   route (funding)    @clip-wallet/route RouteClient (real.ts)              mocks/mock-route.ts
  *   prices             CoinGecko feed (features.ts)                          mocks/fixtures.ts
@@ -25,7 +25,7 @@ import type { ClipConfig } from "@clip-wallet/config";
 import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
 import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
 import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
-import { SettleFunding, settleClientFor } from "@clip-wallet/route";
+import { SettleFunding, settleClientFor, settleSourceNetworks } from "@clip-wallet/route";
 import { isMainnetEnabled } from "@clip-wallet/config";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
@@ -38,7 +38,7 @@ import { vaultStorageOf } from "../shared/storage";
 import { walletAssets, walletNetworks } from "../shared/catalog";
 import { createMockChains } from "./mocks/mock-chains";
 import { knownAssets, MOCK_NETWORKS } from "./mocks/networks";
-import { MockDappConnector, MockWalletConnect } from "./mocks/mock-dapps";
+import { MockWalletConnect } from "./mocks/mock-dapps";
 import { MockRoutePlanner } from "./mocks/mock-route";
 import { MOCK_HEDERA_EVM, MockSettleClient } from "./mocks/mock-settle";
 import { MOCK_ACTIVITY, MockNameResolver, MockPriceFeed } from "./mocks/fixtures";
@@ -126,6 +126,8 @@ export interface DappHost {
   cancel(requestId: string): void;
   /** A site on a loaded phishing list (security stream). Sync: WalletConnect's Verify check calls it. */
   isKnownScam?(origin: string): boolean;
+  /** EIP-5792 Wallet Call API + ERC-7682 auxiliary funds (./calls.ts). Absent = the methods stay unsupported. */
+  calls?: import("@clip-wallet/1mask").CallsHost;
 }
 
 /** 1Mask background router (inpage/content ports). */
@@ -203,6 +205,8 @@ export interface Dependencies {
   requestNetworks?: Network[];
   /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
   settleFunding?: import("@clip-wallet/route").SettleFunding | null;
+  /** ERC-7682: networks auxiliary funds can come from (settle on Hedera's deposit networks). Empty/absent = not advertised. */
+  auxiliaryFundsSources?: string[];
   /**
    * Names answered by Clip Plugins: the name resolver asks this last (built-ins always win). The service binds it to
    * the running plugins (background/plugins.ts); unbound, plugin names resolve to nothing.
@@ -296,8 +300,11 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       assets: knownAssets(MOCK_NETWORKS),
       route: new MockRoutePlanner(mockSettle),
       settleFunding: mockSettle,
+      // The mock Connector takes payment on any fixture EVM network (it answers only while the simulator arms it).
+      auxiliaryFundsSources: MOCK_NETWORKS.filter((n) => n.id.startsWith("eip155:")).map((n) => n.id),
       requestNetworks: [MOCK_HEDERA_EVM],
-      dapps: new MockDappConnector(),
+      // The real 1Mask router over the fixture networks: test pages (e2e) reach mock chains through the real dapp path.
+      dapps: new OneMaskConnector(MOCK_NETWORKS),
       walletConnect: new MockWalletConnect(),
       prices: new MockPriceFeed(),
       names: new MockNameResolver(),
@@ -354,6 +361,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     assets: walletAssets(networks),
     route: new RoutePlannerAdapter(opts.config, prices, opts.currency, settleFunding),
     settleFunding,
+    auxiliaryFundsSources: settleFunding ? settleSourceNetworks(mainnetOn) : [],
     ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
     dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),

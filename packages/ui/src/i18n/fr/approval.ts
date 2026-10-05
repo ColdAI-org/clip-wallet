@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Variations de solde simulées",
   "approval.expectedChanges": "Variations de solde prévues",
   "approval.estimated": "Ces variations sont estimées ; ce réseau ne permet pas de les prévisualiser.",
+  "approval.batch.sequential": "Ces étapes s’exécutent l’une après l’autre. Si l’une échoue, les suivantes ne s’exécutent pas.",
   "approval.network": "Réseau",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "Via",

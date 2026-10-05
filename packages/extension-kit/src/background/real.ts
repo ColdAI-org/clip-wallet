@@ -80,6 +80,8 @@ export class OneMaskConnector implements DappConnector {
       isUnlocked: () => host.isUnlocked(),
       defaultNetwork: (_origin, family) => host.preferredNetwork(family),
       cancel: (requestId) => host.cancel(requestId),
+      // EIP-5792 + ERC-7682 (opt-in per host; dapps that never call them see no difference).
+      ...(host.calls ? { calls: host.calls } : {}),
       ...(this.mods.beacon ? { tezosBeacon: lazyBeacon(this.mods.beacon.kv, this.mods.beacon.name, this.mods.beacon.iconUrl, () => this.router) } : {}),
       starknetDeploymentData: async (origin, net) => {
         const [account] = await host.accountsFor(origin, "starknet");
@@ -168,6 +170,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
         },
         handle: (req, ctx) => this.host!.request(req, { name: ctx.peer.name, iconUrl: ctx.peer.icons?.[0], warnings: ctx.warnings }),
         cancel: (id) => this.host!.cancel(id),
+        ...(this.host?.calls ? { calls: this.host.calls } : {}),
         // Phishing lists (security stream): a listed site shows "known-scam" on the proposal and every request.
         isKnownScam: (origin) => this.host?.isKnownScam?.(origin) ?? false,
       }),

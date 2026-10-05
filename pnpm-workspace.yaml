@@ -19,6 +19,8 @@ allowBuilds:
   secp256k1: false
   utf-8-validate: false
   keccak: false
+  # Reown AppKit's postinstall is a version-check notice; used by the extension's compat e2e suite as a dapp-side library.
+  '@reown/appkit': false
 # Internal audit 2026-10 (SUP-01): patched transitive versions for advisories that reach shipped code.
 #   axios: @ledgerhq/hw-app-eth -> axios 1.13.x (GHSA prototype-pollution / SSRF / credential-leak advisories), fixed in 1.20.0
 #   http-cache-semantics: @aptos-labs/ts-sdk -> got (ReDoS advisory), fixed in 4.3.0

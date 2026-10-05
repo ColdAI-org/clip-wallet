@@ -1,0 +1,133 @@
+{
+  "name": "@clip-wallet/connect",
+  "version": "0.1.0",
+  "description": "Clip Connect: wallet-agnostic dapp SDK. One connect() for Clip Wallet and any EIP-6963, Wallet Standard or WalletConnect wallet; CAIP-10 accounts, pay() with EIP-5792 + ERC-7682 auxiliary funds, React, wagmi and Solana adapters",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3",
+    "eip-6963",
+    "eip-5792",
+    "erc-7682",
+    "wallet-standard",
+    "walletconnect",
+    "wagmi",
+    "react"
+  ],
+  "license": "MIT",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/connect#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/connect"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "development": "./src/react.tsx",
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
+    },
+    "./wagmi": {
+      "development": "./src/wagmi.ts",
+      "types": "./dist/wagmi.d.ts",
+      "import": "./dist/wagmi.js",
+      "default": "./dist/wagmi.js"
+    },
+    "./solana": {
+      "development": "./src/solana.ts",
+      "types": "./dist/solana.d.ts",
+      "import": "./dist/solana.js",
+      "default": "./dist/solana.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./react": {
+        "types": "./dist/react.d.ts",
+        "import": "./dist/react.js",
+        "default": "./dist/react.js"
+      },
+      "./wagmi": {
+        "types": "./dist/wagmi.d.ts",
+        "import": "./dist/wagmi.js",
+        "default": "./dist/wagmi.js"
+      },
+      "./solana": {
+        "types": "./dist/solana.d.ts",
+        "import": "./dist/solana.js",
+        "default": "./dist/solana.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@solana/wallet-standard-wallet-adapter-base": "^1.1.0",
+    "@wagmi/core": "^2.0.0 || ^3.0.0",
+    "@walletconnect/ethereum-provider": "^2.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@solana/wallet-standard-wallet-adapter-base": {
+      "optional": true
+    },
+    "@wagmi/core": {
+      "optional": true
+    },
+    "@walletconnect/ethereum-provider": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@solana/wallet-adapter-base": "^0.9.28",
+    "@solana/wallet-standard-wallet-adapter-base": "^1.1.6",
+    "@solana/web3.js": "^1.98.0",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@wagmi/core": "^3.6.5",
+    "bs58": "^6.0.0",
+    "esbuild": "^0.28.2",
+    "happy-dom": "^20.14.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "viem": "^2.57.1",
+    "vitest": "^2.1.9"
+  }
+}

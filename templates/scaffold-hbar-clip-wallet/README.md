@@ -86,6 +86,7 @@ Running it again keeps the extension key (and so the id) unless you pass `--new-
 | Page | What it shows |
 |---|---|
 | `/` | Finds your wallet by its EIP-6963 rdns, connects, signs a sign-in message (verified in the page), sends 0.1 HBAR to yourself with a HashScan link |
+| `/clip-connect` | Clip Connect (`@clip-wallet/connect`): one connect for your wallet or any other, accounts as CAIP-10, what the wallet can do (EIP-5792), balances by asset, and `pay()` that uses auxiliary funds (ERC-7682) when the wallet has them |
 | `/debug` | Scaffold-HBAR's contract debugger, with Hedera's PRNG (`0x169`) and exchange-rate (`0x168`) system contracts |
 
 Every request opens your wallet's approval window, decoded in plain words. The header's **Connect Wallet** (RainbowKit)

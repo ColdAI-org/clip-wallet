@@ -45,6 +45,7 @@ packages/plugins         Clip Plugins: SES sandbox, npm install with integrity c
 packages/hardware        Ledger (WebHID) and Keystone (QR)
 packages/names           ENS, SNS, HNS, Clip handles
 packages/link            linked devices: phone/desktop as signer, encrypted sync, handoffs, native messaging
+packages/connect         Clip Connect (@clip-wallet/connect): wallet-agnostic dapp SDK; public standards only, never wallet internals
 packages/kit-modules     modules for ecosystem pickers (NEAR Wallet Selector, Stellar Wallets Kit, use-wallet, Beacon)
 packages/backup-client, packages/media-client   clients for services/backup and services/media-proxy
 packages/create-clip-wallet   npx create-clip-wallet: the template + identity + listing drafts + mainnet check

@@ -128,4 +128,5 @@ export default {
   "bg.label.stepN": "Step {n}",
   "bg.label.argumentN": "Argument {n}",
   "bg.label.youSend": "You send",
+  "bg.label.appSaysNeeds": "The app says it needs",
 } as const;

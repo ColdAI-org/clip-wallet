@@ -138,4 +138,18 @@ describe("remote signer", () => {
     expect(await h.request(req())).toBe("local");
     expect(await h.accountsFor("https://app.example", "evm")).toEqual([]);
   });
+
+  it("passes the EIP-5792 calls host through, switched off while another device signs; absent stays absent", async () => {
+    const calls = { auxiliaryFunds: vi.fn(() => ({})), status: vi.fn(async () => undefined), show: vi.fn(async () => false) };
+    const base = { approveConnect: vi.fn(), request: vi.fn(), accountsFor: vi.fn(), preferredNetwork: () => undefined, cachedAccount: () => undefined, permissions: { has: async () => false, grant: async () => undefined, revoke: async () => undefined, origins: async () => [] }, rpc: vi.fn(), chainRead: vi.fn(), isUnlocked: async () => true, cancel: vi.fn() } as unknown as DappHostLike;
+    let on = false;
+    const mode = { active: () => on, signer: () => undefined, grants: new RemoteGrants(new KV()) };
+    const h = remoteDappHost({ ...base, calls }, mode);
+    expect(h.calls?.enabled?.()).toBe(true);
+    on = true;
+    expect(h.calls?.enabled?.()).toBe(false);
+    await h.calls!.status("https://app.example", "0x1");
+    expect(calls.status).toHaveBeenCalledWith("https://app.example", "0x1");
+    expect(remoteDappHost(base, mode).calls).toBeUndefined();
+  });
 });

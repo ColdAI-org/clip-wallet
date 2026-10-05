@@ -56,3 +56,4 @@ export { formatUnits, parseUnits, formatDuration, formatCarbon } from "./format.
 export { CLPROUTER_SDK_COMMIT, plan } from "./clprouter.js";
 export type { Mode, RouteGraphData, RouteQuote, TrustTier, Edge, Ledger } from "./clprouter.js";
 export type * from "./types.js";
+export { auxiliaryFundsFor, settleSourceNetworks, NATIVE_ASSET_ADDRESS, type AuxiliaryFundsInfo } from "./auxiliary-funds.js";

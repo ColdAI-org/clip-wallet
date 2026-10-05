@@ -28,6 +28,7 @@ Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/pr
 
 ## Dapp: packages/nextjs (Scaffold-HBAR, Next.js app router, wagmi + RainbowKit)
 - app/page.tsx: finds the wallet by EIP-6963 rdns, connect, sign (EIP-191, verified), send 0.1 HBAR, link to /debug.
+- app/clip-connect: Clip Connect (@clip-wallet/connect) demo: connect (prefers this wallet, falls back to any other), CAIP-10 accounts, EIP-5792 capabilities, balances by asset, pay() with ERC-7682 auxiliary funds or a plain transfer.
 - app/debug: Scaffold-HBAR contract debugger; contracts/externalContracts.ts lists Hedera PRNG (0x169) and exchange rate (0x168) on chain 296.
 - utils/wallet.ts: WALLET_NAME, WALLET_RDNS from wallet.identity.json; findWallet() (EIP-6963).
 - scaffold.config.ts: targetNetworks [hederaTestnet].

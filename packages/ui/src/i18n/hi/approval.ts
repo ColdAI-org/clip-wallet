@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "सिम्युलेट किए गए बैलेंस बदलाव",
   "approval.expectedChanges": "बैलेंस में अनुमानित बदलाव",
   "approval.estimated": "ये बदलाव अनुमानित हैं; यह नेटवर्क इनका प्रीव्यू नहीं दिखा सकता।",
+  "approval.batch.sequential": "ये स्टेप एक के बाद एक चलते हैं। अगर कोई स्टेप विफल हो जाए, तो उसके बाद वाले स्टेप नहीं चलते।",
   "approval.network": "नेटवर्क",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "किसके ज़रिए",

@@ -95,4 +95,5 @@ export default {
   "bg.err.noSwapRouteFor": "There's no way to swap {sell} for {buy} right now. Try a smaller amount or another token.",
   "bg.err.stakeAtLeast": "Stake at least {amount}.",
   "bg.err.enterHowMuchToStake": "Enter how much {symbol} to stake.",
+  "bg.err.batchHardware": "Several steps in one approval aren't available for hardware wallets yet. Ask the app to send them one at a time.",
 } as const;

@@ -12,6 +12,7 @@ export default {
   "approval.simulatedChanges": "Simulated balance changes",
   "approval.expectedChanges": "Expected balance changes",
   "approval.estimated": "These changes are estimated; this network can't preview them.",
+  "approval.batch.sequential": "These steps run one after another. If one fails, the steps after it don't run.",
   "approval.network": "Network",
   "approval.networkValue": "{name} ({id})",
   "approval.via": "Via",
