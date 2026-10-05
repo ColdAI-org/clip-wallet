@@ -11,6 +11,7 @@ import { IconChevron, IconShield, IconAlert } from "../components/icons";
 import { formatFiat, formatLocale, formatUnits, readyInMessage } from "../lib/format";
 import { useUiT } from "../i18n";
 import { RecipientCheck } from "../social/RecipientCheck";
+import { SettleProgress, settleBusy, settleSteps } from "./SettleFunding";
 import { hueFor } from "../lib/media";
 
 function DappHeader(props: { approval: ApprovalView; advanced: boolean }) {
@@ -63,6 +64,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
   const detailsId = useId();
 
   const problem = a.plan?.problem;
+  // Money from a bonded Connector (settle on Hedera): after the first Approve the order's progress replaces the actions.
+  const funding = a.plan?.funding;
   // Messages and sign-ins move no money: no From/Fee/Ready rows for them.
   const movesMoney = d.balanceChanges.some((c) => c.delta.startsWith("-"));
   const blocked = (d.blind && !(advanced && blindOk)) || !!problem;
@@ -90,9 +93,10 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
   };
 
   const ready = readyInMessage(a.plan?.readyInSeconds ?? 10);
-  const steps = a.plan?.steps ?? [
-    { kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges },
-  ];
+  const planSteps = a.plan?.steps ?? [{ kind: "action" as const, title: d.title, balanceChanges: d.balanceChanges }];
+  const steps = funding
+    ? [...settleSteps(funding, t).map((s) => ({ ...s, kind: "funding" as const, balanceChanges: undefined })), ...planSteps.filter((s) => s.kind !== "funding")]
+    : planSteps;
 
   return (
     <div className="clip-approval" aria-labelledby={`${detailsId}-t`}>
@@ -108,7 +112,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
       {a.recipient && <RecipientCheck address={a.recipient.address} family={a.recipient.family} />}
 
       <div className="clip-rows">
-        {movesMoney && <Row label={t("approval.from")} value={a.plan?.source ?? t("approval.yourBalance")} />}
+        {movesMoney && <Row label={t("approval.from")} value={funding ? t("settle.from", { provider: funding.provider }) : (a.plan?.source ?? t("approval.yourBalance"))} />}
         {d.fee && <Row label={t("approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("approval.feeCovered") : undefined} />}
         {(movesMoney || d.fee) && <Row label={t("approval.ready")} value={t(ready.id, ready)} />}
         {d.lines.map((l) => (
@@ -148,7 +152,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
               </li>
             ))}
           </ol>
-          {a.plan?.settlement && <p className="clip-approval__settlement">{a.plan.settlement}</p>}
+          {a.plan?.settlement && <p className="clip-approval__settlement">{funding ? t("settle.settlement", { provider: funding.provider }) : a.plan.settlement}</p>}
           {!d.simulated && !d.blind && <p className="clip-approval__settlement">{t("approval.estimated")}</p>}
           {advanced && (
             <div className="clip-advanced-block">
@@ -188,14 +192,22 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
           />
         )}
         <ErrorNote message={err} />
-        <div className="clip-actions">
-          <Button variant="secondary" onClick={() => act(false)} disabled={busy}>
-            {t("approval.reject")}
+        {funding && (settleBusy(funding) || funding.arrived) && <SettleProgress funding={funding} app={a.dapp.name} busy={busy} act={() => act(true)} />}
+        {!(funding && (settleBusy(funding) || (funding.arrived && funding.appGone))) && (
+          <div className="clip-actions">
+            <Button variant="secondary" onClick={() => act(false)} disabled={busy}>
+              {t("approval.reject")}
+            </Button>
+            <Button onClick={() => act(true)} disabled={busy || blocked} aria-disabled={busy || blocked}>
+              {t("approval.approve")}
+            </Button>
+          </div>
+        )}
+        {funding?.arrived && funding.appGone && (
+          <Button block variant="secondary" onClick={() => act(true)} disabled={busy}>
+            {t("settle.close")}
           </Button>
-          <Button onClick={() => act(true)} disabled={busy || blocked} aria-disabled={busy || blocked}>
-            {t("approval.approve")}
-          </Button>
-        </div>
+        )}
       </div>
     </div>
   );

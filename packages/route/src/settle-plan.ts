@@ -1,7 +1,6 @@
 /**
- * Phase 3 in the approval's Details: when a payment needs money from another network, ask the bonded Connectors
- * ("settle on Hedera") for the best quote and describe it as one more funding option. Display only: it never blocks,
- * never replaces the CLPRouter route, and nothing is deposited from here (createOrder runs on a separate approval).
+ * Phase 3: the settle client for this build (`settleClientFor`), and `settleFundingOption`, a one-line description of
+ * the best Connector quote for a shortfall. Paying through a quote is ./settle-funding.ts (`SettleFunding`).
  */
 import type { AssetRef, Network } from "@clip-wallet/core";
 import { SETTLE_DEPLOYMENTS, settleOnHedera, type CoverAssetConfig, type SettleOnHederaClient } from "./phase3.js";
@@ -22,7 +21,7 @@ function hbarCover(hederaChainId: number): CoverAssetConfig {
 
 /**
  * The settle client for this build, or null: off unless the config switch is on AND a deployment for the network
- * is known (SETTLE_DEPLOYMENTS is empty until the contracts are deployed).
+ * is known (SETTLE_DEPLOYMENTS: testnet only).
  */
 export function settleClientFor(o: { enabled: boolean; mainnet: boolean; mirrorNodeUrl?: string; fetch?: typeof fetch }): SettleOnHederaClient | null {
   if (!o.enabled) return null;

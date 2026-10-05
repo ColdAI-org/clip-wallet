@@ -6,7 +6,7 @@ import type { ChainModule, Family, SignablePayload } from "@clip-wallet/core";
 import type { ClipConfig } from "@clip-wallet/config";
 import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
 import { MIRROR_NODE_URLS, createHederaModule } from "@clip-wallet/chains-hedera";
-import { settleClientFor } from "@clip-wallet/route";
+import { SettleFunding, settleClientFor } from "@clip-wallet/route";
 import { isMainnetEnabled } from "@clip-wallet/config";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
@@ -75,9 +75,10 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   for (const f of families) chains[f] = all[f]();
   const prices = o.kv ? createPriceFeed(o.kv, o.coingeckoDemoKey) : new ReferencePriceFeed();
   const backupUrl = o.config.services.backupUrl;
-  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (none yet).
+  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (testnet only).
   const mainnetOn = isMainnetEnabled(o.config);
   const settle = settleClientFor({ enabled: o.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
+  const settleFunding = settle ? new SettleFunding(settle) : null;
   return {
     mocks: false,
     vault: o.vault,
@@ -85,7 +86,8 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     chains,
     networks,
     assets: walletAssets(networks),
-    route: new RoutePlannerAdapter(o.config, prices, o.currency, settle),
+    route: new RoutePlannerAdapter(o.config, prices, o.currency, settleFunding),
+    settleFunding,
     ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
     dapps: new OneMaskConnector(networks, { starknet: families.has("starknet") ? starknet : undefined, ton: families.has("ton") ? ton : undefined }),
     walletConnect: new WalletConnectAdapter({ ...o.walletConnect, name: o.config.name, networks }),

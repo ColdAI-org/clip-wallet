@@ -204,3 +204,42 @@ describe("Explore Discover", () => {
     await waitFor(() => expect(screen.getByText("SaucerSwap")).toBeTruthy());
   });
 });
+
+describe("Approval paid through a bonded Connector (settle on Hedera)", () => {
+  async function fundedApproval(stage: "offer" | "opened" | "late", extra: Record<string, unknown> = {}) {
+    const wallet = testWallet();
+    await wallet.client.createWallet(PW);
+    const p = await wallet.client.getPortfolio();
+    const eth = p.balances.find((b) => b.asset.symbol === "ETH" && BigInt(b.amount) > 0n)!;
+    const id = await wallet.client.send({ assetKey: eth.asset.key, networkId: eth.asset.networkId, to: "0x000000000000000000000000000000000000dEaD", amount: "0.01" });
+    const view = (await wallet.client.getApproval(id))!;
+    const amt = (amount: string, symbol: string, decimals: number) => ({ amount, symbol, decimals });
+    view.plan = {
+      ...(view.plan ?? { source: "Your balance", sponsored: false, readyInSeconds: 12, steps: [], settlement: "" }),
+      funding: { orderId: `0x${"0d".repeat(32)}`, stage, provider: "Clip test Connector", pay: amt("13052000", "USDC", 6), receive: amt("13000000", "USDC", 6), fee: amt("52000", "USDC", 6), payback: amt("19800000000", "HBAR", 8), approveFirst: true, etaSeconds: 90, deadline: 1_800_001_800, ...extra },
+    };
+    return { wallet, view };
+  }
+
+  it("names the Connector as the source and keeps the normal buttons for the offer", async () => {
+    const { wallet, view } = await fundedApproval("offer");
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText("Your other balance, through Clip test Connector")).toBeTruthy();
+    expect(screen.getByTestId("approve")).toBeTruthy();
+  });
+
+  it("shows progress while the money is on its way, without Approve or Reject", async () => {
+    const { wallet, view } = await fundedApproval("opened");
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText("Order confirmed. Clip test Connector is sending 13 USDC.")).toBeTruthy();
+    expect(screen.queryByTestId("approve")).toBeNull();
+    expect(screen.queryByTestId("reject")).toBeNull();
+  });
+
+  it("offers the one-tap claim when it's late", async () => {
+    const { wallet, view } = await fundedApproval("late");
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText(/Your payment didn't arrive in time — you've been paid back 198 HBAR on Hedera/)).toBeTruthy();
+    expect(screen.getByText("Claim 198 HBAR")).toBeTruthy();
+  });
+});

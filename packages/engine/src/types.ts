@@ -158,6 +158,8 @@ export interface Dependencies {
    * the settle-on-Hedera client's claim / withdraw, only when route.settleOnHedera is on.
    */
   requestNetworks?: Network[];
+  /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
+  settleFunding?: import("@clip-wallet/route").SettleFunding | null;
 }
 
 /** Side effects the engine needs from its host. */

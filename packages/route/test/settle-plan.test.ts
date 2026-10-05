@@ -29,7 +29,8 @@ function fakeSettle(quotes: Partial<ConnectorQuote>[] | Error): SettleOnHederaCl
 describe("settle on Hedera in the plan", () => {
   it("is off unless switched on, and has no client while nothing is deployed", () => {
     expect(settleClientFor({ enabled: false, mainnet: false })).toBeNull();
-    expect(settleClientFor({ enabled: true, mainnet: false })).toBeNull(); // SETTLE_DEPLOYMENTS is empty today
+    expect(settleClientFor({ enabled: true, mainnet: true })).toBeNull(); // no mainnet deployment
+    expect(settleClientFor({ enabled: true, mainnet: false, mirrorNodeUrl: "https://testnet.mirrornode.hedera.com" })).not.toBeNull();
   });
 
   it("asks for a quote from the same asset on an EVM network and describes the best one", async () => {

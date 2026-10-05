@@ -23,5 +23,7 @@ export default defineConfig({
   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
   passkeys: { enabled: true },
   services: MAINNET ? {} : TESTNET_SERVICES,
+  // Settle on Hedera (bonded Connectors, @clip-wallet/route SETTLE_DEPLOYMENTS): testnet builds only.
+  route: { settleOnHedera: !MAINNET },
   mainnet: MAINNET,
 });

@@ -319,7 +319,7 @@ export function Settings() {
         <Section title={t("settings.dev.title")} id="developer-mock-data">
           <p className="clip-hint">{t("settings.dev.hint")}</p>
           <div className="clip-dev-buttons">
-            {(["pay", "connect", "blind", "approval-for-all"] as const).map((k) => (
+            {(["pay", "connect", "blind", "approval-for-all", "settle", "settle-late"] as const).map((k) => (
               <Button
                 key={k}
                 variant="secondary"

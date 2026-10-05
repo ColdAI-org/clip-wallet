@@ -25,7 +25,7 @@ import type { ClipConfig } from "@clip-wallet/config";
 import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
 import { HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
 import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
-import { settleClientFor } from "@clip-wallet/route";
+import { SettleFunding, settleClientFor } from "@clip-wallet/route";
 import { isMainnetEnabled } from "@clip-wallet/config";
 import { createSolanaModule } from "@clip-wallet/chains-solana";
 import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
@@ -40,6 +40,7 @@ import { createMockChains } from "./mocks/mock-chains";
 import { knownAssets, MOCK_NETWORKS } from "./mocks/networks";
 import { MockDappConnector, MockWalletConnect } from "./mocks/mock-dapps";
 import { MockRoutePlanner } from "./mocks/mock-route";
+import { MOCK_HEDERA_EVM, MockSettleClient } from "./mocks/mock-settle";
 import { MOCK_ACTIVITY, MockNameResolver, MockPriceFeed } from "./mocks/fixtures";
 import {
   KnownDappRegistry,
@@ -200,6 +201,8 @@ export interface Dependencies {
    * the settle-on-Hedera client's claim / withdraw, only when route.settleOnHedera is on.
    */
   requestNetworks?: Network[];
+  /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
+  settleFunding?: import("@clip-wallet/route").SettleFunding | null;
   /**
    * Names answered by Clip Plugins: the name resolver asks this last (built-ins always win). The service binds it to
    * the running plugins (background/plugins.ts); unbound, plugin names resolve to nothing.
@@ -282,6 +285,8 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const hw = { hardware: new HardwareKeyring({ storage: hwStorage }) };
 
   if (opts.mocks) {
+    // Settle on Hedera against a mock Connector and order book (dev simulator "settle" / "settle-late").
+    const mockSettle = new SettleFunding(new MockSettleClient());
     return {
       mocks: true,
       vault,
@@ -289,7 +294,9 @@ export function createDependencies(opts: WiringOptions): Dependencies {
       loadChains: async () => undefined,
       networks: MOCK_NETWORKS,
       assets: knownAssets(MOCK_NETWORKS),
-      route: new MockRoutePlanner(),
+      route: new MockRoutePlanner(mockSettle),
+      settleFunding: mockSettle,
+      requestNetworks: [MOCK_HEDERA_EVM],
       dapps: new MockDappConnector(),
       walletConnect: new MockWalletConnect(),
       prices: new MockPriceFeed(),
@@ -328,9 +335,10 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const clipValidators: Partial<Record<Family, (a: string) => boolean>> = {};
   for (const [f, m] of Object.entries(eager)) clipValidators[f as Family] = (a) => m.isAddress(a);
   const pluginNames = pluginNameHook();
-  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (none yet).
+  // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (testnet only).
   const mainnetOn = isMainnetEnabled(opts.config);
   const settle = settleClientFor({ enabled: opts.config.route.settleOnHedera, mainnet: mainnetOn, mirrorNodeUrl: MIRROR_NODE_URLS[mainnetOn ? "mainnet" : "testnet"] });
+  const settleFunding = settle ? new SettleFunding(settle) : null;
   return {
     mocks: false,
     vault,
@@ -344,7 +352,8 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     },
     networks,
     assets: walletAssets(networks),
-    route: new RoutePlannerAdapter(opts.config, prices, opts.currency, settle),
+    route: new RoutePlannerAdapter(opts.config, prices, opts.currency, settleFunding),
+    settleFunding,
     ...(settle ? { requestNetworks: HEDERA_EVM_NETWORKS.filter((n) => mainnetOn || n.testnet) } : {}),
     dapps: new OneMaskConnector(networks, { beacon: { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl }, starknet: starknet.load, ton: ton.load }),
     walletConnect: new WalletConnectAdapter(opts.config, networks, opts.iconUrl),
