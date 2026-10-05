@@ -1,5 +1,8 @@
 import { defineConfig } from "@clip-wallet/config";
 
+// Test fixture: Clip Wallet's own config (apps/extension/clip.config.ts), which the vitest config aliases to
+// "virtual:clip-wallet/config". Keep the two in step when the brand config changes.
+
 /**
  * Testnet-only service deployments (docs/phase25/deploy.md). A mainnet build gets none of these by default:
  * point it at production deployments explicitly.
@@ -14,7 +17,6 @@ const TESTNET_SERVICES = {
 export default defineConfig({
   name: "Clip Wallet",
   rdns: "org.coldai.clipwallet",
-  homepage: "https://coldai.org/clip-wallet",
   icon: "./icon.svg",
   // ColdAI orange; white text on orange buttons is the owner's preference (contrast 3.6:1 ≥ the schema's 3:1).
   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },

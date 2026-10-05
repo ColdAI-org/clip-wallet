@@ -11,6 +11,7 @@
 import { browser } from "wxt/browser";
 import { createSocial, type SocialHostDeps } from "@clip-wallet/engine/social";
 import type { Notice, Notifier } from "@clip-wallet/social";
+import type {} from "../globals";
 
 export const SOCIAL_POLL_ALARM = "clip-social-poll";
 /** One poll a minute while the browser runs: balances, collectibles, activity, approvals and price alerts. */

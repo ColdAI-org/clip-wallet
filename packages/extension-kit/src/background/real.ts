@@ -4,7 +4,7 @@
 import type { Family, Network, Warning } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";
 import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
-import type { ClipConfig } from "@clip-wallet/config";
+import { rdnsDomain, type ClipConfig } from "@clip-wallet/config";
 import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
 import type { createStarknetModule } from "@clip-wallet/chains-starknet";
 import type { createTonModule } from "@clip-wallet/chains-ton";
@@ -49,7 +49,7 @@ function lazyBeacon(kv: KV, name: string, iconUrl: string, router: () => OneMask
         storage: { get: (k) => kv.get<string>(`beacon:${k}`), set: (k, v) => kv.set(`beacon:${k}`, v) },
         dispatch: (origin, input) => {
           const r = router();
-          if (!r) return Promise.reject(new ClipError("Clip Wallet is starting. Try again.", "not-ready"));
+          if (!r) return Promise.reject(new ClipError(`${name} is starting. Try again.`, "not-ready"));
           return r.dispatch(origin, input);
         },
       });
@@ -146,7 +146,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
     this.wallet ??= import("@clip-wallet/1mask/walletconnect").then(({ createWalletConnectWallet }) =>
       createWalletConnectWallet({
         projectId,
-        metadata: { name: this.config.name, description: this.config.name, url: "https://clipwallet.example", icons: [this.iconUrl] },
+        metadata: { name: this.config.name, description: this.config.name, url: this.config.homepage ?? `https://${rdnsDomain(this.config.rdns)}`, icons: [this.iconUrl] },
         networks: this.networks,
         addressesFor: (_chain, family) => {
           const a = this.host!.cachedAccount(family);

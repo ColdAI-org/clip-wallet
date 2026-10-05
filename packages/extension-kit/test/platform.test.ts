@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Family } from "@clip-wallet/core";
 import type { ClipVault } from "@clip-wallet/vault";
-import config from "../clip.config";
+import config from "./clip.config";
 import { MemoryKV } from "../src/shared/storage";
 import { createDependencies } from "../src/background/wiring";
 import { PasskeyCeremonies, b64url } from "../src/background/passkey-proxy";

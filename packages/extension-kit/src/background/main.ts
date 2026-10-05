@@ -5,7 +5,7 @@
 import { browser } from "wxt/browser";
 import { ClipError } from "@clip-wallet/core";
 import { PORT_NAME } from "@clip-wallet/1mask/background";
-import config from "../../clip.config";
+import config from "../config";
 import { PASSKEY_BRIDGE_URL, passkeyRpId } from "../app-settings";
 import { CHANGE_EVENT, Request, type Envelope } from "../shared/messages";
 import { AreaKV } from "../shared/storage";
@@ -16,6 +16,7 @@ import { withFixtureFeatures } from "./mocks/mock-features";
 import { chromeNotifier, startSocial } from "./social";
 import { COINGECKO_IDS } from "@clip-wallet/features";
 import { RecipientLog, SecurityService } from "@clip-wallet/security";
+import type {} from "../globals";
 
 const AUTOLOCK_ALARM = "clip-autolock";
 

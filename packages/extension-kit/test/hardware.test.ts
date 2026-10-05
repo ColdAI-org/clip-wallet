@@ -8,14 +8,14 @@ import { describe, expect, it, vi } from "vitest";
 import { ClipError, type ChainModule, type DappRequest, type Signature, type SignablePayload } from "@clip-wallet/core";
 import { HardwareKeyring, assertVerifies, signatureToWire, type HardwareAccount, type HardwareSigner } from "@clip-wallet/hardware";
 import { readFileSync } from "node:fs";
-import { keyringWith, memoryStorage, replay } from "../../../packages/hardware/test/helpers";
-import * as I from "../../../packages/hardware/test/inputs";
+import { keyringWith, memoryStorage, replay } from "../../hardware/test/helpers";
+import * as I from "../../hardware/test/inputs";
 import { SignAgent } from "../src/pages/hardware/agent";
 import { Request } from "../src/shared/messages";
 import type { HardwareSignJob } from "../src/shared/hardware-job";
 import { PASSWORD, makeService } from "./helpers";
 
-const ACCOUNTS = JSON.parse(readFileSync(new URL("../../../packages/hardware/test/fixtures/accounts.json", import.meta.url), "utf8"));
+const ACCOUNTS = JSON.parse(readFileSync(new URL("../../hardware/test/fixtures/accounts.json", import.meta.url), "utf8"));
 const LEDGER_EVM: HardwareAccount = ACCOUNTS.evm.accounts[0];
 const SEPOLIA = "eip155:11155111";
 const json = <T>(v: T): T => (v === undefined ? v : JSON.parse(JSON.stringify(v)));

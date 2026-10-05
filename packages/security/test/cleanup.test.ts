@@ -4,6 +4,7 @@ import type { Nft, TokenBalance } from "@clip-wallet/core";
 import { describe, expect, it } from "vitest";
 import { CleanupService, HIDE_NOTE } from "../src/cleanup/service.js";
 import { SecurityService } from "../src/background.js";
+import { securityFloorProblems } from "../src/host.js";
 import { SecurityRequest } from "../src/messages.js";
 import { DEVNET, HEDERA, ME_HEDERA, ME_SOL, SEPOLIA, fakeHost, flush, mockFetch } from "./helpers.js";
 
@@ -200,5 +201,19 @@ describe("RecipientLog", () => {
     const all = await log.list();
     expect(all).toHaveLength(500);
     expect(all[0]).toMatchObject({ direction: "out", timestamp: 501 });
+  });
+});
+
+describe("security floor", () => {
+  it("refuses a mainnet build that switches the phishing lists off, filters them or refreshes them rarely", () => {
+    expect(securityFloorProblems({ testnet: true, threat: { openLists: false } })).toEqual([]);
+    expect(securityFloorProblems({ testnet: false, threat: { openLists: true, refreshHours: 24 } })).toEqual([]);
+    expect(securityFloorProblems({ testnet: false, threat: { openLists: false, lists: ["metamask"], refreshHours: 24 * 30, newContractDays: 0 } })).toEqual([
+      "threat.openLists: the open phishing lists can't be switched off on mainnet",
+      "threat.lists: a mainnet build uses every open phishing list; remove the list filter",
+      "threat.refreshHours: refresh the phishing lists at least every 72 hours",
+      "threat.newContractDays: new-contract cautions can't be switched off on mainnet",
+    ]);
+    expect(() => new SecurityService(fakeHost({ networks: [], fetch: mockFetch([]).fetch }), { testnet: false, threat: { openLists: false } })).toThrow(/Security can't be switched off/);
   });
 });

@@ -1,3 +1,3 @@
-import { mountWallet } from "../../pages/mount";
+import { mountWallet } from "@clip-wallet/extension-kit/pages";
 
 mountWallet("popup");

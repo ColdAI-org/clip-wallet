@@ -1,14 +1,14 @@
 /**
  * Runtime settings that are not brand config (brand lives in clip.config.ts / @clip-wallet/config).
  */
-import config from "../clip.config";
+import config from "./config";
+import { passkeyBridgeUrl } from "./identity";
 
 /**
  * PLACEHOLDER origin for the passkey web-bridge page (passkey-bridge/). Used only when passkeys must run
  * on a web origin (Chrome < 122, Firefox < 150, or rpOrigin set to an https origin). Not hosted yet.
  */
-export const PASSKEY_BRIDGE_URL =
-  config.passkeys.rpOrigin?.startsWith("https://") ? `${config.passkeys.rpOrigin}/clip-passkey-bridge` : "https://passkey.clipwallet.example/bridge";
+export const PASSKEY_BRIDGE_URL = passkeyBridgeUrl(config);
 
 /** WebAuthn rp.id from clip.config passkeys.rpOrigin; null = use the extension id (passed explicitly: extension pages have no default RP id). */
 export function passkeyRpId(): string | null {

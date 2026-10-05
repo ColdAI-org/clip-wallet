@@ -1,3 +1,3 @@
-import { mountApprovalWindow } from "../../pages/mount";
+import { mountApprovalWindow } from "@clip-wallet/extension-kit/pages";
 
 mountApprovalWindow();

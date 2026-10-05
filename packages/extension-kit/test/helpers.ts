@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import config from "../clip.config";
+import config from "./clip.config";
 import { MemoryKV } from "../src/shared/storage";
 import { createDependencies } from "../src/background/wiring";
 import { WalletService, type Env } from "../src/background/service";

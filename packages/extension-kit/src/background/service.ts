@@ -741,7 +741,7 @@ export class WalletService implements DappHost {
         balanceChanges: [],
         simulated: false,
         blind: true,
-        warnings: [{ level: "danger", code: "blind-signing", message: "Clip Wallet can't read this request." }],
+        warnings: [{ level: "danger", code: "blind-signing", message: `${this.env.walletName} can't read this request.` }],
         networkId: network.id,
       };
     }

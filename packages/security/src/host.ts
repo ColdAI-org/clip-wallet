@@ -58,3 +58,30 @@ export interface SecurityConfig {
 }
 
 export const DEFAULT_SECURITY_CONFIG: SecurityConfig = { testnet: true };
+
+/** Longest gap between phishing-list refreshes a mainnet build may use, in hours. */
+export const MAX_LIST_REFRESH_HOURS = 72;
+
+/**
+ * The security floor: what no mainnet build may switch off. The open phishing lists stay on, all of them, refreshed
+ * at least every three days; new-contract cautions stay on. Returns the problems in plain words (empty = fine).
+ * Test networks may relax them (tests and fixture builds do).
+ */
+export function securityFloorProblems(config: SecurityConfig): string[] {
+  if (config.testnet) return [];
+  const t = config.threat ?? {};
+  const out: string[] = [];
+  if (t.openLists === false) out.push("threat.openLists: the open phishing lists can't be switched off on mainnet");
+  if (t.lists) out.push("threat.lists: a mainnet build uses every open phishing list; remove the list filter");
+  if (t.refreshHours !== undefined && !(t.refreshHours > 0 && t.refreshHours <= MAX_LIST_REFRESH_HOURS)) {
+    out.push(`threat.refreshHours: refresh the phishing lists at least every ${MAX_LIST_REFRESH_HOURS} hours`);
+  }
+  if (t.newContractDays !== undefined && !(t.newContractDays >= 1)) out.push("threat.newContractDays: new-contract cautions can't be switched off on mainnet");
+  return out;
+}
+
+/** Throws when `config` goes below the security floor (securityFloorProblems). */
+export function assertSecurityFloor(config: SecurityConfig): void {
+  const problems = securityFloorProblems(config);
+  if (problems.length) throw new Error(`Security can't be switched off:\n${problems.map((p) => `  - ${p}`).join("\n")}`);
+}

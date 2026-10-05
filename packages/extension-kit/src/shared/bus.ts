@@ -2,6 +2,7 @@
 import type { PluginsClient, WalletClient } from "@clip-wallet/ui";
 import { browser } from "wxt/browser";
 import { CHANGE_EVENT, Envelope, type Request, type RequestType, type ResponseMap } from "./messages";
+import type {} from "../globals";
 
 export type Transport = (msg: Request) => Promise<unknown>;
 

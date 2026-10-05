@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import config from "../clip.config";
+import config from "./clip.config";
 import { MemoryKV } from "../src/shared/storage";
 import { createDependencies, type LazyChainModule } from "../src/background/wiring";
 

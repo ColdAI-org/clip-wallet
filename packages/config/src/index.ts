@@ -4,7 +4,8 @@
  *   import { defineConfig } from "@clip-wallet/config";
  *   export default defineConfig({ name: "My Wallet", rdns: "com.example.wallet", theme: { accent: "#4F46E5" } });
  *
- * Everything but `name` and `rdns` has a default. Testnet by default: mainnet needs an explicit checklist object.
+ * Everything but `name` and `rdns` has a default. Testnet by default: mainnet needs an explicit checklist object, and
+ * a mainnet build also needs everything `mainnetProblems` asks for (own rdns, homepage, extension key, WalletConnect id).
  * Validation errors are plain sentences, one per problem, prefixed with the setting they are about.
  */
 import { z } from "zod";
@@ -135,6 +136,20 @@ export const clipConfigSchema = z
       .regex(/^(?:\.{0,2}\/[\w./-]+\.(?:png|svg)|https:\/\/\S+|data:image\/(?:png|svg\+xml);base64,\S+)$/, "use a .png or .svg path (like ./icon.svg), an https URL or a data:image URL")
       .default("./icon.svg"),
     rdns: z.string("set rdns to a reverse domain you own, like com.example.wallet").regex(RDNS, "use a reverse domain you own, like com.example.wallet (lowercase)"),
+    /** One sentence for the extension stores and wallet pickers (Chrome allows 132 characters). */
+    description: z.string().trim().min(1, "describe your wallet in a sentence").max(132, "keep the description to 132 characters or fewer").optional(),
+    /** The wallet's website (https). WalletConnect metadata, Aptos/TON listings and the stores link to it. */
+    homepage: z.string().regex(HTTPS_BASE, "use the https address of your wallet's website, like https://wallet.example.com").optional(),
+    /**
+     * The browser extension's own identity. `key` is the base64 public key (SubjectPublicKeyInfo, DER) that fixes
+     * the Chrome extension id: create-clip-wallet generates one per wallet and keeps the private key out of git.
+     */
+    extension: z
+      .object({
+        key: z.string().regex(/^[A-Za-z0-9+/]{200,}={0,2}$/, "use the base64 public key create-clip-wallet wrote (never the private key)").optional(),
+      })
+      .strict()
+      .default({}),
     theme: theme.default({ accent: "#4F46E5", accentText: "#FFFFFF", font: "Inter", radius: 12 }),
     networks: z
       .array(z.string().regex(NETWORK_PATTERN, NETWORK_MESSAGE))
@@ -269,4 +284,45 @@ export function includesEvmChain(config: Pick<ClipConfig, "networks">, chainId: 
 
 export function isMainnetEnabled(config: Pick<ClipConfig, "mainnet">): boolean {
   return config.mainnet !== false && config.mainnet.enabled === true;
+}
+
+/** Clip Wallet's own reverse domain. Kit-built wallets announce their own. */
+export const CLIP_WALLET_RDNS = "org.coldai.clipwallet";
+/** Reverse domains that are placeholders, never a real wallet's identity. */
+const PLACEHOLDER_RDNS = /^(?:com|org|net)\.example\./;
+
+/**
+ * The wallet's key for namespaced globals and listings: lower-case letters and digits of the name
+ * ("Clip Wallet" -> "clipwallet"). 1Mask hangs NEAR/Stellar/Algorand providers off window[key] and TON Connect
+ * uses it as the JS bridge key and app_name.
+ */
+export function walletKey(config: Pick<ClipConfig, "name" | "rdns">): string {
+  const k = config.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return k || config.rdns.split(".").pop()!.replace(/[^a-z0-9]/g, "") || "wallet";
+}
+
+/** The domain behind the rdns ("org.coldai.clipwallet" -> "coldai.org"). */
+export function rdnsDomain(rdns: string): string {
+  return rdns.split(".").slice(0, 2).reverse().join(".");
+}
+
+/** Is this rdns a placeholder (com.example.*)? */
+export function isPlaceholderRdns(rdns: string): boolean {
+  return PLACEHOLDER_RDNS.test(rdns);
+}
+
+/**
+ * What still stands between this config and a mainnet build, in plain words (empty = nothing). The extension build
+ * refuses mainnet while any remain; `mainnet` itself must also carry MAINNET_ACKNOWLEDGEMENT (the schema checks it).
+ * `env` is the build environment, for the WalletConnect project id.
+ */
+export function mainnetProblems(config: ClipConfig, env: Record<string, string | undefined> = {}): string[] {
+  const out: string[] = [];
+  if (isPlaceholderRdns(config.rdns)) out.push(`rdns: ${config.rdns} is a placeholder; use a reverse domain you own`);
+  if (config.rdns === CLIP_WALLET_RDNS && config.name !== "Clip Wallet") out.push("rdns: org.coldai.clipwallet is Clip Wallet's; announce your own reverse domain");
+  if (!config.homepage) out.push("homepage: set your wallet's https website (WalletConnect and the wallet listings link to it)");
+  if (!config.extension.key) out.push("extension.key: set the extension's public key so its id stays the same in every store (create-clip-wallet identity writes one)");
+  if (!config.walletConnect.projectId && !env[WALLETCONNECT_ENV]) out.push(`walletConnect: set ${WALLETCONNECT_ENV} to your own WalletConnect Cloud project id`);
+  if (/^https?:\/\//.test(config.icon)) out.push("icon: ship the icon inside the extension (./icon.svg or ./icon.png), not from a URL");
+  return out;
 }

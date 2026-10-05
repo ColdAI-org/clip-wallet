@@ -6,7 +6,7 @@ import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { ApprovalWindowApp, WalletApp, type UiOptions, type Variant } from "@clip-wallet/ui";
 import { browser } from "wxt/browser";
-import config from "../../clip.config";
+import config from "../config";
 import { CURRENCIES, MEDIA_PROXY_URL } from "../app-settings";
 import { createBusClient } from "../shared/bus";
 import { createFeaturesBusClient } from "../shared/features-bus";
@@ -16,6 +16,7 @@ import { cancelDevice, deviceSigner, keystoneExchange, onDeviceChange } from "./
 import { createSocialBusClient } from "../shared/social-bus";
 import { createSecurityBusClient } from "../shared/security-bus";
 import { createPasskeyFactory } from "../passkey/bridge";
+import type {} from "../globals";
 
 const options: Partial<UiOptions> = {
   iconUrl: browser.runtime.getURL("/icon/128.png"),
