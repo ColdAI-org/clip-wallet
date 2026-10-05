@@ -41,7 +41,13 @@ export type Route =
   | { name: "contacts" }
   /** Edit a contact (`id`) or add one, optionally prefilled with an address. */
   | { name: "contact"; id?: string; address?: string; family?: Family }
-  | { name: "notifications" };
+  | { name: "notifications" }
+  /* Settings → Security (permissions, spam cleanup, scam protection) and Advanced → Plugins */
+  | { name: "security" }
+  | { name: "security-permissions" }
+  | { name: "security-cleanup" }
+  | { name: "security-protection" }
+  | { name: "plugins" };
 
 export const TABS = ["home", "collectibles", "explore", "activity", "browser", "settings"] as const;
 

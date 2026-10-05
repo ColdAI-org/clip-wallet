@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "リカバリーフレーズとパスキーでのバックアップ",
   "m.settings.menu.accountsHint": "アカウントの追加、名前の変更、選択",
   "m.settings.menu.hardwareHint": "Ledger と Keystone",
+  "m.settings.menu.security": "セキュリティ",
+  "m.settings.menu.securityHint": "アプリの権限、スパムの整理、詐欺対策",
+  "m.settings.menu.plugins": "プラグイン",
+  "m.settings.menu.pluginsHint": "リクエストにメモを追加したり、名前を検索したりする拡張機能",
 } satisfies Record<keyof typeof en, string>;

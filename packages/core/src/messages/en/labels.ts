@@ -118,6 +118,9 @@ export default {
   "bg.label.available": "Available",
   "bg.label.accounts": "Accounts",
   "bg.label.youReceive": "You receive",
+  "bg.label.networkFeeAtMost": "Network fee at most",
+  "bg.label.whatTheTransactionDoes": "What the transaction does",
+  "bg.label.hostUnverified": "{host} (unverified)",
   // Numbered labels (attached as labelMsg)
   "bg.label.transactionN": "Transaction {n}",
   "bg.label.actionN": "Action {n}",

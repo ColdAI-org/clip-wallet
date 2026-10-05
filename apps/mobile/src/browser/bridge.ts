@@ -45,7 +45,11 @@ export function webOrigin(url: string | undefined | null): string | null {
 
 /** Plain http is only for a dapp served from this computer / LAN while developing. */
 function isLocalHost(h: string): boolean {
-  return h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h.endsWith(".local") || /^10\.|^192\.168\.|^172\.(1[6-9]|2\d|3[01])\./.test(h);
+  // Audit MOB-01: private ranges as IP literals only (the old prefix test also matched "10.evil.com").
+  const ip = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  const [a, b] = ip ? [Number(ip[1]), Number(ip[2])] : [NaN, NaN];
+  const privateIp = !!ip && ip.slice(1).every((x) => Number(x) <= 255) && (a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31));
+  return h === "localhost" || h === "127.0.0.1" || h === "[::1]" || privateIp;
 }
 
 interface OriginPort {

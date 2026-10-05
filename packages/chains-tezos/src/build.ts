@@ -123,6 +123,8 @@ export function normalizeOperations(ops: unknown, me: string): PartialTezosOpera
       if (op.parameters != null) {
         const p = op.parameters as { entrypoint?: unknown; value?: unknown };
         if (typeof p.entrypoint !== "string" || p.value === undefined) throw bad("This request has invalid contract parameters.");
+        // Audit TEZ-01: what's shown and what's forged must read the same node: one value kind per Micheline node.
+        if (!wellFormedMicheline(p.value)) throw bad("This request has contract parameters Clip Wallet can't read safely.");
       }
     } else if (op.kind === "delegation") {
       if (op.delegate != null && (typeof op.delegate !== "string" || !/^tz[1-4]/.test(op.delegate) || !isTezosAddress(op.delegate))) {
@@ -321,3 +323,15 @@ export async function parseForged(forgedHex: string, protocol: ProtocolsHash = P
 }
 
 export { ProtocolsHash };
+
+/** Every node is an array of nodes or carries exactly one of int / string / bytes / prim (no smuggled second value). */
+export function wellFormedMicheline(m: unknown, depth = 0): boolean {
+  if (depth > 256) return false;
+  if (Array.isArray(m)) return m.every((x) => wellFormedMicheline(x, depth + 1));
+  if (!m || typeof m !== "object") return false;
+  const o = m as Record<string, unknown>;
+  const kinds = ["int", "string", "bytes", "prim"].filter((k) => k in o);
+  if (kinds.length !== 1) return false;
+  if ("args" in o && !(Array.isArray(o.args) && o.args.every((x) => wellFormedMicheline(x, depth + 1)))) return false;
+  return true;
+}

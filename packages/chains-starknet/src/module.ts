@@ -103,6 +103,10 @@ function bounds(fee: FeeEstimate, marginPct: number): ResourceBounds {
   };
 }
 
+/** The most a transaction with these bounds can be charged (fri). */
+const boundsCost = (b: ResourceBounds): bigint =>
+  b.l1_gas.max_amount * b.l1_gas.max_price_per_unit + b.l1_data_gas.max_amount * b.l1_data_gas.max_price_per_unit + b.l2_gas.max_amount * b.l2_gas.max_price_per_unit;
+
 const zeroBounds: ResourceBounds = {
   l1_gas: { max_amount: 0n, max_price_per_unit: 0n },
   l1_data_gas: { max_amount: 0n, max_price_per_unit: 0n },
@@ -163,6 +167,9 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
     classHash: options.accountClassHash ?? (kind === "argent" ? ARGENT_ACCOUNT_CLASS_HASH : DEFAULT_ACCOUNT_CLASS.classHash),
   };
   const margin = options.feeMarginPercent ?? 50;
+  /** Fee estimates each approval screen was built on, by request id (audit STK-02). */
+  const shownFees = new Map<string, { est: FeeEstimate[]; at: number }>();
+  const SHOWN_FEE_TTL_MS = 15 * 60_000;
   const prepared = new Map<string, Prepared>();
 
   function rpcFor(ctx: ChainContext): StarknetRpc {
@@ -256,16 +263,21 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
         warnings.push({ level: "caution", code: "simulation-failed", message: e instanceof RpcError ? plainRevert(`${e.message} ${JSON.stringify(e.data ?? "")}`) : "We couldn't preview this transaction." });
       }
     }
-    if (fee === null) {
-      try {
-        const est = await p.rpc.call<FeeEstimate[]>("starknet_estimateFee", [queryTxs(p), ["SKIP_VALIDATE"], "pre_confirmed"]);
-        fee = est.reduce((a, e) => a + big(e.overall_fee), 0n);
-      } catch {
-        /* fee unknown; prepare() will refuse with a plain error if it really can't be paid */
-      }
+    // Audit STK-02: the fee estimate the screen shows is the one prepare() signs bounds from (no re-estimate after
+    // approval), and the screen shows the most those bounds allow.
+    let maxFee: bigint | null = null;
+    try {
+      const est = await p.rpc.call<FeeEstimate[]>("starknet_estimateFee", [queryTxs(p), ["SKIP_VALIDATE"], "pre_confirmed"]);
+      fee ??= est.reduce((a, e) => a + big(e.overall_fee), 0n);
+      maxFee = est.reduce((a, e) => a + boundsCost(bounds(e, margin)), 0n);
+      for (const [k, v] of shownFees) if (Date.now() - v.at > SHOWN_FEE_TTL_MS) shownFees.delete(k);
+      shownFees.set(request.id, { est, at: Date.now() });
+    } catch {
+      /* fee unknown; prepare() will refuse with a plain error if it really can't be paid */
     }
     if (fee !== null) {
       lines.push({ label: "Network fee", value: `${formatUnits(fee, 18)} STRK` });
+      if (maxFee !== null) lines.push({ label: "Network fee at most", value: `${formatUnits(maxFee, 18)} STRK` });
       const strkOut = balanceChanges.filter((c) => c.asset.key === "strk").reduce((a, c) => a + BigInt(c.delta), 0n);
       try {
         if ((await strkBalance(p.rpc, address)) + strkOut < fee) {
@@ -293,8 +305,12 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
 
     const p = await plan(ctx, n.calls);
     let est: FeeEstimate[];
+    const shown = shownFees.get(request.id);
     try {
-      est = await p.rpc.call<FeeEstimate[]>("starknet_estimateFee", [queryTxs(p), ["SKIP_VALIDATE"], "pre_confirmed"]);
+      est =
+        shown && Date.now() - shown.at <= SHOWN_FEE_TTL_MS && shown.est.length === (p.deployed ? 1 : 2)
+          ? shown.est
+          : await p.rpc.call<FeeEstimate[]>("starknet_estimateFee", [queryTxs(p), ["SKIP_VALIDATE"], "pre_confirmed"]);
     } catch (e) {
       if (e instanceof ClipError) throw e;
       throw new ClipError(plainStarknetError(e), "starknet/estimate-failed", e);
@@ -361,11 +377,13 @@ export function createStarknetModule(options: StarknetModuleOptions = {}): Chain
       if (signatures.length !== 1) throw new ClipError("Some signatures are missing. Nothing was sent.", "starknet/bad-signature");
       const sig = rs(signatures[0]!, prep.hash, pub);
       prepared.delete(request.id);
+      shownFees.delete(request.id);
       return n.wc ? { signature: sig } : sig;
     }
     if (signatures.length !== prep.txs.length) throw new ClipError("Some signatures are missing. Nothing was sent.", "starknet/bad-signature");
     const signed = prep.txs.map((t, i) => ({ ...t, body: { ...t.body, signature: rs(signatures[i]!, t.hash, pub) } }));
     prepared.delete(request.id);
+    shownFees.delete(request.id);
     const rpc = rpcFor(ctx);
     let txHash = "";
     for (const t of signed) {

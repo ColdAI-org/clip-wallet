@@ -67,4 +67,8 @@ export default {
   "m.settings.menu.backupHint": "복구 문구 및 패스키 백업",
   "m.settings.menu.accountsHint": "계정 추가, 이름 변경 및 선택",
   "m.settings.menu.hardwareHint": "Ledger 및 Keystone",
+  "m.settings.menu.security": "보안",
+  "m.settings.menu.securityHint": "앱 권한, 스팸 정리, 사기 방지",
+  "m.settings.menu.plugins": "플러그인",
+  "m.settings.menu.pluginsHint": "요청에 메모를 추가하거나 이름을 조회하는 확장 기능",
 } satisfies Record<keyof typeof en, string>;

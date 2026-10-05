@@ -127,6 +127,15 @@ describe("signPayload", () => {
     expect(lines["Valid for"]).toBe("about 6 minutes");
     expect(lines["Sent by"]).toBe("dapp.example (it gets your signature)");
     expect(d.blind).toBe(false);
+    // Audit SUB-01: no fee asset in this payload, so no "Fee paid in" line.
+    expect(lines["Fee paid in"]).toBeUndefined();
+  });
+
+  it("audit SUB-01: a fee paid in another asset is shown with a caution", async () => {
+    const { m, ctx } = setup();
+    const d = await m.decode(req(SUBSTRATE_METHODS.signPayload, payloadJson(ME, transferCall(), { assetId: "0x0102030405" })), ctx);
+    expect(d.lines.find((l) => l.label === "Fee paid in")?.value).toMatch(/0x0102030405/);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "caution", code: "high-fee" }));
   });
 
   it("signs call ‖ extra ‖ additionalSigned in metadata order (checked against polkadot.js offline)", async () => {

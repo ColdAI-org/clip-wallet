@@ -280,6 +280,25 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
     const gram = gramAsset(ctx.network.id);
     const g = (v: bigint) => `${formatUnits(v, 9)} GRAM`;
     const addr = (a: Address | null) => (a ? friendly(a, m.testnet) : "nobody");
+    // Audit TON-01: the GRAM attached to cover token/NFT fees comes back to `response_destination`, which the app
+    // chooses. Say where it goes; warn when that isn't you.
+    const excessText = (to: Address | null, attached: bigint): string => {
+      if (to && to.equals(m.address)) return "(unused part comes back)";
+      d.warnings.push({
+        level: attached > 1_000_000_000n ? "danger" : "caution",
+        code: "unknown-call",
+        message: to
+          ? `What's left of the ${g(attached)} sent to cover fees goes to ${addr(to)}, not back to you.`
+          : `What's left of the ${g(attached)} sent to cover fees isn't returned to you.`,
+      });
+      return to ? `(unused part goes to ${addr(to)})` : "(unused part isn't returned)";
+    };
+    const extras = (body: { hasCustomPayload: boolean }) => {
+      if (body.hasCustomPayload) {
+        d.lines.push({ label: "Extra instructions", value: "Included for the token contract (not shown)" });
+        d.warnings.push({ level: "caution", code: "unknown-call", message: "This includes extra instructions for the token contract that Clip Wallet can't read." });
+      }
+    };
     const titles: string[] = [];
     for (const msg of msgs) {
       const to = friendly(msg.to, m.testnet, msg.bounce);
@@ -313,7 +332,8 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
           }
           const amt = `${formatUnits(body.amount, asset.decimals)} ${asset.symbol}`;
           titles.push(say("bg.req.sendTo", { amount: amt, to: short(addr(body.destination)) }));
-          d.lines.push({ label: "To", value: addr(body.destination) }, { label: "Amount", value: amt }, { label: "Covers token fees", value: `${g(msg.amount)} (unused part comes back)` });
+          d.lines.push({ label: "To", value: addr(body.destination) }, { label: "Amount", value: amt }, { label: "Covers token fees", value: `${g(msg.amount)} ${excessText(body.responseDestination, msg.amount)}` });
+          extras(body);
           if (body.forwardComment) d.lines.push({ label: "Comment", value: body.forwardComment });
           if (body.forwardTon > 1n) d.lines.push({ label: "Also forwards", value: g(body.forwardTon) });
           if (asset.spam) d.warnings.push({ level: "danger", code: "known-scam", message: say("bg.starknet.notReal", { symbol: asset.symbol }) });
@@ -342,7 +362,9 @@ export function createTonModule(options: TonModuleOptions = {}): ChainModule & {
             /* name stays generic */
           }
           titles.push(say("bg.req.sendTo", { amount: name, to: short(addr(body.newOwner)) }));
-          d.lines.push({ label: "To", value: addr(body.newOwner) }, { label: "NFT", value: name }, { label: "Covers fees", value: `${g(msg.amount)} (unused part comes back)` });
+          d.lines.push({ label: "To", value: addr(body.newOwner) }, { label: "NFT", value: name }, { label: "Covers fees", value: `${g(msg.amount)} ${excessText(body.responseDestination, msg.amount)}` });
+          if (body.forwardTon > 1n) d.lines.push({ label: "Also forwards", value: g(body.forwardTon) });
+          extras(body);
           break;
         }
         case "unknown":

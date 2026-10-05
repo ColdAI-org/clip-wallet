@@ -21,6 +21,23 @@ import { assetFor, fastnearJson, fastnearUrl, ftMetadata, nftsFor } from "./toke
 import { b64encode, bytesShape, fromHex, hostOf, randomId, shapeBytes, toBytes } from "./util.js";
 
 const base58Decode = (s: string) => base58.decode(s);
+const base58Encode = (b: Uint8Array) => base58.encode(b);
+
+/**
+ * Audit NEAR-01: a dapp-built transaction is valid on whichever network its block hash comes from, and implicit
+ * accounts and keys are the same on mainnet and testnet. Sign only this network's transactions.
+ */
+async function assertThisNetwork(rpc: NearRpc, txs: { tx: Transaction }[]): Promise<void> {
+  for (const t of txs) {
+    let known: boolean;
+    try {
+      known = await rpc.hasBlock(base58Encode(t.tx.blockHash));
+    } catch (e) {
+      throw netError(e);
+    }
+    if (!known) throw new ClipError("This transaction was made for a different NEAR network, so Clip Wallet won't sign it.", "near/wrong-network");
+  }
+}
 
 /**
  * Request methods. Injected (1Mask NEAR provider, wallet-selector style) and WalletConnect
@@ -366,6 +383,7 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
 
     const rpc = rpcFor(ctx);
     const txs: TxSpec[] = n.kind === "build" ? n.txs : n.txs.map((t) => t.tx);
+    if (n.kind === "signed") await assertThisNetwork(rpc, n.txs);
     for (const tx of txs) await checkKey(rpc, tx, pk, me);
     const d = await combine(txs, ctx, host);
     const lines = [...d.lines];
@@ -409,7 +427,10 @@ export function createNearModule(options: NearModuleOptions = {}): NearModule {
       }
       return [payload(nep413Hash(n.params))];
     }
-    if (n.kind === "signed") return n.txs.map((t) => payload(sha256(t.bytes)));
+    if (n.kind === "signed") {
+      await assertThisNetwork(rpcFor(ctx), n.txs);
+      return n.txs.map((t) => payload(sha256(t.bytes)));
+    }
 
     for (const tx of n.txs) {
       if (tx.actions.some((a) => a.kind === "Unknown")) {

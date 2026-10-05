@@ -12,6 +12,7 @@ import {
   parseAmountInput,
   type LocaleCode,
 } from "@clip-wallet/i18n";
+import { unverifiedLabel } from "@clip-wallet/core";
 
 let current: LocaleCode = "en";
 
@@ -82,7 +83,8 @@ export function readyIn(seconds: number): string {
 /** Hostname of an origin, without "www.". */
 export function domainOf(origin: string): string {
   try {
-    return new URL(origin).hostname.replace(/^www\./, "");
+    const host = new URL(origin).hostname;
+    return unverifiedLabel(host) ?? host.replace(/^www\./, "");
   } catch {
     return origin;
   }

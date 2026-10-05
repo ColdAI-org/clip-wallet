@@ -257,8 +257,15 @@ export function createTezosModule(options: TezosModuleOptions = {}): TezosModule
     }
     let entry = builds.get(request.id);
     if (!entry || now() - entry.built.createdAt > reuseMs || entry.approvalId) {
+      const shown = entry?.built;
       await build(request, n.operations, ctx);
       entry = builds.get(request.id)!;
+      // Audit TEZ-02: a rebuild after approval may only cost what the screen showed (fees and worst-case storage
+      // burn); the operations' contents come from the same request, but limits and fees are re-estimated.
+      if (shown && (entry.built.fees > shown.fees || entry.built.maxBurn > shown.maxBurn || entry.built.contents.length !== shown.contents.length)) {
+        builds.delete(request.id);
+        throw new ClipError("This now costs more than you were shown, so it wasn't sent. Ask the app to try again.", "tezos/fee-changed");
+      }
     }
     if (entry.built.simulationError) throw new ClipError(entry.built.simulationError, "tezos/simulation-failed");
     entry.approvalId = approvalId;

@@ -263,6 +263,16 @@ export async function describeTransaction(data: TransactionData, bytes: Uint8Arr
     warnings.push({ level: "info", code: "network-matters", message: "Another account pays the network fee for this transaction." });
   }
 
+  // Audit UNK-01: an app's own Move functions can take any object passed to them (NFTs, kiosks, caps), and only coin
+  // balances are previewed. Say so instead of presenting the call as fully understood.
+  if (targets.length) {
+    warnings.push({
+      level: "caution",
+      code: "unknown-call",
+      message: say("bg.warn.runsOwnCode", { host: o.host }),
+    });
+  }
+
   // Title: the plainest true sentence we can say.
   let title = say("bg.req.approveTxFor", { host: o.host });
   const others = [...recipients].filter((r) => r !== me);

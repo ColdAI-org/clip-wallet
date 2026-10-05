@@ -42,6 +42,13 @@ How modules attach a Msg:
   the error envelope carries `msg` (optional, `z.unknown()`, shape-checked with `isMsg` in the UI).
 - `packages/ui/src/context.tsx`: `BgTextProvider` inside `LocaleProvider`.
 
+## After the security audit merge
+
+`sanitizeDecoded` keeps `titleMsg`, `labelMsg`, `valueMsg` and `Warning.msg`, passing their fallback and every
+string value through `displaySafe` (`safeMsg`). `unknown-call` has a general message; "Network fee at most",
+"What the transaction does" and "{host} (unverified)" are catalog ids (an unverified host inside a title becomes
+a nested Msg through `attachMsgs`).
+
 ## UI
 
 `useBgText()` (`packages/ui/src/i18n/bg.tsx`, exported from `@clip-wallet/ui`): `title(d)`, `label(l)`,

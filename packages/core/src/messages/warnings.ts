@@ -23,6 +23,7 @@ export const WARNING_CODES = [
   "address-poisoning",
   "malicious-transaction",
   "public-record",
+  "unknown-call",
 ] as const;
 
 export type WarningCode = (typeof WARNING_CODES)[number];
@@ -48,6 +49,7 @@ export const WARNING_DEFAULT_IDS: Record<WarningCode, BgMessageId> = {
   "address-poisoning": "bg.warn.addressPoisoning",
   "malicious-transaction": "bg.warn.maliciousTransaction",
   "public-record": "bg.warn.publicRecord",
+  "unknown-call": "bg.warn.unknownCall",
 };
 
 /**

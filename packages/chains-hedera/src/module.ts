@@ -1,4 +1,20 @@
-import { type ChainContext, type ChainModule, ClipError, msg as bgMsg, titled, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, type Msg } from "@clip-wallet/core";
+import {
+  type ChainContext,
+  type ChainModule,
+  ClipError,
+  isWalletOrigin,
+  msg as bgMsg,
+  titled,
+  type Msg,
+  type DappRequest,
+  type DecodedRequest,
+  type Network,
+  type Nft,
+  type Signature,
+  type SignablePayload,
+  type TokenBalance,
+  type Warning,
+} from "@clip-wallet/core";
 import { aliasAddress, isAccountId, isEvmAddress, stripChecksum } from "./address.js";
 import {
   SIGN_TRANSACTION_BYTES,
@@ -170,10 +186,17 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
     return bytes;
   }
 
+  /** The wallet's own "sign and hand back the bytes" method (trades) is never a site's to call (audit HED-03). */
+  function walletOnly(request: DappRequest): void {
+    if (request.method === SIGN_TRANSACTION_BYTES && !isWalletOrigin(request.origin))
+      throw new ClipError("Clip Wallet doesn't support this Hedera request yet.", "hedera/unsupported-method");
+  }
+
   async function decode(request: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
     const mirror = mirrorFor(ctx);
     const base = { requestId: request.id, networkId: request.networkId, simulated: false } as const;
     const dc = { networkId: request.networkId, me: null as string | null, myAlias: ctx.account.address.toLowerCase(), mirror };
+    walletOnly(request);
 
     switch (request.method) {
       case HEDERA_METHODS.getNodeAddresses:
@@ -279,6 +302,7 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
   }
 
   async function prepare(request: DappRequest, ctx: ChainContext, approvalId: string): Promise<SignablePayload[]> {
+    walletOnly(request);
     const mirror = mirrorFor(ctx);
     const pk = ecdsaPublicKey(ctx.account.publicKey);
     const payload = (bytes: Uint8Array): SignablePayload => ({ accountId: ctx.account.id, scheme: "ecdsa-secp256k1", bytes, approvalId });

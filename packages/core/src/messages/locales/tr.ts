@@ -574,5 +574,13 @@ const messages: BgTranslation = {
   "bg.security.lookAlikeSite": "Bu sitenin adı neredeyse {site} ile aynı, ancak bu site {site} değil. Bunun gibi kopyalar cüzdanları çalar.",
   "bg.security.blockaidMalicious": "Blockaid bu sitenin kötü amaçlı olduğunu söylüyor. Bağlanmayın ve hiçbir şey imzalamayın.",
   "bg.security.recentOnly": "{network} ağında yalnızca son izinler kontrol edilebildi. Daha eskileri hâlâ duruyor olabilir.",
+  "bg.warn.unknownCall": "Clip Wallet bu çağrının adını söyleyebiliyor ama tamamını okuyamıyor; bu yüzden bazı etkileri gösterilmeyebilir.",
+  "bg.warn.runsOwnCode": "Bu, şu sitenin kendi kodunu çalıştırır: {host}. Clip Wallet yalnızca coin değişikliklerini gösterir; sahip olduğunuz ve kodun kullandığı öğeler hesabınızdan çıkabilir.",
+  "bg.warn.unknownSignatureKind": "Clip Wallet bu imza türünü tanımıyor, neye izin verdiğini söyleyemez. Yalnızca şu siteye güveniyorsanız imzalayın: {host}.",
+  "bg.warn.sharedAccountFunctionOnly": "Clip Wallet bu ortak hesap işleminin yalnızca hangi fonksiyonu çağırdığını gösterebilir, ne yaptığını değil.",
+  "bg.warn.tokenExtraInstructions": "Bu, token sözleşmesi için Clip Wallet tarafından okunamayan ek talimatlar içeriyor.",
+  "bg.label.networkFeeAtMost": "En fazla ağ ücreti",
+  "bg.label.whatTheTransactionDoes": "İşlemin yaptığı",
+  "bg.label.hostUnverified": "{host} (doğrulanmadı)",
 };
 export default messages;

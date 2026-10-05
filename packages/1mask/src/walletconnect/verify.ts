@@ -1,4 +1,4 @@
-import type { Warning } from "@clip-wallet/core";
+import { unverifiedOrigin, type Warning } from "@clip-wallet/core";
 
 /** Shape of WalletConnect's Verify API context (`@walletconnect/types` Verify.Context). */
 export interface VerifyContextLike {
@@ -13,7 +13,10 @@ export interface VerifyContextLike {
 export type Verification = "verified" | "unverified" | "mismatch" | "scam";
 
 export interface VerifyAssessment {
-  /** Origin to attribute the request to: the Verify-attested one when VALID, else the app's claim. */
+  /**
+   * Origin to attribute the request to: the Verify-attested one when VALID, else a pseudo-origin for the app's claim
+   * (core `unverifiedOrigin`, audit WC-01) that never equals a real site's origin or the wallet's.
+   */
   origin: string;
   verification: Verification;
   warnings: Warning[];
@@ -41,7 +44,7 @@ export function assessVerify(
   const verifiedOrigin = originOf(ctx?.verified.origin) ?? ctx?.verified.origin;
   const warnings: Warning[] = [];
   let verification: Verification = "unverified";
-  let origin = claimed;
+  let origin = unverifiedOrigin(claimedUrl);
 
   if (ctx?.verified.isScam || (isKnownScam && (isKnownScam(claimed) || (verifiedOrigin && isKnownScam(verifiedOrigin))))) {
     verification = "scam";
@@ -52,8 +55,9 @@ export function assessVerify(
     });
   }
 
-  if (ctx?.verified.validation === "VALID" && verifiedOrigin) {
-    origin = verifiedOrigin;
+  const verifiedIsWeb = !!verifiedOrigin && /^https?:\/\/[^/]+$/.test(verifiedOrigin);
+  if (ctx?.verified.validation === "VALID" && verifiedIsWeb) {
+    origin = verifiedOrigin!;
     if (verification !== "scam") verification = "verified";
   } else if (ctx?.verified.validation === "INVALID") {
     if (verification !== "scam") verification = "mismatch";
@@ -61,6 +65,13 @@ export function assessVerify(
       level: "danger",
       code: "domain-mismatch",
       message: `This app says it is ${claimed}, but the request came from ${verifiedOrigin ?? "a different site"}.`,
+    });
+  }
+  if (verification === "unverified") {
+    warnings.push({
+      level: "caution",
+      code: "domain-mismatch",
+      message: `Clip Wallet couldn't confirm this app is really ${new URL(origin).hostname.replace(/\.unverified\.invalid$/, "")}. Any app can claim a name over a connection code.`,
     });
   }
   if (verifiedOrigin && claimed !== verifiedOrigin && ctx?.verified.validation !== "INVALID") {

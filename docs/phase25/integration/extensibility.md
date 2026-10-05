@@ -171,7 +171,7 @@ pluginsSetPluginEnabled: (p) => call({ type: "pluginsSetPluginEnabled", ...p }),
 
 The UI picks these up automatically (`asPlugins(client)`). `ApprovalView.decoded` carries `pluginInsights` through unchanged.
 
-Mobile (`apps/mobile`): no plugins. React Native has no sandboxed iframe, and a WebView sandbox would need its own review. Leave the client methods out; the UI hides the feature.
+Mobile (`apps/mobile`): plugins run in hidden, network-less WebView sandboxes (SES page, strict postMessage schema). See `docs/phase25/integration/mobile-parity.md`.
 
 ---
 

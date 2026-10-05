@@ -146,6 +146,13 @@ describe("signTx (CIP-30)", () => {
     });
   });
 
+  it("audit ADA-01: inputs that can't be looked up make a payment-key signature blind", async () => {
+    const { m, ctx } = setup([["POST", "/utxo_info", () => [koiosUtxo(TX_A, 0, FIX.address, 10_000_000n)]]]);
+    const d = await m.decode(req(CARDANO_METHODS.signTx, [txHex, true]), ctx);
+    expect(d.blind).toBe(true);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "blind-signing" }));
+  });
+
   it("refuses a transaction that doesn't need this wallet", async () => {
     const { m, ctx } = setup([["POST", "/utxo_info", () => [koiosUtxo(TX_A, 0, FIX.otherAddress, 10_000_000n)]]]);
     await expect(m.decode(req(CARDANO_METHODS.signTx, [txHex, true]), ctx)).rejects.toMatchObject({ code: "cardano/proof-generation" });

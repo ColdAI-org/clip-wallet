@@ -6,7 +6,26 @@
  * State between prepare() and finalize() (and the PSBT built for a sendTransfer between decode() and
  * prepare()) is held in memory per module instance, keyed by request id.
  */
-import { ClipError, type AssetRef, type ChainContext, type ChildAddress, type ChainModule, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, labelled, warning } from "@clip-wallet/core";
+import {
+  ClipError,
+  type AssetRef,
+  type ChainContext,
+  type ChildAddress,
+  type ChainModule,
+  type DappRequest,
+  type DecodedRequest,
+  type Network,
+  type Nft,
+  type Signature,
+  type SignablePayload,
+  type TokenBalance,
+  type Warning,
+  isWalletOrigin,
+  labelled,
+  msg,
+  titled,
+  warning,
+} from "@clip-wallet/core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { Address, OutScript, SigHash, Transaction } from "@scure/btc-signer";
@@ -183,6 +202,35 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     return { inscribed: signing.filter((_, i) => res[i] !== "clean").map((x) => x.index), unchecked: false };
   }
 
+  /**
+   * Audit BTC-01: a segwit v0 signature commits only to the amount of the coin it signs, so a PSBT that understates
+   * our coins' amounts (witnessUtxo, with no full previous transaction) can hide a huge fee, the known two-signature
+   * fee attack. Check the amounts of our coins against the network before showing the fee.
+   */
+  /** PSBTs this module built from the network's own coin list (buildTransfer uses "clip-wallet://send"). */
+  const builtHere = (req: DappRequest) => isWalletOrigin(req.origin) || req.origin.startsWith("clip-wallet://");
+
+  async function checkWitnessAmounts(ctx: ChainContext, tx: Transaction, a: PsbtAnalysis, warnings?: DecodedRequest["warnings"]): Promise<void> {
+    const need = a.inputs.filter((x) => x.sign && x.kind === "wpkh" && !tx.getInput(x.index).nonWitnessUtxo && x.amount !== undefined && x.script);
+    let unchecked = false;
+    for (const x of need) {
+      let prev: { vout?: { scriptpubkey?: string; value?: number }[] };
+      try {
+        prev = await esploraJson(ctx.network, ctx.fetch, `/tx/${x.txid}`);
+      } catch {
+        unchecked = true;
+        continue;
+      }
+      const o = prev.vout?.[x.vout];
+      if (!o || o.value === undefined || BigInt(o.value) !== x.amount || o.scriptpubkey?.toLowerCase() !== hex.encode(x.script!)) {
+        throw new ClipError("The app described one of your coins wrongly (its amount doesn't match the network), so we stopped it.", "bad-input-amount", x.index);
+      }
+    }
+    if (unchecked) {
+      warnings?.push({ level: "caution", code: "simulation-failed", message: "We couldn't check the amounts of your coins with the network, so the fee shown may be wrong." });
+    }
+  }
+
   function messageKind(op: Extract<BtcOp, { kind: "message" }>, ctx: ChainContext): { kind: "wpkh" | "tr"; address: string } {
     const own = ownScripts(ctx.account);
     const w = segwitAddress(own.pubkey, ctx.network);
@@ -262,6 +310,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
     if (a.fee !== undefined && a.feeRate !== undefined && a.feeRate > 500) {
       d.warnings.push({ level: "danger", code: "high-fee", message: `The network fee is unusually high (${a.feeRate} sat/vB).` });
     }
+    if (op.kind === "psbt" && !builtHere(req)) await checkWitnessAmounts(ctx, tx, a, d.warnings);
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       d.warnings.push({
@@ -300,6 +349,7 @@ export function createBitcoinModule(opts: BitcoinModuleOptions = {}): ChainModul
 
     const tx = await resolvePsbt(req, ctx, op);
     const a = analyzePsbt(tx, ctx.account, ctx.network, op.kind === "psbt" ? op.toSign : undefined, changeOf(req.id, ctx));
+    if (op.kind === "psbt" && !builtHere(req)) await checkWitnessAmounts(ctx, tx, a);
     const ord = await inscribedInputs(ctx, a);
     if (ord.inscribed.length) {
       throw new ClipError("This would spend a coin that holds a collectible (ordinal), so Clip Wallet won't sign it.", "inscribed-utxo", ord.inscribed);

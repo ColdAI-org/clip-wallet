@@ -38,7 +38,7 @@ export function recallMsg(text: string | undefined): Msg | undefined {
 export function attachMsgs<T extends Pick<DecodedRequest, "title" | "titleMsg" | "lines" | "warnings">>(d: T): T {
   const out = { ...d };
   const t = current(out.titleMsg, out.title) ?? recallMsg(out.title);
-  if (t) out.titleMsg = t;
+  if (t) out.titleMsg = nestRecalled(t);
   else delete out.titleMsg;
   out.lines = out.lines.map((l) => {
     const labelMsg = current(l.labelMsg, l.label) ?? recallMsg(l.label);
@@ -47,10 +47,27 @@ export function attachMsgs<T extends Pick<DecodedRequest, "title" | "titleMsg" |
     return labelMsg || valueMsg ? { ...l, ...(labelMsg ? { labelMsg } : {}), ...(valueMsg ? { valueMsg } : {}) } : l;
   });
   out.warnings = out.warnings.map((w) => {
-    const m = current(w.msg, w.message) ?? recallMsg(w.message);
+    const found = current(w.msg, w.message) ?? recallMsg(w.message);
+    const m = found && nestRecalled(found);
     if (m === w.msg) return w;
     const { msg: _stale, ...rest } = w;
     return m ? { ...rest, msg: m } : rest;
   });
   return out;
+}
+
+/**
+ * String values that are themselves text a module said (e.g. "app.example (unverified)" as the {host} of a
+ * title) become nested Msgs, so the whole title translates. Returns the same object when nothing changes.
+ */
+function nestRecalled(m: Msg, depth = 0): Msg {
+  if (!m.values || depth > 3) return m;
+  let changed = false;
+  const values: Record<string, MsgValue> = {};
+  for (const [k, v] of Object.entries(m.values)) {
+    const inner = typeof v === "string" ? recallMsg(v) : typeof v === "object" ? nestRecalled(v, depth + 1) : undefined;
+    values[k] = inner ?? v;
+    if (inner && inner !== v) changed = true;
+  }
+  return changed ? { ...m, values } : m;
 }

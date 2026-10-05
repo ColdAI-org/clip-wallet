@@ -24,6 +24,7 @@ export default {
   "bg.warn.addressPoisoning": "This address looks like one you used before, but it's different. Scammers do this to trick you.",
   "bg.warn.maliciousTransaction": "A security check says this would hurt you. Don't sign it.",
   "bg.warn.publicRecord": "This writes something anyone can read, forever.",
+  "bg.warn.unknownCall": "Clip Wallet can name this call but can't fully read it, so some of its effects may not be shown.",
 
   // Specific sentences used verbatim by modules
   "bg.warn.cantReadRequest": "Clip Wallet can't read this request.",
@@ -71,6 +72,10 @@ export default {
   "bg.warn.signInFrom": "This sign-in is for {domain}, but the request came from {host}.",
   "bg.warn.swapGoesTo": "The tokens from this swap go to {who}, not to you.",
   "bg.warn.stakeGoesTo": "This sends your staked SOL to {to}, not to you.",
+  "bg.warn.runsOwnCode": "This runs {host}'s own code. Clip Wallet shows coin changes only; items you own that it uses could leave your account.",
+  "bg.warn.unknownSignatureKind": "Clip Wallet doesn't recognise this kind of signature, so it can't tell what it allows. Sign only if you trust {host}.",
+  "bg.warn.sharedAccountFunctionOnly": "Clip Wallet can only show which function this shared-account transaction calls, not what it does.",
+  "bg.warn.tokenExtraInstructions": "This includes extra instructions for the token contract that Clip Wallet can't read.",
   "bg.warn.letsTakeAll": "This lets {spender} take all your {symbol}, now or any time later, without asking again. Only allow this for apps you trust.",
   "bg.warn.letsTakeEveryNft": "This lets {spender} take every NFT you hold in {collection}, including ones you get later. Scams often ask for this.",
   "bg.warn.couldTakeAllTokens": "{spender} could take all of these tokens at any time.",

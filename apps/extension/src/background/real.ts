@@ -107,8 +107,9 @@ export class OneMaskConnector implements DappConnector {
     this.router?.attachPort(port, { senderOrigin });
   }
 
-  disconnected(origin: string) {
-    void this.router?.revoke(origin);
+  /** Audit 1MASK-02: revoke only the family the user disconnected, so the site is told about that one. */
+  async disconnected(origin: string, family?: Family) {
+    await this.router?.revoke(origin, family);
   }
 
   accountsChanged() {

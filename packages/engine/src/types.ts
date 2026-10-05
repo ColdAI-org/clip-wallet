@@ -103,7 +103,7 @@ export interface DappConnector {
   start(host: DappHost): void;
   /** `senderOrigin` must come from the browser / WebView, never from the page. */
   attachPort?(port: RouterPort, senderOrigin?: string): void;
-  disconnected(origin: string): void;
+  disconnected(origin: string, family?: Family): void | Promise<void>;
   accountsChanged?(): void;
 }
 
@@ -126,6 +126,8 @@ export interface NameResolver {
   resolve(name: string): Promise<{ address: string; displayName: string; networkIds?: string[]; addressOn?: Record<string, string>; byFamily?: Partial<Record<Family, string>> } | null>;
   /** Primary name for an address, for display. */
   reverse?(address: string, family: Family, networkId?: string): Promise<string | null>;
+  /** Which service would answer this name ("ens", "plugin", …), or null. No network. */
+  serviceFor?(name: string): string | null;
 }
 
 export interface DappRegistry {

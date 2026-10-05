@@ -233,13 +233,21 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
         await kit.rejectSession({ id, reason: { code: WC_ERRORS[mapping.reason].code, message: mapping.message } });
         return;
       }
+      const approvedChains = Object.values(mapping.namespaces).flatMap((n) => n.chains);
+      // Audit WC-04: the connect screen names one network and address; say plainly when the app also gets the
+      // user's addresses of other kinds of account (other namespaces have other addresses).
+      const names = [...new Set(approvedChains.map((c) => opts.networks.find((n) => n.id === c)?.name ?? c))];
+      const shared: Warning[] =
+        Object.keys(mapping.namespaces).length > 1
+          ? [{ level: "info", code: "network-matters", message: `This app gets your addresses on ${names.length} networks: ${names.join(", ")}.` }]
+          : [];
       const approved = await opts.approveProposal({
         id,
         peer,
         origin: verify.origin,
         verification: verify.verification,
-        warnings: verify.warnings,
-        approvedChains: Object.values(mapping.namespaces).flatMap((n) => n.chains),
+        warnings: [...verify.warnings, ...shared],
+        approvedChains,
         namespaces: mapping.namespaces,
         unsupported: mapping.unsupported,
       });

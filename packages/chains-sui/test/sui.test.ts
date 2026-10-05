@@ -95,6 +95,8 @@ describe("decode", () => {
     const d = await sui.decode(ws("sui:signTransaction", FIX.swap), ctxFor(m.fetch));
     expect(d.title).toBe("Swap exact a for b on app.example");
     expect(d.lines).toContainEqual({ label: "App action", value: "0xabab…abab::pool::swap_exact_a_for_b" });
+    // Audit UNK-01: an app's own function is never presented as fully understood.
+    expect(d.warnings.map((w) => w.code)).toContain("unknown-call");
     expect(d.lines).toContainEqual({ label: "Sent by", value: "app.example (it gets the signed transaction)" });
     expect(d.balanceChanges).toEqual([
       { asset: expect.objectContaining({ key: "sui" }), delta: "-100000000" },

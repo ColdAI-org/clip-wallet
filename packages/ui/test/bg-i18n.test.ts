@@ -21,6 +21,9 @@ import {
   msg,
   recallMsg,
   say,
+  sanitizeDecoded,
+  unverifiedLabel,
+  UNVERIFIED_ORIGIN_SUFFIX,
   titleMsgOf,
   warningMsg,
   type BgTranslation,
@@ -181,5 +184,45 @@ describe("Msg contract", () => {
     const swap = msg("bg.req.swap", { pay: "1 HBAR", get: "~5 SAUCE" });
     expect(activityTitleMsg({ title: swap.fallback, titleMsg: swap }, { name: "SaucerSwap" }, "Approved: Swap 1 HBAR for ~5 SAUCE")?.values?.what).toEqual(swap);
     expect(activityTitleMsg({ title: "Something custom" }, { name: "x" }, "Approved: Something custom")).toBeUndefined();
+  });
+});
+
+describe("audit additions", () => {
+  it("sanitizeDecoded keeps the Msgs and makes their text display-safe too", () => {
+    const evil = "Uni‮swap";
+    const title = msg("bg.req.allowSpendAll", { spender: evil, symbol: "USDC" });
+    const label = msg("bg.label.actionN", { n: 1 });
+    const value = msg("bg.req.stake", { amount: "1​ SOL" });
+    const w = msg("bg.warn.letsTakeAll", { spender: evil, symbol: "USDC" });
+    const d = sanitizeDecoded({
+      requestId: "r",
+      networkId: "n",
+      title: title.fallback,
+      titleMsg: title,
+      lines: [{ label: label.fallback, labelMsg: label, value: value.fallback, valueMsg: value }],
+      balanceChanges: [],
+      simulated: false,
+      blind: false,
+      warnings: [{ level: "danger", code: "unlimited-approval", message: w.fallback, msg: w }],
+    });
+    expect(d.titleMsg?.values?.spender).toBe("Uniswap");
+    expect(d.titleMsg?.fallback).toBe(d.title);
+    expect(titleMsgOf(d)?.id).toBe("bg.req.allowSpendAll");
+    expect(d.lines[0]!.labelMsg?.id).toBe("bg.label.actionN");
+    expect(d.lines[0]!.valueMsg?.fallback).toBe(d.lines[0]!.value);
+    expect(d.lines[0]!.valueMsg?.values?.amount).toBe("1 SOL");
+    expect(warningMsg(d.warnings[0]!).id).toBe("bg.warn.letsTakeAll");
+    expect(JSON.stringify(d)).not.toMatch(/[‮​]/);
+  });
+
+  it("unverified hosts translate inside titles; unknown-call and the new labels have messages", () => {
+    const host = unverifiedLabel(`app.example${UNVERIFIED_ORIGIN_SUFFIX}`)!;
+    expect(host).toBe("app.example (unverified)");
+    const input: Pick<DecodedRequest, "title" | "titleMsg" | "lines" | "warnings"> = { title: say("bg.req.signMessage", { host }), lines: [], warnings: [] };
+    const d = attachMsgs(input);
+    expect(d.titleMsg?.values?.host).toMatchObject({ id: "bg.label.hostUnverified", values: { host: "app.example" } });
+    expect(WARNING_DEFAULT_IDS["unknown-call"]).toBe("bg.warn.unknownCall");
+    expect(knownMsg("Network fee at most")?.id).toBe("bg.label.networkFeeAtMost");
+    expect(knownMsg("What the transaction does")?.id).toBe("bg.label.whatTheTransactionDoes");
   });
 });

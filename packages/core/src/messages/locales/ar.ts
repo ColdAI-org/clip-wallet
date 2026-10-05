@@ -574,5 +574,13 @@ const messages: BgTranslation = {
   "bg.security.lookAlikeSite": "اسم هذا الموقع يكاد يطابق \u2068{site}\u2069، لكنه ليس \u2068{site}\u2069. نسخ كهذه تسرق المحافظ.",
   "bg.security.blockaidMalicious": "يقول Blockaid إن هذا الموقع ضار. لا تتصل ولا توقّع أي شيء.",
   "bg.security.recentOnly": "على \u2068{network}\u2069 أمكن التحقق من الأذونات الحديثة فقط. يمكن أن تظل الأذونات الأقدم موجودة.",
+  "bg.warn.unknownCall": "تستطيع Clip Wallet تسمية هذا الاستدعاء لكنها لا تستطيع قراءته بالكامل، لذا قد لا تظهر كل آثاره.",
+  "bg.warn.runsOwnCode": "يشغّل هذا الكود الخاص بـ \u2068{host}\u2069. تعرض Clip Wallet تغيّرات العملات فقط؛ ويمكن أن تخرج من حسابك أشياء تملكها يستخدمها هذا الكود.",
+  "bg.warn.unknownSignatureKind": "لا تتعرّف Clip Wallet على هذا النوع من التوقيع، لذا لا تستطيع معرفة ما يسمح به. لا توقّع إلا إذا كنت تثق بـ \u2068{host}\u2069.",
+  "bg.warn.sharedAccountFunctionOnly": "لا تستطيع Clip Wallet أن تعرض إلا الدالة التي تستدعيها هذه المعاملة من الحساب المشترك، لا ما تفعله.",
+  "bg.warn.tokenExtraInstructions": "يتضمن هذا تعليمات إضافية لعقد الرمز لا تستطيع Clip Wallet قراءتها.",
+  "bg.label.networkFeeAtMost": "الحد الأقصى لرسوم الشبكة",
+  "bg.label.whatTheTransactionDoes": "ما تفعله المعاملة",
+  "bg.label.hostUnverified": "\u2068{host}\u2069 (غير موثّق)",
 };
 export default messages;

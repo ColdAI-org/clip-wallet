@@ -138,8 +138,16 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       ? opts.networks.filter((n) => n.id.startsWith("eip155:"))
       : opts.networks.filter((n) => familyFor(n) === family);
 
+  /**
+   * Origin+family pairs seen holding a permission (audit 1MASK-01). The host's default network is chosen from the
+   * user's balances, so only connected sites get it; others start on the registry's first network and can't learn
+   * where the user holds the most.
+   */
+  const knownPermitted = new Set<string>();
+  const permKey = (origin: string, family: Family) => `${family}\u0000${origin}`;
+
   const selectedNetwork = (origin: string, family: Family): Network | undefined => {
-    const id = selected.get(origin)?.get(family) ?? opts.defaultNetwork?.(origin, family);
+    const id = selected.get(origin)?.get(family) ?? (knownPermitted.has(permKey(origin, family)) ? opts.defaultNetwork?.(origin, family) : undefined);
     const list = candidates(family);
     return list.find((n) => n.id === id) ?? list[0];
   };
@@ -176,7 +184,12 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   const accounts = async (origin: string, family: Family) =>
     (await opts.accountsFor(origin, family)).filter((a) => a && typeof a.address === "string").map(exposeAccount);
 
-  const permitted = async (origin: string, family: Family) => !!(await opts.permissions.has(origin, family));
+  const permitted = async (origin: string, family: Family) => {
+    const ok = !!(await opts.permissions.has(origin, family));
+    if (ok) knownPermitted.add(permKey(origin, family));
+    else knownPermitted.delete(permKey(origin, family));
+    return ok;
+  };
 
   const requirePermission = async (origin: string, family: Family) => {
     if (!(await permitted(origin, family))) throw rpcError.unauthorized();
@@ -214,6 +227,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     try {
       await approve(makeReq(origin, family, net, method, params));
       await opts.permissions.grant(origin, family);
+      knownPermitted.add(permKey(origin, family));
     } finally {
       pendingConnect.delete(key);
     }
@@ -297,11 +311,13 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
     switch (method) {
       case METHOD_PROVIDER_STATE: {
+        const allowed = await permitted(origin, "evm");
         const state: EvmProviderState = {
           chainId: toHexChainId(chainId),
           networkVersion: String(chainId),
-          accounts: (await permitted(origin, "evm")) ? (await accounts(origin, "evm")).map((a) => a.address) : [],
-          isUnlocked: opts.isUnlocked ? !!(await opts.isUnlocked()) : true,
+          accounts: allowed ? (await accounts(origin, "evm")).map((a) => a.address) : [],
+          // Audit 1MASK-01: whether the wallet is unlocked is the connected site's business only.
+          isUnlocked: allowed ? (opts.isUnlocked ? !!(await opts.isUnlocked()) : true) : false,
         };
         return state;
       }
@@ -513,6 +529,8 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       return dispatchEvm(origin, method, params);
     }
     if (!injectedAllowlist(family).has(method)) throw rpcError.unsupportedMethod(method);
+    // Refresh knownPermitted first, so a connected site's network is the same from its very first call.
+    if (FAMILIES.includes(family)) await permitted(origin, family);
     if (family === "evm") return dispatchEvm(origin, method, params);
     if (family === "solana" || family === "bitcoin" || family === "sui" || family === "aptos") {
       return dispatchStandard(origin, family, method, params, chain);
@@ -528,6 +546,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     for (const f of family ? [family] : FAMILIES) {
       const had = await permitted(origin, f);
       await opts.permissions.revoke(origin, f);
+      knownPermitted.delete(permKey(origin, f));
       if (had && !o?.silent) {
         emit(origin, f, "accountsChanged", []);
         if (f !== "evm") emit(origin, f, "disconnect");

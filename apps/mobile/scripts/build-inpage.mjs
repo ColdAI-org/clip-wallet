@@ -46,3 +46,6 @@ writeFileSync(
     `export const INPAGE_JS: string = ${JSON.stringify(js)};\n`,
 );
 console.log(`inpage bundle: ${(js.length / 1024).toFixed(1)} KiB`);
+
+// The Clip Plugins sandbox page (SES + runtime) is generated with the inpage bundle.
+await import("./build-plugin-sandbox.mjs");
