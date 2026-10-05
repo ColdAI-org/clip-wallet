@@ -993,8 +993,10 @@ export class WalletService implements DappHost {
     const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
     const hit = perms.find((p) => p.id === id);
     if (hit) {
-      await this.kv.set(K.permissions, perms.filter((p) => p.id !== id));
-      this.deps.dapps.disconnected(hit.origin);
+      // The router revokes this family (and tells the site) before the stored entry goes.
+      await this.deps.dapps.disconnected(hit.origin, hit.family);
+      const left = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
+      await this.kv.set(K.permissions, left.filter((p) => p.id !== id));
     } else {
       await this.deps.walletConnect.disconnect(id);
     }
