@@ -122,7 +122,7 @@ describe("networks & addresses", () => {
     const withSum = AccountId.fromString("0.0.1234").toStringWithChecksum(c);
     c.close();
     expect(m.networksForAddress(withSum, HEDERA_NETWORKS).map((n) => n.id)).toEqual(["hedera:testnet"]);
-    expect(m.derivationPath(2)).toBe("m/44'/60'/0'/0/2");
+    expect(m.derivationPath(2)).toBe("m/44'/3030'/0'/0/2"); // the vault's Hedera ECDSA path, not EVM's coin type 60
   });
 
   it("computes selectors from signatures", () => {

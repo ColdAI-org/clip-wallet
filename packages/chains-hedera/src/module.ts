@@ -488,11 +488,11 @@ export function createHederaModule(options: HederaModuleOptions = {}): HederaMod
     family: "hedera",
     curve: "secp256k1",
     /**
-     * BIP-44 coin type 60, the path the Hedera SDK uses for ECDSA keys (Mnemonic.toStandardECDSAsecp256k1PrivateKey)
-     * and the one HashPack/MetaMask use, so the account's alias equals the EVM address of the same index.
-     * The vault owns derivation; this is the path it is told to use.
+     * BIP-44 coin type 3030 (Hedera), the path the Hiero SDK uses for ECDSA keys
+     * (Mnemonic.toStandardECDSAsecp256k1PrivateKey) and the one the vault derives Hedera accounts at, so a Hedera
+     * account's key is not the EVM account's key of the same index. The vault owns derivation; this reports its path.
      */
-    derivationPath: (index: number) => `m/44'/60'/0'/0/${index}`,
+    derivationPath: (index: number) => `m/44'/3030'/0'/0/${index}`,
     // EIP-55, like the vault's account address the wallet shows (dapp matrix: the two differed only in case).
     addressFromPublicKey: (publicKey: Uint8Array) => checksumAlias(aliasAddress(publicKey)),
     isAddress: (value: string) => isAccountId(value) || isEvmAddress(value),
