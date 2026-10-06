@@ -39,3 +39,5 @@ packageExtensions:
   "@bitcoinerlab/descriptors@1":
     dependencies:
       bip174: ^2.1.1
+patchedDependencies:
+  react-native-webview@13.16.1: patches/react-native-webview@13.16.1.patch

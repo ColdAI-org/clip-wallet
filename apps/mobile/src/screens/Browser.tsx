@@ -126,7 +126,8 @@ export function Browser(props: { url?: string }) {
         injectedJavaScriptBeforeContentLoaded={bridge.injectedBeforeLoad}
         injectedJavaScriptBeforeContentLoadedForMainFrameOnly
         injectedJavaScriptForMainFrameOnly
-        onMessage={(e) => bridge.onMessage(e.nativeEvent.data, e.nativeEvent.url)}
+        // isMainFrame comes from the patched native side (patches/react-native-webview@13.16.1.patch, audit MOB-02).
+        onMessage={(e) => bridge.onMessage(e.nativeEvent.data, e.nativeEvent.url, (e.nativeEvent as { isMainFrame?: boolean }).isMainFrame)}
         onNavigationStateChange={onNav}
         onLoadStart={(e) => bridge.onNavigation(e.nativeEvent.url)}
         javaScriptCanOpenWindowsAutomatically={false}

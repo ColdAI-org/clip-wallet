@@ -11,6 +11,12 @@
  * Each origin gets its own port; navigating away disconnects it, so a late reply for one site can never be
  * delivered to the next site.
  *
+ * Only the top frame talks to the wallet (audit MOB-02). react-native-webview is patched (patches/) so the native
+ * side drops subframe messages and says `isMainFrame: true` on the rest; on Android it never falls back to
+ * addJavascriptInterface (visible to every frame, with messages attributed to the top page's URL) when the system
+ * WebView lacks WEB_MESSAGE_LISTENER: the page then gets no bridge. A message without `isMainFrame === true` is
+ * dropped here as well, so an unpatched or fallback native side fails closed.
+ *
  * Pure TypeScript (no React Native imports) so it runs in tests against the real injected bundle.
  */
 import type { Network } from "@clip-wallet/core";
@@ -65,8 +71,8 @@ export interface WebViewBridge {
   readonly injectedBeforeLoad: string;
   /** Call from onNavigationStateChange / onLoadStart with the main frame's URL. */
   onNavigation(url: string): void;
-  /** Call from onMessage with event.nativeEvent.data and event.nativeEvent.url. */
-  onMessage(data: string, nativeUrl: string): void;
+  /** Call from onMessage with event.nativeEvent.data, .url and .isMainFrame (set by the patched native side). */
+  onMessage(data: string, nativeUrl: string, isMainFrame: boolean | undefined): void;
   /** Current connected origin (for the address bar's "connected" dot), if any. */
   readonly origin: string | null;
   dispose(): void;
@@ -123,7 +129,9 @@ export function createWebViewBridge(o: BridgeOptions): WebViewBridge {
         if (current && current.origin !== next) close(current);
       }
     },
-    onMessage(data, nativeUrl) {
+    onMessage(data, nativeUrl, isMainFrame) {
+      // Audit MOB-02: the top frame only, as reported by the native side; anything else (or no answer) is dropped.
+      if (isMainFrame !== true) return;
       if (typeof data !== "string" || data.length > MAX_BRIDGE_MESSAGE_BYTES) return;
       const origin = webOrigin(nativeUrl);
       // The message must come from the main frame we are showing.

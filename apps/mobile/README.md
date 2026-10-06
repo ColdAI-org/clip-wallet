@@ -138,6 +138,13 @@ the origin from that URL and the navigation state, overwrites any origin in the 
 own router port, and closes the port on navigation. Replies are delivered only if `location.origin` still
 matches. Plain http is allowed only for local development hosts.
 
+Only the top frame talks to the wallet. `react-native-webview` is patched
+(`patches/react-native-webview@13.16.1.patch`): Android drops WebMessageListener messages from subframes and never
+falls back to `addJavascriptInterface` (visible to every frame, and it reports the top page's URL for all of them),
+so a WebView without `WEB_MESSAGE_LISTENER` (Android System WebView < 86) gets no bridge; iOS drops messages whose
+`frameInfo` isn't the main frame. Both mark the event `isMainFrame: true`, and the bridge refuses any message
+without it. When upgrading react-native-webview, re-create the patch (`pnpm patch react-native-webview`).
+
 ## Sources checked for this package (2026-10-03)
 
 - Expo 57.0.26 `bundledNativeModules.json` (npm): react-native 0.86.3, react 19.2.3, expo-* ~57.0.x,

@@ -1,0 +1,76 @@
+diff --git a/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+index 80c68034b193a47bedb56ca527352de9548e8ac6..c44464f22ae8ed74b7ddedfe0d0669778a979279 100644
+--- a/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
++++ b/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+@@ -253,7 +253,9 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+             this.bridgeListener = new WebViewCompat.WebMessageListener() {
+               @Override
+               public void onPostMessage(@NonNull WebView view, @NonNull WebMessageCompat message, @NonNull Uri sourceOrigin, boolean isMainFrame, @NonNull JavaScriptReplyProxy replyProxy) {
+-                RNCWebView.this.onMessage(message.getData(), sourceOrigin.toString());
++                // Clip Wallet (audit MOB-02): only the top frame talks to the app.
++                if (!isMainFrame) return;
++                RNCWebView.this.onMessage(message.getData(), sourceOrigin.toString(), true);
+               }
+             };
+             WebViewCompat.addWebMessageListener(
+@@ -264,10 +266,10 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+             );
+           }
+         } else {
+-          if (fallbackBridge == null) {
+-            fallbackBridge = new RNCWebViewBridge(webView);
+-            addJavascriptInterface(fallbackBridge, JAVASCRIPT_INTERFACE);
+-          }
++          // Clip Wallet (audit MOB-02): no JavaScript-interface fallback. It is visible to every frame and reports
++          // the top page's URL for all of them, so a third-party iframe could speak for the page. Without
++          // WEB_MESSAGE_LISTENER (Android System WebView < 86) the page gets no bridge at all.
++          FLog.w("RNCWebView", "WEB_MESSAGE_LISTENER is not supported by this WebView: messaging stays off");
+         }
+         injectJavascriptObject();
+     }
+@@ -325,6 +327,11 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+     }
+ 
+     public void onMessage(String message, String sourceUrl) {
++        // Clip Wallet (audit MOB-02): callers that can't tell which frame sent a message report it as not the top frame.
++        onMessage(message, sourceUrl, false);
++    }
++
++    public void onMessage(String message, String sourceUrl, boolean isMainFrame) {
+         ThemedReactContext reactContext = getThemedReactContext();
+         RNCWebView mWebView = this;
+ 
+@@ -338,6 +345,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+                     }
+                     WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, sourceUrl);
+                     data.putString("data", message);
++                    data.putBoolean("isMainFrame", isMainFrame);
+ 
+                     if (mMessagingJSModule != null) {
+                         dispatchDirectMessage(data);
+@@ -349,6 +357,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         } else {
+             WritableMap eventData = Arguments.createMap();
+             eventData.putString("data", message);
++            eventData.putBoolean("isMainFrame", isMainFrame);
+ 
+             if (mMessagingJSModule != null) {
+                 dispatchDirectMessage(eventData);
+diff --git a/apple/RNCWebViewImpl.m b/apple/RNCWebViewImpl.m
+index 7f5c24d6e2cfb26eddbc513bf17a81c24a7273e2..5d96e46e6f0a917a7106fc1c7d9acbd295a19de1 100644
+--- a/apple/RNCWebViewImpl.m
++++ b/apple/RNCWebViewImpl.m
+@@ -782,10 +782,13 @@ RCTAutoInsetsProtocol>
+       _onLoadingFinish(event);
+     }
+   } else if ([message.name isEqualToString:MessageHandlerName]) {
++    // Clip Wallet (audit MOB-02): only the top frame talks to the app.
++    if (!message.frameInfo.isMainFrame) return;
+     if (_onMessage) {
+       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+       [event addEntriesFromDictionary: @{@"data": message.body}];
+       [event addEntriesFromDictionary: @{@"url": message.frameInfo.request.URL.absoluteString}];
++      [event addEntriesFromDictionary: @{@"isMainFrame": @YES}];
+       _onMessage(event);
+     }
+   }

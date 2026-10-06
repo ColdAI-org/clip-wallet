@@ -4,6 +4,10 @@
  * wallet with EIP-6963, connects (eth_requestAccounts) and asks for personal_sign; the "user" approves.
  * The engine's vault is a test double (no keys in tests; see packages/engine/test/fixtures.ts).
  */
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { Window as HappyWindow } from "happy-dom";
 import { WalletEngine, MemoryKV } from "@clip-wallet/engine";
@@ -12,6 +16,7 @@ import { createWebViewBridge, webOrigin } from "../src/browser/bridge";
 import { BASE_SEPOLIA, EVM_ADDRESS, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../../packages/engine/test/fixtures";
 
 const ICON = "data:image/svg+xml;base64,PHN2Zy8+";
+const mobileDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wait = (ms = 0) => new Promise((r) => setTimeout(r, ms));
 async function until<T>(f: () => T | undefined, ms = 2000): Promise<T> {
   const end = Date.now() + ms;
@@ -41,9 +46,10 @@ async function setup(url = "https://dapp.test/app") {
     networks: [SEPOLIA, BASE_SEPOLIA],
     identity: { name: "Clip Wallet", icon: ICON, rdns: "org.coldai.clipwallet" },
   });
-  // react-native-webview: window.ReactNativeWebView.postMessage → onMessage({ data, url: <main frame URL> }).
+  // react-native-webview (patched, see MOB-02 below): window.ReactNativeWebView.postMessage from the top frame →
+  // onMessage({ data, url: <main frame URL>, isMainFrame: true }).
   (win as unknown as { ReactNativeWebView: { postMessage(d: string): void } }).ReactNativeWebView = {
-    postMessage: (d) => setTimeout(() => bridge.onMessage(d, currentUrl), 0),
+    postMessage: (d) => setTimeout(() => bridge.onMessage(d, currentUrl, true), 0),
   };
   bridge.onNavigation(url);
   // happy-dom evaluates scripts in a VM context whose window global is not the Window object it reports as
@@ -102,11 +108,11 @@ describe("in-app browser: 1Mask in a WebView, origin from the native side", () =
 
   it("drops messages from a URL other than the main frame's, and closes the port on navigation", async () => {
     const { bridge, engine, opened, navigate } = await setup();
-    bridge.onMessage(JSON.stringify({ clip1mask: { type: "request", id: "x2", family: "evm", method: "eth_requestAccounts" } }), "https://other.test/");
+    bridge.onMessage(JSON.stringify({ clip1mask: { type: "request", id: "x2", family: "evm", method: "eth_requestAccounts" } }), "https://other.test/", true);
     await wait(20);
     expect(opened).toHaveLength(0);
     expect(engine).toBeDefined();
-    bridge.onMessage(JSON.stringify({ clip1mask: { type: "request", id: "x3", family: "evm", method: "eth_chainId" } }), "https://dapp.test/app");
+    bridge.onMessage(JSON.stringify({ clip1mask: { type: "request", id: "x3", family: "evm", method: "eth_chainId" } }), "https://dapp.test/app", true);
     await wait(10);
     expect(bridge.origin).toBe("https://dapp.test");
     navigate("https://next.test/");
@@ -130,5 +136,43 @@ describe("audit MOB-01: plain http only for real LAN addresses", () => {
     expect(webOrigin("http://10.evil.com/")).toBeNull();
     expect(webOrigin("http://192.168.1.1.attacker.net/")).toBeNull();
     expect(webOrigin("http://printer.local/")).toBeNull();
+  });
+});
+
+describe("audit MOB-02: only the top frame talks to the wallet, and only through the frame-aware bridge", () => {
+  const request = (id: string) => JSON.stringify({ clip1mask: { type: "request", id, family: "evm", method: "eth_requestAccounts" } });
+
+  it("drops a message from a subframe even when the URL matches the top page (Android's old JS-interface bridge reports the top URL)", async () => {
+    const { bridge, opened } = await setup();
+    bridge.onMessage(request("f1"), "https://dapp.test/app", false);
+    await wait(20);
+    expect(opened).toHaveLength(0); // no connect approval was opened for it
+  });
+
+  it("fails closed when the native side doesn't say which frame sent it (an unpatched or fallback bridge)", async () => {
+    const { bridge, opened } = await setup();
+    (bridge.onMessage as (d: string, u: string) => void)(request("f2"), "https://dapp.test/app");
+    await wait(20);
+    expect(opened).toHaveLength(0);
+  });
+
+  it("serves the top frame", async () => {
+    const { bridge, opened } = await setup();
+    bridge.onMessage(request("f3"), "https://dapp.test/app", true);
+    await until(() => opened[0]);
+    expect(bridge.origin).toBe("https://dapp.test");
+  });
+
+  it("the installed react-native-webview is patched: no addJavascriptInterface fallback, subframes dropped, isMainFrame sent", () => {
+    const req = createRequire(join(mobileDir, "package.json"));
+    const pkg = dirname(req.resolve("react-native-webview/package.json"));
+    const android = readFileSync(join(pkg, "android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java"), "utf8");
+    const code = android.replace(/\/\/.*$/gm, "");
+    expect(code).not.toMatch(/addJavascriptInterface\s*\(/);
+    expect(code).toMatch(/if\s*\(!isMainFrame\)\s*return;/);
+    expect(code).toMatch(/putBoolean\("isMainFrame", isMainFrame\)/);
+    const ios = readFileSync(join(pkg, "apple/RNCWebViewImpl.m"), "utf8");
+    expect(ios).toMatch(/if \(!message\.frameInfo\.isMainFrame\) return;/);
+    expect(ios).toMatch(/@"isMainFrame": @YES/);
   });
 });
