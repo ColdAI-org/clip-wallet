@@ -164,7 +164,9 @@ signatures use the extended-key signer. They still verify as plain Ed25519 (`alg
 - Address: wallet **v5r1** (Tonkeeper's `defaultWalletVersion`). The v5r1 `wallet_id` depends on the network
   (global id −239 mainnet, −3 testnet; `@ton/ton` `WalletV5R1WalletId.ts`), so the testnet address differs
   from the mainnet one. `tonWalletVersion: "v4r2"` gives Trust Wallet's address (wallet-core
-  `rust/chains/tw_ton/src/entry.rs`: "Currently, we use the V4R2 wallet"). Addresses are computed from the
+  `rust/chains/tw_ton/src/entry.rs`: "Currently, we use the V4R2 wallet") on mainnet. On testnet the v4r2
+  subwallet id is bound to the network (standard id XOR global id, `tonV4R2WalletId`), since v4r2 signs no network
+  and a testnet transfer could otherwise be replayed on mainnet. Addresses are computed from the
   pinned code-cell hashes (`TON_V5R1_CODE_HASH`, `TON_V4R2_CODE_HASH`) and checked against `@ton/ton`.
 - **A phrase made in Tonkeeper or Wallet (Telegram) is usually a native 24-word TON mnemonic, not BIP-39.**
   It derives keys with PBKDF2 over its own seed and will either fail the BIP-39 checksum or import a

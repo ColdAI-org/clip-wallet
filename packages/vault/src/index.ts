@@ -48,6 +48,7 @@ export {
   tonFriendlyAddress,
   tonV5R1AccountHash,
   tonV4R2AccountHash,
+  tonV4R2WalletId,
   cardanoBaseAddress,
   cardanoRewardAddress,
   ss58Address,

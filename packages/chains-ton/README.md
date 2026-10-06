@@ -62,7 +62,10 @@ console.log(network.id, network.testnet); // a CAIP-2 id, true
 ## Wallet contract
 
 - **v5r1 by default**, matching the vault (`tonWalletVersion` default) and Tonkeeper.
-- `walletVersion: "v4r2"` is the module option for Trust Wallet-compatible accounts.
+- `walletVersion: "v4r2"` is the module option for Trust Wallet-compatible accounts. On mainnet it uses the standard
+  wallet id (698983191); on testnet the id is bound to the network (the standard id XOR the global_id, `v4WalletId`),
+  because v4r2 signs no network and a testnet transfer could otherwise be replayed on mainnet. A v4r2 testnet wallet
+  therefore has its own address.
 - v5r1's wallet id includes the network, so testnet and mainnet addresses differ. `addressFromPublicKey(pk, net)`
   and `walletAddress()` always compute for `ctx.network`. Addresses are non-bounceable (`0Q…` testnet, `UQ…`
   mainnet), the same as the vault's encoding. A test checks both versions on both networks against the vault.

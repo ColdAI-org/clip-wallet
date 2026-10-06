@@ -227,8 +227,15 @@ describe("ton: SLIP-10 m/44'/607'/i' (Tonkeeper/Trust BIP-39 import), wallet v5r
       for (const [net, id] of [["mainnet", -239], ["testnet", -3]] as const) {
         const v5 = WalletContractV5R1.create({ publicKey: kp.publicKey, workchain: 0, walletId: { networkGlobalId: id } });
         expect(tonAddress(k.publicKey, net)).toBe(v5.address.toString({ bounceable: false, testOnly: net === "testnet" }));
-        const v4 = WalletContractV4.create({ publicKey: kp.publicKey, workchain: 0 });
+        // v4r2: the standard wallet id on mainnet; off mainnet it is bound to the network (audit CHAIN-L), so a
+        // testnet signature can't be replayed on mainnet. Same rule as chains-ton's v4WalletId.
+        const walletId = net === "mainnet" ? 698983191 : (698983191 ^ (id >>> 0)) >>> 0;
+        const v4 = WalletContractV4.create({ publicKey: kp.publicKey, workchain: 0, walletId });
         expect(tonAddress(k.publicKey, net, "v4r2")).toBe(v4.address.toString({ bounceable: false, testOnly: net === "testnet" }));
+        if (net === "testnet") {
+          const standard = WalletContractV4.create({ publicKey: kp.publicKey, workchain: 0 });
+          expect(tonAddress(k.publicKey, net, "v4r2")).not.toBe(standard.address.toString({ bounceable: false, testOnly: true }));
+        }
       }
     }
   });

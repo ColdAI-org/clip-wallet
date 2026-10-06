@@ -137,10 +137,20 @@ export function tonV5R1AccountHash(publicKey: Uint8Array, network: Network2): Ui
   return stateInitHash({ hash: hexBytes(TON_V5R1_CODE_HASH), depth: TON_V5R1_CODE_DEPTH }, cellHash(data, []));
 }
 
-/** Raw account hash of a wallet v4r2 (same on every network): data = seqno:32 subwallet_id:32 public_key:256 plugins:(HashmapE) empty. */
-export function tonV4R2AccountHash(publicKey: Uint8Array, workchain = 0): Uint8Array {
+/**
+ * v4r2 subwallet id: the standard one (698983191 + workchain, Trust Wallet / Tonkeeper) on mainnet; elsewhere it is
+ * bound to the network (XOR its global_id), because v4r2 signs no network: with one id on both networks a testnet
+ * transfer could be replayed on mainnet (audit CHAIN-L). Same rule as @clip-wallet/chains-ton `v4WalletId`.
+ */
+export function tonV4R2WalletId(network: Network2 = "mainnet", workchain = 0): number {
+  const standard = TON_V4_DEFAULT_WALLET_ID + workchain;
+  return network === "mainnet" ? standard : (standard ^ (TON_GLOBAL_ID[network] >>> 0)) >>> 0;
+}
+
+/** Raw account hash of a wallet v4r2: data = seqno:32 subwallet_id:32 public_key:256 plugins:(HashmapE) empty. */
+export function tonV4R2AccountHash(publicKey: Uint8Array, workchain = 0, network: Network2 = "mainnet"): Uint8Array {
   need(publicKey, 32, "ton");
-  const data = new Bits().uint(0, 32).uint(TON_V4_DEFAULT_WALLET_ID + workchain, 32).bytes(publicKey).bit(0);
+  const data = new Bits().uint(0, 32).uint(tonV4R2WalletId(network, workchain), 32).bytes(publicKey).bit(0);
   return stateInitHash({ hash: hexBytes(TON_V4R2_CODE_HASH), depth: TON_V4R2_CODE_DEPTH }, cellHash(data, []));
 }
 
@@ -162,7 +172,7 @@ export function tonFriendlyAddress(hash: Uint8Array, network: Network2, bounceab
 }
 
 export const tonAddress = (publicKey: Uint8Array, network: Network2, version: TonWalletVersion = "v5r1"): string =>
-  tonFriendlyAddress(version === "v4r2" ? tonV4R2AccountHash(publicKey) : tonV5R1AccountHash(publicKey, network), network);
+  tonFriendlyAddress(version === "v4r2" ? tonV4R2AccountHash(publicKey, 0, network) : tonV5R1AccountHash(publicKey, network), network);
 
 /* ------------------------------------------------------------------ Cardano */
 

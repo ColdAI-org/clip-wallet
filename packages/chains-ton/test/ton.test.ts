@@ -18,7 +18,11 @@ import {
   signDataHash,
   tonConnectNetwork,
   tonProofHash,
+  walletFor,
 } from "../src/index.js";
+import { signingHash } from "../src/wallet.js";
+
+const TON_TESTNET_GLOBAL_ID = -3;
 import { b64decode, crc32, fromHex } from "../src/util.js";
 import { BOB, JETTON_MASTER, MY_JETTON_WALLET, NFT_ITEM, NOW, addr, ctxFor, fixtureSigner, makeAccount, mockTon, raw, req } from "./helpers.js";
 import { scenarios } from "./scenarios.js";
@@ -67,12 +71,19 @@ describe("addresses", () => {
     expect(mod().walletAddress(pk, TON_TESTNET).raw).toBe("0:fa6bebb28e2017f20466b4f8b6ced75e044962c3a1ab05ae9d40178cf309507c");
   });
 
-  it("v4r2 is a module option and keeps one address for both networks", () => {
+  it("v4r2 is a module option: the standard wallet on mainnet, a network-bound one elsewhere (audit CHAIN-L)", async () => {
     const m = mod({ walletVersion: "v4r2" });
-    const w = WalletContractV4.create({ workchain: 0, publicKey: Buffer.from(fromHex(PUB)) });
-    expect(m.walletAddress(fromHex(PUB), TON_TESTNET).raw).toBe(w.address.toRawString());
-    expect(m.walletAddress(fromHex(PUB), TON_MAINNET).raw).toBe(w.address.toRawString());
+    const standard = WalletContractV4.create({ workchain: 0, publicKey: Buffer.from(fromHex(PUB)) });
+    expect(m.walletAddress(fromHex(PUB), TON_MAINNET).raw).toBe(standard.address.toRawString());
     expect(m.features[0]).toMatchObject({ name: "SendTransaction", maxMessages: 4 });
+    // The v4r2 wallet id is in every signed message. With the same id on both networks, a testnet transfer could be
+    // replayed on mainnet by anyone who saw it. Off mainnet the id is bound to the network, so the wallet differs.
+    const testnet = walletFor(fromHex(PUB), TON_TESTNET_GLOBAL_ID, "v4r2") as WalletContractV4;
+    const mainnet = walletFor(fromHex(PUB), -239, "v4r2") as WalletContractV4;
+    expect(testnet.walletId).not.toBe(mainnet.walletId);
+    expect(m.walletAddress(fromHex(PUB), TON_TESTNET).raw).not.toBe(standard.address.toRawString());
+    const plan = { seqno: 0, timeout: 1_900_000_000, messages: [], deploy: false };
+    expect(Buffer.from(await signingHash(testnet, plan)).toString("hex")).not.toBe(Buffer.from(await signingHash(mainnet, plan)).toString("hex"));
   });
 
   it("validates addresses and narrows test-only ones to testnets", () => {
