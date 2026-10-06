@@ -33,7 +33,6 @@ export default {
   "bg.warn.cantReadTrust": "Clip Wallet can't read this. Only sign it if you trust the app.",
   "bg.warn.txUnreadableTrust": "This transaction can't be read. Only sign it if you trust the app.",
   "bg.warn.messageNotTextTrust": "This message isn't readable text. Only sign it if you trust the app.",
-  "bg.warn.messageNotTextFunds": "This message isn't readable text. It can't move funds by itself, but only sign it if you trust the site.",
   "bg.warn.messageNotTextCoins": "This message isn't readable text. It can't move coins by itself, but only sign it if you trust the site.",
   "bg.warn.notTextTrust": "This isn't readable text. Only sign it if you trust the app.",
   "bg.warn.rawSignature": "This is a raw signature request. Only sign it if you trust the app.",

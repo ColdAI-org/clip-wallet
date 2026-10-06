@@ -262,7 +262,6 @@ const messages: BgTranslation = {
   "bg.warn.cantReadTrust": "Clip Wallet はこれを読み取れません。アプリを信頼できる場合のみ署名してください。",
   "bg.warn.txUnreadableTrust": "この取引は読み取れません。アプリを信頼できる場合のみ署名してください。",
   "bg.warn.messageNotTextTrust": "このメッセージは読めるテキストではありません。アプリを信頼できる場合のみ署名してください。",
-  "bg.warn.messageNotTextFunds": "このメッセージは読めるテキストではありません。これだけで資金が動くことはありませんが、サイトを信頼できる場合のみ署名してください。",
   "bg.warn.messageNotTextCoins": "このメッセージは読めるテキストではありません。これだけでコインが動くことはありませんが、サイトを信頼できる場合のみ署名してください。",
   "bg.warn.notTextTrust": "これは読めるテキストではありません。アプリを信頼できる場合のみ署名してください。",
   "bg.warn.rawSignature": "これは未加工の署名リクエストです。アプリを信頼できる場合のみ署名してください。",

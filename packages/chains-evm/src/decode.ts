@@ -123,7 +123,9 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
     Object.assign(d, titled(msg("bg.req.createContractFor", { host })));
     d.lines.push({ label: "App", value: host });
     nativeOut(tx.value);
-  } else if (tx.data === "0x" || tx.data.length < 10) {
+  } else if (tx.data === "0x") {
+    // Only an empty call is a plain send. Even 1–3 bytes of data run the contract's fallback (audit CHAIN-L), so
+    // anything else is decoded as a call (unreadable when it has no selector).
     const amt = formatAmount(tx.value, native.decimals);
     Object.assign(d, titled(msg("bg.req.sendSymbolTo", { amount: amt, symbol: native.symbol, to: shortAddress(tx.to) })));
     d.lines.push({ label: "To", value: safeChecksum(tx.to) }, { label: "Amount", value: `${amt} ${native.symbol}` });
@@ -354,7 +356,17 @@ async function decodePersonalSign(req: DappRequest, ctx: ChainContext): Promise<
   } else {
     Object.assign(d, titled(msg("bg.req.signData", { host })));
     d.lines.push({ label: "Data", value: truncate(text, 200) });
-    d.warnings.push({ level: "caution", code: "blind-signing", message: "This message isn't readable text. It can't move funds by itself, but only sign it if you trust the site." });
+    // Audit CHAIN-L: never "can't move funds". Smart accounts take a personal_sign over a hash as approval: Safe owners
+    // sign a safeTxHash exactly like this, and that signature executes the transaction.
+    if (hexToBytes(message as Hex).length === 32) {
+      d.warnings.push({
+        level: "danger",
+        code: "blind-signing",
+        message: "This is a 32-byte hash, not a message. Smart accounts such as Safe accept a signature over a hash like this as approval of a transaction, which can move funds. Sign it only if you know exactly what it approves.",
+      });
+    } else {
+      d.warnings.push(warning("caution", "blind-signing", msg("bg.warn.messageNotTextTrust")));
+    }
   }
   d.lines.push({ label: "Requested by", value: host });
   return d;

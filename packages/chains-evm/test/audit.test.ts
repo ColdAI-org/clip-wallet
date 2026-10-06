@@ -108,3 +108,43 @@ describe("audit: look-alike tokens (TOK-01)", () => {
     expect(a("PE​PE").spam).toBe(true);
   });
 });
+
+describe("audit CHAIN-L (EVM): short call data and hex messages", () => {
+  const send = (data?: string): DappRequest => ({
+    id: "s",
+    origin: "https://app.example.com",
+    via: "injected",
+    family: "evm",
+    networkId: SEPOLIA,
+    method: "eth_sendTransaction",
+    params: [{ from: ME, to: BOB, value: "0x2386f26fc10000", ...(data !== undefined ? { data } : {}) }],
+  });
+
+  it("1 to 3 bytes of call data reach the contract's fallback: not shown as a plain send", async () => {
+    for (const data of ["0x01", "0xabcd", "0x123456"]) {
+      const d = await decode(send(data));
+      expect([data, d.title.startsWith("Send ")]).toEqual([data, false]);
+      expect(d.blind).toBe(true);
+      expect(d.lines).toContainEqual(expect.objectContaining({ label: "Data", value: data }));
+    }
+    // No data (or "0x") is still a plain send.
+    for (const data of [undefined, "0x"]) expect((await decode(send(data))).title).toMatch(/^Send 0\.01 ETH to /);
+  });
+
+  const ps = (message: string): DappRequest => ({ id: "p", origin: "https://safe.example", via: "injected", family: "evm", networkId: SEPOLIA, method: "personal_sign", params: [message, ME] });
+
+  it("a 32-byte hash (how Safe owners approve a safeTxHash) is a danger, never 'can't move funds'", async () => {
+    const d = await decode(ps(`0x${"8f".repeat(16)}${"01".repeat(16)}`));
+    const w = d.warnings.find((x) => x.code === "blind-signing")!;
+    expect(w.level).toBe("danger");
+    expect(w.message).toMatch(/Safe/);
+    expect(w.message).not.toMatch(/can't move funds/);
+  });
+
+  it("other unreadable data no longer claims it can't move funds", async () => {
+    const d = await decode(ps(`0x${"ff00".repeat(20)}`));
+    const w = d.warnings.find((x) => x.code === "blind-signing")!;
+    expect(w.level).toBe("caution");
+    expect(w.message).not.toMatch(/can't move funds/);
+  });
+});

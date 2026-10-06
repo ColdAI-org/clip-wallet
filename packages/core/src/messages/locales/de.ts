@@ -262,7 +262,6 @@ const messages: BgTranslation = {
   "bg.warn.cantReadTrust": "Clip Wallet kann das nicht lesen. Signiere es nur, wenn du der App vertraust.",
   "bg.warn.txUnreadableTrust": "Diese Transaktion kann nicht gelesen werden. Signiere sie nur, wenn du der App vertraust.",
   "bg.warn.messageNotTextTrust": "Diese Nachricht ist kein lesbarer Text. Signiere sie nur, wenn du der App vertraust.",
-  "bg.warn.messageNotTextFunds": "Diese Nachricht ist kein lesbarer Text. Sie kann selbst kein Guthaben bewegen, aber signiere sie nur, wenn du der Website vertraust.",
   "bg.warn.messageNotTextCoins": "Diese Nachricht ist kein lesbarer Text. Sie kann selbst keine Coins bewegen, aber signiere sie nur, wenn du der Website vertraust.",
   "bg.warn.notTextTrust": "Das ist kein lesbarer Text. Signiere es nur, wenn du der App vertraust.",
   "bg.warn.rawSignature": "Das ist eine rohe Signaturanfrage. Signiere sie nur, wenn du der App vertraust.",

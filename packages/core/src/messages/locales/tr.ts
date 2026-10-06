@@ -262,7 +262,6 @@ const messages: BgTranslation = {
   "bg.warn.cantReadTrust": "Clip Wallet bunu okuyamıyor. Yalnızca uygulamaya güveniyorsanız imzalayın.",
   "bg.warn.txUnreadableTrust": "Bu işlem okunamıyor. Yalnızca uygulamaya güveniyorsanız imzalayın.",
   "bg.warn.messageNotTextTrust": "Bu mesaj okunabilir bir metin değil. Yalnızca uygulamaya güveniyorsanız imzalayın.",
-  "bg.warn.messageNotTextFunds": "Bu mesaj okunabilir bir metin değil. Tek başına fon aktaramaz, ancak yalnızca siteye güveniyorsanız imzalayın.",
   "bg.warn.messageNotTextCoins": "Bu mesaj okunabilir bir metin değil. Tek başına coin aktaramaz, ancak yalnızca siteye güveniyorsanız imzalayın.",
   "bg.warn.notTextTrust": "Bu okunabilir bir metin değil. Yalnızca uygulamaya güveniyorsanız imzalayın.",
   "bg.warn.rawSignature": "Bu ham bir imza isteği. Yalnızca uygulamaya güveniyorsanız imzalayın.",
