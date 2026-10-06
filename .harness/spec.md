@@ -1,7 +1,7 @@
 # Clip Wallet: product spec
 
 Clip Wallet is a **non-custodial** wallet for every CLPR network. One recovery phrase, one set of accounts across
-14 network families, and money that moves to wherever an app needs it. It is also a **kit**: anyone can ship a wallet
+26 network families (85 of the 87 CLPR networks), and money that moves to wherever an app needs it. It is also a **kit**: anyone can ship a wallet
 of their own on the same packages. Pre-release: **test networks only**.
 
 ## Principles

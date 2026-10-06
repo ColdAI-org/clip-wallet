@@ -2,7 +2,7 @@
 
 Start your own non-custodial wallet on the [Clip Wallet](https://github.com/ColdAI-org/clip-wallet) kit, on every
 platform, from one `clip.config.ts`: a browser extension, a desktop app for macOS, Windows and Linux, and a phone app for
-iOS and Android, for 14 network families, plus (if you want it) a Scaffold-HBAR dapp that connects to it on Hedera
+iOS and Android, for 26 network families, plus (if you want it) a Scaffold-HBAR dapp that connects to it on Hedera
 testnet.
 
 > Pre-release: Clip Wallet runs on test networks only and has had no external audit.

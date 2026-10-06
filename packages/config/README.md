@@ -2,7 +2,7 @@
 
 The typed schema for `clip.config.ts`, the one file a wallet maker edits, for every platform the wallet ships (browser
 extension, desktop app, phone app): identity (name, description, rdns, homepage, icon, extension key, app ids,
-deep-link scheme), theme, networks (14 families), languages, routing defaults and settle-on-Hedera, hardware wallets,
+deep-link scheme), theme, networks (26 families), languages, routing defaults and settle-on-Hedera, hardware wallets,
 WalletConnect, passkeys, optional hosted services, and the mainnet switch.
 
 `defineConfig()` validates and fills defaults; problems come back as plain sentences, one per setting

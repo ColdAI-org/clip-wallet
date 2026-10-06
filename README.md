@@ -405,7 +405,7 @@ Report vulnerabilities privately: [SECURITY.md](SECURITY.md) (GitHub private rep
 | Extension (Firefox) | Builds as MV3 and passes `addons-linter`. No Firefox e2e yet, and Clip Plugins are left out |
 | Desktop (macOS, Windows, Linux) | Electron app with a built-in dapp browser. e2e on all three in CI. Unsigned unless signing secrets are set |
 | Mobile (iOS, Android) | Screens and engine tested (vitest and jest-expo). No store builds yet |
-| Networks | 14 families on testnets. **Mainnet is off**, behind a build flag and a checklist |
+| Networks | 26 families (85 of the 87 CLPR networks) on testnets. **Mainnet is off**, behind a build flag and a checklist |
 | Settle on Hedera | Testnet contracts live. The test Connector runs locally |
 | Store listings | Packages, copy, screenshots and permission justifications are ready. **Nothing has been submitted yet** |
 | Security | Internal review done. **External audit pending** |
