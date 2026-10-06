@@ -7,7 +7,7 @@ Plan: the "Clip Wallet" tab of the CLPR plan doc. Phase 2 = every open-standard 
 - Only packages/vault touches phrases/private keys/signing. Tests outside the vault NEVER generate keys or sign: precompute signatures offline (outside the repo) and commit only public keys + signatures as fixtures (see packages/chains-evm/test/signatures.ts).
 - Chain modules implement `ChainModule` from @clip-wallet/core exactly, never import the vault; prepare() returns SignablePayloads, finalize() assembles.
 - Networks are invisible: plain-language titles ("Send 10 SUI to 0x12…ab", "Stake 50 DOT"), fees as asset amounts, errors via ClipError(userMessage, code). Show a network only where a mistake loses money (Warning "network-matters").
-- Never print/log/commit secrets or .env values. Don't read ~/clpr/.env or key files.
+- Never print/log/commit secrets or .env values. Don't read `.env` files or key files.
 - Verify standards, ids and package names from current sources (docs, npm, repos) — not memory — and cite them in your package README.
 
 ## Contract

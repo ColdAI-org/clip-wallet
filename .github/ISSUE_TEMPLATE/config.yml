@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/ColdAI-org/clip-wallet/security/advisories/new
+    about: Never in a public issue. See SECURITY.md; or e-mail shayan@coldai.org.
+  - name: Clip Wallet
+    url: https://coldai.org/clip
+    about: What Clip Wallet is, and where to get it.

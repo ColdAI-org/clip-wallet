@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in Clip Wallet or the kit doesn't work as it should.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security issue?** Don't file it here. Report it privately: see [SECURITY.md](https://github.com/ColdAI-org/clip-wallet/blob/main/SECURITY.md).
+
+        **Never paste a recovery phrase, private key, password or `.env` value**, not even a "test" one. Nobody from ColdAI will ever ask for them.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where
+      options:
+        - Browser extension (Chrome / Edge)
+        - Browser extension (Firefox)
+        - Desktop app
+        - Mobile app (iOS / Android)
+        - A dapp connection (1Mask / WalletConnect)
+        - Clip Connect SDK (@clip-wallet/connect)
+        - create-clip-wallet / Scaffold-HBAR template
+        - A package (@clip-wallet/*)
+        - Docs
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0, or a commit hash"
+    validations:
+      required: true
+  - type: input
+    id: network
+    attributes:
+      label: Network family and test network
+      placeholder: "e.g. EVM / Base Sepolia, Hedera testnet, Solana devnet"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: Steps to reproduce help most. Public test addresses and transaction hashes are fine.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output or screenshots
+      description: Check them for anything private before you post.
+      render: text

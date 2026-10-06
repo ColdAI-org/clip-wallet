@@ -27,8 +27,8 @@ identity and orientation.
 ## Scope and enforcement
 
 This code applies in all project spaces (issues, pull requests, discussions, chat) and when someone represents the
-project in public. Report incidents to the maintainers at **conduct@REPLACE-WITH-COLDAI-DOMAIN** (placeholder: set
-before the first public release) or privately through a maintainer. Reports are handled promptly and confidentially.
+project in public. Report incidents to the maintainers at **[shayan@coldai.org](mailto:shayan@coldai.org)** (subject "Code of
+Conduct") or privately through a maintainer. Reports are handled promptly and confidentially.
 Maintainers follow the Contributor Covenant's enforcement guidelines: correction, warning, temporary ban, permanent
 ban, according to impact.
 

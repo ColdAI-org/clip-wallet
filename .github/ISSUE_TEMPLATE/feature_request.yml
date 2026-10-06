@@ -1,0 +1,20 @@
+name: Feature or network request
+description: Ask for a feature, a network, a dapp standard or a kit option.
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you're trying to do
+      description: The problem first; a solution is welcome but optional.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you'd like Clip Wallet to do
+  - type: textarea
+    id: links
+    attributes:
+      label: Specs, standards or dapps involved
+      description: Links to the EIP / CIP / SEP / docs, or a testnet dapp we can try it with.
