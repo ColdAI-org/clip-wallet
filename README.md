@@ -383,15 +383,16 @@ screens come from the fixture build. Details: [`packages/route`](packages/route)
   unverified.
 - **A security floor nobody can switch off:** open phishing lists, decode-before-approve, look-alike address and
   new-contract checks. A mainnet config below the floor is refused.
-- **Supply chain:** every Action pinned by SHA, Dependabot, CodeQL, a reproducible extension build checked in CI, SLSA
-  provenance and SHA256SUMS on releases, npm provenance, signed tags.
+- **Supply chain:** crypto libraries pinned to exact versions (the harness enforces it), every Action pinned by SHA,
+  Dependabot, CodeQL, a reproducible extension build checked in CI, SLSA provenance and SHA256SUMS on releases, npm
+  provenance, signed tags.
 - **Optional services see ciphertext and hashes only.** The threat model is in
   [`services/backup`](services/backup/README.md).
 
 **Audit status.** An internal review in October 2026 covered the vault, the approval path for all 14 families, 1Mask,
-WalletConnect, plugins, hardware signing, the services and the supply chain. It fixed 36 findings (2 critical, 5 high,
-18 medium, 11 low), each with a regression test. The remaining items are all low severity and are tracked for the
-**external audit, which comes before any mainnet build**.
+WalletConnect, plugins, hardware signing, the services and the supply chain. It found 47 issues (2 critical, 5 high,
+18 medium, 22 low) and all of them are fixed, each with a regression test: there are no open findings
+([report](docs/audit/internal-audit-2026-10.md)). The **external audit comes before any mainnet build**.
 
 Report vulnerabilities privately: [SECURITY.md](SECURITY.md) (GitHub private reporting, or
 [shayan@coldai.org](mailto:shayan@coldai.org)).
