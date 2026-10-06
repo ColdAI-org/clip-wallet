@@ -389,15 +389,25 @@ export function mainnetProblems(config: ClipConfig, env: Record<string, string |
 
 /* ------------------------------------------------------------------ platforms */
 
+/** `s` without leading and trailing hyphens (a scan, not a regex: linear on any input). */
+function trimHyphens(s: string): string {
+  let a = 0;
+  let b = s.length;
+  while (a < b && s[a] === "-") a++;
+  while (b > a && s[b - 1] === "-") b--;
+  return s.slice(a, b);
+}
+
 /** "Acme Wallet" -> "acme-wallet": file-safe, for executables, packages and artifact names. */
 export function slugOfName(name: string): string {
   return (
-    name
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "wallet"
+    trimHyphens(
+      name
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-"),
+    ) || "wallet"
   );
 }
 
@@ -437,7 +447,7 @@ export interface PlatformIds {
 export function platformIds(config: Pick<ClipConfig, "name" | "rdns" | "appId" | "scheme" | "desktop" | "mobile">): PlatformIds {
   const appId = config.appId ?? config.rdns;
   const slug = slugOfName(config.name);
-  const fileName = config.name.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "Wallet";
+  const fileName = trimHyphens(config.name.replace(/[^A-Za-z0-9]+/g, "-")) || "Wallet";
   return {
     name: config.name,
     appId,

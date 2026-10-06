@@ -265,7 +265,7 @@ try {
     const iosDir = readdirSync(join(mob, "ios")).find((d) => d.endsWith(".xcodeproj"))?.replace(/\.xcodeproj$/, "");
     check(!!iosDir, `ios/${iosDir}.xcodeproj generated`);
     const pbx = readFileSync(join(mob, "ios", `${iosDir}.xcodeproj`, "project.pbxproj"), "utf8");
-    check(new RegExp(`PRODUCT_BUNDLE_IDENTIFIER = "?${APP_ID.replace(/\./g, "\\.")}"?;`).test(pbx), `iOS bundle id ${APP_ID}`);
+    check(new RegExp(`PRODUCT_BUNDLE_IDENTIFIER = "?${APP_ID.replace(/[\\^$.*+?()[\]{}|/]/g, "\\$&")}"?;`).test(pbx), `iOS bundle id ${APP_ID}`);
     const info = readFileSync(join(mob, "ios", iosDir, "Info.plist"), "utf8");
     check(plistValue(info, "CFBundleDisplayName") === NAME && /<string>acmewallet<\/string>/.test(info), "iOS display name and URL scheme");
     check(/Unlock Acme Wallet with Face ID/.test(info), "iOS permission texts use the name");

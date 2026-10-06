@@ -105,6 +105,25 @@ export function isStarterSvg(text) {
   return /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#[0-9A-Fa-f]{3,6}"\/><circle cx="64" cy="64" r="33\.5" fill="none" stroke="#FFFFFF" stroke-width="13"\/><circle cx="64" cy="64" r="10" fill="#FFFFFF"\/><\/svg>\s*$/.test(text);
 }
 
+/**
+ * The first `key: [ … ]` array literal in a config file, replaced with `items` (a scan, not a regex: linear on any input).
+ * @param {string} text @param {string} key @param {readonly string[]} items
+ */
+function setArray(text, key, items) {
+  for (let from = 0; ; ) {
+    const i = text.indexOf(`${key}:`, from);
+    if (i < 0) return text;
+    let j = i + key.length + 1;
+    while (j < text.length && /\s/.test(text[j] ?? "")) j++;
+    if (text[j] === "[") {
+      const end = text.indexOf("]", j);
+      if (end < 0) return text;
+      return `${text.slice(0, i)}${key}: [${items.map((n) => JSON.stringify(n)).join(", ")}]${text.slice(end + 1)}`;
+    }
+    from = i + 1;
+  }
+}
+
 /** @param {string} file @param {(text: string) => string} fn */
 function edit(file, fn) {
   if (!existsSync(file)) return;
@@ -200,8 +219,8 @@ export function applyIdentity(root, answers) {
   edit(join(root, CONFIG_FILE), (t) => {
     let out = t;
     if (answers.accent) out = out.replace(/accent:\s*"#[0-9a-fA-F]{3,6}"/, `accent: ${JSON.stringify(answers.accent)}`);
-    if (answers.networks) out = out.replace(/networks:\s*\[[^\]]*\]/, `networks: [${answers.networks.map((n) => JSON.stringify(n)).join(", ")}]`);
-    if (answers.languages) out = out.replace(/languages:\s*\[[^\]]*\]/, `languages: [${answers.languages.map((n) => JSON.stringify(n)).join(", ")}]`);
+    if (answers.networks) out = setArray(out, "networks", answers.networks);
+    if (answers.languages) out = setArray(out, "languages", answers.languages);
     return out;
   });
   for (const page of ["popup", "tab"]) {

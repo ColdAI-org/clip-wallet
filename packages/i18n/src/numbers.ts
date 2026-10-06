@@ -8,7 +8,8 @@
 
 /** The Intl locale for numbers: Latin digits everywhere. */
 export function numberLocale(locale: string): string {
-  if (/-u-.*nu-/.test(locale)) return locale;
+  const ext = locale.indexOf("-u-");
+  if (ext >= 0 && locale.indexOf("nu-", ext + 3) >= 0) return locale; // a numbering system is already chosen
   return locale.split("-")[0] === "ar" ? `${locale}-u-nu-latn` : locale;
 }
 

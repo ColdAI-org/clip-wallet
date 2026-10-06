@@ -142,8 +142,9 @@ export function stripParts(text, keep) {
   /** @type {string[]} */
   const stack = [];
   for (const line of lines) {
-    const open = /^\s*(?:<!--|#|\/\/)\s*platform:([a-z]+)\s*(?:-->)?\s*$/.exec(line);
-    const close = /^\s*(?:<!--|#|\/\/)\s*\/platform:([a-z]+)\s*(?:-->)?\s*$/.exec(line);
+    const bare = line.trim();
+    const open = /^(?:<!--|#|\/\/)\s*platform:([a-z]+)(?:\s*-->)?$/.exec(bare);
+    const close = /^(?:<!--|#|\/\/)\s*\/platform:([a-z]+)(?:\s*-->)?$/.exec(bare);
     const dropping = stack.some((p) => !keep.has(p));
     if (open) {
       stack.push(/** @type {string} */ (open[1]));
@@ -213,7 +214,14 @@ export function selectParts(projectDir, o) {
   writeFileSync(pkgFile, `${JSON.stringify(pkg, null, 2)}\n`);
   for (const f of MARKED_FILES) {
     const file = join(projectDir, f);
-    if (existsSync(file)) writeFileSync(file, stripParts(readFileSync(file, "utf8"), keep));
+    let text;
+    try {
+      text = readFileSync(file, "utf8");
+    } catch (e) {
+      if (/** @type {NodeJS.ErrnoException} */ (e).code === "ENOENT") continue; // a part's file that isn't in this project
+      throw e;
+    }
+    writeFileSync(file, stripParts(text, keep));
   }
   return removed;
 }

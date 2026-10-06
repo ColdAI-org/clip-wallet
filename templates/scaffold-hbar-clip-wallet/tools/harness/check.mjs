@@ -49,6 +49,9 @@ export const VAULT_IMPORT_ALLOW = [
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
 
+/** A string as a literal inside a RegExp (every metacharacter escaped, backslash included). */
+const escapeRegExp = (s) => s.replace(/[\\^$.*+?()[\]{}|/]/g, "\\$&");
+
 /**
  * Crypto-critical dependencies (audit SUP-02): pinned to an exact version in every workspace package, so a lockfile
  * regeneration can't pull in a new patch release of the code that derives keys, hashes and verifies signatures.
@@ -284,7 +287,7 @@ function keyMaterialHits(imp, code) {
     let hit = false;
     for (const b of bs) {
       if (!b.namespace && rule.symbols.includes(b.imported)) hit = true;
-      const name = b.name.replace(/\$/g, "\\$");
+      const name = escapeRegExp(b.name);
       const sym = rule.symbols.join("|");
       // binding.sign(…), binding.utils.randomSecretKey(…), ns.secp256k1.sign(…)
       if (new RegExp(`\\b${name}\\s*(?:\\.\\s*[\\w$]+\\s*)?\\.\\s*(?:utils\\s*\\.\\s*)?(?:${sym})\\b`).test(code)) hit = true;
@@ -580,7 +583,7 @@ function kitChecks(root, files, parsed, fail, warn) {
     const code = f ? f.lexed.code : raw;
     const imported =
       (f && findImports(f.src, f.lexed).some((i) => i.module === b.module && new RegExp(`\\b${b.fn}\\b`).test(i.clause))) ||
-      new RegExp(`\\b${b.fn}\\b[^;]*=\\s*require\\(\\s*["']${b.module.replace(/\//g, "\\/")}["']\\s*\\)`).test(raw);
+      new RegExp(`\\b${b.fn}\\b[^;]*=\\s*require\\(\\s*["']${escapeRegExp(b.module)}["']\\s*\\)`).test(raw);
     if (!imported || !new RegExp(`\\b${b.fn}\\s*\\(`).test(code)) {
       fail("kit-security", b.file, 0, `${b.file.split("/").pop()} must build ${b.what} with ${b.fn}() from ${b.module}: it carries the wallet's config, the security floor and the mainnet checklist. Restore it from the template.`);
     }
