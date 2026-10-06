@@ -64,7 +64,7 @@ Extension: `wxt build`, `.output/chrome-mv3/background.js`.
 
 | | bytes | gzip -9 |
 |---|---|---|
-| before (d39dfad) | 9,999,949 | 3,015,283 |
+| before (f1058eb) | 9,999,949 | 3,015,283 |
 | chains-hedera only (this branch as committed) | 9,265,076 | |
 | + `size-hedera.patch` (features) | **7,722,066** (−2.28 MB, −22.8 %) | **2,666,306** (−349 KB) |
 
@@ -75,7 +75,7 @@ Mobile: `expo export --platform ios`, Hermes bytecode.
 
 | | bytes |
 |---|---|
-| before (d39dfad) | 23,071,148 |
+| before (f1058eb) | 23,071,148 |
 | + this branch + `size-hedera.patch` | **15,728,272** (−7.3 MB) |
 
 The source map of the patched bundle lists 4,626 modules. None comes from `@hiero-ledger`; chains-hedera

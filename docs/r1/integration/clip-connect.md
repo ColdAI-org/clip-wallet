@@ -14,7 +14,7 @@ see no difference. Guarantees and suite: [docs/compat.md](../../compat.md). SDK:
 | `packages/engine/src/calls-batch.ts` (`@clip-wallet/engine/calls-batch`) | split / merge / plan for a batch, status store (24 h, per origin), sequential run |
 | `packages/route/src/auxiliary-funds.ts` | `auxiliaryFundsFor()` and `settleSourceNetworks()`: the static ERC-7682 advertisement |
 | `packages/extension-kit/src/background/calls.ts` | `BackgroundCalls`: the extension's `CallsHost` (receipts, Activity, wallet UI) |
-| `apps/extension/e2e/compat.spec.ts`, `e2e/compat/*` | compat suite plus snapshots recorded on main 314ce30 |
+| `apps/extension/e2e/compat.spec.ts`, `e2e/compat/*` | compat suite plus snapshots recorded on main 830794e |
 | `apps/extension/e2e/calls.spec.ts`, `e2e/calls/dapp.ts` | `wallet_sendCalls` with auxiliary funds: fixture build (simulator, and a Clip Connect page) and real build |
 | `templates/scaffold-hbar-clip-wallet/packages/nextjs/app/clip-connect/page.tsx` | the template's Clip Connect demo page |
 
