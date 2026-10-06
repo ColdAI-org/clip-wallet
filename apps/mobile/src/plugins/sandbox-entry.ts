@@ -41,7 +41,8 @@ function onMessage(e: Event) {
   const m = e as MessageEvent;
   // The native side dispatches a plain MessageEvent with no source; this page has no frames or openers.
   if (m.source) return;
-  if (typeof m.data !== "string" || m.data.length > LIMITS.maxMessageBytes * 5) return;
+  // The largest message the host sends is "load" with the whole bundle (audit PLG-02); parseFromHost checks each type.
+  if (typeof m.data !== "string" || m.data.length > LIMITS.maxLoadMessageBytes) return;
   let raw: unknown;
   try {
     raw = JSON.parse(m.data);

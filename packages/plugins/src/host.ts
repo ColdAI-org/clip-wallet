@@ -21,6 +21,7 @@ import {
   parseFromSandbox,
 } from "./messages.js";
 import { pluginIdOf, sha256Hex } from "./npm.js";
+import { readTextCapped } from "./body.js";
 import type { Channel, ChannelFactory } from "./sandbox.js";
 
 export interface InstalledPlugin {
@@ -204,8 +205,10 @@ export class PluginHost {
     r.fetchTimes.push(t);
     try {
       const f = this.o.fetch ?? globalThis.fetch.bind(globalThis);
-      const res = await f(u.toString(), { method: "GET", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", cache: "no-store" });
-      const body = (await res.text()).slice(0, LIMITS.maxFetchBody);
+      const ctl = new AbortController();
+      const res = await f(u.toString(), { method: "GET", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", cache: "no-store", signal: ctl.signal });
+      // Audit PLG-02: read at most maxFetchBody bytes; a larger body is aborted mid-stream and the fetch fails.
+      const body = await readTextCapped(res, LIMITS.maxFetchBody, () => ctl.abort());
       if (this.running.get(r.plugin.id) !== r) return;
       r.channel.send({ type: "fetch-result", id, ok: res.ok, status: Math.min(599, Math.max(0, res.status)), body });
     } catch {

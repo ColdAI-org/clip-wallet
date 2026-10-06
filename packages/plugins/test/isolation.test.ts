@@ -225,3 +225,60 @@ describe("approvals: plugin output is bounded and always labelled", () => {
     expect(log.some((e) => (e.msg as { type: string }).type === "notify")).toBe(false);
   });
 });
+
+/** A response body streamed in 64 KB chunks of `byte`; `pulled()` says how much the reader actually took. */
+function streamed(total: number, byte = 0x61) {
+  let sent = 0;
+  let cancelled = false;
+  const chunk = new Uint8Array(65_536).fill(byte);
+  const body = new ReadableStream<Uint8Array>({
+    pull(c) {
+      if (sent >= total) return c.close();
+      const n = Math.min(chunk.length, total - sent);
+      sent += n;
+      c.enqueue(chunk.slice(0, n));
+    },
+    cancel() {
+      cancelled = true;
+    },
+  }, { highWaterMark: 0 }); // no read-ahead: `sent` is exactly what the reader asked for
+  return { response: new Response(body), pulled: () => sent, cancelled: () => cancelled };
+}
+
+describe("audit PLG-02: sizes are enforced while streaming, and what installs can start", () => {
+  const fetchOnce = `module.exports.onTransaction = async () => {
+    const r = await clip.fetch("https://api.labels.example/v1");
+    return { lines: [{ label: "r", value: r.ok + ":" + r.status + ":" + r.body.length }] };
+  };`;
+
+  it("a plugin fetch stops reading past 256 KB and fails, instead of reading the whole body", async () => {
+    const big = streamed(8_000_000);
+    const net = (async () => big.response) as unknown as typeof fetch;
+    const { factory } = memoryChannels(ses);
+    const host = new PluginHost({ channels: factory, fetch: net });
+    await host.start(installed(fetchOnce, { transactionInsight: true, network: ["https://api.labels.example"] }));
+    const [ins] = await host.insights(REQUEST);
+    expect(ins!.lines[0]!.value).toBe("false:0:0");
+    expect(big.pulled()).toBeLessThanOrEqual(256_000 + 65_536);
+    expect(big.cancelled()).toBe(true);
+  });
+
+  it("a body under the cap arrives whole, even when JSON escaping makes the message larger than the body", async () => {
+    const quotes = streamed(200_000, 0x22); // 200 000 '"' characters: twice that once JSON-escaped
+    const net = (async () => quotes.response) as unknown as typeof fetch;
+    const { factory } = memoryChannels(ses);
+    const host = new PluginHost({ channels: factory, fetch: net });
+    await host.start(installed(fetchOnce, { transactionInsight: true, network: ["https://api.labels.example"] }));
+    const [ins] = await host.insights(REQUEST);
+    expect(ins!.lines[0]!.value).toBe("true:200:200000");
+  });
+
+  it("a bundle between 256 KB and the 1 MB install limit starts", async () => {
+    const pad = `/*${"x".repeat(700_000)}*/\n`;
+    const src = `${pad}module.exports.onTransaction = async () => ({ lines: [{ label: "big", value: "started" }] });`;
+    const { factory } = memoryChannels(ses);
+    const host = new PluginHost({ channels: factory, loadTimeoutMs: 3000 });
+    await host.start(installed(src, { transactionInsight: true }));
+    expect((await host.insights(REQUEST))[0]!.lines[0]!.value).toBe("started");
+  });
+});

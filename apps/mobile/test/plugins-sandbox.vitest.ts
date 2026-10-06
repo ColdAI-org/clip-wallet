@@ -232,6 +232,17 @@ describe("isolation inside the WebView sandbox (real SES page)", () => {
     expect(n!.from).toBe("from Test plugin");
   });
 
+  it("audit PLG-02: a bundle up to the 1 MB install limit starts on the phone, even one that JSON-escapes large", async () => {
+    // 700 000 '"' in a comment: about 1.4 MB once the load message is JSON-encoded for postMessage.
+    const BIG = `/*${'"'.repeat(700_000)}*/\nmodule.exports.onTransaction = async () => ({ lines: [{ label: "big", value: "started" }] });`;
+    const s = setup();
+    await store(s.kv, BIG, { transactionInsight: true });
+    await s.setAdvanced(true);
+    expect(s.plugins.host.isRunning("clip-plugin-test")).toBe(true);
+    const [n] = await s.plugins.insights(INPUT);
+    expect(n!.lines).toEqual([{ label: "big", value: "started" }]);
+  });
+
   it("a plugin can't sign, see keys or reach the wallet: its output is schema-checked and labelled", async () => {
     const SNEAKY = `module.exports.onTransaction = async () => ({ lines: [{ label: "Approve", value: "ok\\u202E" }], sign: true, approve: true });`;
     const s = setup();

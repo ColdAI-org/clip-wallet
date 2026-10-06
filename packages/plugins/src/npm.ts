@@ -12,10 +12,13 @@
  * Nothing from the package runs here. The result is a PendingInstall the UI shows as a permission prompt.
  */
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from "@noble/hashes/sha2.js";
+import { BodyTooLargeError, readBodyCapped, readTextCapped } from "./body.js";
 import { MANIFEST_FILE, MAX_BUNDLE_BYTES, ManifestError, describePermissions, parseManifest, type PluginManifest } from "./manifest.js";
 
 export const NPM_REGISTRY = "https://registry.npmjs.org";
 export const MAX_TARBALL_BYTES = 5_000_000;
+/** npm's abbreviated package listing (all versions of the package). */
+export const MAX_METADATA_BYTES = 16_000_000;
 const MAX_UNPACKED_BYTES = 20_000_000;
 
 export class InstallError extends Error {
@@ -173,12 +176,14 @@ export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { v
 
   let meta: { "dist-tags"?: Record<string, string>; versions?: Record<string, { dist?: { tarball?: string; integrity?: string } }> };
   try {
-    const res = await f(`${registry}/${pkg.replace("/", "%2f")}`, { headers: { accept: "application/vnd.npm.install-v1+json" }, credentials: "omit" });
+    const ctl = new AbortController();
+    const res = await f(`${registry}/${pkg.replace("/", "%2f")}`, { headers: { accept: "application/vnd.npm.install-v1+json" }, credentials: "omit", signal: ctl.signal });
     if (res.status === 404) throw new InstallError("not-found", "No plugin with that name on npm.");
     if (!res.ok) throw new InstallError("unreachable", "We couldn't reach npm. Try again.");
-    meta = (await res.json()) as typeof meta;
+    meta = JSON.parse(await readTextCapped(res, MAX_METADATA_BYTES, () => ctl.abort())) as typeof meta;
   } catch (e) {
     if (e instanceof InstallError) throw e;
+    if (e instanceof BodyTooLargeError) throw new InstallError("too-large", "That plugin's npm listing is too large.");
     throw new InstallError("unreachable", "We couldn't reach npm. Try again.");
   }
   const version = opts.version ?? meta["dist-tags"]?.latest;
@@ -186,10 +191,17 @@ export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { v
   if (!version || !dist?.tarball || !dist.integrity) throw new InstallError("not-found", "No plugin with that name on npm.");
   if (new URL(dist.tarball).origin !== new URL(registry).origin) throw new InstallError("bad-package", "That plugin's download isn't on npm.");
 
-  const res = await f(dist.tarball, { credentials: "omit" }).catch(() => null);
+  const ctl = new AbortController();
+  const res = await f(dist.tarball, { credentials: "omit", signal: ctl.signal }).catch(() => null);
   if (!res?.ok) throw new InstallError("unreachable", "We couldn't download that plugin. Try again.");
-  const tgz = new Uint8Array(await res.arrayBuffer());
-  if (tgz.length > MAX_TARBALL_BYTES) throw new InstallError("too-large", "That plugin is too large.");
+  // Audit PLG-02: the limit holds while downloading (Content-Length first, then the stream is cut off past it).
+  let tgz: Uint8Array;
+  try {
+    tgz = await readBodyCapped(res, MAX_TARBALL_BYTES, () => ctl.abort());
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) throw new InstallError("too-large", "That plugin is too large.");
+    throw new InstallError("unreachable", "We couldn't download that plugin. Try again.");
+  }
   if (!(await checkIntegrity(tgz, dist.integrity))) throw new InstallError("integrity", "That plugin's download didn't match npm's checksum, so it wasn't installed.");
 
   let files: Map<string, Uint8Array>;

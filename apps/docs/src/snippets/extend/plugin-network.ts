@@ -1,7 +1,7 @@
 // With "network": ["https://api.example.com"] and "notifications": true in the manifest, the sandbox's `clip`
 // object has fetch() and notify(). Nothing else exists: no window, no timers, no storage, no keys.
 declare const clip: {
-  fetch(url: string): Promise<{ ok: boolean; status: number; body: string }>; // GET only, no credentials, 256 KB
+  fetch(url: string): Promise<{ ok: boolean; status: number; body: string }>; // GET only, no credentials; a body over 256 KB fails
   notify(text: string): void; // at most 3 an hour and 10 a day, labelled "from <plugin>"
 };
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { describePermissions, parseManifest, ManifestError } from "../src/manifest.js";
-import { InstallError, prepareInstallFromNpm, untar } from "../src/npm.js";
+import { InstallError, MAX_TARBALL_BYTES, prepareInstallFromNpm, untar } from "../src/npm.js";
 import { parseFromSandbox, parseFromHost } from "../src/messages.js";
 import { PluginRegistry, PLUGIN_KEYS } from "../src/registry.js";
 import { PluginsService } from "../src/service.js";
@@ -54,6 +54,38 @@ describe("manifest", () => {
 });
 
 describe("install from npm", () => {
+  it("audit PLG-02: stops downloading a tarball past the size limit instead of reading all of it", async () => {
+    let sent = 0;
+    let cancelled = false;
+    const chunk = new Uint8Array(65_536);
+    const endless = new ReadableStream<Uint8Array>({
+      pull(c) {
+        if (sent >= 50_000_000) return c.close();
+        sent += chunk.length;
+        c.enqueue(chunk.slice());
+      },
+      cancel() {
+        cancelled = true;
+      },
+    }, { highWaterMark: 0 }); // no read-ahead: `sent` is exactly what the reader asked for
+    const reg = fakeRegistry(NAME, "1.0.0", examplePackage());
+    const f = (async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).endsWith(".tgz") ? new Response(endless) : reg.f(input, init)) as typeof fetch;
+    await expect(prepareInstallFromNpm(NAME, { fetch: f })).rejects.toMatchObject({ code: "too-large" });
+    expect(sent).toBeLessThanOrEqual(MAX_TARBALL_BYTES + chunk.length);
+    expect(cancelled).toBe(true);
+  });
+
+  it("audit PLG-02: refuses a tarball whose Content-Length is over the limit without reading it", async () => {
+    let read = false;
+    const body = new ReadableStream<Uint8Array>({ pull: () => void (read = true) }, { highWaterMark: 0 });
+    const reg = fakeRegistry(NAME, "1.0.0", examplePackage());
+    const f = (async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).endsWith(".tgz") ? new Response(body, { headers: { "content-length": String(MAX_TARBALL_BYTES + 1) } }) : reg.f(input, init)) as typeof fetch;
+    await expect(prepareInstallFromNpm(NAME, { fetch: f })).rejects.toMatchObject({ code: "too-large" });
+    expect(read).toBe(false);
+  });
+
   it("verifies npm's sha512 integrity, the package identity and the bundle sha256", async () => {
     const tar = examplePackage();
     const reg = fakeRegistry(NAME, "1.0.0", tar);

@@ -4,6 +4,7 @@
  * and anything that fails is dropped. Nothing else crosses: no functions, no ports, no chrome.* handles.
  */
 import { z } from "zod";
+import { MAX_BUNDLE_BYTES } from "./manifest.js";
 
 export const LIMITS = {
   maxMessageBytes: 256_000,
@@ -14,6 +15,13 @@ export const LIMITS = {
   maxNotification: 140,
   maxAddress: 128,
   maxFetchBody: 256_000,
+  /**
+   * Audit PLG-02: a "load" carries the whole bundle (up to MAX_BUNDLE_BYTES) and a "fetch-result" a whole body (up to
+   * maxFetchBody); their schemas bound those strings, and JSON escaping can make a string up to 6× longer
+   * (\u00XX), so these two messages get room for that instead of maxMessageBytes.
+   */
+  maxLoadMessageBytes: 6 * MAX_BUNDLE_BYTES + 16_384,
+  maxFetchResultMessageBytes: 6 * 256_000 + 16_384,
 } as const;
 
 const SAFE_TEXT = /^[^\p{Cc}\p{Cf}\u2028\u2029]*$/u;
@@ -73,7 +81,7 @@ export type Grant = z.infer<typeof GrantSchema>;
 /* ------------------------------------------------------------------ host → sandbox */
 
 export const HostToSandboxSchema = z.union([
-  z.object({ type: z.literal("load"), pluginId: id, source: z.string().max(1_000_000), grant: GrantSchema }).strict(),
+  z.object({ type: z.literal("load"), pluginId: id, source: z.string().max(MAX_BUNDLE_BYTES), grant: GrantSchema }).strict(),
   z.object({ type: z.literal("invoke"), id, handler: z.literal("onTransaction"), params: InsightInputSchema }).strict(),
   z.object({ type: z.literal("invoke"), id, handler: z.literal("onNameLookup"), params: NameInputSchema }).strict(),
   z
@@ -104,8 +112,10 @@ export const SandboxToHostSchema = z.union([
 export type SandboxToHost = z.infer<typeof SandboxToHostSchema>;
 
 function sizeOk(raw: unknown): boolean {
+  const type = raw && typeof raw === "object" ? (raw as { type?: unknown }).type : undefined;
+  const max = type === "load" ? LIMITS.maxLoadMessageBytes : type === "fetch-result" ? LIMITS.maxFetchResultMessageBytes : LIMITS.maxMessageBytes;
   try {
-    return JSON.stringify(raw).length <= LIMITS.maxMessageBytes;
+    return JSON.stringify(raw).length <= max;
   } catch {
     return false;
   }

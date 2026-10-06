@@ -15,3 +15,4 @@ export * from "./registry.js";
 export * from "./service.js";
 export { SANDBOX_CSP, SANDBOX_MANIFEST, SANDBOX_PAGE, iframeChannelFactory, type Channel, type ChannelFactory } from "./sandbox.js";
 export { createSandboxRuntime, type RuntimeEnv, type SesApi } from "./runtime.js";
+export { BodyTooLargeError, readBodyCapped, readTextCapped } from "./body.js";

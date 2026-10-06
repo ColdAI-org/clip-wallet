@@ -43,7 +43,8 @@ clip-plugin-address-labels/
 
 Built-in name suffixes (`.eth`, `.sol`, `.hbar`) and common web TLDs (`.com`, `.io`, `.app`, …) can't be claimed.
 Network origins must be real host names: no IP addresses, no `localhost` or `.local`. Requests are GET only, with no
-credentials or redirects, a 256 KB cap and 30 a minute.
+credentials or redirects, 30 a minute, and a 256 KB cap: a larger body fails (`ok: false`, status 0) and the host
+stops downloading it there.
 
 There is no permission for signing, keys, the phrase, storage or `chrome.*`: they don't exist in the plugin's world.
 

@@ -45,7 +45,7 @@ console.log(describePermissions(manifest)); // the install prompt, in plain word
 | Transaction insights | `"transactionInsight": true` | Its notes and warnings on the approval screen, in a separate card titled **From <plugin>** with "not checked by Clip Wallet" underneath |
 | Name resolution | `"nameResolution": { "suffixes": [".label"] }` | In Send, the address shows with "(from <plugin>)" next to it. Built-in suffixes (`.eth`, `.sol`, `.hbar`) and common web TLDs can't be claimed |
 | Notifications | `"notifications": true` | At most 3 an hour and 10 a day, each labelled "from <plugin>" |
-| Network (optional) | `"network": ["https://api.example.com"]` | Up to 3 exact https origins. The host makes the request: GET only, no credentials, no redirects, 256 KB cap, 30 a minute |
+| Network (optional) | `"network": ["https://api.example.com"]` | Up to 3 exact https origins. The host makes the request: GET only, no credentials, no redirects, 30 a minute. A body over 256 KB fails (`ok: false`), and the download stops there |
 
 A plugin can never sign, never see the recovery phrase, keys or the vault, and never reach storage or `chrome.*`. There is no permission for any of these, so a plugin can't even ask for them.
 
@@ -69,13 +69,16 @@ A plugin can never sign, never see the recovery phrase, keys or the vault, and n
 
 `prepareInstallFromNpm(name)` runs these steps before the user sees anything:
 
-1. Fetch the registry's abbreviated metadata.
+1. Fetch the registry's abbreviated metadata (at most 16 MB).
 2. Check that the tarball is on the registry origin.
-3. Check its SHA-512 against npm's `dist.integrity`.
-4. Gunzip and untar it in memory.
-5. Check that `package.json` names the same package and version.
-6. Validate `clip.plugin.json`.
-7. Check the bundle's sha256 against the manifest.
+3. Download it with a 5 MB limit that holds while streaming: a larger `Content-Length` is refused before reading,
+   and the download is cut off as soon as it passes the limit (`readBodyCapped`).
+4. Check its SHA-512 against npm's `dist.integrity`.
+5. Gunzip (20 MB unpacked at most) and untar it in memory. The bundle may be up to 1 MB, and every bundle that
+   installs can be loaded into the sandbox.
+6. Check that `package.json` names the same package and version.
+7. Validate `clip.plugin.json`.
+8. Check the bundle's sha256 against the manifest.
 
 It runs nothing. The UI then shows the plain-language permission prompt (`describePermissions`), and only `confirmInstall(id, version)` stores the plugin.
 
