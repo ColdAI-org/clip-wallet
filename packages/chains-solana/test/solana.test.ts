@@ -369,6 +369,42 @@ describe("prepare / finalize", () => {
   });
 });
 
+describe("audit CHAIN-L (Solana): SIWS chain and validity window are checked and shown", () => {
+  const siws = (extra: Record<string, unknown>) => req("solana:signIn", { inputs: [{ ...SIWS_INPUT, ...extra }] });
+  const setup = () => ({ m: createSolanaModule({ simulate: false }), ctx: ctxFor(makeAccount(ME), mockSolana(rpcBase()).fetch) });
+  type W = { code: string; level: string };
+
+  it("a sign-in for another cluster is a danger and the network is shown", async () => {
+    const { m, ctx } = setup();
+    for (const chainId of ["mainnet", "solana:mainnet", `solana:${SOLANA_CLUSTERS.mainnet.genesisHash}`]) {
+      const d = await m.decode(siws({ chainId }), ctx);
+      expect([chainId, d.warnings.find((w: W) => w.code === "network-matters")?.level]).toEqual([chainId, "danger"]);
+      expect(d.lines).toContainEqual(expect.objectContaining({ label: "Network" }));
+    }
+    const unknown = await m.decode(siws({ chainId: "solana:somewhere" }), ctx);
+    expect(unknown.warnings.find((w: W) => w.code === "network-matters")?.level).toBe("danger");
+    // The selected cluster, in any spelling, is fine.
+    for (const chainId of ["devnet", "solana:devnet", SOLANA_DEVNET.id]) {
+      const d = await m.decode(siws({ chainId }), ctx);
+      expect([chainId, d.warnings]).toEqual([chainId, []]);
+    }
+  });
+
+  it("notBefore is shown; one in the future is a caution, and an unreadable date a danger", async () => {
+    const { m, ctx } = setup();
+    const later = await m.decode(siws({ notBefore: "2999-01-01T00:00:00Z" }), ctx);
+    expect(later.lines).toContainEqual({ label: "Valid from", value: "2999-01-01T00:00:00Z" });
+    expect(later.warnings.map((w: W) => w.level)).toEqual(["caution"]);
+    const now = await m.decode(siws({ notBefore: "2020-01-01T00:00:00Z" }), ctx);
+    expect(now.lines).toContainEqual({ label: "Valid from", value: "2020-01-01T00:00:00Z" });
+    expect(now.warnings).toEqual([]);
+    const junk = await m.decode(siws({ notBefore: "tomorrow-ish" }), ctx);
+    expect(junk.warnings.map((w: W) => w.level)).toContain("danger");
+    const expired = await m.decode(siws({ expirationTime: "2020-01-01T00:00:00Z" }), ctx);
+    expect(expired.warnings.map((w: W) => w.level)).toContain("caution");
+  });
+});
+
 describe("balances, NFTs, transfers", () => {
   const NFT_MINT = "EziZPA6NcGAThFJTw4RDVsj4prXWuzpGAffQ68Lmj6Y1";
   const T22_MINT = "5F3RWKXDB1xCnMeaih6Mhrfb2D1wyXFB9K8dRqzCBtGp";

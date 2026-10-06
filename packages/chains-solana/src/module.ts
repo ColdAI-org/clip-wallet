@@ -211,6 +211,12 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
     };
   }
 
+  /** SIWS chain ids: "mainnet" / "devnet" / "testnet", Wallet Standard "solana:<cluster>", or CAIP-2 → our NetworkId. */
+  function siwsNetwork(chainId: unknown): string | null {
+    if (typeof chainId !== "string") return null;
+    return fromChainId(chainId) ?? (/^[a-z]+$/.test(chainId) ? fromChainId(`solana:${chainId}`) : null);
+  }
+
   async function decode(request: DappRequest, ctx: ChainContext): Promise<DecodedRequest> {
     const me = ctx.account.address;
     const n = normalize(request, me);
@@ -250,7 +256,31 @@ export function createSolanaModule(options: SolanaModuleOptions = {}): ChainModu
       }
       if (input.statement) lines.push({ label: "Statement", value: input.statement });
       if (input.uri) lines.push({ label: "Website", value: input.uri });
+      // Audit CHAIN-L: the chain and the validity window are part of the signed text, so they are checked and shown.
+      if (input.chainId !== undefined) {
+        lines.push({ label: "Network", value: String(input.chainId) });
+        if (siwsNetwork(input.chainId) !== ctx.network.id) {
+          warnings.push({
+            level: "danger",
+            code: "network-matters",
+            message: `This sign-in is for another Solana network (${String(input.chainId).slice(0, 60)}) than ${ctx.network.name}. It could be used there.`,
+          });
+        }
+      }
+      const at = (v: string | undefined) => (v === undefined ? undefined : Date.parse(v));
+      const [nbf, exp] = [at(input.notBefore), at(input.expirationTime)];
+      if (input.notBefore) lines.push({ label: "Valid from", value: input.notBefore });
       if (input.expirationTime) lines.push({ label: "Valid until", value: input.expirationTime });
+      if ((nbf !== undefined && Number.isNaN(nbf)) || (exp !== undefined && Number.isNaN(exp)) || (nbf !== undefined && exp !== undefined && nbf > exp)) {
+        warnings.push({ level: "danger", code: "unknown-call", message: "We can't tell when this sign-in is valid: its dates can't be read. Don't sign it." });
+      } else {
+        if (nbf !== undefined && nbf > Date.now()) {
+          warnings.push({ level: "caution", code: "unknown-call", message: `This sign-in only becomes valid on ${input.notBefore}. Whoever holds it can use it then.` });
+        }
+        if (exp !== undefined && exp <= Date.now()) {
+          warnings.push({ level: "caution", code: "unknown-call", message: "This sign-in has already expired, so it shouldn't be accepted. The app may be misconfigured." });
+        }
+      }
       if (input.resources?.length) lines.push({ label: "Also grants access to", value: input.resources.join(", ") });
     }
     return {
