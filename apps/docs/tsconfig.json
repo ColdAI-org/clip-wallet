@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "declaration": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": [".vitepress/*.ts", ".vitepress/*.mts", ".vitepress/theme/*.ts", "test", "scripts/*.ts"]
+}

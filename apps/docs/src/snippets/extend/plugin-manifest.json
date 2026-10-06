@@ -1,0 +1,9 @@
+{
+  "manifestVersion": 1,
+  "name": "Address labels",
+  "version": "1.0.0",
+  "author": "Example Labs",
+  "description": "Names well-known addresses, like the burn address, in requests you approve.",
+  "permissions": { "transactionInsight": true },
+  "bundle": { "path": "dist/bundle.js", "sha256": "<sha256 of dist/bundle.js, 64 lowercase hex characters>" }
+}

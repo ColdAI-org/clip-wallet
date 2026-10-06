@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "declaration": false,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["../../packages/*/src/**/*.ts", "../../packages/*/src/**/*.tsx"],
+  "exclude": ["../../packages/*/src/**/*.test.ts", "../../packages/create-clip-wallet/**"]
+}
