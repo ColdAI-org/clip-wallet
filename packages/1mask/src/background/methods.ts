@@ -47,6 +47,11 @@ export const EVM_METHODS = {
     "eth_syncing",
     "web3_clientVersion",
   ],
+  /**
+   * The reads an unconnected page may proxy (audit 1MASK-L): cheap chain state only. Every other read goes through
+   * the wallet's RPC endpoint (possibly a private, keyed one) only for a site the user connected.
+   */
+  publicReads: ["eth_blockNumber", "eth_feeHistory", "eth_gasPrice", "eth_maxPriorityFeePerGas", "eth_syncing", "web3_clientVersion"],
   /** Refused outright. eth_sign signs an arbitrary 32-byte hash: it can hide any transaction. */
   rejected: ["eth_sign"],
 } as const;

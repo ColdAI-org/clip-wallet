@@ -42,7 +42,17 @@ export interface BeaconExtensionPeerOptions {
   networks?: TezosNetworkMap;
   /** New random seed for the communication keypair (first run only). Default: 32 bytes from crypto.getRandomValues. */
   randomSeed?: () => string;
+  /** Clock for expiring uncollected results (tests). Default Date.now. */
+  now?: () => number;
 }
+
+/**
+ * Audit 1MASK-L: results wait in `pending` until the page collects them. A page that never does can't grow the map:
+ * at most this many per site (more are answered with a Beacon error and never dispatched)...
+ */
+const MAX_PENDING_PER_ORIGIN = 16;
+/** ...and a result nobody collected is dropped after this long (longer than the 10-minute approval timeout). */
+const PENDING_TTL_MS = 15 * 60_000;
 
 export interface BeaconReply {
   payload?: string;
@@ -101,8 +111,13 @@ export function createBeaconExtensionPeer(opts: BeaconExtensionPeerOptions) {
   const serializer = new Serializer();
   let ready: Promise<{ crypto: PeerCrypto; publicKey: string; senderId: string }> | undefined;
   let peersCache: Record<string, PeerRecord[]> | undefined;
-  const pending = new Map<string, { origin: string; done: Promise<BeaconReply[]> }>();
+  const pending = new Map<string, { origin: string; at: number; done: Promise<BeaconReply[]> }>();
   let counter = 0;
+  const now = opts.now ?? (() => Date.now());
+  const sweep = () => {
+    const t = now();
+    for (const [id, p] of pending) if (t - p.at > PENDING_TTL_MS) pending.delete(id);
+  };
 
   const init = () =>
     (ready ??= (async () => {
@@ -211,13 +226,18 @@ export function createBeaconExtensionPeer(opts: BeaconExtensionPeerOptions) {
       await opts.dispatch(origin, { family: "tezos", method: TEZOS_WALLET_METHODS.disconnect }).catch(() => undefined);
       return { replies: [] };
     }
+    sweep();
+    if ([...pending.values()].filter((p) => p.origin === origin).length >= MAX_PENDING_PER_ORIGIN) {
+      return { replies: [await encryptFor(peer, { type: BEACON_MESSAGE.error, id: req.id, errorType: "UNKNOWN_ERROR" })] };
+    }
     const ack = await encryptFor(peer, { type: BEACON_MESSAGE.acknowledge, id: req.id });
     const id = `b${++counter}`;
-    pending.set(id, { origin, done: handle(origin, peer, req) });
+    pending.set(id, { origin, at: now(), done: handle(origin, peer, req) });
     return { replies: [ack], pending: id };
   }
 
   async function result(origin: string, id: string): Promise<BeaconReply[]> {
+    sweep();
     const p = pending.get(id);
     if (!p || p.origin !== origin) return [];
     pending.delete(id);

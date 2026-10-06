@@ -276,3 +276,56 @@ describe("router: Solana and Bitcoin", () => {
     expect(await permissions.has(O, "solana")).toBe(true);
   });
 });
+
+describe("audit 1MASK-L: what pages can do through the wallet without the user", () => {
+  const reads = (r: DappRequest) => (r.method === "eth_blockNumber" ? "0x10" : r.method === "eth_call" ? "0x" : "0x1");
+
+  it("an unconnected page only gets cheap chain-state reads through the wallet's RPC", async () => {
+    const { d, handled } = make({ handle: async (r) => (handled.push(r), reads(r)) });
+    expect(await d("evm", "eth_blockNumber")).toBe("0x10");
+    for (const m of ["eth_call", "eth_getLogs", "eth_estimateGas", "eth_getStorageAt", "eth_getCode", "eth_getBalance"]) {
+      await expect(d("evm", m, [{}])).rejects.toMatchObject({ code: 4100 });
+    }
+    expect(handled.map((r) => r.method)).toEqual(["eth_blockNumber"]);
+  });
+
+  it("a connected page gets every allowlisted read, still rate-limited per origin and in flight", async () => {
+    let t = 0;
+    const { d, permissions, handled } = make({ now: () => t, handle: async (r) => (handled.push(r), reads(r)), rateLimit: { readsPerSecond: 1, readBurst: 3 } });
+    await permissions.grant(O, "evm");
+    expect(await d("evm", "eth_call", [{ to: EVM_ADDR, data: "0x" }, "latest"])).toBe("0x");
+    await d("evm", "eth_getBalance", [EVM_ADDR, "latest"]);
+    await d("evm", "eth_blockNumber");
+    await expect(d("evm", "eth_blockNumber")).rejects.toMatchObject({ code: -32005 });
+    // Non-proxied answers (chain id) don't spend read tokens.
+    expect(await d("evm", "eth_chainId")).toBe("0xaa36a7");
+    t += 1000;
+    expect(await d("evm", "eth_blockNumber")).toBe("0x10");
+
+    const slow = make({ handle: () => new Promise(() => {}), rateLimit: { maxInflightReads: 2 } });
+    await slow.permissions.grant(O, "evm");
+    void slow.d("evm", "eth_blockNumber");
+    void slow.d("evm", "eth_blockNumber");
+    await tick();
+    await expect(slow.d("evm", "eth_blockNumber")).rejects.toMatchObject({ code: -32005 });
+  });
+
+  it("after the user declines a connect, the site can't ask again right away (cooldown, growing)", async () => {
+    let t = 0;
+    let prompts = 0;
+    const { d, permissions } = make({ now: () => t, handle: async () => (prompts++, Promise.reject({ code: 4001, message: "no" })) });
+    await expect(d("evm", "eth_requestAccounts")).rejects.toMatchObject({ code: 4001 });
+    await expect(d("evm", "eth_requestAccounts")).rejects.toMatchObject({ code: 4001 });
+    expect(prompts).toBe(1); // the second ask never reached the user
+    t += 31_000;
+    await expect(d("evm", "eth_requestAccounts")).rejects.toMatchObject({ code: 4001 });
+    expect(prompts).toBe(2);
+    t += 31_000; // the cooldown doubled after a second decline
+    await expect(d("evm", "eth_requestAccounts")).rejects.toMatchObject({ code: 4001 });
+    expect(prompts).toBe(2);
+    // Other families of the same site and other sites aren't affected.
+    await expect(d("solana", "standard:connect", {})).rejects.toMatchObject({ code: 4001 });
+    expect(prompts).toBe(3);
+    expect(await permissions.has(O, "evm")).toBe(false);
+  });
+});

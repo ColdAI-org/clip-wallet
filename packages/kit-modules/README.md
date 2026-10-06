@@ -81,6 +81,8 @@ Peers, each optional (install the ones for your ecosystem): `@near-wallet-select
   messages; v3 (other chains) is answered with an error. `broadcast_request` is refused (`BROADCAST_ERROR`).
   Beacon packages need a global `Buffer` (polyfill in the bundle).
   The interop test runs Beacon's own dApp-side `PostMessageClient` against 1Mask's relay and this peer.
+  Results wait for the page to collect them: at most 16 per site (more get a Beacon error and aren't dispatched),
+  and one nobody collected is dropped after 15 minutes.
 
 ## Sources
 

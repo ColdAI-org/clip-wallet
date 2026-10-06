@@ -80,7 +80,21 @@ export interface OneMaskRouterOptions extends StarknetTonOptions {
   walletConnectPair?(origin: string, uri: string): Promise<void>;
   /** Tezos Beacon extension peer (kit-modules/tezos createBeaconExtensionPeer) behind 1Mask's page relay. */
   tezosBeacon?: BeaconRelay | (() => BeaconRelay | undefined);
-  rateLimit?: { perSecond?: number; burst?: number; maxPendingApprovals?: number };
+  /**
+   * Per-origin limits. perSecond/burst: every request. readsPerSecond/readBurst/maxInflightReads: reads proxied to the
+   * wallet's RPC (audit 1MASK-L; defaults 5/s, burst 20, 8 at once). connectCooldownMs: after the user declines a
+   * connect, the same site+family can't ask again for this long, doubling with each decline up to 10 minutes
+   * (default 30 s).
+   */
+  rateLimit?: {
+    perSecond?: number;
+    burst?: number;
+    maxPendingApprovals?: number;
+    readsPerSecond?: number;
+    readBurst?: number;
+    maxInflightReads?: number;
+    connectCooldownMs?: number;
+  };
   /**
    * EIP-5792 Wallet Call API (+ ERC-7682 auxiliaryFunds) on the EVM provider. Opt-in: without it the four
    * wallet_*Calls / wallet_getCapabilities methods stay unsupported (4200), exactly as before.
@@ -135,13 +149,22 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   const perSecond = opts.rateLimit?.perSecond ?? 20;
   const burst = opts.rateLimit?.burst ?? 60;
   const maxPendingApprovals = opts.rateLimit?.maxPendingApprovals ?? 5;
+  const readsPerSecond = opts.rateLimit?.readsPerSecond ?? 5;
+  const readBurst = opts.rateLimit?.readBurst ?? 20;
+  const maxInflightReads = opts.rateLimit?.maxInflightReads ?? 8;
+  const connectCooldownMs = opts.rateLimit?.connectCooldownMs ?? 30_000;
+  const MAX_CONNECT_COOLDOWN_MS = 10 * 60_000;
 
   const ports = new Map<string, Set<RouterPort>>();
   /** origin → provider family → selected network id */
   const selected = new Map<string, Map<Family, NetworkId>>();
   const buckets = new Map<string, { tokens: number; at: number }>();
+  const readBuckets = new Map<string, { tokens: number; at: number }>();
+  const inflightReads = new Map<string, number>();
   const pendingApprovals = new Map<string, number>();
   const pendingConnect = new Set<string>();
+  /** origin+family → when it may ask to connect again, and how many declines in a row (audit 1MASK-L). */
+  const declined = new Map<string, { until: number; strikes: number }>();
 
   /* ------------------------------------------------------------ helpers */
 
@@ -171,16 +194,17 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     m.set(family, id);
   };
 
-  const rateLimited = (origin: string): boolean => {
+  const takeToken = (map: Map<string, { tokens: number; at: number }>, origin: string, rate: number, cap: number): boolean => {
     const t = now();
-    const b = buckets.get(origin) ?? { tokens: burst, at: t };
-    b.tokens = Math.min(burst, b.tokens + ((t - b.at) / 1000) * perSecond);
+    const b = map.get(origin) ?? { tokens: cap, at: t };
+    b.tokens = Math.min(cap, b.tokens + ((t - b.at) / 1000) * rate);
     b.at = t;
-    buckets.set(origin, b);
-    if (b.tokens < 1) return true;
+    map.set(origin, b);
+    if (b.tokens < 1) return false;
     b.tokens -= 1;
-    return false;
+    return true;
   };
+  const rateLimited = (origin: string): boolean => !takeToken(buckets, origin, perSecond, burst);
 
   const withTimeout = <T>(p: Promise<T>, ms: number, id: string): Promise<T> =>
     new Promise<T>((resolve, reject) => {
@@ -232,15 +256,45 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     }
   };
 
+  /**
+   * A read proxied to the wallet's RPC (audit 1MASK-L): its own per-origin token bucket and a cap on reads in flight,
+   * on top of the overall request limit, so a page can't turn the wallet's (possibly private) endpoint into its own.
+   */
+  const proxiedRead = async (req: DappRequest): Promise<unknown> => {
+    if (!takeToken(readBuckets, req.origin, readsPerSecond, readBurst)) throw rpcError.limitExceeded();
+    const n = inflightReads.get(req.origin) ?? 0;
+    if (n >= maxInflightReads) throw rpcError.limitExceeded("Too many reads from this site are in progress. Try again in a moment.");
+    inflightReads.set(req.origin, n + 1);
+    try {
+      return await withTimeout(opts.handle(req), readMs, req.id);
+    } finally {
+      const left = (inflightReads.get(req.origin) ?? 1) - 1;
+      if (left <= 0) inflightReads.delete(req.origin);
+      else inflightReads.set(req.origin, left);
+    }
+  };
+
   /** Connect approval shared by all families; -32002 if one is already waiting for this origin+family. */
   const connect = async (origin: string, family: Family, net: Network, method: string, params: unknown) => {
     const key = `${family}\u0000${origin}`;
     if (pendingConnect.has(key)) throw rpcError.pending();
+    // Audit 1MASK-L: after a decline the site can't put the prompt back in front of the user straight away.
+    const cool = declined.get(key);
+    if (cool && now() < cool.until) {
+      throw rpcError.userRejected(`You declined this site's request to connect. It can ask again in ${Math.ceil((cool.until - now()) / 1000)} s.`);
+    }
     pendingConnect.add(key);
     try {
       await approve(makeReq(origin, family, net, method, params));
       await opts.permissions.grant(origin, family);
       knownPermitted.add(permKey(origin, family));
+      declined.delete(key);
+    } catch (err) {
+      if (toRpcErrorShape(err).code === RpcErrorCode.UserRejected) {
+        const strikes = (declined.get(key)?.strikes ?? 0) + 1;
+        declined.set(key, { strikes, until: now() + Math.min(MAX_CONNECT_COOLDOWN_MS, connectCooldownMs * 2 ** (strikes - 1)) });
+      }
+      throw err;
     } finally {
       pendingConnect.delete(key);
     }
@@ -402,9 +456,10 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
 
     if (callsOn() && isCallsMethod(method)) return callsDispatch!(origin, method, params);
 
-    // Read-only JSON-RPC: proxied to the background's RPC, no prompt.
-    const req = makeReq(origin, "evm", net, method, params);
-    return withTimeout(opts.handle(req), readMs, req.id);
+    // Read-only JSON-RPC: proxied to the background's RPC, no prompt. Unconnected pages get cheap chain state only
+    // (audit 1MASK-L); everything else needs the site to be connected.
+    if (!(EVM_METHODS.publicReads as readonly string[]).includes(method)) await requirePermission(origin, "evm");
+    return proxiedRead(makeReq(origin, "evm", net, method, params));
   };
 
   /* ------------------------------------------------------------ Solana & Bitcoin (Wallet Standard) */
@@ -503,7 +558,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     accounts,
     connect,
     approve,
-    read: (req) => withTimeout(opts.handle(req), readMs, req.id),
+    read: (req) => proxiedRead(req),
     makeReq,
     requireNetwork,
     requirePermission,

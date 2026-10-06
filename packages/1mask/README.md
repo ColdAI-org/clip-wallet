@@ -73,18 +73,18 @@ set when no other wallet owns it.
 
 | Kind | Methods | Behaviour |
 | --- | --- | --- |
-| Connect | `eth_requestAccounts`, `wallet_requestPermissions` | Approval through `handle`, then a per-origin `evm` permission. A second connect while one is pending gets `-32002`. |
+| Connect | `eth_requestAccounts`, `wallet_requestPermissions` | Approval through `handle`, then a per-origin `evm` permission. A second connect while one is pending gets `-32002`. After the user declines, the site can't ask again for 30 s (doubling with each decline, up to 10 min): `4001` without a prompt. |
 | Local | `eth_accounts`, `eth_chainId`, `net_version`, `wallet_getPermissions`, `wallet_revokePermissions` | `eth_accounts` returns `[]` until the site is connected. |
 | Networks | `wallet_switchEthereumChain` | Registry chains switch **without a prompt** ("networks are invisible") and emit `chainChanged`. Unknown chains get `4902`. The network is stored per origin. |
 |  | `wallet_addEthereumChain` | Accepted only for registry chains, which it switches to. The registry's RPC is used and the dapp's RPC is ignored. Unknown chains get `4001`. |
 | Signing | `personal_sign`, `eth_signTypedData_v4`, `eth_sendTransaction` | Needs the permission (`4100`) and an address that belongs to the site's accounts (`4100`). A tx `chainId` that differs from the selected network gets `-32602`. |
-| Read-only | `eth_call`, `eth_getBalance`, `eth_blockNumber`, `eth_estimateGas`, `eth_getTransactionReceipt`, `eth_getTransactionByHash`, `eth_getTransactionCount`, `eth_getCode`, `eth_getStorageAt`, `eth_getBlockByNumber`, `eth_getBlockByHash`, `eth_getLogs`, `eth_gasPrice`, `eth_maxPriorityFeePerGas`, `eth_feeHistory`, `eth_syncing`, `web3_clientVersion` | Proxied to `handle` (the background's RPC). No permission needed. 30 s timeout. |
+| Read-only | `eth_call`, `eth_getBalance`, `eth_blockNumber`, `eth_estimateGas`, `eth_getTransactionReceipt`, `eth_getTransactionByHash`, `eth_getTransactionCount`, `eth_getCode`, `eth_getStorageAt`, `eth_getBlockByNumber`, `eth_getBlockByHash`, `eth_getLogs`, `eth_gasPrice`, `eth_maxPriorityFeePerGas`, `eth_feeHistory`, `eth_syncing`, `web3_clientVersion` | Proxied to `handle` (the background's RPC). An unconnected site may only use `eth_blockNumber`, `eth_gasPrice`, `eth_maxPriorityFeePerGas`, `eth_feeHistory`, `eth_syncing` and `web3_clientVersion`; the rest need the permission (`4100`), because the wallet's endpoint may be a private, keyed one. Per site: 5 reads a second (burst 20) and 8 in flight, else `-32005`. 30 s timeout. |
 | Refused | `eth_sign` | `4200`, both in the page and in the router. |
 | Other | anything else | `4200`. |
 
 Events: `connect`, `disconnect` (4900), `chainChanged`, `accountsChanged`. Error codes follow
 EIP-1193 and EIP-1474: 4001, 4100, 4200, 4900, 4901, 4902, -32602, -32603, -32002 (already
-pending) and -32005 (rate limit or too many pending approvals).
+pending) and -32005 (rate limit, read limit or too many pending approvals).
 
 ### Solana (Wallet Standard)
 

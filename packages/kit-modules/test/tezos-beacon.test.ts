@@ -189,6 +189,38 @@ describe("Beacon extension peer + 1Mask relay vs Beacon's dApp PostMessageClient
   });
 });
 
+describe("audit 1MASK-L: the Beacon peer's pending results are bounded", () => {
+  it("caps unfetched results per site, and forgets old ones", async () => {
+    const storage = memoryStorage({ "beacon:seed": "clip-wallet-test-seed-3" });
+    let t = 0;
+    const w = wallet(() => ({ signature: "edsigTest" }));
+    const peer = createBeaconExtensionPeer({ name: "Clip Wallet", dispatch: w.dispatch, storage, now: () => t });
+    const dappKeys = await getKeypairFromSeed("dapp-test-seed-3");
+    const ser = new Serializer();
+    const pairingReq = await ser.serialize({ type: "postmessage-pairing-request", id: "pair-3", name: "dApp", publicKey: toHex(dappKeys.publicKey), version: "3" });
+    await peer.receive("https://dapp.example", { payload: pairingReq });
+    const dapp = dappClient("dApp", dappKeys);
+    const walletPub = toHex((await getKeypairFromSeed("clip-wallet-test-seed-3")).publicKey);
+    const ask = async (id: string) =>
+      peer.receive("https://dapp.example", {
+        encryptedPayload: await (dapp as any).encryptMessage(walletPub, await ser.serialize({ version: "2", senderId: "D", id, type: "sign_payload_request", payload: "00", signingType: "raw", sourceAddress: TZ1 })),
+      });
+    // A page that never collects its results can't grow the map without bound.
+    const got = [];
+    for (let i = 0; i < 20; i++) got.push(await ask(`q${i}`));
+    expect(got.filter((r) => r.pending)).toHaveLength(16);
+    const refused = got.at(-1)!;
+    expect(refused.pending).toBeUndefined();
+    const decoded = await ser.deserialize(await (dapp as any).decryptMessage(walletPub, refused.replies[0]!.encryptedPayload));
+    expect(decoded).toMatchObject({ type: "error", id: "q19" });
+    expect(w.calls).toHaveLength(16);
+    // Results nobody fetched within 15 minutes are dropped, which makes room again.
+    t += 16 * 60_000;
+    expect((await ask("later")).pending).toBeTruthy();
+    expect(await peer.result("https://dapp.example", got[0]!.pending!)).toEqual([]);
+  });
+});
+
 describe("Beacon P2P wallet wrapper", () => {
   it("answers WalletClient requests through dispatch and responds with Beacon messages", async () => {
     const responses: Record<string, unknown>[] = [];
