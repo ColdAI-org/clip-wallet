@@ -156,6 +156,18 @@ function textOf(s: string): boolean {
   return !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(s);
 }
 
+/** Token-interface (SEP-41) and SAC functions that move, approve or destroy assets. */
+const ASSET_MOVING_FUNCTIONS = new Set(["transfer", "transfer_from", "approve", "burn", "burn_from", "clawback", "mint", "set_admin", "swap", "withdraw", "deposit"]);
+/** An auth entry valid for more than about a day (17,280 ledgers of ~5 s) gets a caution. */
+const LONG_AUTH_LEDGERS = 17_280;
+
+/** Function names in an authorized invocation tree ("" for a contract creation). */
+function invokedFunctions(inv: xdr.SorobanAuthorizedInvocation): string[] {
+  const f = inv.function();
+  const name = f.switch().name === "sorobanAuthorizedFunctionTypeContractFn" ? f.contractFn().functionName().toString() : "";
+  return [name, ...inv.subInvocations().flatMap((s) => invokedFunctions(s))];
+}
+
 export interface StellarModule extends ChainModule {
   normalize: typeof normalize;
   /** XLM you can spend: balance − minimum balance ((2 + subentries + sponsoring − sponsored) × base reserve) − selling liabilities. */
@@ -247,11 +259,36 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
       const exp = n.preimage.signatureExpirationLedger();
       let until = `ledger ${exp}`;
       const rpc = rpcFor(ctx);
+      let latestSeq: number | null = null;
       if (rpc) {
         const latest = await rpc.latestLedger().catch(() => null);
+        latestSeq = latest?.sequence ?? null;
         if (latest && exp > latest.sequence) until += ` (about ${Math.max(1, Math.round(((exp - latest.sequence) * 5) / 60))} min from now)`;
       }
       lines.push({ label: "Valid until", value: until }, { label: "Nonce", value: n.preimage.nonce().toString() });
+      // Audit CHAIN-L: an auth entry lets whoever submits it run this call tree as you until it expires, and nothing
+      // is previewed, so it always carries a warning (danger when the tree can move or approve assets).
+      const warnings: Warning[] = [];
+      const fns = invokedFunctions(n.preimage.invocation());
+      const movesAssets = fns.some((f) => ASSET_MOVING_FUNCTIONS.has(f)) || fns.includes("");
+      warnings.push(
+        movesAssets
+          ? {
+              level: "danger",
+              code: "unknown-call",
+              message: `This lets ${host} (or whoever it hands it to) move or approve assets from your account through ${fns.filter(Boolean).join(", ") || "a new contract"}, until it expires. Clip Wallet can't preview the result. Only sign it if you trust ${host}.`,
+            }
+          : {
+              level: "caution",
+              code: "unknown-call",
+              message: `This lets ${host} (or whoever it hands it to) run the contract calls above as you until it expires. Clip Wallet can't preview the result.`,
+            },
+      );
+      if (latestSeq !== null && exp <= latestSeq) {
+        warnings.push({ level: "caution", code: "unknown-call", message: "This approval has already expired, so it can't be used. The app may be misconfigured." });
+      } else if (latestSeq !== null && exp - latestSeq > LONG_AUTH_LEDGERS) {
+        warnings.push({ level: "caution", code: "unknown-call", message: `This approval stays valid for a long time (about ${Math.round(((exp - latestSeq) * 5) / 86400)} days). Apps usually need only minutes.` });
+      }
       const root = n.preimage.invocation().function();
       let title = say("bg.req.contractActionFor", { host });
       if (root.switch().name === "sorobanAuthorizedFunctionTypeContractFn") {
@@ -259,7 +296,7 @@ export function createStellarModule(options: StellarModuleOptions = {}): Stellar
         const fn = c.functionName().toString();
         title = say("bg.req.approveFnOnContract", { fn, contract: short(StrKey.encodeContract(c.contractAddress().contractId() as never)) });
       }
-      return { ...base, title, lines, balanceChanges: [], simulated: false, blind: false, warnings: [] };
+      return { ...base, title, lines, balanceChanges: [], simulated: false, blind: false, warnings };
     }
 
     const readable = textOf(n.message);

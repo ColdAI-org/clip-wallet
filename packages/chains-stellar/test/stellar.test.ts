@@ -410,6 +410,31 @@ describe("decode", () => {
     expect(d.blind).toBe(false);
   });
 
+  it("audit CHAIN-L: an auth entry always carries a warning: danger when it moves assets, caution otherwise", async () => {
+    const latest = { getLatestLedger: () => ({ id: "x", protocolVersion: 29, sequence: 4999940 }) };
+    const { m, ctx } = setup({}, latest);
+    // The fixture authorises transfer(me → bob, 1 XLM) on the native asset contract.
+    const d = await m.decode(req(STELLAR_METHODS.signAuthEntry, { entryXdr: FIX.authEntry }), ctx);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "unknown-call" }));
+    const edit = (f: (a: xdr.HashIdPreimageSorobanAuthorization) => void) => {
+      const pre = xdr.HashIdPreimage.fromXDR(FIX.authEntry, "base64");
+      f(pre.sorobanAuthorization());
+      return pre.toXDR("base64");
+    };
+    // Another function: still a warning (its effects aren't previewed), at caution.
+    const vote = edit((a) => a.invocation().function().contractFn().functionName("vote"));
+    const v = await m.decode(req(STELLAR_METHODS.signAuthEntry, { entryXdr: vote }), ctx);
+    expect(v.warnings.map((w) => [w.level, w.code])).toEqual([["caution", "unknown-call"]]);
+    // Valid for a long time (about two months of ledgers): said so.
+    const long = edit((a) => a.signatureExpirationLedger(4999940 + 1_000_000));
+    const l = await m.decode(req(STELLAR_METHODS.signAuthEntry, { entryXdr: long }), ctx);
+    expect(l.warnings.some((w) => /valid for a long time/i.test(w.message))).toBe(true);
+    // Already expired: said so.
+    const old = edit((a) => a.signatureExpirationLedger(4999000));
+    const o = await m.decode(req(STELLAR_METHODS.signAuthEntry, { entryXdr: old }), ctx);
+    expect(o.warnings.some((w) => /expired/i.test(w.message))).toBe(true);
+  });
+
   it("SEP-43 auth entry for another network is refused", async () => {
     const { m, ctx } = setup();
     const pre = xdr.HashIdPreimage.fromXDR(FIX.authEntry, "base64");
