@@ -78,6 +78,19 @@ const ADDRESS_RE: Partial<Record<Family, RegExp>> = {
   stellar: /^G[A-Z2-7]{55}$/,
   tezos: /^tz[1-4][1-9A-HJ-NP-Za-km-z]{33}$/,
   algorand: /^[A-Z2-7]{58}$/,
+  // networks87
+  cosmos: /^(osmo|dydx|zig|cosmos)1[02-9ac-hj-np-z]{38}$/,
+  provenance: /^(pb|tp)1[02-9ac-hj-np-z]{38}$/,
+  thorchain: /^s?thor1[02-9ac-hj-np-z]{38}$/,
+  initia: /^init1[02-9ac-hj-np-z]{38}$/,
+  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+  xrpl: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/,
+  antelope: /^([a-z1-5.]{1,12}|PUB_K1_[1-9A-HJ-NP-Za-km-z]{50})$/,
+  multiversx: /^erd1[02-9ac-hj-np-z]{58}$/,
+  icp: /^([a-z2-7]{5}-){10}[a-z2-7]{3}$|^[0-9a-f]{64}$/,
+  stacks: /^S[PT][0-9A-HJKMNP-TV-Z]{38,39}$/,
+  fuel: /^0x[0-9a-fA-F]{64}$/,
+  bitcoincash: /^(bitcoincash|bchtest):[qp][02-9ac-hj-np-z]{41}$/,
 };
 
 const SCHEME: Partial<Record<Family, SignablePayload["scheme"]>> = {
@@ -95,6 +108,18 @@ const SCHEME: Partial<Record<Family, SignablePayload["scheme"]>> = {
   stellar: "ed25519",
   tezos: "ed25519",
   algorand: "ed25519",
+  cosmos: "ecdsa-secp256k1",
+  provenance: "ecdsa-secp256k1",
+  thorchain: "ecdsa-secp256k1",
+  initia: "ecdsa-secp256k1",
+  tron: "ecdsa-secp256k1",
+  xrpl: "ecdsa-secp256k1",
+  antelope: "ecdsa-secp256k1",
+  multiversx: "ed25519",
+  icp: "ecdsa-secp256k1",
+  stacks: "ecdsa-secp256k1",
+  fuel: "ecdsa-secp256k1",
+  bitcoincash: "ecdsa-secp256k1",
 };
 
 const PATHS: Partial<Record<Family, (i: number) => string>> = {
@@ -112,6 +137,18 @@ const PATHS: Partial<Record<Family, (i: number) => string>> = {
   stellar: (i) => `m/44'/148'/${i}'`,
   tezos: (i) => `m/44'/1729'/${i}'/0'`,
   algorand: (i) => `m/44'/283'/${i}'/0/0`,
+  cosmos: (i) => `m/44'/118'/0'/0/${i}`,
+  provenance: (i) => `m/44'/505'/0'/0/${i}`,
+  thorchain: (i) => `m/44'/931'/0'/0/${i}`,
+  initia: (i) => `m/44'/60'/0'/0/${i}`,
+  tron: (i) => `m/44'/195'/0'/0/${i}`,
+  xrpl: (i) => `m/44'/144'/${i}'/0/0`,
+  antelope: (i) => `m/44'/194'/0'/0/${i}`,
+  multiversx: (i) => `m/44'/508'/0'/0'/${i}'`,
+  icp: (i) => `m/44'/223'/0'/0/${i}`,
+  stacks: (i) => `m/44'/5757'/0'/0/${i}`,
+  fuel: (i) => `m/44'/1179993420'/${i}'/0/0`,
+  bitcoincash: (i) => `m/44'/145'/0'/0/${i}`,
 };
 
 const CURVE: Record<Family, ChainModule["curve"]> = {

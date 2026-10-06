@@ -15,15 +15,15 @@ describe("network registry", () => {
     }
   });
 
-  it("covers 60 CLPR EVM networks plus the Sepolia, Arc and STRATO testnets", () => {
-    expect(EVM_NETWORKS).toHaveLength(65);
-    expect(EVM_NETWORKS.filter((n) => !n.testnet)).toHaveLength(59);
+  it("covers 61 CLPR EVM networks plus the Sepolia, Arc and STRATO testnets", () => {
+    expect(EVM_NETWORKS).toHaveLength(66);
+    expect(EVM_NETWORKS.filter((n) => !n.testnet)).toHaveLength(60);
     expect(EVM_TESTNETS.map((n) => n.chainId).sort((a, b) => a! - b!)).toEqual([84532, 421614, 5042002, 11155111, 11155420, 195049586845898]);
   });
 
   it("pins well-known chain ids", () => {
     const by = Object.fromEntries(EVM_NETWORK_SPECS.map((s) => [s.slug, s.chainId]));
-    expect(by).toMatchObject({ ethereum: 1, base: 8453, "arbitrum-one": 42161, "op-mainnet": 10, "bnb-smart-chain": 56, "polygon-pos": 137, "avalanche-c-chain": 43114, linea: 59144, scroll: 534352, "zksync-era": 324, monad: 143 });
+    expect(by).toMatchObject({ ethereum: 1, base: 8453, "arbitrum-one": 42161, "op-mainnet": 10, "bnb-smart-chain": 56, "polygon-pos": 137, "avalanche-c-chain": 43114, linea: 59144, scroll: 534352, "zksync-era": 324, monad: 143, arc: 5042, "arc-testnet": 5042002, strato: 123354377739506 });
   });
 
   it("does not include Hedera (its own module) or non-EVM ledgers", () => {
