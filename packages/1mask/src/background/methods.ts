@@ -6,6 +6,7 @@ import { cosmosInjectedAllowlist } from "./cosmos.js";
 import { tronInjectedAllowlist } from "./tron.js";
 import { stacksInjectedAllowlist } from "./stacks.js";
 import { fuelInjectedAllowlist } from "./fuel.js";
+import { xrplAllowlist } from "../shared/xrpl.js";
 import { cardanoSubstrateAllowlist } from "./cardano-substrate.js";
 import { starknetTonAllowlist } from "./starknet-ton.js";
 import { HEDERA_INJECTED_METHODS } from "../shared/hedera.js";
@@ -141,8 +142,10 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
       return stacksInjectedAllowlist();
     case "fuel":
       return fuelInjectedAllowlist();
+    case "xrpl":
+      return xrplAllowlist();
     default:
-      // Families without an injected provider (xrpl, antelope, multiversx, icp, bitcoincash): send and receive only.
+      // Families without an injected provider (antelope, icp; bitcoincash over WalletConnect): send and receive only.
       return new Set<string>();
   }
 }

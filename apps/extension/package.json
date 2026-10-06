@@ -61,6 +61,7 @@
     "@clip-wallet/chains-tezos": "workspace:*",
     "@clip-wallet/chains-ton": "workspace:*",
     "@clip-wallet/chains-tron": "workspace:*",
+    "@clip-wallet/chains-xrpl": "workspace:*",
     "@clip-wallet/connect": "workspace:*",
     "@clip-wallet/core": "workspace:*",
     "@clip-wallet/kit-modules": "workspace:*",

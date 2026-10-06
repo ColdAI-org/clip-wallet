@@ -354,6 +354,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     icp: lazyChain("icp", "secp256k1", () => import("@clip-wallet/chains-icp").then((m) => m.createIcpModule())),
     stacks: lazyChain("stacks", "secp256k1", () => import("@clip-wallet/chains-stacks").then((m) => m.createStacksModule())),
     fuel: lazyChain("fuel", "secp256k1", () => import("@clip-wallet/chains-fuel").then((m) => m.createFuelModule())),
+    xrpl: lazyChain("xrpl", "secp256k1", () => import("@clip-wallet/chains-xrpl").then((m) => m.createXrplModule())),
     bitcoincash: lazyChain("bitcoincash", "secp256k1", () => import("@clip-wallet/chains-bitcoincash").then((m) => m.createBitcoinCashModule())),
   };
   const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);

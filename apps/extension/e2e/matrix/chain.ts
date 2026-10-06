@@ -28,6 +28,7 @@ import { FUEL_TESTNET, createFuelModule } from "@clip-wallet/chains-fuel";
 import { BCH_CHIPNET, createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
 import { MULTIVERSX_DEVNET, createMultiversXModule } from "@clip-wallet/chains-multiversx";
 import { ICP_TEST, createIcpModule } from "@clip-wallet/chains-icp";
+import { XRPL_TESTNET, createXrplModule } from "@clip-wallet/chains-xrpl";
 import ADDRESSES from "./addresses.json" with { type: "json" };
 
 export type MatrixFamily = Exclude<Family, never>;
@@ -39,7 +40,7 @@ export type MatrixFamily = Exclude<Family, never>;
  */
 export type Target =
   | "evm" | "hedera-evm" | "hedera" | "solana" | "bitcoin" | "sui" | "aptos" | "cardano" | "substrate" | "starknet" | "ton" | "near" | "stellar" | "tezos" | "algorand"
-  | "cosmos" | "tron" | "stacks" | "fuel" | "chainflip"
+  | "cosmos" | "tron" | "stacks" | "fuel" | "chainflip" | "xrpl"
   | "provenance" | "initia" | "multiversx" | "icp" | "bitcoincash";
 
 interface Entry {
@@ -79,6 +80,7 @@ export const TARGETS: Record<Target, { network: Network; module: () => ChainModu
   tron: { network: TRON_NILE, module: createTronModule, family: "tron", minimum: 2_000_000n, faucetHint: "2 TRX (Nile)" },
   stacks: { network: STACKS_TESTNET, module: createStacksModule, family: "stacks", minimum: 10_000n, faucetHint: "0.01 STX (testnet)" },
   fuel: { network: FUEL_TESTNET, module: createFuelModule, family: "fuel", minimum: 200n, faucetHint: "0.0000002 ETH (Fuel testnet)" },
+  xrpl: { network: XRPL_TESTNET, module: createXrplModule, family: "xrpl", minimum: 1_100_000n, faucetHint: "1.1 XRP (testnet; 1 XRP base reserve + fees)" },
   chainflip: { network: SUBSTRATE_NETWORKS.find((n) => n.name === "Chainflip Perseverance")!, module: createSubstrateModule, family: "substrate", minimum: 10n ** 17n, faucetHint: "0.1 tFLIP funded from Sepolia" },
   provenance: { network: PROVENANCE_TESTNET, module: () => createCosmosModule({ family: "provenance" }), family: "provenance", minimum: 10n ** 9n, faucetHint: "1 HASH (pio-testnet-1)" },
   initia: { network: INITIA_TESTNET, module: () => createCosmosModule({ family: "initia" }), family: "initia", minimum: 100_000n, faucetHint: "0.1 INIT (initiation-2)" },
@@ -89,7 +91,7 @@ export const TARGETS: Record<Target, { network: Network; module: () => ChainModu
 
 export const TARGET_ORDER: Target[] = [
   "evm", "hedera-evm", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
-  "cosmos", "tron", "stacks", "fuel", "chainflip", "provenance", "initia", "multiversx", "icp", "bitcoincash",
+  "cosmos", "tron", "stacks", "fuel", "xrpl", "chainflip", "provenance", "initia", "multiversx", "icp", "bitcoincash",
 ];
 
 const hexToBytes = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
@@ -223,6 +225,8 @@ export function explorerTx(t: Target, id: string): string {
       return `https://app-testnet.fuel.network/tx/${id}`;
     case "chainflip":
       return `https://scan.perseverance.chainflip.io/blocks/${id}`;
+    case "xrpl":
+      return `https://testnet.xrpl.org/transactions/${id}`;
     default:
       return `${n.explorerUrl}/tx/${id}`;
   }
@@ -312,6 +316,10 @@ export async function confirmTx(t: Target, id: string, timeoutMs = 120_000): Pro
       case "fuel": {
         const r = await j("https://testnet.fuel.network/v1/graphql", { method: "POST", body: JSON.stringify({ query: `{ transaction(id: "${id}") { status { __typename } } }` }) }).catch(() => null);
         return r?.data?.transaction?.status?.__typename === "SuccessStatus";
+      }
+      case "xrpl": {
+        const r = await rpc("https://s.altnet.rippletest.net:51234", "tx", [{ transaction: id }]).catch(() => null);
+        return r?.validated === true && r?.meta?.TransactionResult === "tesSUCCESS";
       }
       case "chainflip": {
         const r = await rpc(n.rpcUrls[0]!, "chain_getBlock", [id]).catch(() => null);

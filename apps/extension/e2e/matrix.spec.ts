@@ -245,6 +245,8 @@ const SPECS: Partial<Record<Target, Spec>> = {
   stacks: { amount: "0.000001", symbol: "STX", recipient: /ST0000/ },
   fuel: { amount: "0.000000001", symbol: "ETH" },
   chainflip: { amount: "", symbol: "FLIP", call: /Register as a Chainflip liquidity provider/ },
+  // rippled refuses an XRP payment to yourself (temREDUNDANT): L3 is a no-op AccountSet with a memo.
+  xrpl: { amount: "", symbol: "XRP", call: /Change your account settings/, noSign: "XLS-72d (the XRPL browser wallet standard) has no message signing." },
 };
 
 /** Hedera over WalletConnect answers with the 0.0.x account id: it must be the account behind our key's EVM alias. */

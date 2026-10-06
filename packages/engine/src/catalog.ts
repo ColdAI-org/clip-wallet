@@ -30,6 +30,7 @@ import { MULTIVERSX_NETWORKS } from "@clip-wallet/chains-multiversx/networks";
 import { ICP_IDS, ICP_NETWORKS, LEDGERS as ICP_LEDGERS, ledgerAsset as icpLedgerAsset } from "@clip-wallet/chains-icp/networks";
 import { STACKS_NETWORKS, specFor as stacksSpecFor, tokenAsset as stacksTokenAsset } from "@clip-wallet/chains-stacks/networks";
 import { BCH_NETWORKS } from "@clip-wallet/chains-bitcoincash/networks";
+import { XRPL_NETWORKS } from "@clip-wallet/chains-xrpl/networks";
 import { FUEL_NETWORKS, assetFor as fuelAssetFor, specFor as fuelSpecFor } from "@clip-wallet/chains-fuel/networks";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
@@ -70,6 +71,7 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     ...STACKS_NETWORKS,
     ...FUEL_NETWORKS,
     ...BCH_NETWORKS,
+    ...XRPL_NETWORKS,
   ];
   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
 }

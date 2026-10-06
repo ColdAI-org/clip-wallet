@@ -23,6 +23,7 @@ import { createIcpModule } from "@clip-wallet/chains-icp";
 import { createStacksModule } from "@clip-wallet/chains-stacks";
 import { createFuelModule } from "@clip-wallet/chains-fuel";
 import { createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
+import { createXrplModule } from "@clip-wallet/chains-xrpl";
 import { createStarknetModule } from "@clip-wallet/chains-starknet";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { createNearModule } from "@clip-wallet/chains-near";
@@ -88,6 +89,7 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     stacks: createStacksModule,
     fuel: createFuelModule,
     bitcoincash: createBitcoinCashModule,
+    xrpl: createXrplModule,
   };
   // One instance per enabled family for the engine's lifetime (modules keep prepare→finalize state).
   const chains: Partial<Record<Family, ChainModule>> = {};

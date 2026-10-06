@@ -51,6 +51,7 @@ export interface InpageConfig {
     tron?: boolean;
     stacks?: boolean;
     fuel?: boolean;
+    xrpl?: boolean;
     cardano?: boolean;
     substrate?: boolean;
     starknet?: boolean;

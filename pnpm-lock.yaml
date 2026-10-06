@@ -593,6 +593,9 @@ importers:
       '@clip-wallet/chains-tron':
         specifier: workspace:*
         version: link:../../packages/chains-tron
+      '@clip-wallet/chains-xrpl':
+        specifier: workspace:*
+        version: link:../../packages/chains-xrpl
       '@clip-wallet/connect':
         specifier: workspace:*
         version: link:../../packages/connect
@@ -1779,6 +1782,9 @@ importers:
       '@clip-wallet/chains-tron':
         specifier: workspace:*
         version: link:../chains-tron
+      '@clip-wallet/chains-xrpl':
+        specifier: workspace:*
+        version: link:../chains-xrpl
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../config
@@ -1897,6 +1903,9 @@ importers:
       '@clip-wallet/chains-tron':
         specifier: workspace:*
         version: link:../chains-tron
+      '@clip-wallet/chains-xrpl':
+        specifier: workspace:*
+        version: link:../chains-xrpl
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../config
