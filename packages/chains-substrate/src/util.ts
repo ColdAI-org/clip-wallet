@@ -1,3 +1,6 @@
+import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings";
+import { base58 } from "@scure/base";
+
 export function hex(bytes: Uint8Array): string {
   let s = "";
   for (const b of bytes) s += b.toString(16).padStart(2, "0");
@@ -80,4 +83,17 @@ export function toBig(v: unknown, what: string): bigint {
   if (typeof v === "string" && /^0x[0-9a-fA-F]*$/.test(v)) return v === "0x" ? 0n : BigInt(v);
   if (typeof v === "string" && /^\d+$/.test(v)) return BigInt(v);
   throw new Error(`bad ${what}`);
+}
+
+/**
+ * getSs58AddressInfo with the network format read correctly. polkadot-api 0.21 returns a two-byte prefix as a
+ * plain big-endian u16 (Chainflip's 2112 comes back as 20488) although its own fromBufferToBase58 writes the SS58
+ * bit layout; this undoes that layout (ss58-registry formats 64..16383).
+ */
+export function ss58Info(address: string): ReturnType<typeof getSs58AddressInfo> {
+  const i = getSs58AddressInfo(address);
+  if (!i.isValid) return i;
+  const b = base58.decode(address);
+  const ss58Format = b[0]! & 0x40 ? ((b[0]! & 0x3f) << 2) | (b[1]! >> 6) | ((b[1]! & 0x3f) << 8) : b[0]!;
+  return { ...i, ss58Format };
 }

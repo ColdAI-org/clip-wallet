@@ -85,7 +85,7 @@ describe("networks and addresses", () => {
     expect(POLKADOT.id).toBe("polkadot:91b171bb158e2d3848fa23a9f1c25182");
     expect(WESTEND_ASSET_HUB.id).toBe("polkadot:67f9723393ef76214df0118c34bbbd3d");
     expect(fromChainId(GENESIS)).toBe(WESTEND_ASSET_HUB.id);
-    expect(SUBSTRATE_NETWORKS.filter((n) => n.testnet).map((n) => n.name)).toEqual(["Westend", "Paseo", "Westend Asset Hub", "Paseo Asset Hub"]);
+    expect(SUBSTRATE_NETWORKS.filter((n) => n.testnet).map((n) => n.name)).toEqual(["Westend", "Paseo", "Westend Asset Hub", "Paseo Asset Hub", "Chainflip Perseverance"]);
     expect(POLKADOT_ASSET_HUB.nativeAsset).toMatchObject({ key: "dot", symbol: "DOT", decimals: 10 });
   });
 

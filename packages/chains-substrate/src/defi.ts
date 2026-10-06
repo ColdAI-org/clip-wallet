@@ -5,6 +5,7 @@
 import { type ChainContext, ClipError } from "@clip-wallet/core";
 import { Enum, fromBufferToBase58 } from "@polkadot-api/substrate-bindings";
 import { constantOf, readStorage } from "./chain.js";
+import { isChainflip, readFlipAccount } from "./chainflip.js";
 import { type Runtime, loadRuntime } from "./metadata.js";
 import { type SubstrateSpec, specOf } from "./networks.js";
 import { SubstrateRpc } from "./rpc.js";
@@ -76,6 +77,8 @@ export function existentialDeposit(rt: Runtime): bigint {
  * Polkadot SDK fungible "reducible balance" rule with Preservation::Preserve.
  */
 export async function spendableNative(c: Connection): Promise<bigint> {
+  // Chainflip: no Balances pallet; FLIP that can leave the account is Flip.Account balance − bond.
+  if (isChainflip(c.rt)) return (await readFlipAccount(c.rpc, c.rt, c.me)).redeemable;
   const acct = await readStorage<{ data: { free: bigint; reserved: bigint; frozen?: bigint } }>(c.rpc, c.rt, "System", "Account", c.me);
   const free = acct?.data.free ?? 0n;
   const reserved = acct?.data.reserved ?? 0n;

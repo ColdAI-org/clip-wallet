@@ -1,13 +1,14 @@
 import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, type Msg } from "@clip-wallet/core";
-import { Enum, fromBufferToBase58, getSs58AddressInfo, u32 } from "@polkadot-api/substrate-bindings";
+import { Enum, fromBufferToBase58, u32 } from "@polkadot-api/substrate-bindings";
 import { verify as sr25519Verify } from "@scure/sr25519";
 import { readStorage, runtimeCall, storageKeys } from "./chain.js";
+import { type FlipAccount, isChainflip, readFlipAccount } from "./chainflip.js";
 import { type AssetInfo, type DecodedCall, type Described, describeCall, mergeChanges } from "./describe.js";
 import { type Runtime, loadRuntime, runtimeVersion } from "./metadata.js";
 import { assetKey, fromChainId, nativeAsset, specOf, type SubstrateSpec } from "./networks.js";
 import { type Payload, type SignerPayloadJSON, eraInfo, extensionParts, mortalEra, multiSignature, parsePayload, publicKeyOf, signedExtrinsic, signingBytes } from "./payload.js";
 import { RpcError, SubstrateRpc, plainSubstrateError } from "./rpc.js";
-import { concat, equal, formatUnits, fromHex, hex0x, hostOf, isHex, randomId, textOf } from "./util.js";
+import { concat, equal, formatUnits, fromHex, hex0x, hostOf, isHex, randomId, ss58Info, textOf } from "./util.js";
 
 /**
  * DappRequest methods. Injected (1Mask injectedWeb3 signer) and WalletConnect "polkadot" namespace names.
@@ -68,6 +69,11 @@ export interface SubstrateModule extends ChainModule {
    * (finalized head, mortal era, next nonce, mode 0). decode() describes it like any other payload.
    */
   buildCall(p: CallSpec, ctx: ChainContext): Promise<DappRequest>;
+  /**
+   * Chainflip: FLIP in this account split into what pays fees (the whole balance, bond included), what can be
+   * redeemed to Ethereum (balance − bond) and any redemption in flight. Null on other networks.
+   */
+  getFlipAccount(ctx: ChainContext): Promise<FlipAccount | null>;
 }
 
 type Normalized =
@@ -136,7 +142,16 @@ function checkMine(ctx: ChainContext, address: string | Uint8Array): void {
   if (!equal(pub, myKey(ctx))) throw new ClipError("This request is for a different account than the one you connected.", "substrate/wrong-account");
 }
 
-/** 6-second blocks on relay chains and Asset Hubs (async backing). */
+/** sr25519 verify that answers false (never throws) for malformed signatures (no Schnorrkel marker bit). */
+function verifies(message: Uint8Array, signature: Uint8Array, publicKey: Uint8Array): boolean {
+  try {
+    return sr25519Verify(message, signature, publicKey);
+  } catch {
+    return false;
+  }
+}
+
+/** 6-second blocks on relay chains, Asset Hubs (async backing) and Chainflip (measured 2026-10-06). */
 const BLOCK_SECONDS = 6;
 
 export function createSubstrateModule(options: SubstrateModuleOptions = {}): SubstrateModule {
@@ -232,6 +247,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
         me: myKey(ctx),
         host,
         asset: (id) => assetInfo(rt, ctx, id),
+        chainflip: isChainflip(rt),
       });
     } catch {
       d = {
@@ -306,7 +322,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     const n = normalize(request);
     const bytes = await bytesToSign(n, ctx);
     const sig = signatures[0];
-    if (!sig || signatures.length !== 1 || sig.scheme !== "sr25519" || sig.bytes.length !== 64 || !sr25519Verify(bytes, sig.bytes, myKey(ctx))) {
+    if (!sig || signatures.length !== 1 || sig.scheme !== "sr25519" || sig.bytes.length !== 64 || !verifies(bytes, sig.bytes, myKey(ctx))) {
       throw new ClipError("The signature didn't match. Nothing was sent.", "substrate/bad-signature");
     }
     if (n.kind === "raw") return { signature: hex0x(multiSignature(null, sig.bytes)) };
@@ -333,6 +349,9 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     const spec = specFor(ctx);
     const { rt } = await runtimeFor(ctx);
     const me = ss58(myKey(ctx), rt.ss58);
+    // Chainflip has no Balances pallet (System.Account.data is Null): FLIP is Flip.Account.balance, bond included.
+    // That whole balance pays fees; only balance − bond can be redeemed (getFlipAccount has the split).
+    if (isChainflip(rt)) return [{ asset: nativeAsset(spec), amount: (await readFlipAccount(rpc, rt, me)).balance.toString() }];
     const acct = await readStorage<{ data: { free: bigint; reserved: bigint } }>(rpc, rt, "System", "Account", me);
     const out: TokenBalance[] = [{ asset: nativeAsset(spec), amount: (acct?.data.free ?? 0n).toString() }];
     if (!rt.pallets.has("Assets")) return out;
@@ -352,6 +371,12 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
       out.push({ asset, amount: bal.balance.toString() });
     }
     return out;
+  }
+
+  async function getFlipAccount(ctx: ChainContext): Promise<FlipAccount | null> {
+    const { rt } = await runtimeFor(ctx);
+    if (!isChainflip(rt)) return null;
+    return readFlipAccount(rpcFor(ctx), rt, ss58(myKey(ctx), rt.ss58));
   }
 
   async function offchain(data: Uint8Array, f: typeof fetch): Promise<{ name?: string; image?: string; attributes?: { trait: string; value: string }[] } | null> {
@@ -487,14 +512,16 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
 
   async function buildTransfer(p: { asset: AssetRef; to: string; amount: string }, ctx: ChainContext): Promise<DappRequest> {
     const spec = specFor(ctx);
-    const info = getSs58AddressInfo(p.to.trim());
+    const { rt } = await runtimeFor(ctx);
+    // Chainflip has no transfer call: FLIP enters by funding from Ethereum and leaves by Funding.redeem.
+    if (isChainflip(rt)) throw new ClipError(msg("bg.chainflip.noTransfer", { symbol: spec.symbol }), "substrate/no-transfers");
+    const info = ss58Info(p.to.trim());
     if (!info.isValid || info.publicKey.length !== 32) throw new ClipError("That doesn't look like a Polkadot address.", "substrate/bad-address");
     if (info.ss58Format !== spec.ss58 && info.ss58Format !== 42) {
       throw new ClipError(`That address is formatted for a different network than ${spec.name}. Check it with the recipient.`, "substrate/wrong-network");
     }
     if (equal(info.publicKey, myKey(ctx))) throw new ClipError("That's your own address.", "substrate/self-transfer");
     const amount = amountOf(p.amount);
-    const { rt } = await runtimeFor(ctx);
     const dest = ss58(info.publicKey, rt.ss58);
     if (!p.asset.address) return payloadFor(ctx, rt, "Balances", "transfer_keep_alive", { dest: Enum("Id", dest), value: amount });
     const id = Number(p.asset.address);
@@ -545,7 +572,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     },
     isAddress(value: string): boolean {
       try {
-        const i = getSs58AddressInfo(value.trim());
+        const i = ss58Info(value.trim());
         return i.isValid && i.publicKey.length === 32;
       } catch {
         return false;
@@ -555,7 +582,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     networksForAddress(value: string, candidates: Network[]): Network[] {
       let info;
       try {
-        info = getSs58AddressInfo(value.trim());
+        info = ss58Info(value.trim());
       } catch {
         return [];
       }
@@ -571,6 +598,7 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     getStaking,
     buildStake,
     buildCall,
+    getFlipAccount,
   };
 }
 

@@ -1,6 +1,7 @@
 # @clip-wallet/chains-substrate
 
-Polkadot SDK (Substrate) `ChainModule` for Clip Wallet: Polkadot, Kusama, Westend and Paseo, plus their Asset Hubs.
+Polkadot SDK (Substrate) `ChainModule` for Clip Wallet: Polkadot, Kusama, Westend and Paseo, plus their Asset Hubs,
+and the Chainflip State Chain (mainnet and the Perseverance testnet).
 It decodes and builds extrinsics through runtime metadata and never touches keys. `prepare()` returns the signing
 payload for the vault to sign with sr25519, and `finalize()` checks the signature (`@scure/sr25519` `verify` only)
 and returns a MultiSignature or the signed extrinsic.
@@ -69,6 +70,8 @@ hash. Genesis hashes, SS58 formats, decimals and symbols were read on 2026-10-03
 | Kusama Asset Hub | `polkadot:48239ef607d7928874027a43a6768920` | 2 | KSM | no |
 | Westend Asset Hub | `polkadot:67f9723393ef76214df0118c34bbbd3d` | 42 | WND | yes |
 | Paseo Asset Hub | `polkadot:d6eec26135305a8ad257a20d00335728` | 42 | PAS | yes |
+| Chainflip | `polkadot:8b8c140b0af9db70686583e3f6bf2a59` | 2112 | FLIP (18) | no |
+| Chainflip Perseverance | `polkadot:7a5d4db858ada1d20ed6ded4933c3331` | 2112 | FLIP (18) | yes |
 
 - Paseo's genesis is `0x374057be…` on two independent providers (Dwellir, Stakeworld), and its SS58 format is
   now 42.
@@ -78,6 +81,10 @@ hash. Genesis hashes, SS58 formats, decimals and symbols were read on 2026-10-03
   the same native token. Polkadot Asset Hub assets 1337 (USDC, Circle-issued) → `usdc` and 1984 (USDT) → `usdt`.
   Other assets → `asset:<id>`, with `address` = the asset id. Paseo Asset Hub's test USDC (1337) / USDT (1984)
   share `usdc` / `usdt` (same ids as Polkadot, owner `5Evfk4MM…`, sufficient, PAS pools; read 2026-10-03).
+- Chainflip (read 2026-10-06): RPC `https://mainnet-rpc.chainflip.io`, `https://rpc.chainflip.io`; Perseverance
+  `https://archive.perseverance.chainflip.io`, `https://perseverance.chainflip.xyz` (the RPC the Perseverance LP
+  portal itself uses). Explorers `scan.chainflip.io` / `scan.perseverance.chainflip.io` (`/extrinsics/<hash>`).
+  Asset keys `flip` and `flip-testnet`. See "Chainflip" below.
 - `fromChainId` also accepts a full `0x` genesis hash (what `SignerPayloadJSON` and injectedWeb3 accounts carry).
 
 ## Accounts
@@ -164,6 +171,51 @@ The extrinsic is `compact(len) ‖ 0x84 ‖ MultiAddress::Id(0x00 ‖ pubkey) �
 - `buildTransfer`: `Balances.transfer_keep_alive`, or `Assets.transfer_keep_alive` when `asset.address` is an asset
   id. An address formatted for another network (prefix not this network's and not 42) is refused.
 
+## Chainflip
+
+The Chainflip State Chain is a Substrate solo chain that the existing sr25519 account signs for (address `cF…`,
+SS58 2112). Its runtime (chainflip-node 20216 on mainnet, 20302 on Perseverance) has no Balances pallet, so the
+module recognises it from metadata (`isChainflip`: `Flip` and `Funding` pallets, no `Balances`) and changes three
+things:
+
+- **Balances.** `System.Account.data` is `Null`; FLIP is `Flip.Account { balance, bond }`. `getBalances` returns
+  `balance` (bond included: fees are burned from all of it, per cf-flip `on_charge_transaction.rs`).
+  `getFlipAccount(ctx)` splits it: `balance`, `bond`, `redeemable` (= balance − bond, what `Funding.redeem` can
+  take) and any `pendingRedemption` (`Funding.PendingRedemptions`: amount and Ethereum address, no longer in
+  `balance`). `spendableNative` returns `redeemable` there.
+- **Sending.** There's no transfer call: FLIP arrives by funding the account from Ethereum (StateChainGateway, e.g.
+  through auctions.chainflip.io or lp.chainflip.io) and leaves by `Funding.redeem` to an Ethereum address.
+  `buildTransfer` refuses with `substrate/no-transfers` ("FLIP can't be sent from one Chainflip account to
+  another. To move it, redeem it to an Ethereum address, or fund the other account from Ethereum.").
+- **Plain words** for the calls Chainflip's own apps send (shapes from metadata, meaning from
+  chainflip-io/chainflip-backend and docs.chainflip.io):
+  - `Funding.redeem` ("Redeem 5 FLIP to 0xABaB…ABaB on Ethereum"): amount (or all that isn't bonded), the
+    EIP-55 Ethereum address, who can execute it ("Anyone" or the executor), that it's finished on Ethereum for ETH
+    gas before it expires, a `network-matters` caution, and the FLIP leaving.
+  - `Funding.bind_redeem_address` / `bind_executor_address`: danger warnings. The docs call binding "a one-off
+    irreversible operation" (docs.chainflip.io/validators/mainnet/funding); a wrong address locks the FLIP.
+  - `Funding.rebalance`, `LiquidityProvider.*` (register / refund address / deposit address / withdraw /
+    transfer / schedule_swap), `Swapping.request_swap_deposit_address(_with_affiliates)`,
+    `LendingPools.*` (Boost add/stop, lend, take back, borrow, repay) and `AccountRoles.as_sub_account` (the inner
+    call). Cross-chain addresses are shown in each chain's format (EIP-55, SS58 0, base58, Tron base58check,
+    Bitcoin text) with a `network-matters` caution. Asset amounts use each token's decimals ("1.5 USDC
+    (Ethereum)").
+  - `LiquidityPools` order calls stay `Pallet.call(args)` with a caution, plus a `high-fee` caution: the runtime
+    holds up to 1 FLIP for each order call and multiplies the fee for repeated order calls in one block
+    (`LpOrderCallIndexer`), which `TransactionPaymentApi` doesn't show.
+- **Signing.** The signed extensions are AuthorizeCall, CheckNonZeroSender, CheckSpecVersion, CheckTxVersion,
+  CheckGenesis, CheckMortality, CheckNonce, CheckWeight, ChargeTransactionPayment, CheckMetadataHash and
+  WeightReclaim; AuthorizeCall and WeightReclaim are empty both ways and encode nothing. Signing bytes and the
+  signed extrinsic match `@polkadot/types` 17 byte for byte with the mainnet metadata (with and without
+  CheckMetadataHash), and a wallet-built `register_lp_account` signed by the vault was validated read-only by
+  mainnet and Perseverance (`TaggedTransactionQueue_validate_transaction` → `Payment`: signature and extensions
+  accepted, only the fee missing).
+- **Fees.** `TransactionPaymentApi_query_info` answers on both networks (about 0.00002 FLIP for a redeem);
+  when it doesn't, no fee line is shown.
+- **Dapps.** lp.chainflip.io (and lp.perseverance.chainflip.io) lists every `window.injectedWeb3` entry
+  (`Object.keys(window.injectedWeb3)`) and re-encodes addresses to SS58 2112, so 1Mask's existing substrate
+  provider is found without changes. Funding from Ethereum uses the EVM provider.
+
 ## Helpers for wallet features (staking, swaps)
 
 Added for `@clip-wallet/features` (`staking/polkadot.ts`, `swap/assethub.ts`). Reads only; every transaction
@@ -201,11 +253,19 @@ AssetConversion pools (community test tokens), Paseo Asset Hub 21 including PAS/
 
 ## Tests
 
-`pnpm test` (29 tests) runs against real Westend Asset Hub metadata V15 (`test/fixtures`, gzipped, specVersion
-1025001), with RPC, storage and runtime-API answers encoded through the same metadata. sr25519 signatures are
-fixtures computed once offline with a throwaway key (`test/signatures.ts`).
+`pnpm test` (45 tests) runs against real Westend Asset Hub metadata V15 (`test/fixtures`, gzipped, specVersion
+1025001) and real Chainflip mainnet metadata V15 (specVersion 20216), with RPC, storage and runtime-API answers
+encoded through the same metadata. sr25519 signatures are fixtures computed once offline: Westend with a
+throwaway key (`test/signatures.ts`), Chainflip with the vault's account 0 of the public "abandon … about" phrase
+(`test/chainflip-fixtures.ts`).
 
 ## Gaps
+
+- Chainflip: LP limit/range orders aren't described in plain words yet (ticks → prices); FLIP funding from
+  Ethereum is an EVM transaction (StateChainGateway `fundStateChainAccount`) and isn't built here.
+- Fixed: polkadot-api 0.21's `getSs58AddressInfo` reads two-byte SS58 prefixes as a plain u16 (2112 → 20488);
+  `networksForAddress` / `isAddress` / `buildTransfer` use `ss58Info`, which reads the SS58 bit layout. A malformed
+  sr25519 signature (no Schnorrkel marker) made `finalize` throw a raw error; it's now `substrate/bad-signature`.
 
 - No transaction v5 (general transactions), and no ethereum (`AccountId20`) or ecdsa/ed25519 accounts.
 - Direct staking (bond / nominate) decodes but isn't built; only nomination pools are.
