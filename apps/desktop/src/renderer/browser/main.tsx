@@ -1,12 +1,3 @@
-import "../shared/globals";
-import "@fontsource-variable/inter";
-import "./browser.css";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserChrome } from "./BrowserChrome";
+import { mountBrowserChrome } from "@clip-wallet/desktop-kit/renderer";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserChrome />
-  </StrictMode>,
-);
+mountBrowserChrome();

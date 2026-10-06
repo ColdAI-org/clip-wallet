@@ -128,13 +128,14 @@ try {
 }
 
 // The vector mark is what the wallet announces to dapps (EIP-6963 / Wallet Standard) and what configs point at.
-for (const dest of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg", "apps/desktop/src/renderer/public/icon.svg"]) copyFileSync(join(ROOT, "brand/clip-mark.svg"), join(ROOT, dest));
+// The desktop and phone apps inline their clip.config icon (these files) as the dapp-facing identity at build time.
+for (const dest of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg"]) copyFileSync(join(ROOT, "brand/clip-mark.svg"), join(ROOT, dest));
 console.log("icon.svg copied to apps/extension, apps/mobile/assets and apps/desktop");
 
-// The same mark as a data URI wherever code needs it inline (1Mask's default identity, the dApp-side kit modules,
-// the mobile in-app browser). tools/harness/test/brand.test.mjs checks they stay equal to brand/clip-mark.svg.
+// The same mark as a data URI wherever code needs it inline (1Mask's default identity, the dApp-side kit modules).
+// tools/harness/test/brand.test.mjs checks they stay equal to brand/clip-mark.svg.
 const DATA_URI = `data:image/svg+xml;base64,${Buffer.from(read("brand/clip-mark.svg")).toString("base64")}`;
-for (const file of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts", "apps/desktop/src/shared/app-config.ts"]) {
+for (const file of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts"]) {
   const src = read(file);
   const next = src.replace(/"data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+"/, JSON.stringify(DATA_URI));
   if (next === src && !src.includes(DATA_URI)) throw new Error(`${file}: no inline icon found to replace`);

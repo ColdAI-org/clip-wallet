@@ -12,7 +12,7 @@ import { useSecurityOptional } from "../security/context";
 import { useLinkOptional } from "../link/context";
 import { useSocialOptional } from "../social/context";
 import { useUiT } from "../i18n";
-import { LOCALES, localeInfo, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
+import { localeInfo, offeredLocales, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 
@@ -210,8 +210,8 @@ export function Settings() {
             value={prefs.locale ?? "system"}
             onChange={(e) => setPrefs({ locale: e.target.value as LocalePref })}
           >
-            <option value="system">{t("settings.language.system", { language: localeInfo(resolveLocale("system", systemLanguages())).nativeName })}</option>
-            {LOCALES.map((l) => (
+            <option value="system">{t("settings.language.system", { language: localeInfo(resolveLocale("system", systemLanguages(), config.languages)).nativeName })}</option>
+            {offeredLocales(config.languages).map((l) => (
               <option key={l.code} value={l.code} lang={l.code} dir={l.dir}>
                 {l.nativeName}
               </option>

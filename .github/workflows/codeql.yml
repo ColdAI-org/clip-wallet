@@ -40,7 +40,6 @@ jobs:
               - packages
               - apps/extension/src
               - apps/extension/scripts
-              - apps/mobile/src
               - services
               - tools
             paths-ignore:

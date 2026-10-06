@@ -11,7 +11,12 @@ import {
   includesEvmChain,
   isMainnetEnabled,
   isPlaceholderRdns,
+  LANGUAGES,
+  androidPackageOf,
+  enabledLanguages,
   mainnetProblems,
+  platformIds,
+  slugOfName,
   rdnsDomain,
   validateConfig,
   walletKey,
@@ -44,6 +49,11 @@ describe("defaults", () => {
       walletConnect: {},
       passkeys: { enabled: true },
       services: {},
+      languages: [...LANGUAGES],
+      desktop: {},
+      mobile: {},
+      fees: { enabled: false },
+      usage: { enabled: false },
       mainnet: false,
     });
     expect(isMainnetEnabled(c)).toBe(false);
@@ -190,4 +200,91 @@ describe("mainnet checklist", () => {
     ]);
     expect(mainnetProblems(defineConfig({ name: "Acme", rdns: "com.acme.wallet", homepage: "https://acme.example", extension: { key: "A".repeat(392) }, walletConnect: { projectId: "0".repeat(32) }, mainnet: ack }))).toEqual([]);
   });
+});
+
+describe("languages, ids and deep links", () => {
+  it("offers all twelve languages unless narrowed, in config order", () => {
+    expect(enabledLanguages(defineConfig(base))).toEqual([...LANGUAGES]);
+    expect(defineConfig({ ...base, languages: ["de", "en"] }).languages).toEqual(["de", "en"]);
+    expect(problems({ ...base, languages: [] })).toEqual(["languages: offer at least one language"]);
+    expect(problems({ ...base, languages: ["en", "en"] })).toEqual(["languages: each language is listed once"]);
+    expect(problems({ ...base, languages: ["xx"] })[0]).toMatch(/^languages\.0: use the languages the wallet ships: en, de/);
+  });
+
+  it("matches @clip-wallet/i18n's shipped locales", async () => {
+    const { LOCALE_CODES } = await import("../../i18n/src/locales.js");
+    expect([...LANGUAGES]).toEqual([...LOCALE_CODES]);
+  });
+
+  it("derives every platform id from rdns, or appId, with per-platform overrides", () => {
+    expect(platformIds(defineConfig({ name: "Acme Wallet", rdns: "com.acme.wallet" }))).toEqual({
+      name: "Acme Wallet",
+      appId: "com.acme.wallet",
+      scheme: "acmewallet",
+      extension: { geckoId: "wallet@wallet.acme.com" },
+      desktop: { appId: "com.acme.wallet.desktop", productName: "Acme Wallet", executableName: "acme-wallet", artifactName: "Acme-Wallet-${version}-${os}-${arch}.${ext}" },
+      ios: { bundleIdentifier: "com.acme.wallet" },
+      android: { package: "com.acme.wallet" },
+      slug: "acme-wallet",
+    });
+    const ids = platformIds(
+      defineConfig({ name: "Ünï Wallet 2", rdns: "com.acme.wallet", appId: "com.example.my-wallet", scheme: "uni", desktop: { appId: "com.example.desk" }, mobile: { bundleId: "com.example.ios" } }),
+    );
+    expect(ids).toMatchObject({ appId: "com.example.my-wallet", scheme: "uni", desktop: { appId: "com.example.desk", executableName: "uni-wallet-2" }, ios: { bundleIdentifier: "com.example.ios" }, android: { package: "com.example.my_wallet" } });
+    // Clip Wallet's own ids stay what its apps shipped with.
+    const clip = platformIds(defineConfig({ name: "Clip Wallet", rdns: "org.coldai.clipwallet" }));
+    expect([clip.scheme, clip.desktop.appId, clip.ios.bundleIdentifier, clip.android.package]).toEqual(["clipwallet", "org.coldai.clipwallet.desktop", "org.coldai.clipwallet", "org.coldai.clipwallet"]);
+  });
+
+  it("makes any reverse domain a valid Android package and any name a file-safe slug", () => {
+    expect(androidPackageOf("com.9lives.my-wallet")).toBe("com.x9lives.my_wallet");
+    expect(slugOfName("  Ácme  Wallet!! ")).toBe("acme-wallet");
+    expect(slugOfName("日本")).toBe("wallet");
+  });
+
+  it("checks ids and schemes in plain words", () => {
+    expect(problems({ ...base, appId: "mywallet" })).toEqual(["appId: use a reverse-domain id like com.example.mywallet (letters, digits, hyphens)"]);
+    expect(problems({ ...base, scheme: "Acme Wallet" })[0]).toMatch(/^scheme: use a lower-case URL scheme/);
+    expect(problems({ ...base, mobile: { androidPackage: "com.my-wallet" } })[0]).toMatch(/^mobile\.androidPackage: use an Android package/);
+  });
+});
+
+describe("hosted mode (reserved for Clip Cloud)", () => {
+  it("accepts fees and usage, off by default, and keeps fields it doesn't know", () => {
+    const c = defineConfig({ ...base, fees: { enabled: true, bps: 25 } as never, usage: {} });
+    expect(c.fees).toEqual({ enabled: true, bps: 25 });
+    expect(c.usage).toEqual({ enabled: false });
+    expect(problems({ ...base, fees: { enabled: "yes" } })).toEqual(["fees.enabled: use true or false"]);
+  });
+});
+
+describe("loadClipConfigSync (@clip-wallet/config/node)", () => {
+  it("evaluates a clip.config.ts with its JSON identity in a child Node and validates it", async () => {
+    const { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join, resolve } = await import("node:path");
+    const { loadClipConfigSync, typeStrippingFlags } = await import("../src/node.js");
+    const dir = mkdtempSync(join(tmpdir(), "clip-config-"));
+    mkdirSync(join(dir, "node_modules", "@clip-wallet"), { recursive: true });
+    symlinkSync(resolve(__dirname, ".."), join(dir, "node_modules", "@clip-wallet", "config"));
+    writeFileSync(join(dir, "wallet.identity.json"), JSON.stringify({ name: "Acme Wallet", rdns: "com.acme.wallet" }));
+    writeFileSync(
+      join(dir, "clip.config.ts"),
+      'import { defineConfig } from "@clip-wallet/config";\nimport identity from "./wallet.identity.json" with { type: "json" };\nconst langs: ("en" | "de")[] = ["de", "en"];\nexport default defineConfig({ ...identity, languages: langs });\n',
+    );
+    const prev = process.env.NODE_OPTIONS;
+    process.env.NODE_OPTIONS = `${prev ?? ""} --conditions=development`.trim();
+    try {
+      const c = loadClipConfigSync("clip.config.ts", { cwd: dir });
+      expect([c.name, c.rdns, c.languages]).toEqual(["Acme Wallet", "com.acme.wallet", ["de", "en"]]);
+      writeFileSync(join(dir, "clip.config.ts"), 'import { defineConfig } from "@clip-wallet/config";\nexport default defineConfig({ name: "", rdns: "x" } as never);\n');
+      expect(() => loadClipConfigSync(join(dir, "clip.config.ts"))).toThrow(/name: give your wallet a name/);
+    } finally {
+      if (prev === undefined) delete process.env.NODE_OPTIONS;
+      else process.env.NODE_OPTIONS = prev;
+    }
+    expect(typeStrippingFlags("22.12.0")).toEqual(["--experimental-strip-types"]);
+    expect(typeStrippingFlags("24.1.0")).toEqual([]);
+    expect(() => typeStrippingFlags("20.19.0")).toThrow(/Node 22.18/);
+  }, 30_000);
 });

@@ -36,10 +36,12 @@ export const VAULT_IMPORT_ALLOW = [
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
   // The extension background as a library (@clip-wallet/extension-kit), which every kit-built wallet runs.
   /^packages\/extension-kit\/src\/background\//,
-  // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
-  /^apps\/mobile\/src\/background\//,
-  // The desktop app's main-process host (it builds the vault for @clip-wallet/engine; renderers and preloads never may).
-  /^apps\/desktop\/src\/main\/host\//,
+  // The phone app's background as a library (@clip-wallet/mobile-kit): it builds the vault for @clip-wallet/engine,
+  // like the extension background.
+  /^packages\/mobile-kit\/src\/background\//,
+  // The desktop app's main-process host as a library (@clip-wallet/desktop-kit): it builds the vault for
+  // @clip-wallet/engine; renderers and preloads never may.
+  /^packages\/desktop-kit\/src\/main\/host\//,
   // The desktop e2e's stand-in for the browser extension: an EMPTY vault, used only for ephemeral pairing keys.
   /^apps\/desktop\/e2e\/mock-extension\.ts$/,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.

@@ -6,6 +6,6 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["src", "test", "e2e", "clip.config.ts", "electron.vite.config.ts", "vitest.config.ts", "playwright.config.ts"],
+  "include": ["src", "e2e", "clip.config.ts", "electron.vite.config.ts", "playwright.config.ts"],
   "exclude": ["out", "release", "node_modules"]
 }

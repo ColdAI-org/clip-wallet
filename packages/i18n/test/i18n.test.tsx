@@ -12,6 +12,7 @@ import {
   formatPercent,
   messageArguments,
   negotiateLocale,
+  offeredLocales,
   parseAmountInput,
   resolveLocale,
   separators,
@@ -33,6 +34,15 @@ describe("locales", () => {
     expect(resolveLocale("ja", ["de"])).toBe("ja");
     expect(resolveLocale("system", ["ko-KR"])).toBe("ko");
     expect(resolveLocale("klingon", ["it"])).toBe("it");
+  });
+  it("stays within the languages a wallet offers (clip.config languages); the first offered is the fallback", () => {
+    expect(negotiateLocale(["fr-CA", "de"], ["en", "de"])).toBe("de");
+    expect(negotiateLocale(["pt-PT"], ["es", "en"])).toBe("es");
+    expect(negotiateLocale(["sw"], ["ja", "en"])).toBe("ja");
+    expect(resolveLocale("ko", ["de"], ["en", "de"])).toBe("de");
+    expect(resolveLocale("de", ["en"], ["en", "de"])).toBe("de");
+    expect(offeredLocales(["de", "en"]).map((l) => l.code)).toEqual(["en", "de"]);
+    expect(offeredLocales().length).toBe(12);
   });
   it("knows right-to-left scripts", () => {
     expect(dirOf("ar")).toBe("rtl");

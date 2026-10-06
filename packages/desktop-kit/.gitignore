@@ -1,0 +1,3 @@
+dist/
+# Built from @clip-wallet/1mask at build/typecheck/test time.
+src/preload/inpage.generated.ts

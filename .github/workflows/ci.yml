@@ -101,10 +101,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile --filter "@clip-wallet/mobile..."
       - run: pnpm --filter @clip-wallet/mobile typecheck
-      - name: Test (vitest + jest-expo)
-        run: pnpm --filter @clip-wallet/mobile test
+      - name: Test (vitest + jest-expo; the app's code is @clip-wallet/mobile-kit)
+        run: pnpm --filter @clip-wallet/mobile-kit test
       - name: Expo config resolves (icons, splash, plugins)
         working-directory: apps/mobile
+        env:
+          NODE_OPTIONS: --conditions=development
         run: npx expo config --type prebuild --json > /dev/null
 
   services:

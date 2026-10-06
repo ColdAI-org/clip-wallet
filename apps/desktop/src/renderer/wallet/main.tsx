@@ -1,3 +1,3 @@
-import { mountWallet } from "../shared/mount";
+import { mountWallet } from "@clip-wallet/desktop-kit/renderer";
 
 void mountWallet();

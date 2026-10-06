@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <title>Clip Wallet</title>
-  <rect width="128" height="128" rx="30" fill="#FF3C00"/>
-  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" transform="translate(64 64) skewX(-6) translate(-64 -64)"><path d="M72 18C46 30 32 50 32 72c0 7 1 12 3 16h37z"/><path d="M84 40c10 12 14 26 13 40-4 4-9 7-13 8z"/><path d="M24 99h82c-6 7-15 11-26 11H48c-11 0-19-4-24-11z"/></g>
-</svg>

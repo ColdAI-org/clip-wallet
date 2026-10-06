@@ -66,7 +66,8 @@ jobs:
       - name: Typecheck and unit tests
         run: |
           pnpm --filter @clip-wallet/desktop typecheck
-          pnpm --filter @clip-wallet/desktop test
+          pnpm --filter @clip-wallet/desktop-kit typecheck
+          pnpm --filter @clip-wallet/desktop-kit test
 
       - name: Harness
         if: runner.os == 'Linux'
@@ -97,6 +98,8 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          # electron-builder.config.cjs reads clip.config.ts through @clip-wallet/desktop-kit's TypeScript source.
+          NODE_OPTIONS: --conditions=development
         run: pnpm exec electron-builder ${{ matrix.dist }} --config electron-builder.config.cjs --publish never
 
       - name: Smoke-test the packaged app (starts, serves the wallet page, quits)
