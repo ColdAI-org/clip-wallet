@@ -259,6 +259,34 @@ describe("typed data (SNIP-12)", () => {
     await expect(m().decode(req("wallet_signTypedData", td), ctxFor(makeAccount(PUB, ME), fetch))).rejects.toMatchObject({ code: "starknet/network-mismatch" });
   });
 
+  it("audit CHAIN-L: typed data without a chain id is refused (it could be replayed on another network)", async () => {
+    const { fetch } = mockStarknet({ deployed: true, nonce: 0n, balances: {} });
+    const { chainId: _drop, ...domain } = TYPED_DATA.domain;
+    for (const d of [domain, { ...domain, chainId: "" }]) {
+      await expect(m().decode(req("wallet_signTypedData", { ...TYPED_DATA, domain: d }), ctxFor(makeAccount(PUB, ME), fetch))).rejects.toMatchObject({ code: "starknet/network-mismatch" });
+    }
+  });
+
+  it("audit CHAIN-L: every signed field is shown or counted; undeclared keys aren't shown; unknown kinds get a caution", async () => {
+    const { fetch } = mockStarknet({ deployed: true, nonce: 0n, balances: {} });
+    const pads = Array.from({ length: 12 }, (_, i) => ({ name: `pad${i}`, type: "felt" }));
+    const td = {
+      types: { StarknetDomain: TYPED_DATA.types.StarknetDomain, Order: [...pads, { name: "recipient", type: "ContractAddress" }, { name: "amount", type: "u128" }] },
+      primaryType: "Order",
+      domain: TYPED_DATA.domain,
+      message: { decoy: "harmless", ...Object.fromEntries(pads.map((p) => [p.name, "0x0"])), recipient: BOB, amount: "0x64" },
+    };
+    const d = await m().decode(req("wallet_signTypedData", td), ctxFor(makeAccount(PUB, ME), fetch));
+    expect(d.lines.map((l) => l.label)).toContain("Recipient");
+    expect(d.lines.map((l) => l.label)).toContain("Amount");
+    expect(d.lines.map((l) => l.label)).not.toContain("Decoy");
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "caution", code: "unknown-call" }));
+    const many = Array.from({ length: 20 }, (_, i) => ({ name: `f${i}`, type: "felt" }));
+    const big = { ...td, types: { ...td.types, Order: many }, message: Object.fromEntries(many.map((f) => [f.name, "0x1"])) };
+    const b = await m().decode(req("wallet_signTypedData", big), ctxFor(makeAccount(PUB, ME), fetch));
+    expect(b.lines).toContainEqual({ label: "More fields", value: "4 not shown (see Details)" });
+  });
+
   it("marks SNIP-9 outside-execution signatures as blind danger", async () => {
     const { fetch } = mockStarknet({ deployed: true, nonce: 0n, balances: {} });
     const td = {

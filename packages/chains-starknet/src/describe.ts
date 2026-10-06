@@ -275,13 +275,37 @@ export function typedDataHash(t: TypedDataLike, me: string): bigint {
 /** SNIP-12 domains bind a chain id; a different network's signature could be replayed there. */
 export function checkTypedDataChain(t: TypedDataLike, networkId: NetworkId): void {
   const raw = t.domain.chainId;
-  if (raw === undefined || raw === null || raw === "") return;
+  // Audit CHAIN-L: no chain id means no network binding, so the signature would be valid on every Starknet network.
+  if (raw === undefined || raw === null || raw === "") {
+    throw new ClipError("This signature request doesn't say which network it's for, so it could be used on another one.", "starknet/network-mismatch");
+  }
   const c = chainOf(String(raw));
   const mine = chainOf(networkId);
   if (!c || !mine || c !== mine) {
     const name = c ? (c === "SN_MAIN" ? "Starknet" : "Starknet Sepolia") : `chain ${String(raw)}`;
     throw new ClipError(`This app is asking you to sign for ${name}, a different network than the one it's connected to.`, "starknet/network-mismatch");
   }
+}
+
+/** Shown fields of typed data before the rest is only counted. */
+const TYPED_FIELDS_SHOWN = 16;
+
+/**
+ * The message as SNIP-12 hashes it: only the members `types` declares for each struct, recursively (arrays are
+ * "T*"). Keys an app adds beyond the declared struct don't reach the signature, so they don't reach the screen.
+ */
+function signedView(types: TypedDataLike["types"], type: string, value: unknown, depth = 0): unknown {
+  if (depth > 16) throw new ClipError("This signature request is nested too deeply to read.", "starknet/bad-typed-data");
+  if (type.endsWith("*")) return Array.isArray(value) ? value.map((v) => signedView(types, type.slice(0, -1), v, depth + 1)) : value;
+  const fields = Object.prototype.hasOwnProperty.call(types, type) ? types[type] : undefined;
+  if (!Array.isArray(fields)) return value;
+  const src = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = Object.create(null);
+  for (const f of fields) {
+    if (!f || typeof f.name !== "string") continue;
+    out[f.name] = signedView(types, String(f.type), Object.prototype.hasOwnProperty.call(src, f.name) ? src[f.name] : undefined, depth + 1);
+  }
+  return out;
 }
 
 export function describeTypedData(t: TypedDataLike, host: string): Omit<Described, "declared"> {
@@ -308,11 +332,17 @@ export function describeTypedData(t: TypedDataLike, host: string): Omit<Describe
   }
 
   lines.push({ label: "Type", value: humanize(t.primaryType) });
-  for (const [k, v] of Object.entries(t.message).slice(0, 8)) {
+  // Audit CHAIN-L: show what is hashed (the fields `types` declares; other keys never reach the signature), up to
+  // TYPED_FIELDS_SHOWN of them, and count the rest instead of dropping them.
+  const signed = Object.entries(signedView(t.types, t.primaryType, t.message) as Record<string, unknown>);
+  for (const [k, v] of signed.slice(0, TYPED_FIELDS_SHOWN)) {
     const s = typeof v === "object" ? JSON.stringify(v) : String(v);
     lines.push({ label: humanize(k), value: s.length > 120 ? `${s.slice(0, 120)}…` : s });
   }
+  if (signed.length > TYPED_FIELDS_SHOWN) lines.push({ label: "More fields", value: `${signed.length - TYPED_FIELDS_SHOWN} not shown (see Details)` });
   lines.push({ label: "Requested by", value: host });
+  // A format Clip doesn't know (an order, a permission) can move assets once signed: say so, as for EVM (EVM-02).
+  warnings.push({ level: "caution", code: "unknown-call", message: say("bg.warn.unknownSignatureKind", { host }) });
   return { ...titled(msg("bg.req.signMessage", { host })), lines, warnings, blind: false };
 }
 
