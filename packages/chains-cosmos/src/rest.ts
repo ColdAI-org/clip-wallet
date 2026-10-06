@@ -1,6 +1,13 @@
 import { ClipError, type ChainContext } from "@clip-wallet/core";
 import { b64encode, isObj } from "./util.js";
 
+/** `url` without trailing slashes (a scan, not a regex: linear on any input). */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return url.slice(0, end);
+}
+
 /**
  * Cosmos SDK REST (gRPC-gateway "LCD") over ctx.fetch, trying each of the network's endpoints in order when one is
  * unreachable or answers 5xx/429. Routes (cosmos-sdk proto/cosmos/{auth,bank,tx}/…/query.proto, service.proto):
@@ -35,7 +42,7 @@ export interface Rest {
 }
 
 export function restFor(ctx: ChainContext): Rest {
-  const bases = ctx.network.rpcUrls.map((u) => u.replace(/\/+$/, ""));
+  const bases = ctx.network.rpcUrls.map(withoutTrailingSlashes);
   if (!bases.length) throw new ClipError("No connection is set up for this network.", "cosmos/no-endpoint");
 
   async function call<T>(path: string, init?: RequestInit): Promise<T> {

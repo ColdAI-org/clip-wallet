@@ -35,6 +35,13 @@ import {
   tokenFromLink,
 } from "./protocol.js";
 
+/** `url` without trailing slashes (a scan, not a regex: linear on any input). */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return url.slice(0, end);
+}
+
 export * from "./protocol.js";
 
 export interface BackupClientOptions {
@@ -88,7 +95,7 @@ export class BackupClient {
   private readonly random: (n: number) => Uint8Array;
 
   constructor(opts: BackupClientOptions) {
-    this.base = `${opts.baseUrl.replace(/\/+$/, "")}/${API_VERSION}`;
+    this.base = `${withoutTrailingSlashes(opts.baseUrl)}/${API_VERSION}`;
     this.f = opts.fetch ?? globalThis.fetch.bind(globalThis);
     this.session = opts.session ?? null;
     this.now = opts.now ?? Date.now;
