@@ -31,6 +31,16 @@ describe("TypeDoc entry files", () => {
     expect(missing).toEqual([]);
   });
 
+  it("no Vue interpolation in a header outside a code block (VitePress compiles page text as a Vue template)", () => {
+    const bad: string[] = [];
+    for (const e of entries) {
+      const header = /^\s*\/\*\*([\s\S]*?)\*\//.exec(readFileSync(e.file, "utf8"))?.[1] ?? "";
+      const prose = header.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
+      if (/\{\{|\}\}/.test(prose)) bad.push(relative(root, e.file));
+    }
+    expect(bad).toEqual([]);
+  });
+
   it("no stray block tags in a header (a package name outside a code span reads as a tag)", () => {
     const stray: string[] = [];
     for (const e of entries) {

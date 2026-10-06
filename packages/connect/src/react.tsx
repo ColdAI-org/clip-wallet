@@ -1,10 +1,12 @@
 /**
  * React bindings for Clip Connect (react is an optional peer).
  *
- *   <ClipConnectProvider options={{ chains: [84532] }}>
- *     const { connection, connect, status } = useClipConnect();
- *     const { pay, result, error } = usePay();
- *     const { balances } = useBalances();
+ * ```tsx
+ * <ClipConnectProvider options={{ chains: [84532] }}>
+ *   const { connection, connect, status } = useClipConnect();
+ *   const { pay, result, error } = usePay();
+ *   const { balances } = useBalances();
+ * ```
  *
  * @module
  */
