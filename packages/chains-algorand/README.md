@@ -9,6 +9,37 @@ addresses). It isn't used for keys or signing. algod and the indexer are called 
 so tests mock HTTP. Big integers in algod JSON (asset totals up to 2^64-1) are parsed with algosdk's
 `parseJSON(…, { intDecoding: MIXED })` so they stay exact.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-algorand @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createAlgorandModule, ALGORAND_TESTNET } from "@clip-wallet/chains-algorand";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createAlgorandModule();
+console.log(module.family, module.derivationPath(0)); // "algorand" "m/44'/283'/0'/0/0"
+
+const network = ALGORAND_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Algorand guide for dapps](https://coldai.org/clip/docs/dapps/algorand.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-algorand.html)
+
 ## Networks
 
 | network | NetworkId (CAIP-2) | genesis id | genesis hash | ARC-25 WC v1 id |
@@ -185,3 +216,13 @@ or when it's a fractional ARC-3 NFT (total = 10^decimals, with an ARC-3 / ARC-19
 - Ledger Algorand app (path prefix 44'/283'): https://github.com/LedgerHQ/app-algorand
 - Lora explorer: https://lora.algokit.io
 - SLIP-10: https://github.com/satoshilabs/slips/blob/master/slip-0010.md
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

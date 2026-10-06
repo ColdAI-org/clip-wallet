@@ -9,6 +9,37 @@ public key) and submits when the method asks for it.
 Its `Keypair` signing isn't used anywhere. Horizon and Soroban RPC are called with plain `ctx.fetch`; there's no
 `stellar-sdk`.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-stellar @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createStellarModule, STELLAR_TESTNET } from "@clip-wallet/chains-stellar";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createStellarModule();
+console.log(module.family, module.derivationPath(0)); // "stellar" "m/44'/148'/0'"
+
+const network = STELLAR_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Stellar guide for dapps](https://coldai.org/clip/docs/dapps/stellar.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-stellar.html)
+
 ## Networks
 
 | NetworkId (CAIP-2) | passphrase | Horizon (`rpcUrls[0]`) | Soroban RPC | explorer |
@@ -213,3 +244,13 @@ Tests are in `test/stellar.test.ts` and use no network.
 - Lumens, base reserve and minimum balance: https://developers.stellar.org/docs/learn/fundamentals/lumens
 - Circle USDC issuers: https://developers.circle.com/stablecoins/usdc-contract-addresses
 - `@stellar/stellar-base` 15: https://www.npmjs.com/package/@stellar/stellar-base
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

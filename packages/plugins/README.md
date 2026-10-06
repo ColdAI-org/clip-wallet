@@ -4,6 +4,40 @@ Small, sandboxed extensions for Clip Wallet. The idea is the same as MetaMask Sn
 
 **Off by default.** Plugins only run when Advanced mode is on and Settings → Advanced → Plugins is switched on. Turning either one off stops every plugin.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/plugins
+```
+
+## Example
+
+A plugin is an npm package with a manifest (`clip.plugin.json`) and one script. Check a manifest the way the wallet
+does before anyone sees an install prompt:
+
+```ts
+import { describePermissions, parseManifest } from "@clip-wallet/plugins";
+
+const manifest = parseManifest({
+  manifestVersion: 1,
+  name: "Address labels",
+  version: "1.0.0",
+  author: "Example Labs",
+  description: "Names well-known addresses in requests you approve.",
+  permissions: { transactionInsight: true },
+  bundle: { path: "dist/bundle.js", sha256: "0".repeat(64) },
+});
+console.log(describePermissions(manifest)); // the install prompt, in plain words
+```
+
+## Documentation
+
+- [Write a plugin](https://coldai.org/clip/docs/extend/plugins.html)
+- [How plugins are isolated](https://coldai.org/clip/docs/architecture/plugins.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/plugins.html)
+
 ## What a plugin can do (v1)
 
 | Capability | Manifest permission | What the user sees |
@@ -100,3 +134,13 @@ Not covered by unit tests: the real iframe/offscreen wiring in Chrome (see `exte
 ## On the phone
 
 `apps/mobile/src/plugins` runs the same runtime in one hidden `react-native-webview` per plugin: an inline SES page at about:blank with a no-network CSP, react-native-webview's `postMessage` as the only bridge (schema-checked both ways), and the same `PluginHost`/`PluginRegistry`. Hashes use `@noble/hashes` and gunzip is injectable (`NpmOptions.gunzip`), because Hermes has neither WebCrypto nor DecompressionStream. Details and device-only checks: docs/phase25/integration/mobile-parity.md.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

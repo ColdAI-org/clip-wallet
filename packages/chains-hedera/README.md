@@ -9,6 +9,37 @@ REST API. `@hiero-ledger/sdk` and `@hiero-ledger/proto` are devDependencies only
 every transaction this package builds is byte-identical to the SDK's (see "Protobuf codec" below). This removed
 about 2.3 MB from the extension's background script and the SDK's React Native build quirks from mobile.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-hedera @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createHederaModule, HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createHederaModule();
+console.log(module.family, module.isAddress("0.0.1234")); // "hedera" true
+
+const network = HEDERA_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Hedera guide for dapps](https://coldai.org/clip/docs/dapps/hedera.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-hedera.html)
+
 ## Networks
 
 | id (CAIP-2) | mirror node | explorer |
@@ -25,12 +56,14 @@ through `@clip-wallet/chains-evm`. The key is the same, so the 0x address is the
 
 ## Accounts: ECDSA keys, EVM alias, auto-creation
 
-Clip Wallet uses ECDSA secp256k1 keys (path `m/44'/60'/0'/0/i`, as the Hedera SDK and HashPack do for ECDSA;
-the vault owns derivation). Until an account id exists, the account *is* its EVM alias:
+Clip Wallet uses ECDSA secp256k1 keys, derived by the vault at `m/44'/3030'/0'/0/i` (the Hiero SDK's standard ECDSA
+path; see the vault README). Until an account id exists, the account *is* its EVM alias:
 
 ```ts
 import { aliasAddress } from "@clip-wallet/chains-hedera";
-aliasAddress(compressedPublicKeyHex); // "0x…" = last 20 bytes of keccak256(uncompressed key)
+
+// "0x…" = the last 20 bytes of keccak256(the uncompressed key)
+export const aliasOf = (compressedPublicKeyHex: string) => aliasAddress(compressedPublicKeyHex);
 ```
 
 There's no "create account" step. The first time someone sends HBAR (or a token) to that 0x address, the network
@@ -225,3 +258,13 @@ the SDK:
 - When hedera-protobufs adds fields to the messages we build, re-run the codec tests against a newer SDK; new
   `data` cases need a line in `BODY_NAMES` / `SCHEDULABLE_TO_BODY` (hapi.ts) and, to submit, in `RPC` (submit.ts).
 - The gRPC-Web proxy list is static (see above). If a proxy moves, that node is skipped and the next one is tried.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

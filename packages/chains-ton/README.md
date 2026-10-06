@@ -12,6 +12,37 @@ key is ever needed. `@ton/crypto` is only a peer dependency of those packages; t
 `@noble/curves` is used for verification only, and `@noble/hashes` for sha256. `src/buffer.ts` installs the
 `buffer` package as `globalThis.Buffer` when it's missing, because @ton/* need it in browsers and MV3 workers.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-ton @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createTonModule, TON_TESTNET } from "@clip-wallet/chains-ton";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createTonModule();
+console.log(module.family, module.derivationPath(0)); // "ton" "m/44'/607'/0'"
+
+const network = TON_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The TON Connect guide for dapps](https://coldai.org/clip/docs/dapps/ton.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-ton.html)
+
 ## Networks
 
 | network | NetworkId | TON Connect `network` | endpoints (keyless, about 1 request/s) | explorer |
@@ -138,3 +169,13 @@ features layer lifts that only through `Step.verify` plus a clean emulation.
 - Cell `signData` isn't decoded against its TL-B schema.
 - toncenter's keyless tier is slow (about 1 request/s). Point `Network.rpcUrls` / `indexerUrl` at
   keyed endpoints in production.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

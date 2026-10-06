@@ -5,6 +5,37 @@ It decodes and builds extrinsics through runtime metadata and never touches keys
 payload for the vault to sign with sr25519, and `finalize()` checks the signature (`@scure/sr25519` `verify` only)
 and returns a MultiSignature or the signed extrinsic.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-substrate @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createSubstrateModule, WESTEND } from "@clip-wallet/chains-substrate";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createSubstrateModule();
+console.log(module.family, module.derivationPath(0)); // "substrate" ""
+
+const network = WESTEND;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Polkadot guide for dapps](https://coldai.org/clip/docs/dapps/polkadot.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-substrate.html)
+
 ## Why polkadot-api, not @polkadot/api
 
 `@polkadot/api` 17 is 1.15 MB unpacked, and `@polkadot/types` alone is 3.1 MB with rxjs and the util-crypto WASM
@@ -182,3 +213,13 @@ fixtures computed once offline with a throwaway key (`test/signatures.ts`).
 - No dry-run simulation (`DryRunApi`), so balance changes come from the call alone.
 - Metadata is fetched from the network on first use (300–700 KB). Shipping known metadata with the extension
   (`provideRuntime`) would save that round trip.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

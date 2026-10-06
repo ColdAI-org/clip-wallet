@@ -8,6 +8,37 @@ It's built on `starknet` (starknet.js) **10.8.0**, the current release (npm, 202
 module uses it for hashing, calldata, typed data and verification only. JSON-RPC goes over `ctx.fetch` to a spec
 0.10 node.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-starknet @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createStarknetModule, STARKNET_SEPOLIA } from "@clip-wallet/chains-starknet";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createStarknetModule();
+console.log(module.family, module.derivationPath(0)); // "starknet" "m/44'/9004'/0'/0/0"
+
+const network = STARKNET_SEPOLIA;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Starknet guide for dapps](https://coldai.org/clip/docs/dapps/starknet.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-starknet.html)
+
 ## Networks
 
 | network | NetworkId (CAIP-2) | wallet API chain id (felt) | public RPCs (no key) |
@@ -124,3 +155,13 @@ For wallet-built AVNU swaps in `@clip-wallet/features`:
 - No declare.
 - `wallet_watchAsset` answers `false`, because token lists are curated.
 - Tip is fixed at 0. Starknet 0.14's tip market may slow inclusion when blocks are busy.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

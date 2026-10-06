@@ -1,44 +1,65 @@
 # @clip-wallet/kit-modules
 
-Clip Wallet inside each ecosystem's own wallet picker. Import only the subpath you need:
+Clip Wallet inside each ecosystem's own wallet picker, for pickers that list only the modules a dapp passes. Import
+only the subpath you need:
 
-| subpath | for | runs in | talks to |
+| Subpath | For | Runs in | Talks to |
 |---|---|---|---|
-| `@clip-wallet/kit-modules/near` | NEAR Wallet Selector v10 (`setupClipWallet()`) | dApp | `window.clipwallet.near` (1Mask `inpage/near.ts`) |
-| `@clip-wallet/kit-modules/stellar` | Stellar Wallets Kit v2 (`new ClipWalletModule()`) | dApp | `window.clipwallet.stellar` (SEP-43, 1Mask `inpage/stellar.ts`) |
-| `@clip-wallet/kit-modules/algorand` | TxnLab use-wallet v5 (`clipWallet()`) | dApp | `window.clipwallet.algorand` (1Mask `inpage/algorand.ts`) |
-| `@clip-wallet/kit-modules/tezos` | Beacon / TZIP-10, wallet side | Clip Wallet background | 1Mask's Beacon page relay (`inpage/tezos.ts`) and Beacon's Matrix P2P |
+| `@clip-wallet/kit-modules/near` | NEAR Wallet Selector v10 (`setupClipWallet()`) | dapp | `window.clipwallet.near` |
+| `@clip-wallet/kit-modules/stellar` | Stellar Wallets Kit v2 (`new ClipWalletModule()`) | dapp | `window.clipwallet.stellar` (SEP-43) |
+| `@clip-wallet/kit-modules/algorand` | TxnLab use-wallet v5 (`clipWallet()`) | dapp | `window.clipwallet.algorand` |
+| `@clip-wallet/kit-modules/tezos` | Beacon / TZIP-10, wallet side | the wallet's background | 1Mask's Beacon page relay and Beacon's Matrix P2P |
 
-NEAR Connect (the connector the NEAR Infra Committee now recommends over Wallet Selector) needs no module:
-1Mask answers its `near-selector-ready` event with a `near-wallet-injected` wallet (`inpage/near.ts`).
+NEAR Connect needs no module: 1Mask answers its `near-selector-ready` event. Modules show the name and icon the
+installed wallet announces, so kit-built wallets appear as themselves; pass `globalKey` if a wallet injects under
+another key.
 
-## Usage
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/kit-modules
+```
+
+## Example
 
 ```ts
 // NEAR Wallet Selector
 import { setupWalletSelector } from "@near-wallet-selector/core";
 import { setupClipWallet } from "@clip-wallet/kit-modules/near";
-const selector = await setupWalletSelector({ network: "testnet", modules: [setupClipWallet()] });
 
-// Stellar Wallets Kit
-import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
-import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
-StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule()] });
-
-// use-wallet v5
-import { WalletManager } from "@txnlab/use-wallet";
-import { clipWallet } from "@clip-wallet/kit-modules/algorand";
-const manager = new WalletManager({ wallets: [clipWallet()], defaultNetwork: "testnet" });
+export const selector = await setupWalletSelector({ network: "testnet", modules: [setupClipWallet()] });
 ```
 
 ```ts
-// Wallet side (extension background): Beacon extension peer, answering through the 1Mask router
-import { createBeaconExtensionPeer } from "@clip-wallet/kit-modules/tezos";
-const beacon = createBeaconExtensionPeer({ name: "Clip Wallet", iconUrl, storage, dispatch: (origin, input) => router.dispatch(origin, input) });
+// Stellar Wallets Kit (the module matches the kit's interface at run time; TypeScript needs the cast)
+import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
+import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
+import { Networks, type ModuleInterface } from "@creit.tech/stellar-wallets-kit/types";
+import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+
+StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule() as unknown as ModuleInterface], network: Networks.TESTNET });
 ```
 
-Kit-built wallets inject under their own global: pass `globalKey` to each module.
+```ts
+// use-wallet v5
+import { NetworkId, WalletManager } from "@txnlab/use-wallet";
+import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+
+export const manager = new WalletManager({ wallets: [clipWallet()], defaultNetwork: NetworkId.TESTNET });
+```
+
+Peers, each optional (install the ones for your ecosystem): `@near-wallet-selector/core`, `@near-js/crypto`,
+`@txnlab/use-wallet`, `algosdk`.
+
+## Documentation
+
+- [NEAR guide](https://coldai.org/clip/docs/dapps/near.html)
+- [Stellar guide](https://coldai.org/clip/docs/dapps/stellar.html)
+- [Algorand guide](https://coldai.org/clip/docs/dapps/algorand.html)
+- [Tezos guide](https://coldai.org/clip/docs/dapps/tezos.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/kit-modules.html)
 
 ## Notes
 
@@ -74,3 +95,13 @@ Kit-built wallets inject under their own global: pass `globalKey` to each module
 - ARC-1 / ARC-6 / ARC-7 / ARC-8 / ARC-10: https://github.com/algorandfoundation/ARCs
 - Beacon: https://docs.walletbeacon.io, https://github.com/airgap-it/beacon-sdk (`@airgap/beacon-wallet` 4.8.1
   WalletClient, `@airgap/beacon-transport-postmessage` 4.8.0 PostMessageClient/Transport, `@airgap/beacon-types` 4.8.0)
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

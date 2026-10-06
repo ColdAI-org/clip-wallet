@@ -1,28 +1,55 @@
 # @clip-wallet/vault
 
-The only package that touches seed phrases and private keys. Implements `Vault` from `@clip-wallet/core`
-as `ClipVault`, plus a few additive methods the background script needs.
+The only Clip Wallet package that touches recovery phrases and private keys. It implements `Vault` from
+`@clip-wallet/core` as `ClipVault`: one BIP-39 phrase derives accounts for fourteen network families, everything at
+rest is Argon2id + XChaCha20-Poly1305, passkeys can unlock it (WebAuthn PRF), and it signs only payloads registered for
+an approval the person gave, each once.
 
-```ts
-import { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
+Only a wallet's host may import it: the extension background, the phone's background, Clip Desktop's main process and
+the onboarding screen (`pnpm harness` enforces this in the Clip Wallet repo and in kit-built wallets).
 
-const vault = new ClipVault({ storage: chromeStorageAdapter, autoLockMs: 15 * 60_000 });
-await vault.create(password);                 // or importPhrase(phrase, password)
-const acct = await vault.deriveAccount("evm", 0);
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
-// background, after the user approves a DecodedRequest:
-const payloads = await chain.prepare(request, ctx, approvalId);
-vault.registerApproval(approvalId, payloads.map(hashSignablePayload), 2 * 60_000);
-const sigs = await Promise.all(payloads.map((p) => vault.sign(p)));
+## Install
+
+```sh
+npm i @clip-wallet/vault
 ```
 
-Extra (additive) API beyond the core contract: `registerApproval`, `revokeApproval`, `changePassword`,
-`reset`, `enrollPasskey`, `unlockWithPasskey`, `listPasskeys`, `removePasskey`, `createPasskeyBackup`,
-`deriveAccount(family, index, { bitcoinAddressType })`, and in Phase 2 `listAccounts`, `addAccount`,
-`setAccountLabel`, `deriveChange`, `freshChange`, `listChange`.
+## Example
 
-Phase 2 core additions (additive, optional fields): `SignablePayload.derivationSubPath`, the `ChildAddress`
-type, and `ChainContext.freshChangeAddress` / `ChainContext.changeAddresses`.
+```ts
+import { ClipVault, MemoryStorage, hashSignablePayload } from "@clip-wallet/vault";
+import type { ChainContext, ChainModule, DappRequest } from "@clip-wallet/core";
+
+// Host code only. Real hosts pass their own storage (chrome.storage.local, a secure store).
+const vault = new ClipVault({ storage: new MemoryStorage(), autoLockMs: 15 * 60_000 });
+
+export async function setUp(password: string) {
+  await vault.create(password); // a new 12-word phrase, shown once during onboarding
+  return vault.deriveAccount("evm", 0); // { address, publicKey, derivationPath, … }
+}
+
+// After the person approved the decoded request:
+export async function signApproved(chain: ChainModule, request: DappRequest, ctx: ChainContext, approvalId: string) {
+  const payloads = await chain.prepare(request, ctx, approvalId);
+  vault.registerApproval(approvalId, payloads.map((p) => hashSignablePayload(p)), 2 * 60_000);
+  const signatures = await Promise.all(payloads.map((p) => vault.sign(p))); // each hash signs once
+  return chain.finalize(request, signatures, ctx);
+}
+```
+
+Beyond the core contract: `registerApproval`, `revokeApproval`, `changePassword`, `reset`, `enrollPasskey`,
+`unlockWithPasskey`, `listPasskeys`, `removePasskey`, `createPasskeyBackup`, `restorePasskeyBackup`, `listAccounts`,
+`addAccount`, `setAccountLabel`, `deriveChange`, `freshChange`, `listChange`, `sealAppData`, `openAppData`, and the
+linked-device keys (`syncKeys`, `pairingKey`, `exportToDevice`, `importFromDevice`).
+
+## Documentation
+
+- [Vault](https://coldai.org/clip/docs/architecture/vault.html)
+- [Vault cryptography](https://coldai.org/clip/docs/security/vault-crypto.html)
+- [Approval-bound signing](https://coldai.org/clip/docs/security/approval-signing.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/vault.html)
 
 ## Phrase
 
@@ -393,3 +420,13 @@ Phase 1 vectors (unchanged):
 - vault behaviour tests
 
 Tests use public test vectors only.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).

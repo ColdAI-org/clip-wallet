@@ -1,31 +1,60 @@
 # @clip-wallet/engine
 
-The wallet's orchestration with no environment baked in: approvals, per-site permissions, portfolio cache,
-send / receive (including the "network-matters" prompt), activity, prefs, 1Mask and WalletConnect hosting,
-and passkey ceremonies. It reimplements the extension background's `service.ts` on injected seams, so the
-same code runs in an MV3 service worker, React Native (Hermes) and tests.
+The wallet's orchestration with no environment baked in: approvals, per-site permissions, the portfolio cache, send and
+receive (including the "network matters" question), activity, preferences, 1Mask and WalletConnect hosting, and
+passkey ceremonies. The same code runs in a React Native app, an Electron main process and tests.
 
-```ts
-import { WalletEngine, createEngineClient, MemoryKV } from "@clip-wallet/engine";
-import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import { ClipVault, hashSignablePayload } from "@clip-wallet/vault"; // host code only (harness rule)
+The engine never imports `@clip-wallet/vault`: the host builds the vault and passes it in with `hashPayload`. The root
+export is light (no chain SDKs); `@clip-wallet/engine/wiring` brings in the catalogue and the chain modules.
 
-const vault = new ClipVault({ storage, argon2id /* optional, e.g. native on RN */ });
-const deps = createEngineDependencies({ config, vault, hashPayload: hashSignablePayload, currency, walletConnect: { projectId, url, iconUrl } });
-const engine = new WalletEngine(deps, kv, { walletName, openApproval, broadcast, armAutoLock, fetch, randomUUID });
-engine.start();
-const client = createEngineClient(engine, { subscribe }); // a @clip-wallet/ui WalletClient
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/engine
 ```
 
-- The engine never imports `@clip-wallet/vault`. The host builds the vault and passes it in with `hashPayload`.
-- `handleUntrusted(msg)` validates with the same zod schema as the extension bus (`EngineRequest`).
-- `attachDappPort(port, senderOrigin)` wires a 1Mask port. `senderOrigin` must come from the host (browser
-  sender, WebView URL), never from the page.
-- The root export is light (no chain SDKs). `@clip-wallet/engine/wiring` brings in the chain packages.
+## Example
 
-Tests: `pnpm --filter @clip-wallet/engine test` (20 tests: lifecycle, schema, portfolio, send with the
-network-matters prompt, connect + `personal_sign` over a real 1Mask router port, reject → 4001, origin
-cross-check, lock, WalletConnect off, in-process PRF passkeys, real wiring testnets-only). The vault is a test
-double with no keys (`test/fixtures.ts`).
+```ts
+import type { ClipConfig } from "@clip-wallet/config";
+import { MemoryKV, WalletEngine, createEngineClient } from "@clip-wallet/engine";
+import { createEngineDependencies } from "@clip-wallet/engine/wiring";
+import type { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
 
-Migration notes for the extension: `docs/phase2/integration/mobile.md`.
+// Host code: `vault` is the host's own ClipVault, built with its storage.
+export function startEngine(config: ClipConfig, vault: ClipVault, hash: typeof hashSignablePayload, openApproval: (id: string) => void) {
+  const kv = new MemoryKV();
+  const deps = createEngineDependencies({ config, vault, hashPayload: hash, currency: async () => "USD", walletConnect: { projectId: undefined, url: "https://wallet.acme.example", iconUrl: "https://wallet.acme.example/icon.png" }, kv });
+  const engine = new WalletEngine(deps, kv, {
+    walletName: config.name,
+    openApproval,
+    broadcast: () => undefined,
+    armAutoLock: () => undefined,
+    fetch: globalThis.fetch,
+    randomUUID: () => crypto.randomUUID(),
+  });
+  engine.start();
+  return createEngineClient(engine, { subscribe: () => () => undefined }); // what @clip-wallet/ui talks to
+}
+```
+
+`engine.handleUntrusted(msg)` validates every message with the extension bus's zod schema. `engine.attachDappPort(port,
+senderOrigin)` wires a 1Mask port; `senderOrigin` must come from the host (browser sender, WebView URL), never the page.
+
+## Documentation
+
+- [Engine and hosts](https://coldai.org/clip/docs/architecture/engine.html)
+- [The signing flow](https://coldai.org/clip/docs/architecture/signing-flow.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/engine.html)
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+See [LICENSE](./LICENSE).
