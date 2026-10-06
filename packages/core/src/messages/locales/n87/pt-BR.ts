@@ -22,5 +22,9 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)
+  // ---- chains-evm
+  "bg.label.networkCharge": "Cobrança da rede",
+  "bg.evm.flatFee": "{amount} por transação, mesmo se ela falhar",
+  // ---- end chains-evm
 };
 export default messages;

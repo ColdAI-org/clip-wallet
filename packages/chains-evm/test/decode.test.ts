@@ -329,3 +329,14 @@ describe("plain language", () => {
     for (const r of reqs) expect((await decode(r)).title).not.toMatch(NO_RAW_METHOD);
   });
 });
+
+describe("STRATO: flat per-transaction charge", () => {
+  it("adds 0.01 USDST to the (zero) gas fee and says so", async () => {
+    const STRATO = "eip155:123354377739506";
+    const req: DappRequest = { ...tx({ to: BOB, value: numberToHex(10n ** 18n) }), networkId: STRATO };
+    const d = await mod.decode(req, ctxFor(STRATO, mockFetch({ rpc: { ...SEPOLIA_STATE.rpc, eth_gasPrice: "0x0", eth_getBlockByNumber: { number: "0x1", timestamp: "0x1" }, eth_estimateGas: "0x5208", eth_chainId: "0x7030addddcf2" } })));
+    expect(d.title).toBe("Send 1 USDST to 0x1234…5678");
+    expect(d.fee).toMatchObject({ amount: "10000000000000000" });
+    expect(d.lines.find((l) => l.label === "Network charge")?.value).toBe("0.01 USDST per transaction, even if it fails");
+  });
+});

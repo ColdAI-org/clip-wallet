@@ -23,4 +23,8 @@ export default {
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)
+  // ---- chains-evm (networks87: STRATO)
+  "bg.label.networkCharge": "Network charge",
+  "bg.evm.flatFee": "{amount} per transaction, even if it fails",
+  // ---- end chains-evm
 } as const;
