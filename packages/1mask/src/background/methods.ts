@@ -2,6 +2,10 @@ import type { Family } from "@clip-wallet/core";
 import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
 import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS, SUI_SIGNING_METHODS } from "../shared/move-methods.js";
 import { p2InjectedAllowlist } from "./p2-families.js";
+import { cosmosInjectedAllowlist } from "./cosmos.js";
+import { tronInjectedAllowlist } from "./tron.js";
+import { stacksInjectedAllowlist } from "./stacks.js";
+import { fuelInjectedAllowlist } from "./fuel.js";
 import { cardanoSubstrateAllowlist } from "./cardano-substrate.js";
 import { starknetTonAllowlist } from "./starknet-ton.js";
 import { HEDERA_INJECTED_METHODS } from "../shared/hedera.js";
@@ -126,8 +130,19 @@ export function injectedAllowlist(family: Family): ReadonlySet<string> {
     case "starknet":
     case "ton":
       return starknetTonAllowlist(family);
+    case "cosmos":
+    case "provenance":
+    case "thorchain":
+    case "initia":
+      return cosmosInjectedAllowlist(family);
+    case "tron":
+      return tronInjectedAllowlist();
+    case "stacks":
+      return stacksInjectedAllowlist();
+    case "fuel":
+      return fuelInjectedAllowlist();
     default:
-      // Phase 2 families register their injected methods here as their connectors land.
+      // Families without an injected provider (xrpl, antelope, multiversx, icp, bitcoincash): send and receive only.
       return new Set<string>();
   }
 }

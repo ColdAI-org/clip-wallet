@@ -79,7 +79,7 @@ describe("content bridge security", () => {
 
   it("rejects schema-invalid requests (bad family, missing method)", async () => {
     const s = setup();
-    s.win.postMessage(s.req({ family: "cosmos" }), "*");
+    s.win.postMessage(s.req({ family: "dogecoin" }), "*");
     s.win.postMessage(s.req({ id: "r2", method: "" }), "*");
     await vi.waitFor(() => expect(s.toPage.map((m) => m.error?.code)).toEqual([-32602, -32602]));
     expect(s.received).toEqual([]);

@@ -27,6 +27,10 @@ import { HEDERA_WC_PAIR, isWalletConnectPairingUri } from "../shared/hedera.js";
 import type { PermissionStore } from "./permissions.js";
 import { createStarknetTonDispatch, type StarknetTonOptions } from "./starknet-ton.js";
 import { createCallsDispatch } from "./eip5792.js";
+import { COSMOS_DISPATCH_FAMILIES, createCosmosDispatcher } from "./cosmos.js";
+import { createTronDispatcher } from "./tron.js";
+import { createStacksDispatcher } from "./stacks.js";
+import { createFuelDispatcher } from "./fuel.js";
 import { isCallsMethod, type CallsHost } from "../shared/calls.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
@@ -584,6 +588,34 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     opts,
   );
 
+  /* ------------------------------------------------------------ networks87: Cosmos SDK, TRON, Stacks, Fuel */
+
+  const n87Internals = {
+    permitted,
+    requirePermission,
+    accounts,
+    connect,
+    approve,
+    makeReq,
+    requireNetwork,
+    revoke: (origin: string, family: Family) => revoke(origin, family),
+  };
+  const cosmos = createCosmosDispatcher({ ...n87Internals, read: (req) => withTimeout(opts.handle(req), readMs, req.id) });
+  const tron = createTronDispatcher(n87Internals);
+  const stacks = createStacksDispatcher({ ...n87Internals, networks: () => candidates("stacks") });
+  const fuel = createFuelDispatcher({
+    permitted,
+    accounts,
+    connect,
+    approve,
+    makeReq,
+    selectedNetwork,
+    setSelected,
+    candidates,
+    emit,
+    revoke: (origin, family, o) => revoke(origin, family, o),
+  });
+
   /* ------------------------------------------------------------ EIP-5792 (opt-in) */
 
   const callsDispatch = opts.calls ? createCallsDispatch({ permitted, accounts, approve, makeReq, candidates }, opts.calls) : undefined;
@@ -614,6 +646,10 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "cardano" || family === "substrate") return dispatchCardanoSubstrate(cardanoSubstrateHelpers, origin, family, method, params, chain);
     if (family === "starknet") return starknetTon.starknet(origin, method, params);
     if (family === "ton") return starknetTon.ton(origin, method, params);
+    if (COSMOS_DISPATCH_FAMILIES.has(family)) return cosmos.dispatch(origin, family, method, params, chain);
+    if (family === "tron") return tron.dispatch(origin, method, params, chain);
+    if (family === "stacks") return stacks.dispatch(origin, family, method, params, chain);
+    if (family === "fuel") return fuel.dispatch(origin, method, params);
     if (family === "hedera" && method === HEDERA_WC_PAIR) {
       const uri = (params as { uri?: unknown } | undefined)?.uri;
       if (!opts.walletConnectPair) throw rpcError.unsupportedMethod(method);

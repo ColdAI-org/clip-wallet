@@ -26,7 +26,7 @@ import type {
   SessionView,
   WalletState,
 } from "@clip-wallet/ui";
-import { CARDANO_METHODS_ALLOWED, type RouterPort } from "@clip-wallet/1mask/background";
+import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ, type RouterPort } from "@clip-wallet/1mask/background";
 import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
 import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
 import type { FeaturesService } from "@clip-wallet/features";
@@ -1159,6 +1159,12 @@ export class WalletEngine implements DappHost {
   }
 
   async chainRead(req: DappRequest): Promise<unknown> {
+    // networks87: Keplr sendTx / verifyArbitrary on the Cosmos SDK families (chains-cosmos read()).
+    if ((COSMOS_FAMILIES as readonly string[]).includes(req.family) && N87_CHAIN_READ.includes(req.method)) {
+      const c = this.deps.chains[req.family] as (ChainModule & { read?(method: string, params: unknown, ctx: ChainContext): Promise<unknown> }) | undefined;
+      if (!c || typeof c.read !== "function") throw new ClipError("This request isn't available.", "chain-read/unsupported");
+      return c.read(req.method, req.params, await this.ctx(req.networkId, req.origin));
+    }
     const m = this.deps.chains.cardano as CardanoModule | undefined;
     if (req.family !== "cardano" || !m || typeof m.read !== "function" || !(CARDANO_METHODS_ALLOWED.readOnly as readonly string[]).includes(req.method)) {
       throw new ClipError("This request isn't available.", "chain-read/unsupported");
