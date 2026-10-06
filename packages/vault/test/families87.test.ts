@@ -273,3 +273,43 @@ describe("ClipVault: the networks87 families through the public API", () => {
     await expect(v.sign({ ...q, approvalId: "tron" })).rejects.toThrow();
   });
 });
+
+describe("chain modules agree with the vault (paths, curves, addresses per network)", () => {
+  it("every networks87 module derives where the vault does and spells the vault's key the same way", async () => {
+    const { createCosmosModule, COSMOS_NETWORKS } = await import("@clip-wallet/chains-cosmos");
+    const { createTronModule, TRON_NETWORKS } = await import("@clip-wallet/chains-tron");
+    const { createXrplModule, XRPL_NETWORKS } = await import("@clip-wallet/chains-xrpl");
+    const { createAntelopeModule, ANTELOPE_NETWORKS } = await import("@clip-wallet/chains-antelope");
+    const { createMultiversXModule, MULTIVERSX_NETWORKS } = await import("@clip-wallet/chains-multiversx");
+    const { createIcpModule, ICP_NETWORKS } = await import("@clip-wallet/chains-icp");
+    const { createStacksModule, STACKS_NETWORKS } = await import("@clip-wallet/chains-stacks");
+    const { createFuelModule, FUEL_NETWORKS } = await import("@clip-wallet/chains-fuel");
+    const { createBitcoinCashModule, BCH_NETWORKS } = await import("@clip-wallet/chains-bitcoincash");
+    const cases = [
+      ...(["cosmos", "provenance", "thorchain", "initia"] as const).map((f) => [f, createCosmosModule({ family: f }), COSMOS_NETWORKS.filter((n) => n.family === f)] as const),
+      ["tron", createTronModule(), TRON_NETWORKS] as const,
+      ["xrpl", createXrplModule(), XRPL_NETWORKS] as const,
+      ["antelope", createAntelopeModule(), ANTELOPE_NETWORKS] as const,
+      ["multiversx", createMultiversXModule(), MULTIVERSX_NETWORKS] as const,
+      ["icp", createIcpModule(), ICP_NETWORKS] as const,
+      ["stacks", createStacksModule(), STACKS_NETWORKS] as const,
+      ["fuel", createFuelModule(), FUEL_NETWORKS] as const,
+      ["bitcoincash", createBitcoinCashModule(), BCH_NETWORKS] as const,
+    ];
+    for (const [family, mod, nets] of cases) {
+      expect(mod.family, family).toBe(family);
+      expect(mod.curve, family).toBe(CURVE_OF[family]);
+      for (const i of [0, 3]) expect(mod.derivationPath(i), family).toBe(derivationPath(family, i));
+      const k = key(family, 0);
+      const vaultAddr = defaultAddressOf(family, k.publicKey, ctx);
+      expect(nets.length, family).toBeGreaterThan(0);
+      for (const n of nets) {
+        const a = mod.addressFromPublicKey(k.publicKey, n);
+        // Antelope: the key identifies the account but can't receive (accounts are names), so it isn't an "address".
+        if (family !== "antelope") expect(mod.isAddress(a), `${family} ${n.id} ${a}`).toBe(true);
+        // Network-independent spellings must be exactly the vault's.
+        if (!["cosmos", "provenance", "stacks", "bitcoincash"].includes(family)) expect(a, `${family} ${n.id}`).toBe(vaultAddr);
+      }
+    }
+  });
+});

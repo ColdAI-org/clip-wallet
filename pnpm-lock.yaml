@@ -2709,9 +2709,39 @@ importers:
       '@bitauth/libauth':
         specifier: ^3.0.0
         version: 3.0.0
+      '@clip-wallet/chains-antelope':
+        specifier: workspace:*
+        version: link:../chains-antelope
       '@clip-wallet/chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
+      '@clip-wallet/chains-bitcoincash':
+        specifier: workspace:*
+        version: link:../chains-bitcoincash
+      '@clip-wallet/chains-cosmos':
+        specifier: workspace:*
+        version: link:../chains-cosmos
+      '@clip-wallet/chains-fuel':
+        specifier: workspace:*
+        version: link:../chains-fuel
+      '@clip-wallet/chains-icp':
+        specifier: workspace:*
+        version: link:../chains-icp
+      '@clip-wallet/chains-multiversx':
+        specifier: workspace:*
+        version: link:../chains-multiversx
+      '@clip-wallet/chains-stacks':
+        specifier: workspace:*
+        version: link:../chains-stacks
+      '@clip-wallet/chains-substrate':
+        specifier: workspace:*
+        version: link:../chains-substrate
+      '@clip-wallet/chains-tron':
+        specifier: workspace:*
+        version: link:../chains-tron
+      '@clip-wallet/chains-xrpl':
+        specifier: workspace:*
+        version: link:../chains-xrpl
       '@clip-wallet/link':
         specifier: workspace:*
         version: link:../link
