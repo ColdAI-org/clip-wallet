@@ -716,6 +716,9 @@ importers:
       starknet:
         specifier: ^10.8.0
         version: 10.8.0(typescript@5.9.3)(zod@4.6.5)
+      tronweb:
+        specifier: ^6.5.1
+        version: 6.5.1(bufferutil@4.1.0)(debug@4.4.1(supports-color@10.2.2))(supports-color@10.2.2)(utf-8-validate@5.0.10)
       viem:
         specifier: ^2.57.1
         version: 2.57.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.6.5)
@@ -1353,6 +1356,25 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.5
+
+  packages/chains-tron:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@scure/base':
+        specifier: 2.4.0
+        version: 2.4.0
+    devDependencies:
+      tronweb:
+        specifier: ^6.5.1
+        version: 6.5.1(bufferutil@4.1.0)(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(utf-8-validate@6.0.6)
 
   packages/config:
     dependencies:
@@ -42116,6 +42138,16 @@ snapshots:
       - debug
       - supports-color
 
+  axios@1.20.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2):
+    dependencies:
+      follow-redirects: 1.16.1(debug@4.4.3(supports-color@10.2.2))
+      form-data: 4.0.6
+      https-proxy-agent: 5.0.1(supports-color@10.2.2)
+      proxy-from-env: 2.1.0
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
   axios@1.20.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       follow-redirects: 1.16.1(debug@4.4.3(supports-color@8.1.1))
@@ -45874,6 +45906,10 @@ snapshots:
   follow-redirects@1.16.1(debug@4.4.1(supports-color@5.5.0)):
     optionalDependencies:
       debug: 4.4.1(supports-color@5.5.0)
+
+  follow-redirects@1.16.1(debug@4.4.3(supports-color@10.2.2)):
+    optionalDependencies:
+      debug: 4.4.3(supports-color@10.2.2)
 
   follow-redirects@1.16.1(debug@4.4.3(supports-color@8.1.1)):
     optionalDependencies:
@@ -52878,6 +52914,40 @@ snapshots:
   tree-kill@1.2.2: {}
 
   trim-lines@3.0.1: {}
+
+  tronweb@6.5.1(bufferutil@4.1.0)(debug@4.4.1(supports-color@10.2.2))(supports-color@10.2.2)(utf-8-validate@5.0.10):
+    dependencies:
+      axios: 1.20.0(debug@4.4.1(supports-color@10.2.2))(supports-color@10.2.2)
+      bignumber.js: 9.1.2
+      ethereum-cryptography: 2.2.1
+      ethers: 6.17.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      eventemitter3: 5.0.1
+      google-protobuf: 3.21.4
+      semver: 7.7.1
+      tslib: 2.7.0
+      validator: 13.15.23
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
+  tronweb@6.5.1(bufferutil@4.1.0)(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(utf-8-validate@6.0.6):
+    dependencies:
+      axios: 1.20.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+      bignumber.js: 9.1.2
+      ethereum-cryptography: 2.2.1
+      ethers: 6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      eventemitter3: 5.0.1
+      google-protobuf: 3.21.4
+      semver: 7.7.1
+      tslib: 2.7.0
+      validator: 13.15.23
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
 
   tronweb@6.5.1(bufferutil@4.1.0)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(utf-8-validate@6.0.6):
     dependencies:

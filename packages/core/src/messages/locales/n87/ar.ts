@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "يتحكم مفتاح آخر في حساب TRON هذا، لذا لا تستطيع Clip Wallet التوقيع عنه.",
+  "bg.tron.notOpen": "حسابك على TRON غير مفتوح بعد. استلم بعض TRX أولًا.",
+  "bg.tron.contractRecipient": "لا يمكن إرسال TRX مباشرةً إلى عقد ذكي.",
+  "bg.tron.newAccountFee": "هذا العنوان غير مفتوح على TRON بعد. الإرسال إليه يكلّف أيضًا \u2068{amount}\u2069 لفتحه.",
+  "bg.tron.getsSigned": "\u2068{host}\u2069 (يتلقى المعاملة الموقّعة)",
+  "bg.tron.energy": "الطاقة",
+  "bg.tron.bandwidth": "عرض النطاق",
+  "bg.tron.tronPower": "قوة التصويت",
+  "bg.tron.stakeFor": "تخزين \u2068{amount}\u2069 مقابل \u2068{resource}\u2069",
+  "bg.tron.days": "\u2068{count}\u2069 يومًا",
+  "bg.tron.cancelUnstaking": "إلغاء عمليات إلغاء التخزين المعلّقة وتخزين تلك TRX مجددًا",
+  "bg.tron.lend": "إقراض \u2068{resource}\u2069 من \u2068{amount}\u2069 التي خزّنتها إلى \u2068{to}\u2069",
+  "bg.tron.stopLending": "استرداد \u2068{resource}\u2069 من \u2068{amount}\u2069 التي أقرضتها إلى \u2068{to}\u2069",
+  "bg.tron.lockedHours": "حوالي \u2068{hours}\u2069 ساعة. لا يمكنك استرداده قبل ذلك.",
+  "bg.tron.vote": "التصويت لـ \u2068{count}\u2069 من Super Representatives",
+  "bg.tron.votesReplace": "يحل هذا محل جميع أصواتك السابقة.",
+  "bg.tron.claimVoteRewards": "المطالبة بمكافآت التصويت",
+  "bg.tron.changePermissions": "تغيير من يتحكم في حسابك على TRON",
+  "bg.tron.keysThreshold": "\u2068{keys}\u2069 (يتطلب \u2068{threshold}\u2069)",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "Dieses TRON-Konto wird von einem anderen Schlüssel kontrolliert, deshalb kann Clip Wallet dafür nicht signieren.",
+  "bg.tron.notOpen": "Dein TRON-Konto ist noch nicht eröffnet. Empfange zuerst etwas TRX.",
+  "bg.tron.contractRecipient": "TRX kann nicht direkt an einen Smart Contract gesendet werden.",
+  "bg.tron.newAccountFee": "Diese Adresse ist auf TRON noch nicht eröffnet. Eine Sendung dorthin kostet zusätzlich {amount}, um sie zu eröffnen.",
+  "bg.tron.getsSigned": "{host} (erhält die signierte Transaktion)",
+  "bg.tron.energy": "Energie",
+  "bg.tron.bandwidth": "Bandbreite",
+  "bg.tron.tronPower": "Stimmrecht",
+  "bg.tron.stakeFor": "{amount} für {resource} staken",
+  "bg.tron.days": "{count} Tage",
+  "bg.tron.cancelUnstaking": "Ausstehende Auszahlungen aus dem Staking abbrechen und diese TRX wieder staken",
+  "bg.tron.lend": "{resource} aus deinen gestakten {amount} an {to} verleihen",
+  "bg.tron.stopLending": "{resource} aus {amount}, verliehen an {to}, zurücknehmen",
+  "bg.tron.lockedHours": "Etwa {hours} Stunden. Vorher kannst du es nicht zurücknehmen.",
+  "bg.tron.vote": "Für {count} Super Representatives stimmen",
+  "bg.tron.votesReplace": "Das ersetzt alle deine bisherigen Stimmen.",
+  "bg.tron.claimVoteRewards": "Deine Belohnungen fürs Abstimmen abholen",
+  "bg.tron.changePermissions": "Ändern, wer dein TRON-Konto kontrolliert",
+  "bg.tron.keysThreshold": "{keys} (benötigt {threshold})",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

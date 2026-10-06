@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "此 TRON 账户由另一个密钥控制，因此 Clip Wallet 无法为其签名。",
+  "bg.tron.notOpen": "你的 TRON 账户尚未开通。请先接收一些 TRX。",
+  "bg.tron.contractRecipient": "TRX 不能直接发送到智能合约。",
+  "bg.tron.newAccountFee": "该地址尚未在 TRON 上开通。向其发送还需额外支付 {amount} 来开通它。",
+  "bg.tron.getsSigned": "{host}（会收到已签名的交易）",
+  "bg.tron.energy": "能量",
+  "bg.tron.bandwidth": "带宽",
+  "bg.tron.tronPower": "投票权",
+  "bg.tron.stakeFor": "质押 {amount} 以获取{resource}",
+  "bg.tron.days": "{count} 天",
+  "bg.tron.cancelUnstaking": "取消待处理的解除质押，并重新质押这些 TRX",
+  "bg.tron.lend": "将你质押的 {amount} 所产生的{resource}借给 {to}",
+  "bg.tron.stopLending": "收回借给 {to} 的 {amount} 所产生的{resource}",
+  "bg.tron.lockedHours": "约 {hours} 小时。在此之前无法收回。",
+  "bg.tron.vote": "投票给 {count} 个 Super Representative",
+  "bg.tron.votesReplace": "这会替换你之前的所有投票。",
+  "bg.tron.claimVoteRewards": "领取你的投票奖励",
+  "bg.tron.changePermissions": "更改谁能控制你的 TRON 账户",
+  "bg.tron.keysThreshold": "{keys}（需要 {threshold}）",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

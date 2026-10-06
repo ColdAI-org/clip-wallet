@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "यह TRON अकाउंट किसी दूसरी कुंजी से नियंत्रित है, इसलिए Clip Wallet इसके लिए साइन नहीं कर सकता।",
+  "bg.tron.notOpen": "आपका TRON अकाउंट अभी खुला नहीं है। पहले कुछ TRX प्राप्त करें।",
+  "bg.tron.contractRecipient": "TRX को सीधे किसी स्मार्ट कॉन्ट्रैक्ट पर नहीं भेजा जा सकता।",
+  "bg.tron.newAccountFee": "यह एड्रेस अभी TRON पर खुला नहीं है। इस पर भेजने में इसे खोलने के लिए {amount} अलग से लगेंगे।",
+  "bg.tron.getsSigned": "{host} (इसे साइन किया गया ट्रांज़ैक्शन मिलता है)",
+  "bg.tron.energy": "एनर्जी",
+  "bg.tron.bandwidth": "बैंडविड्थ",
+  "bg.tron.tronPower": "वोटिंग पावर",
+  "bg.tron.stakeFor": "{resource} के लिए {amount} स्टेक करें",
+  "bg.tron.days": "{count} दिन",
+  "bg.tron.cancelUnstaking": "अपनी लंबित अनस्टेकिंग रद्द करें और उस TRX को फिर से स्टेक करें",
+  "bg.tron.lend": "आपके स्टेक किए गए {amount} की {resource} {to} को उधार दें",
+  "bg.tron.stopLending": "{to} को उधार दिए गए {amount} की {resource} वापस लें",
+  "bg.tron.lockedHours": "लगभग {hours} घंटे। उससे पहले आप इसे वापस नहीं ले सकते।",
+  "bg.tron.vote": "{count} Super Representatives को वोट दें",
+  "bg.tron.votesReplace": "यह आपके पहले के सभी वोट बदल देता है।",
+  "bg.tron.claimVoteRewards": "अपने वोटिंग रिवॉर्ड क्लेम करें",
+  "bg.tron.changePermissions": "बदलें कि आपका TRON अकाउंट कौन नियंत्रित करता है",
+  "bg.tron.keysThreshold": "{keys} ({threshold} ज़रूरी)",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

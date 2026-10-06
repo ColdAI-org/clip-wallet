@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "Questo account TRON è controllato da un'altra chiave, quindi Clip Wallet non può firmare per esso.",
+  "bg.tron.notOpen": "Il tuo account TRON non è ancora aperto. Ricevi prima un po' di TRX.",
+  "bg.tron.contractRecipient": "Non è possibile inviare TRX direttamente a uno smart contract.",
+  "bg.tron.newAccountFee": "Questo indirizzo non è ancora aperto su TRON. Inviargli fondi costa anche {amount} per aprirlo.",
+  "bg.tron.getsSigned": "{host} (riceve la transazione firmata)",
+  "bg.tron.energy": "energia",
+  "bg.tron.bandwidth": "larghezza di banda",
+  "bg.tron.tronPower": "potere di voto",
+  "bg.tron.stakeFor": "Metti in staking {amount} per ottenere {resource}",
+  "bg.tron.days": "{count} giorni",
+  "bg.tron.cancelUnstaking": "Annulla i prelievi dallo staking in sospeso e rimetti in staking quei TRX",
+  "bg.tron.lend": "Presta {resource} dei {amount} che hai messo in staking a {to}",
+  "bg.tron.stopLending": "Riprendi {resource} dei {amount} prestati a {to}",
+  "bg.tron.lockedHours": "Circa {hours} ore. Non puoi riprenderlo prima.",
+  "bg.tron.vote": "Vota per {count} Super Representatives",
+  "bg.tron.votesReplace": "Questo sostituisce tutti i tuoi voti precedenti.",
+  "bg.tron.claimVoteRewards": "Riscuoti le ricompense per il voto",
+  "bg.tron.changePermissions": "Cambia chi controlla il tuo account TRON",
+  "bg.tron.keysThreshold": "{keys} (richiede {threshold})",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

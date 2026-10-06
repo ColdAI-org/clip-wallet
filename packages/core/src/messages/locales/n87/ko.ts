@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "이 TRON 계정은 다른 키가 관리하고 있어서 Clip Wallet이 서명할 수 없어요.",
+  "bg.tron.notOpen": "TRON 계정이 아직 열리지 않았어요. 먼저 TRX를 받아 주세요.",
+  "bg.tron.contractRecipient": "TRX는 스마트 컨트랙트로 바로 보낼 수 없어요.",
+  "bg.tron.newAccountFee": "이 주소는 아직 TRON에서 열리지 않았어요. 여기로 보내면 여는 데 {amount}이(가) 추가로 들어요.",
+  "bg.tron.getsSigned": "{host} (서명된 트랜잭션을 받아요)",
+  "bg.tron.energy": "에너지",
+  "bg.tron.bandwidth": "대역폭",
+  "bg.tron.tronPower": "투표권",
+  "bg.tron.stakeFor": "{resource}을(를) 위해 {amount} 스테이킹",
+  "bg.tron.days": "{count}일",
+  "bg.tron.cancelUnstaking": "대기 중인 스테이킹 해제를 취소하고 그 TRX를 다시 스테이킹",
+  "bg.tron.lend": "스테이킹한 {amount}의 {resource}을(를) {to}에게 빌려주기",
+  "bg.tron.stopLending": "{to}에게 빌려준 {amount}의 {resource} 회수",
+  "bg.tron.lockedHours": "약 {hours}시간이에요. 그 전에는 되돌릴 수 없어요.",
+  "bg.tron.vote": "Super Representative {count}명에게 투표",
+  "bg.tron.votesReplace": "이전 투표가 모두 대체돼요.",
+  "bg.tron.claimVoteRewards": "투표 보상 받기",
+  "bg.tron.changePermissions": "TRON 계정을 관리하는 사람 변경",
+  "bg.tron.keysThreshold": "{keys} ({threshold} 필요)",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

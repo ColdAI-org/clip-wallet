@@ -6,6 +6,25 @@ export default {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "This TRON account is controlled by another key, so Clip Wallet can't sign for it.",
+  "bg.tron.notOpen": "Your TRON account isn't open yet. Receive some TRX first.",
+  "bg.tron.contractRecipient": "TRX can't be sent straight to a smart contract.",
+  "bg.tron.newAccountFee": "This address isn't open on TRON yet. Sending to it also costs {amount} to open it.",
+  "bg.tron.getsSigned": "{host} (it gets the signed transaction)",
+  "bg.tron.energy": "energy",
+  "bg.tron.bandwidth": "bandwidth",
+  "bg.tron.tronPower": "voting power",
+  "bg.tron.stakeFor": "Stake {amount} for {resource}",
+  "bg.tron.days": "{count} days",
+  "bg.tron.cancelUnstaking": "Cancel your pending unstaking and stake that TRX again",
+  "bg.tron.lend": "Lend the {resource} of {amount} you've staked to {to}",
+  "bg.tron.stopLending": "Take back the {resource} of {amount} you lent to {to}",
+  "bg.tron.lockedHours": "About {hours} hours. You can't take it back before then.",
+  "bg.tron.vote": "Vote for {count} Super Representatives",
+  "bg.tron.votesReplace": "This replaces all your earlier votes.",
+  "bg.tron.claimVoteRewards": "Claim your voting rewards",
+  "bg.tron.changePermissions": "Change who controls your TRON account",
+  "bg.tron.keysThreshold": "{keys} (needs {threshold})",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

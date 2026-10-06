@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "Bu TRON hesabı başka bir anahtar tarafından kontrol ediliyor, bu yüzden Clip Wallet onun için imzalayamıyor.",
+  "bg.tron.notOpen": "TRON hesabınız henüz açılmadı. Önce biraz TRX alın.",
+  "bg.tron.contractRecipient": "TRX doğrudan bir akıllı sözleşmeye gönderilemez.",
+  "bg.tron.newAccountFee": "Bu adres TRON'da henüz açılmadı. Buraya göndermenin, adresi açmak için ayrıca {amount} maliyeti var.",
+  "bg.tron.getsSigned": "{host} (imzalı işlemi alır)",
+  "bg.tron.energy": "enerji",
+  "bg.tron.bandwidth": "bant genişliği",
+  "bg.tron.tronPower": "oy gücü",
+  "bg.tron.stakeFor": "{resource} için {amount} stake et",
+  "bg.tron.days": "{count} gün",
+  "bg.tron.cancelUnstaking": "Bekleyen stake'ten çıkarma işlemlerinizi iptal edin ve bu TRX'i yeniden stake edin",
+  "bg.tron.lend": "Stake ettiğiniz {amount} tutarının {resource} kaynağını {to} adresine ödünç ver",
+  "bg.tron.stopLending": "{to} adresine ödünç verdiğiniz {amount} tutarının {resource} kaynağını geri al",
+  "bg.tron.lockedHours": "Yaklaşık {hours} saat. Bundan önce geri alamazsınız.",
+  "bg.tron.vote": "{count} Super Representative'e oy ver",
+  "bg.tron.votesReplace": "Bu, önceki tüm oylarınızın yerini alır.",
+  "bg.tron.claimVoteRewards": "Oylama ödüllerinizi alın",
+  "bg.tron.changePermissions": "TRON hesabınızı kimin kontrol ettiğini değiştirin",
+  "bg.tron.keysThreshold": "{keys} ({threshold} gerekli)",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl

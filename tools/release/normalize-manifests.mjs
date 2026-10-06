@@ -58,6 +58,10 @@ export const EXTRA = {
   "@clip-wallet/link": { description: "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging" },
   "@clip-wallet/media-client": { description: "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy" },
   "@clip-wallet/kit-modules": { description: "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet" },
+  "@clip-wallet/chains-tron": {
+    description: "TRON ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
+    keywords: ["clip-wallet", "wallet", "tron", "chain-module"],
+  },
   "create-clip-wallet": {
     description:
       "Scaffold your own wallet on the Clip Wallet kit, on every platform from one clip.config.ts: browser extension, desktop app (Electron) and phone app (Expo), with its own name, ids and icons; testnet by default",

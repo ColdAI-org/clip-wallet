@@ -5,6 +5,25 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
+  "bg.tron.notControlled": "この TRON アカウントは別の鍵で管理されているため、Clip Wallet は署名できません。",
+  "bg.tron.notOpen": "TRON アカウントはまだ開設されていません。まず TRX を受け取ってください。",
+  "bg.tron.contractRecipient": "TRX をスマートコントラクトに直接送ることはできません。",
+  "bg.tron.newAccountFee": "このアドレスは TRON でまだ開設されていません。送金すると、開設のために {amount} が追加でかかります。",
+  "bg.tron.getsSigned": "{host}（署名済みの取引を受け取ります）",
+  "bg.tron.energy": "エネルギー",
+  "bg.tron.bandwidth": "帯域幅",
+  "bg.tron.tronPower": "投票権",
+  "bg.tron.stakeFor": "{amount}をステーキングして{resource}を得る",
+  "bg.tron.days": "{count}日",
+  "bg.tron.cancelUnstaking": "保留中のステーキング解除をキャンセルして、その TRX を再びステーキング",
+  "bg.tron.lend": "ステーキングした{amount}の{resource}を{to}に貸し出す",
+  "bg.tron.stopLending": "{to}に貸した{amount}の{resource}を取り戻す",
+  "bg.tron.lockedHours": "約{hours}時間。それまでは取り戻せません。",
+  "bg.tron.vote": "{count}名の Super Representative に投票",
+  "bg.tron.votesReplace": "これまでの投票はすべて置き換えられます。",
+  "bg.tron.claimVoteRewards": "投票報酬を受け取る",
+  "bg.tron.changePermissions": "TRON アカウントを管理できる人を変更",
+  "bg.tron.keysThreshold": "{keys}（必要: {threshold}）",
   // ---- end chains-tron
   // ---- chains-xrpl (xrpl)
   // ---- end chains-xrpl
