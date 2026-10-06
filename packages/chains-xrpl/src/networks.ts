@@ -33,7 +33,8 @@ export const XRPL_NETS: Record<XrplNet, XrplNetSpec> = {
   testnet: {
     caip2: "xrpl:1",
     networkId: 1,
-    rpc: ["https://s.altnet.rippletest.net:51234/", "https://testnet.xrpl-labs.com/"],
+    // testnet.xrpl-labs.com first: it answers CORS preflights (pages, mobile WebViews); the rippled host does not.
+    rpc: ["https://testnet.xrpl-labs.com/", "https://s.altnet.rippletest.net:51234/"],
     explorer: "https://testnet.xrpl.org",
     faucet: "https://faucet.altnet.rippletest.net/accounts",
     rlusd: "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",

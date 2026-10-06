@@ -76,6 +76,31 @@ Tezos's first operation (reveal + transfer)
 Screenshots: `apps/extension/e2e/shots/matrix/` (`<family>-sign.png`, `<family>-approval.png`,
 `evm-live-connected.png`). Raw results: `apps/extension/e2e/shots/matrix/results.json`.
 
+## networks87 rows (2026-10-06)
+
+The families added for the remaining CLPR networks ([networks87.md](networks87.md)), same levels and rules, run with
+`pnpm --filter @clip-wallet/extension matrix -- -g "matrix: (cosmos|tron|stacks|fuel|xrpl|chainflip|multiversx)"`.
+The existing rows were re-run in the same session with no change (all previous passes still pass).
+
+| Family | Testnet | Dapp library / discovery | L1 connect | L2 sign | L3 send (tx) | L4 approval |
+| --- | --- | --- | --- | --- | --- | --- |
+| Cosmos SDK (Osmosis) | osmo-test-5 | cosmjs `SigningStargateClient` over Clip's Keplr-compatible `window.clipwallet.cosmos` | pass | pass (ADR-36, `@cosmjs/crypto` `Secp256k1.verifySignature`) | skip: needs 0.1 OSMO | skip: "the account doesn't exist on osmo-test-5 yet" |
+| TRON | Nile | raw TIP-6963 discovery + TIP-1193 (no tronwallet adapter accepts a third-party TIP-6963 wallet), TronWeb | pass | pass (TronWeb `Trx.verifyMessageV2`) | skip: needs 2 TRX | skip: "the account doesn't exist on Nile yet" |
+| Stacks | testnet | `@stacks/connect` 8 `request()` through WBIP-004 `window.wbip_providers` | pass | pass (`verifyMessageSignatureRsv`) | **pass** [0xdcb787f4…d069](https://explorer.hiro.so/txid/0xdcb787f4291329664e5b5d8df9dac80770639b8df2a45394259153a435b2d069?chain=testnet) | pass: "Send 0.000001 STX to ST000…W42H" |
+| Fuel | testnet | fuels-ts `Fuel` connectors list → Clip's FuelConnector | pass | pass (`Signer.recoverAddress(hashMessage(…))`) | skip: needs testnet ETH | skip: needs funds first |
+| XRP Ledger | testnet | `@wallet-standard/app` with the `@xrpl-wallet-standard/app` feature filter (XLS-72d) | pass | n/a (XLS-72d has no message signing) | **pass** [601CC505…8E32](https://testnet.xrpl.org/transactions/601CC50503CD39B6783D609863C218159DC44EE1C7E34FB4DC51EA13BD8D8E32) (no-op AccountSet with a memo: rippled refuses a payment to yourself) | pass: "Change your account settings", memo shown |
+| Chainflip (substrate) | Perseverance | `@polkadot/extension-dapp` + `@polkadot/api`, as lp.chainflip.io | pass (cF… address) | pass (`signatureVerify`) | skip: needs FLIP (no plain FLIP transfer; L3 is `liquidityProvider.registerLpAccount`) | pass: "Register as a Chainflip liquidity provider" |
+| MultiversX | devnet | `@multiversx/sdk-dapp` 5.7.3 `initApp` + `ProviderFactory` (custom provider from the **undocumented** `window.multiversx.providers` hook) | pass | pass (sdk-dapp `verifyMessage`) | skip: needs devnet EGLD | skip: needs funds first |
+
+No L1/L2 rows: Antelope, ICP (no wallet-side standard Clip can answer as itself), Bitcoin Cash (WalletConnect only;
+needs a project id), Provenance, Initia (same Keplr-compatible provider as Osmosis, no separate page), THORChain (no
+public testnet). Screenshots: `apps/extension/e2e/shots/matrix/{cosmos,tron,stacks,fuel,chainflip,multiversx}-sign.png`,
+`stacks-approval.png`, `xrpl-approval.png`, `chainflip-approval.png`.
+
+Fixes the run found: the XRPL page and chains-xrpl now use `testnet.xrpl-labs.com` first (rippled's own testnet host
+answers no CORS preflight, so a page's fetch failed); the MultiversX page connects without native auth (with it,
+`login()` asks for a second, sign-in approval inside L1).
+
 ## Which dapp each row uses, and why
 
 Live public dapps come first in the brief. In practice:

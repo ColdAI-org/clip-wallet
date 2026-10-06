@@ -126,6 +126,8 @@ async function openDapp(context: BrowserContext, dapp: string): Promise<Page> {
   });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  // MATRIX_DEBUG=1: the dapp page's console in the test output (no secrets reach a dapp page).
+  if (process.env.MATRIX_DEBUG) page.on("console", (m) => process.stdout.write(`[${dapp} page] ${m.type()}: ${m.text().slice(0, 300)}\n`));
   await page.goto(`${ORIGIN}/`);
   await page.waitForFunction(() => !!(window as unknown as { __matrix?: unknown }).__matrix, undefined, { timeout: 30_000 }).catch(() => {
     throw new Error(`${dapp} dapp didn't start: ${errors.join(" | ") || "no page error"}`);

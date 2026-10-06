@@ -1,10 +1,10 @@
 /**
  * MultiversX (devnet): @multiversx/sdk-dapp 5.7.3 driven headless (no unlock panel), the way an sdk-dapp dapp logs in
  * once the user picked a provider.
- *  - connect: `initApp({ dAppConfig: { environment: "devnet", nativeAuth: true } })`, which merges
+ *  - connect: `initApp({ dAppConfig: { environment: "devnet", nativeAuth: false } })`, which merges
  *    `window.multiversx.providers` into `ProviderFactory.customProviders` (sdk-dapp's UNDOCUMENTED custom-provider hook:
  *    1Mask adds Clip's own entry there, type "clipwallet"), then `ProviderFactory.create({ type: "clipwallet" })` and
- *    `login()`: sdk-dapp asks for a native-auth login token signature (address + token, MessageComputer).
+ *    `login()` (native auth off here: with it, login() also asks for a sign-in signature, a second approval).
  *  - sign: `signMessage(new Message({ data }))` through sdk-dapp's DappProvider, checked with sdk-dapp's own
  *    `verifyMessage` (MessageComputer + UserVerifier).
  *  - send: a 1-attoEGLD transfer to yourself built with sdk-core 15, signed through DappProvider.signTransactions (sdk-dapp
@@ -44,14 +44,16 @@ expose({
   },
   steps: {
     connect: async () => {
-      await initApp({ dAppConfig: { environment: "devnet", nativeAuth: true } } as Parameters<typeof initApp>[0]);
+      // Native auth off for L1: with it, login() also asks for a sign-in signature (a second approval the matrix's
+      // connect level doesn't answer). L2 signs a message instead.
+      await initApp({ dAppConfig: { environment: "devnet", nativeAuth: false } } as Parameters<typeof initApp>[0]);
       const entry = (ProviderFactory.customProviders as { type: string; name: string }[]).find((p) => p.type === TYPE);
       if (!entry) throw new Error("Clip Wallet isn't in sdk-dapp's custom providers (window.multiversx.providers)");
       provider = await ProviderFactory.create({ type: TYPE });
       const login = await provider.login();
-      if (!login?.address || !login.signature) throw new Error("login returned no native-auth signature");
+      if (!login?.address) throw new Error("login returned no address");
       address = login.address;
-      return { address, name: entry.name, nativeAuthSignature: login.signature.slice(0, 16) };
+      return { address, name: entry.name };
     },
     sign: async () => {
       const signed = await provider.signMessage(new Message({ address: Address.newFromBech32(address), data: new TextEncoder().encode(MESSAGE) }));

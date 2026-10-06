@@ -10,7 +10,8 @@
 import { getWallets } from "@wallet-standard/app";
 import { NeedsFunds, expose, waitFor } from "../dapp-kit";
 
-const RPC = "https://s.altnet.rippletest.net:51234/";
+// testnet.xrpl-labs.com answers CORS preflights from a page; s.altnet.rippletest.net:51234 does not.
+const RPC = "https://testnet.xrpl-labs.com/";
 /** @xrpl-wallet-standard/core REQUIRED_FEATURES (packages/core/src/utils.ts). */
 const REQUIRED_FEATURES = ["standard:connect", "standard:events", "xrpl:signTransaction", "xrpl:signAndSubmitTransaction"] as const;
 type F = Record<string, any>;
