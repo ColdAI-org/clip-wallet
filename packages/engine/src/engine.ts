@@ -704,9 +704,13 @@ export class WalletEngine implements DappHost {
     for (const asset of this.deps.assets.filter((a) => a.key === assetKey && !a.bridged)) {
       const network = this.network(asset.networkId);
       const acct = await this.account(network.family);
-      const t = byAddress.get(acct.address) ?? { asset, address: acct.address, displayAddress: acct.hederaAccountId, networks: [] };
+      // networks87: families whose address is spelled per network (Cosmos prefixes, Stacks SP/ST, CashAddr) or lives
+      // on chain (Antelope account names) say which one receives here; a plain-words ClipError when none can yet.
+      const mod = this.deps.chains[network.family];
+      const address = mod?.receiveAddress ? await mod.receiveAddress(await this.ctx(network.id)) : acct.address;
+      const t = byAddress.get(address) ?? { asset, address, displayAddress: acct.hederaAccountId, networks: [] };
       t.networks.push(this.networkView(network));
-      byAddress.set(acct.address, t);
+      byAddress.set(address, t);
     }
     return [...byAddress.values()];
   }

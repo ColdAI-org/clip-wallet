@@ -264,6 +264,10 @@ export function lazyChain<M extends ChainModule>(family: Family, curve: ChainMod
     prepare: async (r, ctx, id) => (await load()).prepare(r, ctx, id),
     finalize: async (r, s, ctx) => (await load()).finalize(r, s, ctx),
     buildTransfer: async (x, ctx) => (await load()).buildTransfer(x, ctx),
+    receiveAddress: async (ctx) => {
+      const m = await load();
+      return m.receiveAddress ? m.receiveAddress(ctx) : ctx.account.address;
+    },
   };
 }
 

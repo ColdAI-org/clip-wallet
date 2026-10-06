@@ -132,6 +132,19 @@ describe("WalletEngine: portfolio, send, receive", () => {
     expect(t).toHaveLength(1);
     expect(t[0]!.networks).toHaveLength(2);
   });
+
+  it("asks the module for the receive address when it spells it per network (networks87 receiveAddress)", async () => {
+    const vault = new FakeVault();
+    const deps = makeDeps(vault);
+    const evm = deps.chains.evm!;
+    deps.chains.evm = { ...evm, receiveAddress: async (ctx) => `${ctx.account.address}@${ctx.network.id}` };
+    const engine = new WalletEngine(deps, new MemoryKV(), makeEnv());
+    engine.start();
+    await engine.handle({ type: "createWallet", password: "a long test password" });
+    const t = await engine.handle({ type: "getReceiveTargets", assetKey: "eth" });
+    expect(t.map((x) => x.address).sort()).toEqual([`${EVM_ADDRESS}@${BASE_SEPOLIA.id}`, `${EVM_ADDRESS}@${SEPOLIA.id}`].sort());
+    expect(t.every((x) => x.networks.length === 1)).toBe(true);
+  });
 });
 
 describe("wallet-built origin", () => {

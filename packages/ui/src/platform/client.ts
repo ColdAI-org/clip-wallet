@@ -124,6 +124,19 @@ export const FAMILY_LABEL: Partial<Record<Family, string>> = {
   stellar: "Stellar",
   tezos: "Tezos",
   algorand: "Algorand",
+  // networks87: bare network names (never translated), one key per family.
+  cosmos: "Osmosis, dYdX, ZIGChain",
+  provenance: "Provenance",
+  thorchain: "THORChain",
+  initia: "Initia",
+  tron: "TRON",
+  xrpl: "XRP Ledger",
+  antelope: "Vaulta, Telos, XPR Network",
+  multiversx: "MultiversX",
+  icp: "Internet Computer",
+  stacks: "Stacks",
+  fuel: "Fuel",
+  bitcoincash: "Bitcoin Cash",
 };
 
 /** Catalog ids for the FAMILY_LABEL entries that carry words or a ticker list; the others are bare network names. */
