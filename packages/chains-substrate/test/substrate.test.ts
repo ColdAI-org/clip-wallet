@@ -229,6 +229,31 @@ describe("signPayload", () => {
     expect(proxy.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "approval-for-all" }));
   });
 
+  it("audit CHAIN-L: Assets.transfer_approved reads its owner and destination fields", async () => {
+    const meta = { deposit: 0n, name: Binary.fromText("Test Dollar"), symbol: Binary.fromText("TUSD"), decimals: 6, is_frozen: false };
+    const { m, ctx } = setup({}, { [enc.storageKey("Assets", "Metadata", 42)]: enc.storageValue("Assets", "Metadata", meta) });
+    const call = callBytes("Assets", "transfer_approved", { id: 42, owner: Enum("Id", BOB), destination: Enum("Id", ME), amount: 2_500_000n });
+    const d = await m.decode(req(SUBSTRATE_METHODS.signPayload, payloadJson(ME, call)), ctx);
+    expect(d.blind).toBe(false);
+    const lines = Object.fromEntries(d.lines.map((l) => [l.label, l.value]));
+    expect(lines.From).toBe(BOB);
+    expect(lines.To).toBe(ME);
+    expect(d.title).toBe(`Move 2.5 TUSD from ${BOB.slice(0, 6)}…${BOB.slice(-4)} to ${ME.slice(0, 6)}…${ME.slice(-4)}`);
+    // The tokens come from the owner's allowance to you and land with you.
+    expect(d.balanceChanges).toEqual([{ asset: expect.objectContaining({ key: "asset:42" }), delta: "2500000" }]);
+  });
+
+  it("audit CHAIN-L: a payload for another runtime version is read as blind, not with this runtime's metadata", async () => {
+    const { m, ctx } = setup();
+    // The payload names spec 1025002; the node (and the block it names) run 1025001, so its call indices can mean
+    // something else once that runtime is live.
+    const d = await m.decode(req(SUBSTRATE_METHODS.signPayload, payloadJson(ME, transferCall(), { specVersion: "0x000fa3ea" })), ctx);
+    expect(d.blind).toBe(true);
+    expect(d.title.startsWith("Send ")).toBe(false);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "blind-signing" }));
+    expect(d.balanceChanges).toEqual([]);
+  });
+
   it("shows undescribed calls as pallet.call(args) with a caution", async () => {
     const { m, ctx } = setup();
     const d = await m.decode(req(SUBSTRATE_METHODS.signPayload, payloadJson(ME, callBytes("Balances", "burn", { value: 5n, keep_alive: true }))), ctx);

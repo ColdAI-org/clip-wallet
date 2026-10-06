@@ -137,11 +137,23 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
         });
         return out;
       }
+      if (name === "transfer_approved") {
+        // Audit CHAIN-L: transfer_approved(id, owner, destination, amount) moves the owner's tokens under an allowance
+        // they gave you; it has no `target`/`dest` field, so it used to be shown without its recipient.
+        const owner = addressOf(a.owner);
+        const dest = addressOf(a.destination);
+        out.title = `Move ${text} from ${short(owner)} to ${short(dest)}`;
+        out.lines.push({ label: "From", value: owner }, { label: "To", value: dest }, { label: "Amount", value: text });
+        if (!info) out.warnings.push({ level: "caution", code: "known-scam", message: say("bg.substrate.unknownAsset", { id }) });
+        if (isMe(owner, c.me) && !isMe(dest, c.me)) out.balanceChanges.push({ asset, delta: (-amount).toString() });
+        else if (isMe(dest, c.me) && !isMe(owner, c.me)) out.balanceChanges.push({ asset, delta: amount.toString() });
+        return out;
+      }
       const to = addressOf(a.target ?? a.dest);
       out.title = `Send ${text} to ${short(to)}`;
       out.lines.push({ label: "To", value: to }, { label: "Amount", value: text });
       if (!info) out.warnings.push({ level: "caution", code: "known-scam", message: say("bg.substrate.unknownAsset", { id }) });
-      if (!isMe(to, c.me) && name !== "transfer_approved") out.balanceChanges.push({ asset, delta: (-amount).toString() });
+      if (!isMe(to, c.me)) out.balanceChanges.push({ asset, delta: (-amount).toString() });
       return out;
     }
     case "Staking.bond":

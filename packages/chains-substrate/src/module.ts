@@ -221,6 +221,10 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
     }
     let d: Described;
     try {
+      // Audit CHAIN-L: call data is only read with the metadata of the runtime it was built for. When that runtime
+      // can't be loaded (a future spec, or pruned state), this runtime's pallet and call indices may mean something
+      // else by the time it executes, so the request is unreadable rather than described with the wrong metadata.
+      if (stale) throw new ClipError("built for another runtime", "substrate/stale-runtime");
       const call = rt.builder.buildDefinition(rt.callType).dec(p.method) as DecodedCall;
       d = await describeCall(call, {
         networkId: ctx.network.id,
@@ -234,7 +238,15 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
         ...titled(msg("bg.req.approveTxFor", { host })),
         lines: [{ label: "Action (undecoded)", value: hex0x(p.method) }],
         balanceChanges: [],
-        warnings: [{ level: "danger", code: "blind-signing", message: "This transaction can't be read. Only sign it if you trust the app." }],
+        warnings: [
+          stale
+            ? {
+                level: "danger",
+                code: "blind-signing",
+                message: `This was built for another version of the network (runtime ${p.specVersion}; the network runs ${rt.version.specVersion}), so Clip Wallet can't read it reliably. Only sign it if you trust the app.`,
+              }
+            : { level: "danger", code: "blind-signing", message: "This transaction can't be read. Only sign it if you trust the app." },
+        ],
         blind: true,
       };
     }
@@ -261,9 +273,6 @@ export function createSubstrateModule(options: SubstrateModuleOptions = {}): Sub
           message: "The app described this network differently from Clip Wallet (metadata hash mismatch). The network will reject it.",
         });
       }
-    }
-    if (stale) {
-      warnings.push({ level: "caution", code: "simulation-failed", message: "The app built this for an older version of the network. It may be rejected." });
     }
     if (!n.submit && request.origin !== WALLET_ORIGIN) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     return {
