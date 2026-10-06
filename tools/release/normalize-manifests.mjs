@@ -86,6 +86,7 @@ const FAMILY = {
   stacks: "Stacks",
   bitcoincash: "Bitcoin Cash",
   xrpl: "XRP Ledger",
+  antelope: "Antelope (Vaulta, Telos, XPR Network)",
 };
 for (const [f, label] of Object.entries(FAMILY)) {
   EXTRA[`@clip-wallet/chains-${f}`] = {
