@@ -111,6 +111,24 @@ export function normalize(request: DappRequest, ctx: ChainContext): Normalized {
   }
 }
 
+/**
+ * The site a MultiversX native-auth login token is for, or null. Token (sdk-native-auth-client `initialize`):
+ * base64url(origin) "." blockHash "." ttl "." base64url(extraInfo JSON); sdk-native-auth-server verifies the signature
+ * over the message `address + token` (MessageComputer).
+ */
+export function nativeAuthOrigin(token: string): string | null {
+  const parts = token.split(".");
+  if (parts.length !== 4 || !/^[0-9a-f]{64}$/i.test(parts[1]!) || !/^\d{1,10}$/.test(parts[2]!)) return null;
+  try {
+    const p = parts[0]!;
+    const b = atob(p.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((p.length + 3) % 4));
+    const origin = new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(b, (c) => c.charCodeAt(0)));
+    return /^https?:\/\/[^\s/]+$/.test(origin) ? origin : null;
+  } catch {
+    return null;
+  }
+}
+
 function payloadBytes(n: Normalized): Uint8Array[] {
   return n.kind === "message" ? [messageHash(n.data)] : n.txs.map(bytesToSign);
 }
@@ -170,6 +188,18 @@ export function createMultiversXModule(options: MultiversXModuleOptions = {}): M
     const host = hostOf(req.origin);
     if (n.kind === "message") {
       const text = textOf(n.data);
+      const me = ctx.account.address;
+      const site = text?.startsWith(me) ? nativeAuthOrigin(text.slice(me.length)) : null;
+      if (site) {
+        // A native-auth login: address + token, the token naming the site it signs in to.
+        const domain = hostOf(site);
+        const warnings: Warning[] = [];
+        if (domain !== host) {
+          const w = msg("bg.warn.signInPhishing", { domain, host });
+          warnings.push({ level: "danger", code: "domain-mismatch", message: w.fallback, msg: w });
+        }
+        return { ...base, ...titled(msg("bg.req.signIn", { domain })), lines: [{ label: "Website", value: site }, { label: "Message", value: text! }], balanceChanges: [], simulated: false, blind: false, warnings };
+      }
       const warnings: Warning[] = text === null ? [{ level: "danger", code: "blind-signing", message: "This message isn't readable text. Only sign it if you trust the app." }] : [];
       return { ...base, ...titled(msg("bg.req.signMessage", { host })), lines: [{ label: "Message", value: text ?? hex(n.data) }], balanceChanges: [], simulated: false, blind: text === null, warnings };
     }

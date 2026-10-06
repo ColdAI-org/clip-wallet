@@ -144,34 +144,49 @@ plain words there. Contracts are any address that starts with 8 zero bytes.
   `/accounts/{a}/tokens` (MetaESDTs, such as LP or farm positions, are skipped), with spam marked as above.
 - **`getNfts`.** It returns `[]` for now. The API lists NFTs and SFTs at `/accounts/{a}/nfts`.
 
-## Dapp connectivity: send and receive only (no injected provider)
+## Dapp connectivity: a best-effort sdk-dapp provider (undocumented hook)
 
 There's no documented way for a third-party browser-extension wallet to be discovered by MultiversX dapps under its own
-identity without the dapp adding code for that wallet. Sources (checked 2026-10-06):
+identity. Sources (checked 2026-10-06):
 
 - **sdk-dapp v5 has a fixed provider list.** `ProviderTypeEnum` is extension, metamask, passkey, walletConnect, ledger,
-  crossWindow, webview or none (`mx-sdk-dapp` `src/providers/types/providerFactory.types.ts`).
-  - Custom providers are dapp-side code: `ICustomProvider` objects passed to `initApp({ customProviders })`.
-  - `initApp` also merges `window.multiversx.providers` (`src/methods/initApp/initApp.ts`). The README documents that as
-    something the dapp author sets ("add it to the window object"), and the template dapp overwrites `window.multiversx`.
-    There's no announce event or registry a wallet could use. We don't inject into it.
+  crossWindow, webview or none (`mx-sdk-dapp` `src/providers/types/providerFactory.types.ts`). Custom providers are
+  `ICustomProvider` objects (`{ name, type, iconUrl?, constructor(options) => Promise<IProvider> }`) passed to
+  `initApp({ customProviders })`.
 - **The extension provider is the MultiversX DeFi Wallet's own channel.** `mx-sdk-js-extension-provider` looks for
   `window.elrondWallet` / `window.multiversxWallet` and talks over `postMessage` targets `erdw-inpage` /
-  `erdw-contentScript`. Answering it would mean posing as the DeFi Wallet (AGENTS rule 8), so we don't.
+  `erdw-contentScript`. Answering it would mean posing as the DeFi Wallet (AGENTS rule 8), so 1Mask doesn't.
 - **The other providers don't apply.** The webview provider is for dapps embedded in xPortal / Hub (iframe or React
   Native webview). The cross-window and iframe providers open a wallet URL that the dapp configures.
-- **WalletConnect works across dapps without impersonation.** Namespace `mvx`, chains `mvx:1` / `mvx:D` / `mvx:T`, with
-  the methods above.
-  - This module decodes and signs those requests, so wiring it into the engine's WalletConnect host is enough.
-  - Stock sdk-dapp labels any WalletConnect wallet "xPortal App" in its unlock panel. The wallet's own WalletConnect
-    metadata still carries its own name.
-  - sdk-dapp always asks for `mvx_signLoginToken` too, so a WalletConnect login needs that method; it isn't
-    implemented yet.
 
-**Dapp matrix.**
-- L0 (send and receive on devnet) works today.
-- L1 (connect) and L2 (sign a message) would go through WalletConnect, using sdk-dapp's `verifyMessage`
-  (`MessageComputer.computeBytesForVerifying` + `UserVerifier`). There's no injected page.
+**What 1Mask does instead (best effort).** `initApp` also merges `window.multiversx?.providers` with the dapp's
+`customProviders`, deduplicated by `type` (sdk-dapp 5.7.3 `out/methods/initApp/initApp.mjs`), and
+`ProviderFactory.create({ type })` calls the matching entry's `constructor({ address, anchor })`, then `init()`
+(`out/providers/ProviderFactory.mjs`). This hook is **UNDOCUMENTED** as a wallet channel: sdk-dapp's README presents it
+as something the dapp sets, and MultiversX's template dapp replaces `window.multiversx`. So it works only on sdk-dapp
+dapps that don't override it, and only while sdk-dapp keeps reading it.
+
+- `packages/1mask/src/inpage/multiversx.ts` pushes Clip's own entry (type = the global key, "clipwallet"; the wallet's
+  name and icon) onto that array, keeping the array and other wallets' entries, and exposes the provider at
+  `window.clipwallet.multiversx`.
+- `login({ token })` signs `address + token` as a MultiversX message: what sdk-native-auth-server verifies
+  (`signedMessage = address + body`, MessageComputer). decode() shows it as "Sign in to {site}" with the token's
+  origin, and a danger `domain-mismatch` warning if the token names another site; the 1Mask background refuses such a
+  token outright.
+- Transactions and messages go through `mvx_signTransactions` / `mvx_signMessage` above.
+- Checked against the real sdk-dapp 5.7.3 (scratch run, happy-dom): `initApp` listed the entry,
+  `ProviderFactory.create({ type: "clipwallet" })` + `login()` produced a native-auth token that
+  `@multiversx/sdk-native-auth-server` validated against the devnet API, and the transaction and message signatures
+  verified with sdk-core 15.
+
+**WalletConnect** (namespace `mvx`, chains `mvx:1` / `mvx:D` / `mvx:T`) works across dapps without any hook: this module
+decodes and signs those requests. Stock sdk-dapp labels any WalletConnect wallet "xPortal App", and always asks for
+`mvx_signLoginToken`, which isn't wired yet.
+
+**Dapp matrix** (`apps/extension/e2e/matrix/dapps/multiversx.ts`, devnet): sdk-dapp driven headless: `initApp` +
+`ProviderFactory.create({ type: "clipwallet" })` + native-auth `login()` (L1), `signMessage` checked with sdk-dapp's
+`verifyMessage` (L2), and a 1-attoEGLD self-transfer signed through `DappProvider.signTransactions` and sent to the devnet
+gateway (L0, needs devnet EGLD).
 
 ## Faucet
 
@@ -182,7 +197,8 @@ https://r3d4.fr/faucet.
 
 ## Known gaps
 
-- No injected provider (see above). No login-token / native-auth signing yet.
+- The injected provider relies on sdk-dapp's undocumented `window.multiversx.providers` hook (see above).
+- WalletConnect `mvx_signLoginToken` / `mvx_signNativeAuthToken` aren't handled.
 - NFTs aren't listed. MetaESDT balances (LP, farm and staking positions) aren't shown.
 - Guarded accounts can't send from Clip Wallet: the guardian co-signature (2FA service) isn't requested.
 - Staked EGLD isn't shown as a balance.

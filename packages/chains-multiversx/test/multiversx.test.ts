@@ -225,6 +225,19 @@ describe("decode", () => {
     expect(d.lines).toEqual([{ label: "Message", value: FIX.message }]);
   });
 
+  it("a native-auth login is a sign-in to the token's site; another site's token is a danger", async () => {
+    const b64url = (t: string) => btoa(t).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const token = (origin: string) => `${b64url(origin)}.${"ab".repeat(32)}.86400.${b64url("{}")}`;
+    const mine = await module.decode(req(MULTIVERSX_METHODS.signMessage, { message: FIX.me + token("https://app.example"), address: FIX.me }), ctx);
+    expect(mine.title).toBe("Sign in to app.example");
+    expect(mine.titleMsg?.id).toBe("bg.req.signIn");
+    expect(mine.warnings).toEqual([]);
+    expect(mine.lines[0]).toEqual({ label: "Website", value: "https://app.example" });
+    const other = await module.decode(req(MULTIVERSX_METHODS.signMessage, { message: FIX.me + token("https://xexchange.com"), address: FIX.me }), ctx);
+    expect(other.title).toBe("Sign in to xexchange.com");
+    expect(other.warnings[0]).toMatchObject({ level: "danger", code: "domain-mismatch", msg: { id: "bg.warn.signInPhishing" } });
+  });
+
   it("refuses the wrong network, account or method", async () => {
     await expect(module.decode(one(tx({ chainID: "1" })), ctx)).rejects.toMatchObject({ code: "multiversx/network-mismatch" });
     await expect(module.decode(one(tx()), ctxFor(f.fetch, MULTIVERSX_MAINNET))).rejects.toMatchObject({ code: "multiversx/network-mismatch" });
