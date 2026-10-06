@@ -26,6 +26,8 @@ export interface Described {
   balanceChanges: BalanceChange[];
   /** Octas: gas used × unit price when simulated, else max gas × unit price. */
   fee: bigint;
+  /** The most the signed transaction can charge: max_gas_amount × gas_unit_price. */
+  maxFee: bigint;
   /** Someone else pays the fee. */
   sponsored: boolean;
   simulated: boolean;
@@ -317,7 +319,9 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
   if (o.role === "secondary") lines.push({ label: "Started by", value: sender });
   if (o.role === "feePayer") lines.push({ label: "You pay the fee for", value: sender });
 
-  let fee = raw.max_gas_amount * raw.gas_unit_price;
+  // What the signed transaction allows at most (max gas × the price it names), whatever the simulation used.
+  const maxFee = raw.max_gas_amount * raw.gas_unit_price;
+  let fee = maxFee;
   let simulated = false;
   const balanceChanges: BalanceChange[] = [];
   let received = new Map<string, Map<string, bigint>>();
@@ -358,5 +362,5 @@ export async function describeTransaction(tx: AnyRawTransaction, o: DescribeOpti
   if (!iPay) {
     lines.push({ label: "Network fee", value: feePayer === longAddress("0x0") ? "Paid by the app's sponsor" : `Paid by ${short(feePayer)}` });
   }
-  return { title, lines, balanceChanges, fee, sponsored: !iPay, simulated, blind, warnings };
+  return { title, lines, balanceChanges, fee, maxFee, sponsored: !iPay, simulated, blind, warnings };
 }

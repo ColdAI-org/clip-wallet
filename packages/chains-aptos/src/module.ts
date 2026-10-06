@@ -306,7 +306,16 @@ export function createAptosModule(options: AptosModuleOptions = {}): ChainModule
       simulate: options.simulate ?? true,
     });
     const lines = [...d.lines];
-    if (!d.sponsored) lines.push({ label: "Network fee", value: `${(Number(d.fee) / 1e8).toLocaleString("en-US", { maximumFractionDigits: 8 })} APT` });
+    const apt = (v: bigint) => `${(Number(v) / 1e8).toLocaleString("en-US", { maximumFractionDigits: 8 })} APT`;
+    if (!d.sponsored) {
+      // Audit CHAIN-L: after a simulation the fee shown is the expected one, but the signature allows up to
+      // max_gas_amount × gas_unit_price; show that ceiling too (without a simulation it is the only figure).
+      if (!d.simulated) lines.push({ label: "Network fee at most", value: apt(d.maxFee) });
+      else {
+        lines.push({ label: "Network fee", value: apt(d.fee) });
+        if (d.maxFee > d.fee) lines.push({ label: "Network fee at most", value: apt(d.maxFee) });
+      }
+    }
     if (n.kind === "tx" && !n.submit) lines.push({ label: "Sent by", value: `${host} (it gets your signature)` });
     const fee: NonNullable<DecodedRequest["fee"]> = { asset: aptAsset(ctx.network.id), amount: d.fee.toString() };
     if (d.sponsored) fee.sponsored = true;

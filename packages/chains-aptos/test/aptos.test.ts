@@ -100,10 +100,19 @@ describe("decode", () => {
     expect(d.lines).toEqual([
       { label: "Sends to", value: BOB },
       { label: "Network fee", value: "0.000062 APT" },
+      // Audit CHAIN-L: the signature allows max_gas_amount × gas_unit_price, so that ceiling is shown too.
+      { label: "Network fee at most", value: "0.002 APT" },
     ]);
     expect(d).toMatchObject({ simulated: true, blind: false, warnings: [] });
     const sim = m.calls.find((c) => c.url.includes("/transactions/simulate"))!;
     expect(sim.body).toBeInstanceOf(Uint8Array); // BCS signed transaction with a zeroed signature
+  });
+
+  it("audit CHAIN-L: without a simulation the only fee shown is the most the transaction can charge", async () => {
+    const m = mockAptos([]);
+    const noSim = createAptosModule({ now: () => 1_790_000_000_000, simulate: false });
+    const d = await noSim.decode(req("aptos:signAndSubmitTransaction", { account: ME, chain: "aptos:testnet", transaction: FIX.transfer }), ctxFor(m.fetch));
+    expect(d.lines.filter((l) => /fee/i.test(l.label))).toEqual([{ label: "Network fee at most", value: "0.002 APT" }]);
   });
 
   it("finds my primary store without its ObjectCore, and names fungible assets from their metadata", async () => {
