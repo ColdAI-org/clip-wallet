@@ -85,6 +85,7 @@ const FAMILY = {
   algorand: "Algorand",
   stacks: "Stacks",
   bitcoincash: "Bitcoin Cash",
+  xrpl: "XRP Ledger",
 };
 for (const [f, label] of Object.entries(FAMILY)) {
   EXTRA[`@clip-wallet/chains-${f}`] = {
