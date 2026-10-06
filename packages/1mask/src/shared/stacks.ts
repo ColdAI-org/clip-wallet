@@ -101,7 +101,7 @@ async function checksum(version: number, h: Uint8Array): Promise<Uint8Array> {
 export async function stacksAddressOn(address: string, networkId: NetworkId): Promise<string | undefined> {
   const net = stacksNetworkName(networkId);
   const a = address.trim().toUpperCase();
-  if (!net || !/^S[0-9A-Z]{39,41}$/.test(a)) return undefined;
+  if (!net || !/^S[0-9A-Z]{3,42}$/.test(a)) return undefined;
   const version = C32.indexOf(a[1]!);
   const body = c32decode24(a.slice(2));
   if (!body || version < 0) return undefined;

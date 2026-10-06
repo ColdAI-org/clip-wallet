@@ -60,7 +60,8 @@ export function c32address(version: number, h: Uint8Array): string {
 /** Parses a standard principal ("SP…"/"ST…"/"SM…"/"SN…"), checksum verified; null when it isn't one. */
 export function parseAddress(value: string): { version: number; hash160: Uint8Array } | null {
   const v = value.trim();
-  if (!/^S[0-9A-HJKMNP-TV-Z][0-9A-HJKMNP-TV-Z]{38,41}$/i.test(v)) return null;
+  // Short when the hash starts with zero bytes (each is a leading "0"): "ST000000000000000000002AMW42H".
+  if (!/^S[0-9A-HJKMNP-TV-Z][0-9A-HJKMNP-TV-Z]{2,41}$/i.test(v)) return null;
   const version = C32.indexOf(v[1]!.toUpperCase());
   try {
     const body = c32decode(v.slice(2), 24);

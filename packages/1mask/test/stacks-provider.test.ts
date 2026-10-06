@@ -62,6 +62,7 @@ describe("Stacks addresses per network", () => {
     expect(await stacksAddressOn(ST, MAINNET.id)).toBe(SP);
     expect(await stacksAddressOn(SP.slice(0, -1) + "K", TESTNET.id)).toBeUndefined();
     expect(await stacksAddressOn("0x1234", TESTNET.id)).toBeUndefined();
+    expect(await stacksAddressOn("SP000000000000000000002Q6VF78", TESTNET.id)).toBe("ST000000000000000000002AMW42H");
     expect(stacksChainHint("testnet")).toBe(TESTNET.id);
     expect(stacksChainHint("devnet")).toBeUndefined();
   });

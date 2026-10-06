@@ -95,6 +95,10 @@ describe("addresses and networks", () => {
     expect(mod.isAddress("0x1234")).toBe(false);
     expect(parseAddress(FIX.mainnet)?.version).toBe(22);
     expect(parseAddress(FIX.testnet)?.version).toBe(26);
+    // leading zero bytes in the hash shorten the address (the testnet boot address)
+    expect(parseAddress("ST000000000000000000002AMW42H")?.hash160).toEqual(new Uint8Array(20));
+    expect(mod.isAddress("SP000000000000000000002Q6VF78")).toBe(true);
+    expect(mod.isAddress("ST000000000000000000002AMW42J")).toBe(false);
     expect(mod.networksForAddress(FIX.mainnet, [STACKS_TESTNET, STACKS_MAINNET]).map((n) => n.id)).toEqual(["stacks:1"]);
     expect(mod.networksForAddress(FIX.testnet, [STACKS_TESTNET, STACKS_MAINNET]).map((n) => n.id)).toEqual(["stacks:2147483648"]);
   });
