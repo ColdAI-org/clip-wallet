@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "{validator} doğrulayıcısındaki stake ödüllerini al",
+  "bg.multiversx.withdrawFrom": "{validator} doğrulayıcısından stake'ten çıkarılmış EGLD'ni çek",
+  "bg.multiversx.restakeRewardsWith": "Ödüllerini {validator} ile yeniden stake et",
+  "bg.multiversx.labelGuardian": "Koruyucu",
+  "bg.multiversx.setGuardianTitle": "{guardian} adresini hesabının koruyucusu yap",
+  "bg.multiversx.setGuardianWarn": "Bir koruyucu etkinleştiğinde bu hesaptan yapılan her işlem onun ortak imzasını gerektirir. {guardian} adresini sen seçmediysen biri seni kendi hesabından kilitleyebilir.",
+  "bg.multiversx.guardAccountTitle": "Hesabının koruyucusunu aç",
+  "bg.multiversx.guardAccountWarn": "Bundan sonra bu hesaptan yapılan her işlem koruyucunun ortak imzasını gerektirir. Clip Wallet bunu sağlayamaz, bu yüzden artık Clip Wallet'tan gönderim yapamazsın.",
+  "bg.multiversx.unguardAccountTitle": "Hesabının koruyucusunu kapat",
+  "bg.multiversx.changeOwnerTitle": "{contract} sözleşmesini {owner} adresine devret",
+  "bg.multiversx.changeOwnerWarn": "Bu, {owner} adresini {contract} sözleşmesinin sahibi yapar. Yeni sahip kodunu değiştirebilir ve içindekileri alabilir. Bunu yalnızca gerçekten devretmek istiyorsan yap.",
+  "bg.multiversx.guardedAccount": "Bu hesabın bir koruyucusu var ve Clip Wallet koruyucunun ortak imzasını alamıyor. Hiçbir şey gönderilmedi.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

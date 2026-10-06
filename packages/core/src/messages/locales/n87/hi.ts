@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "{validator} से अपने स्टेकिंग रिवॉर्ड क्लेम करें",
+  "bg.multiversx.withdrawFrom": "{validator} से अपने अनस्टेक किए गए EGLD निकालें",
+  "bg.multiversx.restakeRewardsWith": "{validator} के साथ अपने रिवॉर्ड फिर से स्टेक करें",
+  "bg.multiversx.labelGuardian": "गार्डियन",
+  "bg.multiversx.setGuardianTitle": "{guardian} को अपने अकाउंट का गार्डियन बनाएं",
+  "bg.multiversx.setGuardianWarn": "गार्डियन चालू होने के बाद इस अकाउंट के हर ट्रांज़ैक्शन पर उसका सह-हस्ताक्षर ज़रूरी होता है। अगर {guardian} को आपने नहीं चुना है, तो कोई आपको आपके ही अकाउंट से बाहर कर सकता है।",
+  "bg.multiversx.guardAccountTitle": "अपने अकाउंट का गार्डियन चालू करें",
+  "bg.multiversx.guardAccountWarn": "अब से इस अकाउंट के हर ट्रांज़ैक्शन पर गार्डियन का सह-हस्ताक्षर ज़रूरी होगा। Clip Wallet यह नहीं दे सकता, इसलिए आप Clip Wallet से और भेज नहीं पाएंगे।",
+  "bg.multiversx.unguardAccountTitle": "अपने अकाउंट का गार्डियन बंद करें",
+  "bg.multiversx.changeOwnerTitle": "कॉन्ट्रैक्ट {contract} को {owner} को सौंपें",
+  "bg.multiversx.changeOwnerWarn": "इससे {owner} कॉन्ट्रैक्ट {contract} का मालिक बन जाता है। नया मालिक इसका कोड बदल सकता है और इसमें रखी चीज़ें ले सकता है। ऐसा तभी करें जब आप सच में इसे सौंपना चाहते हों।",
+  "bg.multiversx.guardedAccount": "इस अकाउंट का एक गार्डियन है, और Clip Wallet गार्डियन का सह-हस्ताक्षर नहीं ले सकता। कुछ भी नहीं भेजा गया।",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

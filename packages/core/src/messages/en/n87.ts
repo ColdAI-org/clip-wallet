@@ -31,6 +31,18 @@ export default {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "Claim your staking rewards from {validator}",
+  "bg.multiversx.withdrawFrom": "Withdraw your unstaked EGLD from {validator}",
+  "bg.multiversx.restakeRewardsWith": "Restake your rewards with {validator}",
+  "bg.multiversx.labelGuardian": "Guardian",
+  "bg.multiversx.setGuardianTitle": "Make {guardian} your account's guardian",
+  "bg.multiversx.setGuardianWarn": "Once a guardian is active, every transaction from this account needs its co-signature. If you didn't choose {guardian}, someone could lock you out of your account.",
+  "bg.multiversx.guardAccountTitle": "Turn on your account's guardian",
+  "bg.multiversx.guardAccountWarn": "From now on every transaction from this account needs the guardian's co-signature. Clip Wallet can't provide it, so you won't be able to send from Clip Wallet any more.",
+  "bg.multiversx.unguardAccountTitle": "Turn off your account's guardian",
+  "bg.multiversx.changeOwnerTitle": "Give contract {contract} to {owner}",
+  "bg.multiversx.changeOwnerWarn": "This makes {owner} the owner of contract {contract}. The new owner can change its code and take what it holds. Only do this if you mean to give it away.",
+  "bg.multiversx.guardedAccount": "This account has a guardian, and Clip Wallet can't get the guardian's co-signature. Nothing was sent.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

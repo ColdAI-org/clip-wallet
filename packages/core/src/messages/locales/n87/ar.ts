@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "استلام مكافآت التخزين من \u2068{validator}\u2069",
+  "bg.multiversx.withdrawFrom": "سحب EGLD الذي أُلغي تخزينه من \u2068{validator}\u2069",
+  "bg.multiversx.restakeRewardsWith": "إعادة تخزين مكافآتك لدى \u2068{validator}\u2069",
+  "bg.multiversx.labelGuardian": "الحارس",
+  "bg.multiversx.setGuardianTitle": "جعل \u2068{guardian}\u2069 حارسًا لحسابك",
+  "bg.multiversx.setGuardianWarn": "بعد تفعيل الحارس، تحتاج كل معاملة من هذا الحساب إلى توقيعه المشترك. إذا لم تختر \u2068{guardian}\u2069 بنفسك، فقد يمنعك شخص ما من الوصول إلى حسابك.",
+  "bg.multiversx.guardAccountTitle": "تشغيل حارس حسابك",
+  "bg.multiversx.guardAccountWarn": "من الآن، تحتاج كل معاملة من هذا الحساب إلى التوقيع المشترك للحارس. لا يستطيع Clip Wallet توفيره، لذا لن تتمكن من الإرسال من Clip Wallet بعد الآن.",
+  "bg.multiversx.unguardAccountTitle": "إيقاف حارس حسابك",
+  "bg.multiversx.changeOwnerTitle": "تسليم العقد \u2068{contract}\u2069 إلى \u2068{owner}\u2069",
+  "bg.multiversx.changeOwnerWarn": "يجعل هذا \u2068{owner}\u2069 مالك العقد \u2068{contract}\u2069. يستطيع المالك الجديد تغيير شيفرته وأخذ ما فيه. لا تفعل ذلك إلا إذا كنت تريد التنازل عنه فعلًا.",
+  "bg.multiversx.guardedAccount": "لهذا الحساب حارس، ولا يستطيع Clip Wallet الحصول على توقيعه المشترك. لم يُرسَل أي شيء.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

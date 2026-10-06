@@ -117,6 +117,11 @@ const THIRD_PARTY = {
 const read = (file) => (existsSync(file) ? readFileSync(file, "utf8") : undefined);
 const rootLicense = readFileSync(join(root, "LICENSE"), "utf8");
 
+EXTRA["@clip-wallet/chains-multiversx"] = {
+  description: "MultiversX ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
+  keywords: ["clip-wallet", "wallet", "multiversx", "egld", "chain-module"],
+};
+
 let bad = 0;
 for (const { dir, path, pkg } of publishablePackages(root)) {
   const next = normalize(pkg, dir, EXTRA[pkg.name] ?? {});

@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "{validator}에서 스테이킹 보상 받기",
+  "bg.multiversx.withdrawFrom": "{validator}에서 스테이킹 해제된 EGLD 인출",
+  "bg.multiversx.restakeRewardsWith": "{validator}에 보상 다시 스테이킹",
+  "bg.multiversx.labelGuardian": "가디언",
+  "bg.multiversx.setGuardianTitle": "{guardian}을(를) 내 계정의 가디언으로 지정",
+  "bg.multiversx.setGuardianWarn": "가디언이 활성화되면 이 계정의 모든 거래에 가디언의 공동 서명이 필요해요. {guardian}을(를) 직접 고르지 않았다면 누군가 내 계정을 잠가 버릴 수 있어요.",
+  "bg.multiversx.guardAccountTitle": "내 계정의 가디언 켜기",
+  "bg.multiversx.guardAccountWarn": "이제부터 이 계정의 모든 거래에 가디언의 공동 서명이 필요해요. Clip Wallet은 이 서명을 제공할 수 없어서 Clip Wallet에서는 더 이상 보낼 수 없어요.",
+  "bg.multiversx.unguardAccountTitle": "내 계정의 가디언 끄기",
+  "bg.multiversx.changeOwnerTitle": "{contract} 컨트랙트를 {owner}에게 넘기기",
+  "bg.multiversx.changeOwnerWarn": "{owner}이(가) {contract} 컨트랙트의 소유자가 돼요. 새 소유자는 코드를 바꾸고 안에 있는 자산을 가져갈 수 있어요. 정말 넘길 생각일 때만 진행하세요.",
+  "bg.multiversx.guardedAccount": "이 계정에는 가디언이 있고 Clip Wallet은 가디언의 공동 서명을 받을 수 없어요. 아무것도 전송되지 않았어요.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "Resgatar suas recompensas de staking de {validator}",
+  "bg.multiversx.withdrawFrom": "Sacar de {validator} seu EGLD retirado do staking",
+  "bg.multiversx.restakeRewardsWith": "Colocar suas recompensas de volta em staking com {validator}",
+  "bg.multiversx.labelGuardian": "Guardião",
+  "bg.multiversx.setGuardianTitle": "Tornar {guardian} o guardião da sua conta",
+  "bg.multiversx.setGuardianWarn": "Com um guardião ativo, toda transação desta conta precisa da assinatura conjunta dele. Se você não escolheu {guardian}, alguém pode bloquear seu acesso à sua conta.",
+  "bg.multiversx.guardAccountTitle": "Ativar o guardião da sua conta",
+  "bg.multiversx.guardAccountWarn": "A partir de agora, toda transação desta conta precisa da assinatura conjunta do guardião. A Clip Wallet não pode fornecê-la, então você não vai mais conseguir enviar pela Clip Wallet.",
+  "bg.multiversx.unguardAccountTitle": "Desativar o guardião da sua conta",
+  "bg.multiversx.changeOwnerTitle": "Passar o contrato {contract} para {owner}",
+  "bg.multiversx.changeOwnerWarn": "Isto torna {owner} o proprietário do contrato {contract}. O novo proprietário pode mudar o código dele e levar o que ele guarda. Só faça isso se quiser mesmo entregá-lo.",
+  "bg.multiversx.guardedAccount": "Esta conta tem um guardião, e a Clip Wallet não consegue a assinatura conjunta dele. Nada foi enviado.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

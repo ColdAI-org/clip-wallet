@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "{validator}からステーキング報酬を受け取る",
+  "bg.multiversx.withdrawFrom": "{validator}からステーキング解除済みのEGLDを引き出す",
+  "bg.multiversx.restakeRewardsWith": "{validator}で報酬を再ステーキング",
+  "bg.multiversx.labelGuardian": "ガーディアン",
+  "bg.multiversx.setGuardianTitle": "{guardian}をアカウントのガーディアンにする",
+  "bg.multiversx.setGuardianWarn": "ガーディアンが有効になると、このアカウントからのすべての取引にその共同署名が必要になります。{guardian}を自分で選んでいない場合、誰かにアカウントから締め出されるおそれがあります。",
+  "bg.multiversx.guardAccountTitle": "アカウントのガーディアンをオンにする",
+  "bg.multiversx.guardAccountWarn": "今後、このアカウントからのすべての取引にガーディアンの共同署名が必要になります。Clip Walletはそれを用意できないため、Clip Walletからは送信できなくなります。",
+  "bg.multiversx.unguardAccountTitle": "アカウントのガーディアンをオフにする",
+  "bg.multiversx.changeOwnerTitle": "コントラクト{contract}を{owner}に譲渡",
+  "bg.multiversx.changeOwnerWarn": "これにより{owner}がコントラクト{contract}の所有者になります。新しい所有者はコードを変更でき、中の資産を持ち出せます。本当に譲渡するつもりのときだけ実行してください。",
+  "bg.multiversx.guardedAccount": "このアカウントにはガーディアンが設定されていて、Clip Walletはガーディアンの共同署名を取得できません。何も送信されていません。",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp

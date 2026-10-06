@@ -30,6 +30,18 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-antelope (antelope)
   // ---- end chains-antelope
   // ---- chains-multiversx (multiversx)
+  "bg.multiversx.claimRewardsFrom": "从 {validator} 领取你的质押奖励",
+  "bg.multiversx.withdrawFrom": "从 {validator} 提取你已解除质押的 EGLD",
+  "bg.multiversx.restakeRewardsWith": "将你的奖励重新质押给 {validator}",
+  "bg.multiversx.labelGuardian": "守护者",
+  "bg.multiversx.setGuardianTitle": "将 {guardian} 设为你账户的守护者",
+  "bg.multiversx.setGuardianWarn": "守护者生效后，此账户的每笔交易都需要它的联合签名。如果 {guardian} 不是你自己选的，别人可能会把你锁在自己的账户之外。",
+  "bg.multiversx.guardAccountTitle": "开启你账户的守护者",
+  "bg.multiversx.guardAccountWarn": "从现在起，此账户的每笔交易都需要守护者的联合签名。Clip Wallet 无法提供，因此你将无法再从 Clip Wallet 发送。",
+  "bg.multiversx.unguardAccountTitle": "关闭你账户的守护者",
+  "bg.multiversx.changeOwnerTitle": "将合约 {contract} 交给 {owner}",
+  "bg.multiversx.changeOwnerWarn": "这会让 {owner} 成为合约 {contract} 的所有者。新所有者可以修改它的代码并拿走其中的资产。只有在你确实想转让它时才这样做。",
+  "bg.multiversx.guardedAccount": "此账户设有守护者，Clip Wallet 无法获得守护者的联合签名。没有发送任何内容。",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
   // ---- end chains-icp
