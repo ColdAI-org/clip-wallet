@@ -17,7 +17,9 @@ import { startDapps, type Dapps } from "./dapp/server";
 import { TEST_ARGS, onboard } from "./helpers";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const SHOTS = join(root, "screenshots");
+// SHOTS_DIR / SHOTS_THEME=dark: README media runs (docs/media) shoot the same flow elsewhere, in the dark theme.
+const SHOTS = process.env.SHOTS_DIR ?? join(root, "screenshots");
+const DARK = process.env.SHOTS_THEME === "dark";
 const PASSWORD = "calm orange harbour 42";
 
 let app: ElectronApplication;
@@ -33,7 +35,18 @@ test.beforeAll(async () => {
     cwd: root,
     env: { ...process.env, CLIP_DESKTOP_USER_DATA: userData, ELECTRON_ENABLE_LOGGING: "0", CLIP_DESKTOP_NO_SYSTEM_INTEGRATION: "1" },
   });
+  if (DARK) {
+    await app.evaluate(({ nativeTheme }) => {
+      nativeTheme.themeSource = "dark";
+    });
+  }
 });
+
+/** The wallet's pages follow prefers-color-scheme; a dark media run emulates it on each window it shoots. */
+async function themed(page: Page) {
+  if (DARK) await page.emulateMedia({ colorScheme: "dark" });
+  return page;
+}
 
 test.afterAll(async () => {
   await app?.close().catch(() => undefined);
@@ -134,7 +147,7 @@ async function shootBrowserWithApproval(file: string) {
 
 test("desktop: onboarding, browser + 1Mask connect/sign, isolation, RTL", async () => {
   /* ------------------------------------------------------------ onboarding (real vault, testnets) */
-  const wallet = await pageWhere((u) => u.startsWith("clip-app://wallet/wallet/"));
+  const wallet = await themed(await pageWhere((u) => u.startsWith("clip-app://wallet/wallet/")));
   await wallet.setViewportSize({ width: 440, height: 760 }).catch(() => undefined);
   await onboard(wallet);
   // Networks stay invisible on Home.
@@ -204,7 +217,7 @@ test("desktop: onboarding, browser + 1Mask connect/sign, isolation, RTL", async 
   const message = "Hello from the Clip Wallet desktop e2e";
   const hexMsg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
   const signing = eip6963(dapp, "personal_sign", [hexMsg, address]);
-  const signWin = await pageWhere(isApproval);
+  const signWin = await themed(await pageWhere(isApproval));
   await expect(signWin.locator(".clip-approval__title")).toBeVisible();
   await signWin.waitForTimeout(400);
   await shootBrowserWithApproval(join(SHOTS, "browser-dapp-approval.png"));

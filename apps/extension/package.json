@@ -26,7 +26,8 @@
     "test": "echo \"apps/extension: unit tests live in packages/extension-kit; pnpm e2e drives this build\"",
     "e2e": "NODE_OPTIONS=--conditions=development wxt build && NODE_OPTIONS=--conditions=development CLIP_MOCKS=1 wxt build && playwright test",
     "matrix": "node scripts/matrix.mjs",
-    "pickers": "node scripts/matrix.mjs --pickers"
+    "pickers": "node scripts/matrix.mjs --pickers",
+    "media": "NODE_OPTIONS=--conditions=development wxt build && NODE_OPTIONS=--conditions=development CLIP_MOCKS=1 wxt build && README_MEDIA=1 playwright test e2e/readme-media.spec.ts"
   },
   "dependencies": {
     "@clip-wallet/config": "workspace:*",
