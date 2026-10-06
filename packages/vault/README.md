@@ -79,10 +79,28 @@ sr25519 is `@scure/sr25519`; the Stark curve is `@scure/starknet`. `i` is the ac
 | cardano | BIP32-Ed25519, CIP-3 Icarus | payment `m/1852'/1815'/i'/0/0`, stake `…/i'/2/0` | CIP-19 base address `addr_test…` / `addr…` | Eternl, Lace, Yoroi, cardano-serialization-lib |
 | substrate | sr25519 | account 0 = root; `i ≥ 1` = `//(i-1)` | SS58 generic prefix 42 | polkadot.js, Talisman, SubWallet (root) |
 | starknet | Stark (grindKey) | `argent-x:m/44'/9004'/0'/0/i` | OpenZeppelin counterfactual address (see below) | Argent X; `starknetScheme: "braavos"` / `"ledger"` |
+| cosmos | secp256k1 | `m/44'/118'/0'/0/i` | bech32 of RIPEMD-160(SHA-256(pk)); vault writes `cosmos1…`, modules re-prefix (osmo, dydx, zig) | Keplr, Leap, Cosmostation (chain-registry slip44 118) |
+| provenance | secp256k1 | `m/44'/505'/0'/0/i` | bech32 `pb1…` (`tp1…` testnet) | Keplr, Leap (slip44 505) |
+| thorchain | secp256k1 | `m/44'/931'/0'/0/i` | bech32 `thor1…` | Keplr, Ctrl (XDEFI), Vultisig (slip44 931) |
+| initia | secp256k1 (ethsecp256k1) | `m/44'/60'/0'/0/i` (the EVM key) | bech32 `init1…` of keccak256(pk)[12..] | Initia Wallet, Keplr (slip44 60) |
+| tron | secp256k1 | `m/44'/195'/0'/0/i` | base58check `T…` of 0x41 ‖ keccak256(pk)[12..] | TronLink, TronWeb `fromMnemonic` |
+| xrpl | secp256k1 | `m/44'/144'/i'/0/0` | classic `r…` (Ripple base58check of RIPEMD-160(SHA-256(pk))) | xrpl.js `Wallet.fromMnemonic` (i = 0), Ledger Live |
+| antelope | secp256k1 (K1) | `m/44'/194'/0'/0/i` | the key, `PUB_K1_…` (accounts are names on chain) | TokenPocket; one key for Vaulta, Telos and XPR Network |
+| multiversx | ed25519 (SLIP-10) | `m/44'/508'/0'/0'/i'` | bech32 `erd1…` of pk | xPortal, DeFi Wallet, sdk-core `Mnemonic.deriveKey(i)` |
+| icp | secp256k1 | `m/44'/223'/0'/0/i` | self-authenticating principal (SHA-224(DER pk) ‖ 0x02) | Plug, dfx `identity import`, `@dfinity/identity-secp256k1` |
+| stacks | secp256k1 | `m/44'/5757'/0'/0/i` | c32check `SP…` (`ST…` testnet) | Leather, Xverse, `@stacks/wallet-sdk` |
+| fuel | secp256k1 | `m/44'/1179993420'/i'/0/0` | `0x` SHA-256(uncompressed pk) with the fuels-ts checksum | Fuel Wallet, fuels-ts |
+| bitcoincash | secp256k1 | `m/44'/145'/0'/0/i` | CashAddr P2PKH `bitcoincash:q…` (`bchtest:q…`) | Electron Cash, Paytaca, Bitcoin.com Wallet |
 
 Network-dependent encodings default to **testnet** (AGENTS.md rule 6): `bitcoinNetwork`, `cardanoNetwork`,
 `tonNetwork`. Other families' addresses are network-independent; chain modules re-encode where a network
 needs it (e.g. SS58 prefix 0 for Polkadot).
+
+The networks87 rows (SLIP-44 registry plus the wallets named) are cross-checked for "abandon … about" against each
+ecosystem's SDK in `test/families87.test.ts`. Antelope's K1 signatures must be canonical (r and s without a needless
+high bit or leading zero, Spring/Leap `is_canonical`): `signEcdsaCanonical` retries with an RFC 6979 extra-entropy
+counter, as WharfKit bumps its personalisation, so it stays deterministic. Antelope uses SLIP-44 194 on every Antelope
+chain (Telos also has 977 registered, but its wallets don't derive from BIP-39); one key can control accounts on all three.
 
 Sources for each row (checked October 2026):
 
