@@ -1,0 +1,104 @@
+# gitleaks: reviewed false positives (public addresses, test-vector signatures, test fixtures, prose).
+# `gitleaks dir` fingerprints are file:rule:line; `gitleaks git` ones are <commit>:file:rule:line with the
+# commit ids of the published history. Re-review and regenerate when a listed line changes.
+
+# apps/extension/e2e/shots/matrix/results.json: a COSE public key in a recorded dapp-matrix result
+6d369757a4c25b6ba44899865231c037ea37d8c4:apps/extension/e2e/shots/matrix/results.json:generic-api-key:432
+apps/extension/e2e/shots/matrix/results.json:generic-api-key:430
+
+# docs/legal/privacy-policy.md: prose about key storage
+601a6bc95159fffe0a635f1f5173e43f1acc0718:docs/legal/privacy-policy.md:generic-api-key:33
+docs/legal/privacy-policy.md:generic-api-key:33
+
+# packages/chains-aptos/test/signatures.ts: signature from the public BIP-39 test vector
+f86cef2475a534e8de47fd1b5c5ebbd603312f6b:packages/chains-aptos/test/signatures.ts:generic-api-key:22
+packages/chains-aptos/test/signatures.ts:generic-api-key:22
+
+# packages/chains-cardano/test/signatures.ts: key hash and signature from the public BIP-39 test vector
+9cd36385c16297e61deb834546f67fe2b3d99167:packages/chains-cardano/test/signatures.ts:generic-api-key:18
+9cd36385c16297e61deb834546f67fe2b3d99167:packages/chains-cardano/test/signatures.ts:generic-api-key:28
+packages/chains-cardano/test/signatures.ts:generic-api-key:18
+packages/chains-cardano/test/signatures.ts:generic-api-key:28
+
+# packages/chains-stellar/test/fixtures.ts: a public Stellar account id
+fc088ff73810b657ea563081f36f2e547f532730:packages/chains-stellar/test/fixtures.ts:generic-api-key:58
+packages/chains-stellar/test/fixtures.ts:generic-api-key:58
+
+# packages/chains-stellar/test/signatures.ts: signature from the public BIP-39 test vector
+fc088ff73810b657ea563081f36f2e547f532730:packages/chains-stellar/test/signatures.ts:generic-api-key:24
+packages/chains-stellar/test/signatures.ts:generic-api-key:24
+
+# packages/chains-stellar/test/stellar.test.ts: public Stellar contract ids
+fc088ff73810b657ea563081f36f2e547f532730:packages/chains-stellar/test/stellar.test.ts:generic-api-key:321
+fc088ff73810b657ea563081f36f2e547f532730:packages/chains-stellar/test/stellar.test.ts:generic-api-key:322
+packages/chains-stellar/test/stellar.test.ts:generic-api-key:331
+packages/chains-stellar/test/stellar.test.ts:generic-api-key:332
+
+# packages/chains-tezos/src/dex.ts: public Tezos contract addresses
+263372517d5828ec2b9fe95874948357cbb80785:packages/chains-tezos/src/dex.ts:generic-api-key:18
+263372517d5828ec2b9fe95874948357cbb80785:packages/chains-tezos/src/dex.ts:generic-api-key:19
+packages/chains-tezos/src/dex.ts:generic-api-key:18
+packages/chains-tezos/src/dex.ts:generic-api-key:19
+
+# packages/extension-kit/src/wxt.ts: reads partner keys from the build environment (no value)
+28764cf9b7d439204f2f213797323def16c860d5:packages/extension-kit/src/wxt.ts:generic-api-key:139
+packages/extension-kit/src/wxt.ts:generic-api-key:148
+
+# packages/features/test/avnu-swap.test.ts: public Starknet token addresses
+263372517d5828ec2b9fe95874948357cbb80785:packages/features/test/avnu-swap.test.ts:generic-api-key:30
+263372517d5828ec2b9fe95874948357cbb80785:packages/features/test/avnu-swap.test.ts:generic-api-key:32
+packages/features/test/avnu-swap.test.ts:generic-api-key:30
+packages/features/test/avnu-swap.test.ts:generic-api-key:32
+
+# packages/features/test/sirius-swap.test.ts: a public Tezos contract address
+263372517d5828ec2b9fe95874948357cbb80785:packages/features/test/sirius-swap.test.ts:generic-api-key:106
+packages/features/test/sirius-swap.test.ts:generic-api-key:106
+
+# packages/social/test/fixtures/dexscreener-profiles.json: public token addresses in a recorded API response
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:12
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:19
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:26
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:33
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:40
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:47
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:5
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:54
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:61
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:68
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:75
+af877cb898e188ca062216f16d2f1eb5a133ff77:packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:82
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:12
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:19
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:26
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:33
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:40
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:47
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:5
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:54
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:61
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:68
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:75
+packages/social/test/fixtures/dexscreener-profiles.json:generic-api-key:82
+
+# packages/ui/test/platform.test.tsx: a test password
+a9fda73f5454d647ba8cdff0fc70a046fc7431bd:packages/ui/test/platform.test.tsx:generic-api-key:231
+packages/ui/test/platform.test.tsx:generic-api-key:232
+
+# packages/vault/README.md: prose about key schemes
+b562f701f266944a7a4727bbb9d0f3abbb84278c:packages/vault/README.md:generic-api-key:46
+
+# services/backup/test/oidc-fixtures.ts: ID tokens signed with the tests' own throwaway RSA key (kid test-key-1/2)
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:17
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:18
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:19
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:20
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:21
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:22
+a0135e3af57656cd3925aab99db03966e03e32c2:services/backup/test/oidc-fixtures.ts:jwt:23
+services/backup/test/oidc-fixtures.ts:jwt:17
+services/backup/test/oidc-fixtures.ts:jwt:18
+services/backup/test/oidc-fixtures.ts:jwt:19
+services/backup/test/oidc-fixtures.ts:jwt:20
+services/backup/test/oidc-fixtures.ts:jwt:21
+services/backup/test/oidc-fixtures.ts:jwt:22
+services/backup/test/oidc-fixtures.ts:jwt:23
