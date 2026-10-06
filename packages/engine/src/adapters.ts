@@ -215,6 +215,19 @@ const PLAIN_ETA: Record<Family, number> = {
   stellar: 6,
   tezos: 10,
   algorand: 4,
+  // networks87
+  cosmos: 6,
+  provenance: 6,
+  thorchain: 6,
+  initia: 2,
+  tron: 3,
+  xrpl: 4,
+  antelope: 2,
+  multiversx: 6,
+  icp: 2,
+  stacks: 10,
+  fuel: 2,
+  bitcoincash: 600,
 };
 
 /** CLPRouter funding through @clip-wallet/route. */

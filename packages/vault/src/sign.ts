@@ -20,6 +20,31 @@ export function signEcdsa(digest: Uint8Array, privateKey: Uint8Array): { bytes: 
 }
 
 /**
+ * Antelope (Vaulta, Telos, XPR Network) accepts only "canonical" K1 signatures: neither r nor s may have its top bit
+ * set or a needless leading zero byte (Spring/Leap fc `is_canonical`; https://github.com/EOSIO/eos/issues/6699).
+ * Low-S covers s; r needs retries. Like WharfKit's `sign` (which bumps the RFC 6979 personalisation), each retry
+ * adds a counter as RFC 6979 extra entropy, so the result is still deterministic for a given digest and key.
+ */
+export function isCanonicalK1(rs: Uint8Array): boolean {
+  const r = rs.subarray(0, 32);
+  const s = rs.subarray(32, 64);
+  return !(r[0]! & 0x80) && !(r[0] === 0 && !(r[1]! & 0x80)) && !(s[0]! & 0x80) && !(s[0] === 0 && !(s[1]! & 0x80));
+}
+
+export function signEcdsaCanonical(digest: Uint8Array, privateKey: Uint8Array): { bytes: Uint8Array; recovery: number } {
+  if (digest.length !== 32) throw new Error("ecdsa-secp256k1 signs a 32-byte digest");
+  for (let attempt = 0; attempt < 256; attempt++) {
+    const extraEntropy = attempt === 0 ? false : numTo32(BigInt(attempt));
+    const rec = secp256k1.sign(digest, privateKey, { prehash: false, lowS: true, format: "recovered", extraEntropy });
+    const recovery = rec[0]!;
+    const bytes = rec.slice(1);
+    wipe(rec);
+    if (isCanonicalK1(bytes)) return { bytes, recovery };
+  }
+  throw new Error("no canonical signature found");
+}
+
+/**
  * BIP-340 Schnorr. With `taprootTweak` (merkle root, or an EMPTY array for BIP-86 key-path-only spends)
  * the key is tweaked per BIP-341: d' = (has_even_y(P) ? d : n-d) + H_TapTweak(P_x || merkleRoot).
  * Returns the signature and the x-only key that verifies it.

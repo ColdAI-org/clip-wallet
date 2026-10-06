@@ -34,6 +34,18 @@ export const NETWORK_FAMILIES = [
   "stellar",
   "tezos",
   "algorand",
+  "cosmos",
+  "provenance",
+  "thorchain",
+  "initia",
+  "tron",
+  "xrpl",
+  "antelope",
+  "multiversx",
+  "icp",
+  "stacks",
+  "fuel",
+  "bitcoincash",
 ] as const;
 export const ROUTE_MODES = ["balanced", "cheapest", "fastest", "reliable", "greenest"] as const;
 export const TRUST_TIERS = ["attested", "committee", "light-client", "validity-proof"] as const;

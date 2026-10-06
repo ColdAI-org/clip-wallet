@@ -15,6 +15,7 @@ export const DEFAULT_CHANNEL = "clip-wallet-1mask";
 export const FAMILIES = [
   "evm", "hedera", "solana", "bitcoin",
   "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
+  "cosmos", "provenance", "thorchain", "initia", "tron", "xrpl", "antelope", "multiversx", "icp", "stacks", "fuel", "bitcoincash",
 ] as const satisfies readonly Family[];
 export const familySchema = z.enum(FAMILIES);
 

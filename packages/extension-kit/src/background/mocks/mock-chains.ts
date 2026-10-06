@@ -129,6 +129,18 @@ const CURVE: Record<Family, ChainModule["curve"]> = {
   stellar: "ed25519",
   tezos: "ed25519",
   algorand: "bip32-ed25519",
+  cosmos: "secp256k1",
+  provenance: "secp256k1",
+  thorchain: "secp256k1",
+  initia: "secp256k1",
+  tron: "secp256k1",
+  xrpl: "secp256k1",
+  antelope: "secp256k1",
+  multiversx: "ed25519",
+  icp: "secp256k1",
+  stacks: "secp256k1",
+  fuel: "secp256k1",
+  bitcoincash: "secp256k1",
 };
 
 /** Mock-only Hedera account ids for EVM aliases (real module asks the mirror node). */

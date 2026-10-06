@@ -266,7 +266,7 @@ describe("approval binding and signing", () => {
   it("ecdsa refuses non-32-byte input; unknown accounts are refused", async () => {
     const [p] = approve(vault, "appr-8", [{ accountId: "evm:0", scheme: "ecdsa-secp256k1", bytes: new Uint8Array(31) }]);
     expect(await code(vault.sign(p!))).toBe("vault/bad-payload");
-    expect(await code(vault.sign({ ...p!, accountId: "cosmos:0" }))).toBe("vault/unknown-account");
+    expect(await code(vault.sign({ ...p!, accountId: "dogecoin:0" }))).toBe("vault/unknown-account");
   });
 
   it("ed25519 (Solana)", async () => {

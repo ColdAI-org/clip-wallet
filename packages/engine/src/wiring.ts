@@ -56,7 +56,7 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   // Defaults match the vault's: Starknet OpenZeppelin account, TON wallet v5r1, Algorand ARC-52.
   const starknet = createStarknetModule();
   const ton = createTonModule();
-  const all: Record<Family, () => ChainModule> = {
+  const all: Partial<Record<Family, () => ChainModule>> = {
     evm: createEvmModule,
     hedera: () => hedera,
     solana: createSolanaModule,
@@ -74,7 +74,10 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   };
   // One instance per enabled family for the engine's lifetime (modules keep prepare→finalize state).
   const chains: Partial<Record<Family, ChainModule>> = {};
-  for (const f of families) chains[f] = all[f]();
+  for (const f of families) {
+    const make = all[f];
+    if (make) chains[f] = make();
+  }
   const prices = o.kv ? createPriceFeed(o.kv, o.coingeckoDemoKey) : new ReferencePriceFeed();
   const backupUrl = o.config.services.backupUrl;
   // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (testnet only).

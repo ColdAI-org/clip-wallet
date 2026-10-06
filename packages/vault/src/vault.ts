@@ -51,7 +51,7 @@ import { hashWasmArgon2id, type Argon2idFn } from "./kdf.js";
 import { VaultErrors } from "./errors.js";
 import { passkeyBackup, passkeyWrapKey, type PasskeyPrf } from "./passkey.js";
 import { entropyToPhrase, newPhrase, phraseToEntropy, phraseToSeed, type PhraseLength } from "./phrase.js";
-import { signBip32Ed25519, signEcdsa, signEd25519, signSchnorr, signSr25519, signStark } from "./sign.js";
+import { signBip32Ed25519, signEcdsa, signEcdsaCanonical, signEd25519, signSchnorr, signSr25519, signStark } from "./sign.js";
 import { systemClock, type Clock, type VaultStorage } from "./storage.js";
 import { PairingKeys, TRANSFER_INFO, openTransfer, sealTransfer, syncKeyHandle, type PairingKeyHandle, type SyncKeyHandle } from "./link.js";
 
@@ -139,6 +139,18 @@ export const FAMILY_SCHEMES: Record<Family, readonly SignatureScheme[]> = {
   cardano: ["ed25519"], // BIP32-Ed25519 extended key, verifies as Ed25519
   substrate: ["sr25519"],
   starknet: ["stark-ecdsa"],
+  cosmos: ["ecdsa-secp256k1"],
+  provenance: ["ecdsa-secp256k1"],
+  thorchain: ["ecdsa-secp256k1"],
+  initia: ["ecdsa-secp256k1"],
+  tron: ["ecdsa-secp256k1"],
+  xrpl: ["ecdsa-secp256k1"],
+  antelope: ["ecdsa-secp256k1"], // canonical K1 signatures only (signEcdsaCanonical)
+  multiversx: ["ed25519"],
+  icp: ["ecdsa-secp256k1"],
+  stacks: ["ecdsa-secp256k1"],
+  fuel: ["ecdsa-secp256k1"],
+  bitcoincash: ["ecdsa-secp256k1"],
 };
 
 /**
@@ -496,7 +508,7 @@ export class ClipVault implements Vault {
       this.touch();
       switch (payload.scheme) {
         case "ecdsa-secp256k1": {
-          const s = signEcdsa(payload.bytes, key.privateKey);
+          const s = family === "antelope" ? signEcdsaCanonical(payload.bytes, key.privateKey) : signEcdsa(payload.bytes, key.privateKey);
           return { scheme: payload.scheme, bytes: s.bytes, recovery: s.recovery, publicKey: toHex(key.publicKey) };
         }
         case "schnorr-secp256k1": {

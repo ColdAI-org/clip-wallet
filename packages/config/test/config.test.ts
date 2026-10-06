@@ -105,8 +105,8 @@ describe("validation errors in plain words", () => {
     expect(problems({ ...base, services: { mediaProxyUrl: "https://media.example.com/?x=1" } })[0]).toMatch(/^services.mediaProxyUrl:/);
   });
 
-  it("accepts all 14 chain families", () => {
-    expect(NETWORK_FAMILIES).toHaveLength(14);
+  it("accepts all 26 chain families", () => {
+    expect(NETWORK_FAMILIES).toHaveLength(26);
     const all = ["evm:*", ...NETWORK_FAMILIES.filter((f) => f !== "evm")];
     expect(validateConfig({ ...base, networks: all }).ok).toBe(true);
     expect(enabledFamilies(defineConfig({ ...base, networks: all }))).toEqual([...NETWORK_FAMILIES]);
@@ -114,7 +114,7 @@ describe("validation errors in plain words", () => {
 
   it("explains network patterns", () => {
     expect(problems({ ...base, networks: ["ethereum"] })).toEqual([
-      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos" or "algorand"',
+      'networks.0: use "evm:*", "evm:<chain id>", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand", "cosmos", "provenance", "thorchain", "initia", "tron", "xrpl", "antelope", "multiversx", "icp", "stacks", "fuel" or "bitcoincash"',
     ]);
     expect(problems({ ...base, networks: [] })).toEqual(["networks: turn on at least one network"]);
     expect(problems({ ...base, networks: ["hedera", "hedera"] })).toEqual(["networks: each network is listed once"]);

@@ -59,3 +59,28 @@ export {
 } from "./encodings.js";
 export { VaultErrors } from "./errors.js";
 export { SYNC_LABEL, SYNC_SIGN_PREFIX, type SyncKeyHandle, type PairingKeyHandle } from "./link.js";
+export {
+  cosmosAddress,
+  initiaAddress,
+  ethAddressBytes,
+  tronAddress,
+  xrplAddress,
+  antelopePublicKey,
+  antelopeLegacyPublicKey,
+  multiversxAddress,
+  icpDerPublicKey,
+  icpPrincipalBytes,
+  icpPrincipalText,
+  icpPrincipal,
+  icpAccountIdentifier,
+  c32address,
+  c32encode,
+  stacksAddress,
+  STACKS_VERSION,
+  fuelAddressBytes,
+  fuelChecksum,
+  fuelAddress,
+  cashAddress,
+  bitcoincashAddress,
+  crc32,
+} from "./encodings87.js";

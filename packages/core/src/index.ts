@@ -32,11 +32,30 @@ export type Family =
   | "near"
   | "stellar"
   | "tezos"
-  | "algorand";
+  | "algorand"
+  /**
+   * networks87 (additive): the CLPR networks that aren't EVM and weren't covered yet. Cosmos SDK chains split by key
+   * (each ecosystem wallet derives at the chain's own SLIP-44 coin type): "cosmos" (coin 118: Osmosis, dYdX,
+   * ZIGChain), "provenance" (505), "thorchain" (931), "initia" (coin 60, ethsecp256k1). "antelope" is Vaulta, Telos
+   * and XPR Network (one K1 key, accounts are names on chain).
+   */
+  | "cosmos"
+  | "provenance"
+  | "thorchain"
+  | "initia"
+  | "tron"
+  | "xrpl"
+  | "antelope"
+  | "multiversx"
+  | "icp"
+  | "stacks"
+  | "fuel"
+  | "bitcoincash";
 
 export const FAMILIES: readonly Family[] = [
   "evm", "hedera", "solana", "bitcoin",
   "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
+  "cosmos", "provenance", "thorchain", "initia", "tron", "xrpl", "antelope", "multiversx", "icp", "stacks", "fuel", "bitcoincash",
 ];
 
 /**
@@ -355,6 +374,13 @@ export interface ChainModule {
   finalize(request: DappRequest, signatures: Signature[], ctx: ChainContext): Promise<unknown>;
   /** Builds a native send as a DappRequest so it goes through the same approval path. */
   buildTransfer(p: { asset: AssetRef; to: string; amount: string }, ctx: ChainContext): Promise<DappRequest>;
+  /**
+   * networks87 (additive, optional): the address to RECEIVE on `ctx.network`, when it isn't `ctx.account.address`:
+   * the format differs per network (Cosmos bech32 prefixes, Stacks SP/ST, Bitcoin Cash bitcoincash:/bchtest:) or the
+   * account lives on chain (Antelope account names). Throws a ClipError in plain words when the account can't
+   * receive yet. Hosts fall back to `ctx.account.address` when a module doesn't have it.
+   */
+  receiveAddress?(ctx: ChainContext): Promise<string>;
 }
 
 /* ------------------------------------------------------------------ errors in plain words */
