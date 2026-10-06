@@ -62,9 +62,20 @@ function jsonArgs(args: Uint8Array): Record<string, unknown> | unknown[] | null 
   }
 }
 
-function pretty(v: unknown, max = 600): string {
-  const s = JSON.stringify(v, null, 2);
-  return s.length > max ? `${s.slice(0, max)}…` : s;
+/** Characters of call arguments shown before the rest is only counted (with a warning: never cut silently). */
+const ARGS_SHOWN = 4000;
+/** Characters of an ft_transfer_call `msg` (the receiver's instructions) shown in full. */
+const FT_MSG_SHOWN = 1000;
+
+/** `text` up to `max` characters; past that, the start plus how much isn't shown (audit CHAIN-L). */
+function clipped(text: string, max: number): { text: string; hidden: number } {
+  if (text.length <= max) return { text, hidden: 0 };
+  const hidden = text.length - max;
+  return { text: `${text.slice(0, max)}… (${hidden.toLocaleString("en-US")} more characters not shown)`, hidden };
+}
+
+function pretty(v: unknown): { text: string; hidden: number } {
+  return clipped(JSON.stringify(v, null, 2), ARGS_SHOWN);
 }
 
 const s = (x: unknown) => (typeof x === "string" ? x : undefined);
@@ -96,6 +107,11 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
   const self = tx.receiverId === tx.signerId;
   const warn = (w: Warning) => {
     if (!warnings.some((x) => x.code === w.code && x.message === w.message)) warnings.push(w);
+  };
+  const cutWarning: Warning = {
+    level: "caution",
+    code: "unknown-call",
+    message: "Part of this call's details is too long to show here. Check the full request in Details before you approve.",
   };
   const blindWarn = (what: string) => {
     blind = true;
@@ -153,7 +169,11 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
           titles.push(say("bg.req.sendTo", { amount: amountText, to: short(s(A.receiver_id)!) }));
           lines.push({ label: "To", value: s(A.receiver_id)! }, { label: "Token", value: `${meta?.name ?? "Unknown token"} (${contract})` });
           if (s(A.memo)) lines.push({ label: "Memo", value: s(A.memo)! });
-          if (m === "ft_transfer_call") lines.push({ label: "Also", value: `${short(s(A.receiver_id)!)} runs its own code with the tokens${s(A.msg) ? `: ${s(A.msg)!.slice(0, 200)}` : ""}` });
+          if (m === "ft_transfer_call") {
+            const instructions = s(A.msg) ? clipped(s(A.msg)!, FT_MSG_SHOWN) : null;
+            lines.push({ label: "Also", value: `${short(s(A.receiver_id)!)} runs its own code with the tokens${instructions ? `: ${instructions.text}` : ""}` });
+            if (instructions?.hidden) warn(cutWarning);
+          }
           acc.add(asset, -amt);
           if (asset.spam) warn({ level: "danger", code: "known-scam", message: say("bg.near.copyToken", { token: contract }) });
           if (!meta) blindWarn("This token's details couldn't be read.");
@@ -214,7 +234,11 @@ export async function describeTx(tx: TxView, env: DescribeEnv): Promise<Describe
         // Generic contract call.
         titles.push(say("bg.near.call", { method: m, contract: short(contract) }));
         lines.push({ label: "App contract", value: contract }, { label: "Method", value: m });
-        if (args) lines.push({ label: "Arguments", value: pretty(args) });
+        if (args) {
+          const shown = pretty(args);
+          lines.push({ label: "Arguments", value: shown.text });
+          if (shown.hidden) warn(cutWarning);
+        }
         else if (a.args.length) {
           lines.push({ label: "Arguments (not readable)", value: `0x${hex(a.args.slice(0, 64))}${a.args.length > 64 ? "…" : ""}` });
           blindWarn(`The details of this ${m} call can't be read.`);

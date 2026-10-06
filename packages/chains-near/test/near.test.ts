@@ -342,6 +342,25 @@ describe("decode", () => {
     expect(binary.warnings[0]?.code).toBe("blind-signing");
   });
 
+  it("audit CHAIN-L: long JSON arguments are never cut off silently", async () => {
+    const { ctx } = chain();
+    const fc = (methodName: string, args: unknown, deposit = "0") => ({ type: "FunctionCall", params: { methodName, args, gas: "30000000000000", deposit } });
+    // A 700-character argument object used to be cut at 600 characters, hiding what came after.
+    const args = { note: "x".repeat(650), receiver_id: "mallory.testnet" };
+    const d = await near.decode(send([fc("execute", args)], "app.testnet"), ctx);
+    expect(d.lines.find((l) => l.label === "Arguments")?.value).toContain("mallory.testnet");
+    // Past the display limit, what isn't shown is counted and the user is warned.
+    const huge = { note: "y".repeat(5000), receiver_id: "mallory.testnet" };
+    const h = await near.decode(send([fc("execute", huge)], "app.testnet"), ctx);
+    expect(h.lines.find((l) => l.label === "Arguments")?.value).toMatch(/more characters not shown/);
+    expect(h.warnings).toContainEqual(expect.objectContaining({ level: "caution", code: "unknown-call" }));
+    // ft_transfer_call's msg (what the receiver does with the tokens) too.
+    const msgText = `{"actions":[{"pool_id":1,"token_out":"${"z".repeat(300)}.testnet"}]}`;
+    const ft = await near.decode(send([fc("ft_transfer_call", { receiver_id: "dex.testnet", amount: "1", msg: msgText }, "1")], "usdc.testnet"), ctx);
+    const also = ft.lines.find((l) => l.label === "Also")?.value ?? "";
+    expect(also.endsWith('.testnet"}]}') || ft.warnings.some((w) => w.code === "unknown-call")).toBe(true);
+  });
+
   it("puts danger warnings on key, code and account changes", async () => {
     const { ctx } = chain();
     const mine = (actions: unknown[]) => send(actions, ME);
