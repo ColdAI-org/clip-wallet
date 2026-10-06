@@ -127,7 +127,7 @@ const covered = CLPR.map(([slug, name, match]) => ({ slug, name, nets: match ? M
 describe("networks87: CLPR coverage from code", () => {
   it("lists the 87 CLPR networks once each", () => {
     expect(CLPR).toHaveLength(87);
-    expect(new Set(CLPR.map((c) => c.slug)).size).toBe(87);
+    expect(new Set(CLPR.map(([slug]) => slug)).size).toBe(87);
   });
 
   it("supports every CLPR network on mainnet except the ones with no self-custodial key model", () => {

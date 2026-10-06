@@ -29,19 +29,21 @@ import { BCH_CHIPNET, createBitcoinCashModule } from "@clip-wallet/chains-bitcoi
 import { MULTIVERSX_DEVNET, createMultiversXModule } from "@clip-wallet/chains-multiversx";
 import { ICP_TEST, createIcpModule } from "@clip-wallet/chains-icp";
 import { XRPL_TESTNET, createXrplModule } from "@clip-wallet/chains-xrpl";
+import { JUNGLE4, createAntelopeModule } from "@clip-wallet/chains-antelope";
 import ADDRESSES from "./addresses.json" with { type: "json" };
 
 export type MatrixFamily = Exclude<Family, never>;
 /**
  * "hedera-evm" = Hedera testnet reached through 1Mask's EIP-1193 provider (the EVM account, chain 296).
  * networks87: "cosmos" is Osmosis testnet (osmo-test-5), "chainflip" the Chainflip Perseverance testnet (substrate
- * family). Provenance, Initia, MultiversX, ICP and Bitcoin Cash are funding/balance targets only: no injected dapp
- * standard Clip can answer under its own identity (docs/r1/networks87.md), so they have no dapp page.
+ * family), "multiversx" devnet through sdk-dapp's undocumented custom-provider hook. Provenance, Initia, ICP, Bitcoin
+ * Cash and Antelope are funding/balance targets only: no injected dapp standard Clip can answer under its own identity
+ * (Bitcoin Cash's is WalletConnect; docs/r1/networks87.md), so they have no dapp page.
  */
 export type Target =
   | "evm" | "hedera-evm" | "hedera" | "solana" | "bitcoin" | "sui" | "aptos" | "cardano" | "substrate" | "starknet" | "ton" | "near" | "stellar" | "tezos" | "algorand"
   | "cosmos" | "tron" | "stacks" | "fuel" | "chainflip" | "xrpl"
-  | "provenance" | "initia" | "multiversx" | "icp" | "bitcoincash";
+  | "multiversx" | "provenance" | "initia" | "icp" | "bitcoincash" | "antelope";
 
 interface Entry {
   address: string;
@@ -87,11 +89,12 @@ export const TARGETS: Record<Target, { network: Network; module: () => ChainModu
   multiversx: { network: MULTIVERSX_DEVNET, module: createMultiversXModule, family: "multiversx", minimum: 10n ** 16n, faucetHint: "0.01 xEGLD (devnet)" },
   icp: { network: ICP_TEST, module: createIcpModule, family: "icp", minimum: 100_000n, faucetHint: "0.001 TESTICP" },
   bitcoincash: { network: BCH_CHIPNET, module: createBitcoinCashModule, family: "bitcoincash", minimum: 5_000n, faucetHint: "5,000 sats (chipnet)" },
+  antelope: { network: JUNGLE4, module: createAntelopeModule, family: "antelope", minimum: 1_0000n, faucetHint: "an account for the key, then 1 EOS + CPU (Jungle4)" },
 };
 
 export const TARGET_ORDER: Target[] = [
   "evm", "hedera-evm", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
-  "cosmos", "tron", "stacks", "fuel", "xrpl", "chainflip", "provenance", "initia", "multiversx", "icp", "bitcoincash",
+  "cosmos", "tron", "stacks", "fuel", "xrpl", "chainflip", "multiversx", "provenance", "initia", "icp", "bitcoincash", "antelope",
 ];
 
 const hexToBytes = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
@@ -227,6 +230,8 @@ export function explorerTx(t: Target, id: string): string {
       return `https://scan.perseverance.chainflip.io/blocks/${id}`;
     case "xrpl":
       return `https://testnet.xrpl.org/transactions/${id}`;
+    case "multiversx":
+      return `https://devnet-explorer.multiversx.com/transactions/${id}`;
     default:
       return `${n.explorerUrl}/tx/${id}`;
   }
@@ -316,6 +321,10 @@ export async function confirmTx(t: Target, id: string, timeoutMs = 120_000): Pro
       case "fuel": {
         const r = await j("https://testnet.fuel.network/v1/graphql", { method: "POST", body: JSON.stringify({ query: `{ transaction(id: "${id}") { status { __typename } } }` }) }).catch(() => null);
         return r?.data?.transaction?.status?.__typename === "SuccessStatus";
+      }
+      case "multiversx": {
+        const r = await j(`https://devnet-api.multiversx.com/transactions/${id}`).catch(() => null);
+        return r?.status === "success";
       }
       case "xrpl": {
         const r = await rpc("https://s.altnet.rippletest.net:51234", "tx", [{ transaction: id }]).catch(() => null);

@@ -135,6 +135,7 @@
     "@clip-wallet/1mask": "workspace:*",
     "@clip-wallet/backup-client": "workspace:*",
     "@clip-wallet/chains-algorand": "workspace:*",
+    "@clip-wallet/chains-antelope": "workspace:*",
     "@clip-wallet/chains-aptos": "workspace:*",
     "@clip-wallet/chains-bitcoin": "workspace:*",
     "@clip-wallet/chains-bitcoincash": "workspace:*",

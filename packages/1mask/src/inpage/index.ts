@@ -118,7 +118,7 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
   stops.push(p2.stop);
   out.p2 = p2;
   const n87 = installN87Providers(win, identity, config.networks, transport, {
-    want: { cosmos: want.cosmos ?? true, tron: want.tron ?? true, stacks: want.stacks ?? true, fuel: want.fuel ?? true, xrpl: want.xrpl ?? true },
+    want: { cosmos: want.cosmos ?? true, tron: want.tron ?? true, stacks: want.stacks ?? true, fuel: want.fuel ?? true, xrpl: want.xrpl ?? true, multiversx: want.multiversx ?? true },
     ...(config.globalKey ? { globalKey: config.globalKey } : {}),
   });
   stops.push(n87.stop);

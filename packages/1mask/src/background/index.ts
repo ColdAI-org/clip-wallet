@@ -48,7 +48,8 @@ import { COSMOS_CONNECT_METHODS as _COSMOS_CONNECT, COSMOS_INJECTED as _COSMOS }
 import { TRON_CONNECT_METHODS as _TRON_CONNECT } from "./tron.js";
 import { STACKS_INJECTED as _STACKS } from "../shared/stacks.js";
 import { FUEL_CONNECT_METHODS as _FUEL_CONNECT } from "../shared/fuel.js";
-/** Methods the host treats as a connect approval (Keplr enable, TIP-1193 accounts, SIP-030 addresses, FuelConnector connect). */
-export const N87_CONNECT_METHODS: readonly string[] = [..._COSMOS_CONNECT, ..._TRON_CONNECT, _STACKS.connect, ..._FUEL_CONNECT];
+import { MULTIVERSX_CONNECT_METHODS as _MVX_CONNECT } from "./multiversx.js";
+/** Methods the host treats as a connect approval (Keplr enable, TIP-1193 accounts, SIP-030 addresses, FuelConnector connect, MultiversX provider login). */
+export const N87_CONNECT_METHODS: readonly string[] = [..._COSMOS_CONNECT, ..._TRON_CONNECT, _STACKS.connect, ..._FUEL_CONNECT, ..._MVX_CONNECT];
 /** Read-only chain calls answered by a chain module without an approval (Keplr sendTx of an already-signed tx, verifyArbitrary). */
 export const N87_CHAIN_READ: readonly string[] = [_COSMOS.sendTx, _COSMOS.verifyArbitrary];

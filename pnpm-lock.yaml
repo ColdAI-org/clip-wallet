@@ -533,6 +533,9 @@ importers:
       '@clip-wallet/chains-algorand':
         specifier: workspace:*
         version: link:../../packages/chains-algorand
+      '@clip-wallet/chains-antelope':
+        specifier: workspace:*
+        version: link:../../packages/chains-antelope
       '@clip-wallet/chains-aptos':
         specifier: workspace:*
         version: link:../../packages/chains-aptos
@@ -1759,6 +1762,9 @@ importers:
       '@clip-wallet/chains-algorand':
         specifier: workspace:*
         version: link:../chains-algorand
+      '@clip-wallet/chains-antelope':
+        specifier: workspace:*
+        version: link:../chains-antelope
       '@clip-wallet/chains-aptos':
         specifier: workspace:*
         version: link:../chains-aptos
@@ -1880,6 +1886,9 @@ importers:
       '@clip-wallet/chains-algorand':
         specifier: workspace:*
         version: link:../chains-algorand
+      '@clip-wallet/chains-antelope':
+        specifier: workspace:*
+        version: link:../chains-antelope
       '@clip-wallet/chains-aptos':
         specifier: workspace:*
         version: link:../chains-aptos

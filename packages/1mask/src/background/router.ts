@@ -34,6 +34,7 @@ import { stacksAddressOn } from "../shared/stacks.js";
 import { bchAddressOn } from "../shared/bitcoincash.js";
 import { createFuelDispatcher } from "./fuel.js";
 import { createXrplDispatcher } from "./xrpl.js";
+import { createMultiversXDispatcher } from "./multiversx.js";
 import { isCallsMethod, type CallsHost } from "../shared/calls.js";
 
 /** Background side of a runtime port (chrome.runtime.Port satisfies it). */
@@ -627,6 +628,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
   const cosmos = createCosmosDispatcher({ ...n87Internals, read: (req) => withTimeout(opts.handle(req), readMs, req.id) });
   const tron = createTronDispatcher(n87Internals);
   const xrpl = createXrplDispatcher(n87Internals);
+  const multiversx = createMultiversXDispatcher(n87Internals);
   const stacks = createStacksDispatcher({ ...n87Internals, networks: () => candidates("stacks") });
   const fuel = createFuelDispatcher({
     permitted,
@@ -676,6 +678,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     if (family === "stacks") return stacks.dispatch(origin, family, method, params, chain);
     if (family === "fuel") return fuel.dispatch(origin, method, params);
     if (family === "xrpl") return xrpl.dispatch(origin, method, params, chain);
+    if (family === "multiversx") return multiversx.dispatch(origin, method, params, chain);
     if (family === "hedera" && method === HEDERA_WC_PAIR) {
       const uri = (params as { uri?: unknown } | undefined)?.uri;
       if (!opts.walletConnectPair) throw rpcError.unsupportedMethod(method);
