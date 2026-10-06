@@ -175,8 +175,12 @@ extension's build config. It is never hardcoded.
   for the first supported eip155 chain.
 - **Sessions.** `sessions()`, `disconnect(topic)` (`6000`) and `notifyAccountsChanged()`
   (updateSession + `accountsChanged` / `bip122_addressesChanged`).
+- **Accounts.** Every account a request names (`from`, `pubkey`, `account`, `address`, Hedera `signerAccountId`,
+  NEAR `accounts`, Algorand `signers`) must be one of the session's accounts on the request's chain, and a chain it
+  names (EVM transaction `chainId`, Hedera's CAIP-10 signer) must be that chain: otherwise 5103 / 5100 before
+  anything is decoded (`namedAccounts`, audit WC-05).
 - **Errors.** WC SDK codes: 5000 user rejected, 5100 unsupported chains, 5101 unsupported methods,
-  3001 unauthorized method, 6000 user disconnected.
+  5103 unsupported accounts, 3001 unauthorized method, 6000 user disconnected.
 
 ## EIP-5792 Wallet Call API and ERC-7682 auxiliary funds (opt-in)
 

@@ -16,8 +16,10 @@ with no Clip-specific code.
 - **Verify.** WalletConnect's Verify verdict becomes warnings (`domain-mismatch`, `known-scam`). An app URL Verify
   didn't confirm is shown as "app.example (unverified)" and never borrows a real site's permissions.
 - **One-click auth** (SIWE + ReCaps) signs one CACAO, for the first supported EVM chain.
-- **Errors**: `5000` user rejected, `5100` unsupported chains, `5101` unsupported methods, `3001` unauthorized method,
-  `6000` user disconnected.
+- **Accounts.** A request may only name the session's accounts and chain: a `from`, signer or `account` field naming
+  another account gets `5103`, a transaction `chainId` or Hedera signer on another network gets `5100`.
+- **Errors**: `5000` user rejected, `5100` unsupported chains, `5101` unsupported methods, `5103` unsupported
+  accounts, `3001` unauthorized method, `6000` user disconnected.
 
 ## For dapps: use your own project id
 

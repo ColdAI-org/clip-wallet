@@ -10,3 +10,4 @@
 export * from "./namespaces.js";
 export * from "./verify.js";
 export * from "./wallet.js";
+export * from "./accounts.js";

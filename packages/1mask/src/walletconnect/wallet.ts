@@ -15,6 +15,7 @@ import {
   type WcNamespaceKey,
 } from "./namespaces.js";
 import { assessVerify, type Verification, type VerifyContextLike } from "./verify.js";
+import { namedAccounts, sessionHasAccount } from "./accounts.js";
 import { CALLS_METHODS, CallsErrorCode, callsError, chainCapabilities, isCallsMethod, parseSendCalls, type CallsHost, type Hex, type SendCallsParams } from "../shared/calls.js";
 import { rpcError } from "../shared/errors.js";
 
@@ -397,6 +398,15 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       if (!isServedMethod(nsKey, request.method, extraMethods)) {
         // Listed only so the session conformed to the app's required namespaces (e.g. eth_sign).
         throw { code: RpcErrorCode.UnsupportedMethod, message: `Clip Wallet does not support ${request.method}.` };
+      }
+      // Audit WC-05: every account and chain the request names must be the session's (SDK 5103 / 5100 otherwise).
+      const named = namedAccounts(nsKey as WcNamespaceKey, request.method, request.params);
+      const mine = sessionAccounts(session, chainId);
+      if (named.malformed || named.accounts.some((a) => !sessionHasAccount(nsKey as WcNamespaceKey, mine, a))) {
+        throw { code: WC_ERRORS.UNSUPPORTED_ACCOUNTS.code, message: "That account is not connected to this app." };
+      }
+      if (named.chains.some((c) => c !== chainId)) {
+        throw { code: WC_ERRORS.UNSUPPORTED_CHAINS.code, message: `This request is for another network than ${chainId}.` };
       }
       const local = await answerLocally(session, chainId, request.method, request.params);
       if (local) return void (await respond(topic, id, local));

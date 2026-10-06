@@ -4,6 +4,8 @@ import {
   assessVerify,
   createWalletConnectWallet,
   mapProposalNamespaces,
+  namedAccounts,
+  parseHederaAccount,
   type AuthUtils,
   type WalletKitLike,
   type WcSessionLike,
@@ -294,6 +296,42 @@ describe("WalletConnect wallet (fake WalletKit)", () => {
     await f.fire("session_request", reqEv(23, "eip155:1", "personal_sign", ["0x", EVM_ADDR]));
     expect(f.calls.at(-1)!.args.response).toMatchObject({ id: 23, error: { code: 5100 } });
     expect(handled).toEqual([]);
+  });
+
+  it("audit WC-05: a request naming an account or chain the session didn't approve gets 5103 / 5100 and never reaches the wallet", async () => {
+    const { f, handled } = await wallet();
+    withSession(f);
+    const OTHER = "0x2222222222222222222222222222222222222222";
+    const cases: [number, string, string, unknown, number][] = [
+      [61, "eip155:84532", "personal_sign", ["0x68", OTHER], 5103],
+      [62, "eip155:84532", "eth_sendTransaction", [{ from: OTHER, to: EVM_ADDR, value: "0x1" }], 5103],
+      [63, "eip155:84532", "eth_sendTransaction", [{ from: EVM_ADDR, to: EVM_ADDR, value: "0x1", chainId: "0x1" }], 5100],
+      [64, "eip155:84532", "personal_sign", ["0x68", 7], 5103],
+      [65, "hedera:testnet", "hedera_signAndExecuteTransaction", { signerAccountId: "hedera:testnet:0.0.9999", transactionList: "AA==" }, 5103],
+      [66, "hedera:testnet", "hedera_signAndExecuteTransaction", { signerAccountId: "hedera:mainnet:0.0.1234", transactionList: "AA==" }, 5100],
+    ];
+    for (const [id, chain, method, params, code] of cases) {
+      await f.fire("session_request", reqEv(id, chain, method, params));
+      expect(f.calls.at(-1)!.args.response).toMatchObject({ id, error: { code } });
+    }
+    expect(handled).toEqual([]);
+    // The session's own account (any case; Hedera with a checksum) still goes through.
+    await f.fire("session_request", reqEv(67, "eip155:84532", "personal_sign", ["0x68", EVM_ADDR.toLowerCase()]));
+    await f.fire("session_request", reqEv(68, "eip155:84532", "eth_sendTransaction", [{ from: EVM_ADDR, to: EVM_ADDR, value: "0x1", chainId: "0x14a34" }]));
+    await f.fire("session_request", reqEv(69, "hedera:testnet", "hedera_signAndExecuteTransaction", { signerAccountId: "hedera:testnet:0.0.1234-abcde", transactionList: "AA==" }));
+    expect(handled.map((h) => h.req.method)).toEqual(["personal_sign", "eth_sendTransaction", "hedera_signAndExecuteTransaction"]);
+  });
+
+  it("audit WC-05: the accounts each namespace's requests name", () => {
+    expect(namedAccounts("eip155", "eth_signTypedData_v4", [EVM_ADDR, "{}"]).accounts).toEqual([EVM_ADDR]);
+    expect(namedAccounts("solana", "solana_signMessage", { message: "x", pubkey: SOL_ADDR }).accounts).toEqual([SOL_ADDR]);
+    expect(namedAccounts("bip122", "signMessage", { account: BTC_ADDR, address: "tb1other", message: "x" }).accounts).toEqual([BTC_ADDR, "tb1other"]);
+    expect(namedAccounts("near", "near_signIn", { contractId: "c.testnet", accounts: [{ accountId: "me.testnet" }] }).accounts).toEqual(["me.testnet"]);
+    expect(namedAccounts("tezos", "tezos_send", { account: "tz1x", operations: [] }).accounts).toEqual(["tz1x"]);
+    expect(namedAccounts("stellar", "stellar_signMessage", { address: "GABC", message: "x" }).accounts).toEqual(["GABC"]);
+    expect(namedAccounts("algorand", "algo_signTxn", [[{ txn: "AA==", signers: ["ALGO1"] }, { txn: "AA==" }]]).accounts).toEqual(["ALGO1"]);
+    expect(namedAccounts("tezos", "tezos_send", { account: 5 }).malformed).toBe(true);
+    expect(parseHederaAccount("hedera:testnet:0.0.42-vfmkw")).toEqual({ chain: "hedera:testnet", account: "0.0.42" });
   });
 
   it("answers session-local methods without a prompt; switch within the session only", async () => {
