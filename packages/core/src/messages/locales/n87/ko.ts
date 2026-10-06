@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "이 계정에는 가디언이 있고 Clip Wallet은 가디언의 공동 서명을 받을 수 없어요. 아무것도 전송되지 않았어요.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "거래소가 입금 주소로 주는 형태인 계정 ID로 보내요. 거래소에 표시된 것과 정확히 같은지 확인하세요.",
+  "bg.icp.expired": "승인하기 전에 이 송금의 유효 시간이 지났어요. 아무것도 전송되지 않았어요. 다시 시도해 주세요.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "사후 조건",

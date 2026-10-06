@@ -45,6 +45,8 @@ export default {
   "bg.multiversx.guardedAccount": "This account has a guardian, and Clip Wallet can't get the guardian's co-signature. Nothing was sent.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "This sends to an account ID, the kind of deposit address exchanges give. Check that it matches exactly what the exchange shows.",
+  "bg.icp.expired": "This transfer expired before you approved it. Nothing was sent. Try again.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "Post-condition",

@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "このアカウントにはガーディアンが設定されていて、Clip Walletはガーディアンの共同署名を取得できません。何も送信されていません。",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "これはアカウントIDあての送金です。取引所が入金先として示す形式のアドレスです。取引所に表示されているものと完全に一致するか確認してください。",
+  "bg.icp.expired": "この送金は承認前に有効期限が切れました。何も送信されていません。もう一度お試しください。",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "ポストコンディション",

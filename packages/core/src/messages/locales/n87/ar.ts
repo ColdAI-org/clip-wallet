@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "لهذا الحساب حارس، ولا يستطيع Clip Wallet الحصول على توقيعه المشترك. لم يُرسَل أي شيء.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "يرسل هذا إلى معرّف حساب، وهو نوع عنوان الإيداع الذي تعطيه منصات التداول. تأكد من أنه يطابق تمامًا ما تعرضه المنصة.",
+  "bg.icp.expired": "انتهت صلاحية هذا التحويل قبل أن توافق عليه. لم يُرسَل أي شيء. حاول مرة أخرى.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "شرط لاحق",

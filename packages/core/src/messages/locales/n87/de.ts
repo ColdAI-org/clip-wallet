@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "Dieses Konto hat einen Guardian, und Clip Wallet kann dessen Mitsignatur nicht einholen. Es wurde nichts gesendet.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "Das geht an eine Konto-ID, die Art von Einzahlungsadresse, die Börsen vergeben. Prüfe, ob sie genau mit der Anzeige der Börse übereinstimmt.",
+  "bg.icp.expired": "Diese Überweisung ist abgelaufen, bevor du sie genehmigt hast. Es wurde nichts gesendet. Versuche es noch einmal.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "Nachbedingung",

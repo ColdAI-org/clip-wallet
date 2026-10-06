@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "इस अकाउंट का एक गार्डियन है, और Clip Wallet गार्डियन का सह-हस्ताक्षर नहीं ले सकता। कुछ भी नहीं भेजा गया।",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "यह एक अकाउंट ID पर भेजता है, यानी उस तरह का डिपॉज़िट एड्रेस जो एक्सचेंज देते हैं। जांच लें कि यह एक्सचेंज में दिखे एड्रेस से बिल्कुल मेल खाता है।",
+  "bg.icp.expired": "आपके मंज़ूर करने से पहले ही इस ट्रांसफ़र की समय-सीमा खत्म हो गई। कुछ भी नहीं भेजा गया। फिर से कोशिश करें।",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "पोस्ट-कंडीशन",

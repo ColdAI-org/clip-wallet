@@ -121,6 +121,10 @@ EXTRA["@clip-wallet/chains-multiversx"] = {
   description: "MultiversX ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   keywords: ["clip-wallet", "wallet", "multiversx", "egld", "chain-module"],
 };
+EXTRA["@clip-wallet/chains-icp"] = {
+  description: "Internet Computer (ICP) ChainModule for Clip Wallet: builds and decodes ledger transfers in plain words; never touches keys",
+  keywords: ["clip-wallet", "wallet", "icp", "internet-computer", "chain-module"],
+};
 
 let bad = 0;
 for (const { dir, path, pkg } of publishablePackages(root)) {

@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "Esta cuenta tiene un guardián y Clip Wallet no puede conseguir su firma conjunta. No se envió nada.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "Esto se envía a un ID de cuenta, el tipo de dirección de depósito que dan los exchanges. Comprueba que coincida exactamente con lo que muestra el exchange.",
+  "bg.icp.expired": "Esta transferencia caducó antes de que la aprobaras. No se envió nada. Inténtalo de nuevo.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "Poscondición",

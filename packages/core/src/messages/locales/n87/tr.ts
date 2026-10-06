@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "Bu hesabın bir koruyucusu var ve Clip Wallet koruyucunun ortak imzasını alamıyor. Hiçbir şey gönderilmedi.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "Bu, borsaların para yatırma adresi olarak verdiği türden bir hesap kimliğine gönderir. Borsanın gösterdiğiyle tam olarak aynı olduğunu kontrol et.",
+  "bg.icp.expired": "Bu transfer sen onaylamadan önce süresi doldu. Hiçbir şey gönderilmedi. Tekrar dene.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "Son koşul",

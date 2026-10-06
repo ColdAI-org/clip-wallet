@@ -1182,6 +1182,34 @@ importers:
         specifier: ^2.57.2
         version: 2.57.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.6.5)
 
+  packages/chains-icp:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@scure/base':
+        specifier: 2.4.0
+        version: 2.4.0
+    devDependencies:
+      '@dfinity/agent':
+        specifier: ^2.4.1
+        version: 2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1)
+      '@dfinity/candid':
+        specifier: ^2.4.1
+        version: 2.4.1(@dfinity/principal@2.4.1)
+      '@dfinity/identity-secp256k1':
+        specifier: ^2.4.1
+        version: 2.4.1(@dfinity/candid@2.4.1(@dfinity/principal@2.4.1))(@dfinity/principal@2.4.1)
+      '@dfinity/principal':
+        specifier: ^2.4.1
+        version: 2.4.1
+
   packages/chains-multiversx:
     dependencies:
       '@clip-wallet/core':

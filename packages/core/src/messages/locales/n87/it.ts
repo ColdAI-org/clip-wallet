@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "Questo account ha un guardiano e Clip Wallet non può ottenere la sua cofirma. Non è stato inviato nulla.",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "Questo invia a un ID account, il tipo di indirizzo di deposito che danno gli exchange. Controlla che corrisponda esattamente a quello mostrato dall'exchange.",
+  "bg.icp.expired": "Questo trasferimento è scaduto prima che lo approvassi. Non è stato inviato nulla. Riprova.",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "Postcondizione",

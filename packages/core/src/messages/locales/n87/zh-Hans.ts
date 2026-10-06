@@ -44,6 +44,8 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.multiversx.guardedAccount": "此账户设有守护者，Clip Wallet 无法获得守护者的联合签名。没有发送任何内容。",
   // ---- end chains-multiversx
   // ---- chains-icp (icp)
+  "bg.icp.toAccountId": "这会发送到一个账户 ID，也就是交易所给出的那种充值地址。请确认它与交易所显示的完全一致。",
+  "bg.icp.expired": "此转账在你批准之前已过期。没有发送任何内容。请重试。",
   // ---- end chains-icp
   // ---- chains-stacks (stacks)
   "bg.stacks.postCondition": "后置条件",
