@@ -1,5 +1,6 @@
 import type { Family, Network } from "@clip-wallet/core";
 import { HEDERA_METHODS } from "../background/methods.js";
+import { BCH_WC, bchAddressOn, bchNetworkForWcChain } from "../shared/bitcoincash.js";
 import { P2_WC_NAMESPACE_FAMILY, P2_WC_SUPPORTED_EVENTS, P2_WC_SUPPORTED_METHODS, type P2WcNamespaceKey } from "./p2-namespaces.js";
 
 /**
@@ -14,13 +15,14 @@ import { P2_WC_NAMESPACE_FAMILY, P2_WC_SUPPORTED_EVENTS, P2_WC_SUPPORTED_METHODS
  *  - Optional methods/events: intersection with what we support.
  */
 
-export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera" | P2WcNamespaceKey;
+export type WcNamespaceKey = "eip155" | "solana" | "bip122" | "hedera" | "bch" | P2WcNamespaceKey;
 
 export const WC_NAMESPACE_FAMILY: Record<WcNamespaceKey, Family> = {
   eip155: "evm",
   solana: "solana",
   bip122: "bitcoin",
   hedera: "hedera",
+  bch: "bitcoincash",
   ...P2_WC_NAMESPACE_FAMILY,
 };
 
@@ -49,6 +51,8 @@ export const WC_SUPPORTED_METHODS: Record<WcNamespaceKey, readonly string[]> = {
   bip122: ["getAccountAddresses", "signMessage", "signPsbt", "sendTransfer"],
   // hashgraph/hedera-wallet-connect HederaJsonRpcMethod
   hedera: HEDERA_METHODS,
+  // wc2-bch-bcr (https://github.com/mainnet-pat/wc2-bch-bcr#pairing): Cashonize, Paytaca, Zapit
+  bch: [BCH_WC.getAddresses, BCH_WC.signTransaction, BCH_WC.signMessage],
   ...P2_WC_SUPPORTED_METHODS,
 };
 
@@ -58,8 +62,29 @@ export const WC_SUPPORTED_EVENTS: Record<WcNamespaceKey, readonly string[]> = {
   bip122: ["bip122_addressesChanged"],
   // hashgraph/hedera-wallet-connect HederaSessionEvent
   hedera: ["accountsChanged", "chainChanged"],
+  bch: [...BCH_WC.events],
   ...P2_WC_SUPPORTED_EVENTS,
 };
+
+/**
+ * Chain aliases: a WalletConnect chain id whose wallet network has another id. Only wc2-bch-bcr needs one: its chains
+ * are "bch:bitcoincash" / "bch:bchtest", the wallet's Bitcoin Cash networks are bip122 ids (chains-bitcoincash). Every
+ * other namespace's chain id IS the network id.
+ */
+export function networkIdForWcChain(chain: string): string {
+  return namespaceOf(chain) === "bch" ? (bchNetworkForWcChain(chain) ?? chain) : chain;
+}
+
+/**
+ * CAIP-10 session account for `address` on WC `chain`. wc2-bch-bcr wallets put the CashAddr after "bch:" (Cashonize
+ * src/stores/walletconnectStore.ts: `bch:${addr}` → "bch:bchtest:qq…"), i.e. the chain id plus the CashAddr payload,
+ * spelled for that chain's prefix.
+ */
+export function wcAccount(chain: string, address: string): string {
+  if (namespaceOf(chain) !== "bch") return `${chain}:${address}`;
+  const spelled = bchAddressOn(address, networkIdForWcChain(chain)) ?? address;
+  return `${chain}:${spelled.slice(spelled.indexOf(":") + 1)}`;
+}
 
 export interface ProposalNamespace {
   chains?: string[];
@@ -134,8 +159,9 @@ export function mapProposalNamespaces(proposal: ProposalLike, input: NamespaceMa
   const registry = new Set(input.networks.map((n) => n.id));
 
   const servable = (chain: string, key: WcNamespaceKey): string[] | undefined => {
-    if (!registry.has(chain)) return undefined;
-    const addrs = input.addressesFor(chain, WC_NAMESPACE_FAMILY[key]);
+    const networkId = networkIdForWcChain(chain);
+    if (!registry.has(networkId)) return undefined;
+    const addrs = input.addressesFor(networkId, WC_NAMESPACE_FAMILY[key]);
     return addrs.length > 0 ? addrs : undefined;
   };
 
@@ -179,7 +205,7 @@ export function mapProposalNamespaces(proposal: ProposalLike, input: NamespaceMa
         continue;
       }
       chains.push(chain);
-      for (const a of addrs) accounts.push(`${chain}:${a}`);
+      for (const a of addrs) accounts.push(wcAccount(chain, a));
     }
     if (chains.length === 0) continue;
 

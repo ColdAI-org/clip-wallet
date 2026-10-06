@@ -9,8 +9,8 @@ import type { P2RouterInternals } from "./p2-families.js";
  * mustn't imitate), so Clip appears to BCH dapps through WalletConnect under its own metadata.
  *
  * The WalletConnect session layer (walletconnect/namespaces.ts, wallet.ts) maps the "bch" namespace and its
- * "bch:bitcoincash" / "bch:bchtest" chains onto the registry's bip122 ids with `bchNetworkForWcChain` (integration
- * step). This dispatcher answers bch_getAddresses with the account's CashAddr spelled for the session's network and
+ * "bch:bitcoincash" / "bch:bchtest" chains onto the registry's bip122 ids with `bchNetworkForWcChain` and answers
+ * bch_getAddresses from the session itself. This dispatcher (for a future injected path) answers bch_getAddresses with the account's CashAddr spelled for the session's network and
  * hands signing methods to chains-bitcoincash unchanged.
  */
 export const BCH_METHODS_ALLOWED = { local: [BCH_WC.getAddresses], signing: BCH_SIGNING_METHODS } as const;

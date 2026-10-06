@@ -30,6 +30,8 @@ import { createCallsDispatch } from "./eip5792.js";
 import { COSMOS_DISPATCH_FAMILIES, createCosmosDispatcher } from "./cosmos.js";
 import { createTronDispatcher } from "./tron.js";
 import { createStacksDispatcher } from "./stacks.js";
+import { stacksAddressOn } from "../shared/stacks.js";
+import { bchAddressOn } from "../shared/bitcoincash.js";
 import { createFuelDispatcher } from "./fuel.js";
 import { isCallsMethod, type CallsHost } from "../shared/calls.js";
 
@@ -303,8 +305,29 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
       pendingConnect.delete(key);
     }
     const list = await accounts(origin, family);
-    emit(origin, family, "accountsChanged", family === "evm" ? list.map((a) => a.address) : list);
+    // Stacks / Bitcoin Cash spell the account per network: the network the site connected on is the one its later
+    // accountsChanged events are spelled for (they have no switch-network method of their own).
+    if (family === "stacks" || family === "bitcoincash") setSelected(origin, family, net.id);
+    emit(origin, family, "accountsChanged", await eventAccounts(origin, family, list));
     return list;
+  };
+
+  /**
+   * What an accountsChanged event carries: EVM addresses; Stacks and Bitcoin Cash accounts spelled for the site's
+   * selected network (Account.address is the vault's mainnet "SP…" / "bitcoincash:" form), the way their dispatchers
+   * answer `accounts`; the account list otherwise.
+   */
+  const eventAccounts = async (origin: string, family: Family, list: ExposedAccount[]): Promise<unknown> => {
+    if (family === "evm") return list.map((a) => a.address);
+    if (family !== "stacks" && family !== "bitcoincash") return list;
+    const net = selectedNetwork(origin, family);
+    if (!net) return [];
+    const out: ExposedAccount[] = [];
+    for (const a of list) {
+      const address = family === "stacks" ? await stacksAddressOn(a.address, net.id) : bchAddressOn(a.address, net.id);
+      if (address) out.push({ ...a, address });
+    }
+    return out;
   };
 
   const emit = (origin: string, family: Family, event: OneMaskEvent, data?: unknown) => {
@@ -514,7 +537,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
         const res = await approve(makeReq(origin, family, net, method, { inputs }));
         if (!(await permitted(origin, family))) {
           await opts.permissions.grant(origin, family);
-          emit(origin, family, "accountsChanged", await accounts(origin, family));
+          emit(origin, family, "accountsChanged", await eventAccounts(origin, family, await accounts(origin, family)));
         }
         return res;
       }
@@ -716,8 +739,7 @@ export function createOneMaskRouter(opts: OneMaskRouterOptions): OneMaskRouter {
     for (const origin of ports.keys()) {
       for (const f of family ? [family] : FAMILIES) {
         if (!(await permitted(origin, f))) continue;
-        const list = await accounts(origin, f);
-        emit(origin, f, "accountsChanged", f === "evm" ? list.map((a) => a.address) : list);
+        emit(origin, f, "accountsChanged", await eventAccounts(origin, f, await accounts(origin, f)));
       }
     }
   };
