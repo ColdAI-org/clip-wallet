@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   wallet:
-    name: Harness, types, extension and dapp builds
+    name: Harness, types and every platform's build
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.18
 
       - name: Install
         run: pnpm install
@@ -37,14 +37,33 @@ jobs:
       - name: Types
         run: pnpm check-types
 
+# platform:nextjs
       - name: Lint
         run: pnpm lint
 
+# /platform:nextjs
+# platform:extension
       - name: Extension build
         run: pnpm extension:build
 
+# /platform:extension
+# platform:desktop
+      - name: Desktop build (unsigned Linux tar.gz; signed installers need docs/signing.md)
+        run: |
+          pnpm desktop:build
+          pnpm --filter @sh/desktop exec electron-builder --linux tar.gz --config electron-builder.config.cjs --publish never
+
+# /platform:desktop
+# platform:mobile
+      - name: Phone app JavaScript bundles (iOS and Android)
+        run: pnpm mobile:export
+
+# /platform:mobile
+# platform:nextjs
       - name: Dapp build
         run: pnpm next:build
+
+# /platform:nextjs
 
       - name: Mainnet stays off until its checklist is done
         run: |

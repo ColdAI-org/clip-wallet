@@ -45,7 +45,7 @@ jobs:
 
       - name: The same wallet with create-clip-wallet
         working-directory: ${{ runner.temp }}
-        run: npx --yes create-clip-wallet@latest cli/app --name "Fresh Scaffold" --rdns com.example.freshscaffold --yes
+        run: npx --yes create-clip-wallet@latest cli/app --scaffold-hbar --name "Fresh Scaffold" --rdns com.example.freshscaffold --yes
 
       - name: Check the project
         run: .github/scripts/check-scaffold.sh "${{ runner.temp }}/app" "${{ runner.temp }}/cli/app"

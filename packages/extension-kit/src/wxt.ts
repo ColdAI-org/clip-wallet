@@ -18,7 +18,17 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
-import { ConfigError, WALLETCONNECT_ENV, defineConfig as defineClipConfig, isMainnetEnabled, mainnetProblems, walletKey, type ClipConfig, type ClipConfigInput } from "@clip-wallet/config";
+import {
+  ConfigError,
+  WALLETCONNECT_ENV,
+  defineConfig as defineClipConfig,
+  isMainnetEnabled,
+  mainnetProblems,
+  slugOfName,
+  walletKey,
+  type ClipConfig,
+  type ClipConfigInput,
+} from "@clip-wallet/config";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { walletNetworks } from "@clip-wallet/engine/catalog";
 import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
@@ -38,8 +48,13 @@ export const CONFIG_MODULE = "virtual:clip-wallet/config";
 export interface ClipWalletOptions {
   /** The default export of clip.config.ts (already validated by defineConfig). */
   config: ClipConfig;
-  /** The extension project directory (clip.config.ts, icon, .env, package.json). Default: process.cwd(). */
+  /** The extension project directory (package.json, src/, .env). Default: process.cwd(). */
   root?: string;
+  /**
+   * Where clip.config.ts, its icon, MAINNET.md and the wallet-wide .env are, relative to root or absolute. Default: root.
+   * A create-clip-wallet project keeps one clip.config.ts at its root for every platform: configDir "../..".
+   */
+  configDir?: string;
   /** Version for the manifest and TON Connect DeviceInfo. Default: the project's package.json version. */
   version?: string;
   /** Build environment. Default: process.env plus CLIP_* values from <root>/.env (process.env wins). */
@@ -122,13 +137,14 @@ export function openChecklistItems(root: string): string[] {
 
 export function clipWallet(options: ClipWalletOptions): UserConfig {
   const root = options.root ?? process.cwd();
-  const env = { ...readClipEnv(join(root, ".env")), ...process.env, ...options.env };
-  const config = resolveConfig(options.config, env, root);
+  const configDir = resolve(root, options.configDir ?? ".");
+  const env = { ...readClipEnv(join(configDir, ".env")), ...readClipEnv(join(root, ".env")), ...process.env, ...options.env };
+  const config = resolveConfig(options.config, env, configDir);
   const mocks = options.mocks ?? env.CLIP_MOCKS === "1";
   const source = options.sourceConditions ?? devConditions();
   const version = options.version ?? (JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string }).version ?? "0.0.0";
   const key = walletKey(config);
-  const icon = iconDataUri(root, config.icon);
+  const icon = iconDataUri(configDir, config.icon);
   const testnet = !isMainnetEnabled(config);
   const security = securityFor(config, env);
 
@@ -163,6 +179,8 @@ export function clipWallet(options: ClipWalletOptions): UserConfig {
   return {
     srcDir: "src",
     outDir: mocks ? ".output-fixtures" : ".output",
+    // Store uploads named after the wallet: acme-wallet-1.2.0-chrome.zip, acme-wallet-1.2.0-sources.zip.
+    zip: { artifactTemplate: `${slugOfName(config.name)}-{{version}}-{{browser}}.zip`, sourcesTemplate: `${slugOfName(config.name)}-{{version}}-sources.zip` },
     // Explicit imports only (unimport would otherwise inject e.g. `storage` into the vault).
     // @ts-expect-error autoImport is an unimport option that WXT passes through but doesn't type.
     imports: { autoImport: false, eslintrc: { enabled: false } },

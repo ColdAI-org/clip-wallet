@@ -1,12 +1,18 @@
 {
   "name": "scaffold-hbar-clip-wallet",
   "version": "0.1.0",
-  "description": "Your own non-custodial wallet on the Clip Wallet kit: a branded browser extension (14 network families, 1Mask for every dapp, decoded approvals, a security floor that can't be switched off) plus a Scaffold-HBAR Next.js dapp that connects to it on Hedera testnet, with the debug page. Testnet by default; mainnet behind a checklist. Same project as `npx create-clip-wallet`.",
+  "description": "Your own non-custodial wallet on the Clip Wallet kit, on every platform from one clip.config.ts: a branded browser extension, a desktop app (macOS, Windows, Linux) and a phone app (iOS, Android) (14 network families, 1Mask for every dapp, decoded approvals, a security floor that can't be switched off), plus a Scaffold-HBAR Next.js dapp that connects to it on Hedera testnet, with the debug page. Testnet by default; mainnet behind a checklist. Same project as `npx create-clip-wallet --scaffold-hbar`.",
   "create-scaffold-hbar": {
     "capabilities": {
-      "frontend": ["nextjs-app"],
-      "solidityFramework": ["none"],
-      "packageManager": ["none"]
+      "frontend": [
+        "nextjs-app"
+      ],
+      "solidityFramework": [
+        "none"
+      ],
+      "packageManager": [
+        "none"
+      ]
     },
     "defaults": {
       "frontend": "nextjs-app",
@@ -14,13 +20,15 @@
       "packageManager": "none"
     },
     "requirements": {
-      "node": ">=22",
+      "node": ">=22.18",
       "pnpm": ">=10"
     },
     "rename": {
       "clip-wallet-project": {
         "to": "{{projectName}}",
-        "paths": ["."]
+        "paths": [
+          "."
+        ]
       }
     },
     "outro": {
@@ -29,29 +37,62 @@
         {
           "title": "Give the wallet its own identity",
           "steps": [
-            { "label": "Install (pnpm manages this template)", "command": "pnpm install" },
             {
-              "label": "Name, reverse domain you own, extension key, icon, listing drafts",
+              "label": "Install (pnpm manages this template)",
+              "command": "pnpm install"
+            },
+            {
+              "label": "Name, reverse domain you own, app id, extension key, icons for every platform, listing drafts",
               "command": "pnpm wallet:identity --name \"My Wallet\" --rdns com.example.mywallet"
             },
-            { "text": "Same result as `npx create-clip-wallet`. Add --walletconnect-project-id <id> for your own WalletConnect project." }
+            {
+              "text": "Same result as `npx create-clip-wallet --scaffold-hbar`. Add --logo logo.png for your own icons and --walletconnect-project-id <id> for your own WalletConnect project."
+            }
           ]
         },
         {
           "title": "Build and try it on Hedera testnet",
           "steps": [
-            { "label": "Build the extension", "command": "pnpm extension:build" },
-            { "text": "Load packages/extension/.output/chrome-mv3 unpacked in chrome://extensions, then create a wallet in it." },
-            { "label": "Start the demo dapp (connect, sign, send, /debug)", "command": "pnpm next:dev" },
-            { "label": "Before every commit", "command": "pnpm harness" }
+            {
+              "label": "The browser extension",
+              "command": "pnpm dev:extension"
+            },
+            {
+              "text": "Or pnpm extension:build and load packages/extension/.output/chrome-mv3 unpacked in chrome://extensions; then create a wallet in it."
+            },
+            {
+              "label": "The desktop app (macOS, Windows, Linux)",
+              "command": "pnpm dev:desktop"
+            },
+            {
+              "label": "The phone app (iOS, Android): Metro for a development build",
+              "command": "pnpm --filter mobile start"
+            },
+            {
+              "label": "Start the demo dapp (connect, sign, send, /debug)",
+              "command": "pnpm next:dev"
+            },
+            {
+              "label": "Before every commit",
+              "command": "pnpm harness"
+            }
           ]
         },
         {
           "title": "Later",
           "steps": [
-            { "text": "Listing-submission drafts for your identity are in docs/listings (pnpm wallet:listings regenerates them)." },
-            { "text": "Mainnet stays off until packages/extension/MAINNET.md is done: pnpm wallet:mainnet-check shows what is left." },
-            { "text": "AGENTS.md has recipes for rebranding, networks, tokens, routing, security and plugins." }
+            {
+              "text": "Installers and store builds: pnpm desktop:dist, pnpm mobile:prebuild or EAS; accounts and signing in docs/signing.md."
+            },
+            {
+              "text": "Listing-submission drafts for your identity are in docs/listings (pnpm wallet:listings regenerates them)."
+            },
+            {
+              "text": "Mainnet stays off until MAINNET.md is done: pnpm wallet:mainnet-check shows what is left."
+            },
+            {
+              "text": "AGENTS.md has recipes for rebranding, platforms, networks, tokens, routing, security and plugins."
+            }
           ]
         }
       ]

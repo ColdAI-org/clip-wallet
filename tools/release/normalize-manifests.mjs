@@ -59,8 +59,9 @@ export const EXTRA = {
   "@clip-wallet/media-client": { description: "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy" },
   "@clip-wallet/kit-modules": { description: "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet" },
   "create-clip-wallet": {
-    description: "Scaffold your own wallet on the Clip Wallet kit: its own name, icon, extension id and rdns, testnet by default",
-    keywords: ["clip-wallet", "wallet", "scaffold-hbar", "hedera", "create", "template", "browser-extension"],
+    description:
+      "Scaffold your own wallet on the Clip Wallet kit, on every platform from one clip.config.ts: browser extension, desktop app (Electron) and phone app (Expo), with its own name, ids and icons; testnet by default",
+    keywords: ["clip-wallet", "wallet", "scaffold-hbar", "hedera", "create", "template", "browser-extension", "electron", "expo", "desktop", "mobile"],
   },
 };
 const FAMILY = {

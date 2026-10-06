@@ -14,8 +14,8 @@
  *
  * Node built-ins only. Network: registry.npmjs.org.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
@@ -27,20 +27,28 @@ function read(file) {
   return JSON.parse(readFileSync(join(root, file), "utf8"));
 }
 
-/** The kit packages this project runs, at the version it pins. */
+/** The kit packages this project runs (every platform's, and what the kits depend on), at the version it pins. */
 function packages() {
-  const ext = read("packages/extension/package.json");
-  const version = ext.dependencies?.["@clip-wallet/extension-kit"];
-  if (!version || !/^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(version)) {
-    throw new Error("packages/extension/package.json must pin @clip-wallet/extension-kit to one exact version.");
+  const files = ["package.json", ...readdirSync(join(root, "packages"), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => `packages/${d.name}/package.json`)];
+  /** @type {Map<string, string>} */
+  const pinned = new Map();
+  const kits = [];
+  for (const f of files.filter((x) => existsSync(join(root, x)))) {
+    const pkg = read(f);
+    for (const [name, range] of Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })) {
+      if (!/^(?:@clip-wallet\/|create-clip-wallet$)/.test(name)) continue;
+      if (!/^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(String(range))) throw new Error(`${f} must pin ${name} to one exact version (it has "${range}").`);
+      pinned.set(name, String(range));
+      if (/-kit$/.test(name)) kits.push(join(root, dirname(f), "node_modules", name, "package.json"));
+    }
   }
-  const names = new Set(["@clip-wallet/extension-kit", "@clip-wallet/config"]);
-  const kit = join(root, "packages/extension/node_modules/@clip-wallet/extension-kit/package.json");
-  if (existsSync(kit)) for (const d of Object.keys(JSON.parse(readFileSync(kit, "utf8")).dependencies ?? {})) if (d.startsWith("@clip-wallet/")) names.add(d);
-  const list = [...names].map((name) => ({ name, version }));
-  const cli = read("package.json").devDependencies?.["create-clip-wallet"];
-  if (cli) list.push({ name: "create-clip-wallet", version: cli });
-  return list;
+  const version = pinned.get("@clip-wallet/config") ?? [...pinned.values()][0];
+  if (!version) throw new Error("No @clip-wallet/* package is pinned in this project.");
+  for (const kit of kits) {
+    if (!existsSync(kit)) continue;
+    for (const d of Object.keys(JSON.parse(readFileSync(kit, "utf8")).dependencies ?? {})) if (d.startsWith("@clip-wallet/") && !pinned.has(d)) pinned.set(d, version);
+  }
+  return [...pinned].map(([name, v]) => ({ name, version: v }));
 }
 
 async function json(url) {

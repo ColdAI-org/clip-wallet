@@ -43,13 +43,13 @@ try {
   ).out;
   process.stdout.write(out.split("\n").slice(-40).join("\n"));
   const app = join(work, "app");
-  check(existsSync(join(app, "packages/extension/clip.config.ts")) && !existsSync(join(app, "template.json")), "project created; template.json consumed");
+  check(existsSync(join(app, "clip.config.ts")) && existsSync(join(app, "packages/desktop/electron.vite.config.ts")) && !existsSync(join(app, "template.json")), "project created (every platform); template.json consumed");
   check(JSON.parse(readFileSync(join(app, "package.json"), "utf8")).name === "app", "template.json rename map applied (package name = folder)");
   check(/pnpm wallet:identity/.test(out), "the outro comes from template.json (pnpm commands)");
 
-  step("The same wallet with create-clip-wallet (from its tarball)");
+  step("The same wallet with create-clip-wallet --scaffold-hbar (from its tarball)");
   const cli = installCli(join(work, "cli-install"), list);
-  run(process.execPath, [cli, join(work, "cli", "app"), "--name", "Fresh Scaffold", "--rdns", "com.example.freshscaffold", "--yes"], { cwd: work });
+  run(process.execPath, [cli, join(work, "cli", "app"), "--scaffold-hbar", "--name", "Fresh Scaffold", "--rdns", "com.example.freshscaffold", "--yes"], { cwd: work });
 
   step("Both projects install the packed kit");
   useLocalPacks(app, list);

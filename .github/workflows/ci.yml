@@ -129,7 +129,7 @@ jobs:
         run: pnpm -r --filter "./services/**" test
 
   kit:
-    name: kit e2e (create-clip-wallet and the Scaffold-HBAR template, from tarballs)
+    name: kit e2e (create-clip-wallet on every platform, and the Scaffold-HBAR template, from tarballs)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -146,7 +146,7 @@ jobs:
         run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
       - name: Git identity for the scaffolded projects' first commit
         run: git config --global user.name "kit e2e" && git config --global user.email "kit-e2e@users.noreply.github.com"
-      - name: create-clip-wallet from the packed tarballs
+      - name: create-clip-wallet from the packed tarballs (extension, desktop, mobile)
         run: pnpm kit:e2e
       - name: Scaffold-HBAR template (reuses the tarballs)
         run: pnpm kit:e2e:scaffold-hbar --no-pack

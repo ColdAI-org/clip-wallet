@@ -8,5 +8,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": [".wxt/wxt.d.ts", "src", "clip.config.ts", "wxt.config.ts"]
+  "include": [".wxt/wxt.d.ts", "src", "../../clip.config.ts", "wxt.config.ts"]
 }

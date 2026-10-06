@@ -80,6 +80,8 @@ const DEV_ORIGIN = DEV_URL ? new URL(DEV_URL).origin : undefined;
 if (!app.isPackaged && process.env.CLIP_DESKTOP_USER_DATA) {
   app.setPath("userData", process.env.CLIP_DESKTOP_USER_DATA === "temp" ? mkdtempSync(join(tmpdir(), "clip-desktop-")) : process.env.CLIP_DESKTOP_USER_DATA);
 }
+// The wallet's name for menus, dialogs and the data folder (packaged builds already carry it as productName).
+if (app.getName() !== DESKTOP.config.name) app.setName(DESKTOP.config.name);
 app.setAppUserModelId(DESKTOP.appId);
 registerAppScheme();
 // Never offer Chromium's own password manager / autofill for anything here.

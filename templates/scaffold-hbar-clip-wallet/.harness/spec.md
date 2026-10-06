@@ -1,8 +1,8 @@
 # Product spec
 
-This project is **a non-custodial browser wallet with its own identity**, built on the Clip Wallet kit, and a
-Scaffold-HBAR dapp that shows it working on Hedera testnet. Pre-release: **test networks only** until the owner
-completes `packages/extension/MAINNET.md`.
+This project is **a non-custodial wallet with its own identity** on every platform it ships (browser extension, desktop
+app, phone app; one `clip.config.ts`), built on the Clip Wallet kit, and a Scaffold-HBAR dapp that shows it working on
+Hedera testnet. Pre-release: **test networks only** until the owner completes `MAINNET.md`.
 
 ## Principles (from the kit)
 

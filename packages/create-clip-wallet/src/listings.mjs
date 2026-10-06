@@ -22,12 +22,12 @@ const has = (id, family) => id.networks.some((n) => n === family || n.startsWith
 
 const PREREQS = (/** @type {ListingIdentity} */ id) => `## Before you submit anything
 - [ ] The extension is published on the Chrome Web Store under id \`${id.extensionId}\` (fixed by \`extension.key\` in
-      packages/extension/wallet.identity.json; keep packages/extension/.keys/extension.pem safe and out of git).
+      wallet.identity.json; keep .keys/extension.pem safe and out of git).
 - [ ] \`${site(id)}\` is live and says who runs ${id.name}, how recovery works (the phrase never leaves the device) and
       how to get support. ${id.homepage ? "" : "Set `homepage` in wallet.identity.json: this placeholder is derived from the rdns."}
 - [ ] You own the domain behind \`${id.rdns}\`.
 - [ ] Icons are hosted at stable https URLs you control (PNG, square).
-- [ ] Registries list production wallets: finish packages/extension/MAINNET.md first.`;
+- [ ] Registries list production wallets: finish MAINNET.md first.`;
 
 /** @param {ListingIdentity} id */
 function eip6963(id) {
@@ -43,7 +43,7 @@ ${id.name} announces, and that nobody else announces the same rdns.
 | --- | --- | --- |
 | \`info.name\` | ${id.name} | wallet.identity.json \`name\` |
 | \`info.rdns\` | \`${id.rdns}\` | wallet.identity.json \`rdns\` (a reverse domain you own) |
-| \`info.icon\` | data:image/svg+xml;base64,… | packages/extension/icon.svg, inlined at build time |
+| \`info.icon\` | data:image/svg+xml;base64,… | icon.svg (next to clip.config.ts), inlined at build time |
 | \`info.uuid\` | a fresh UUIDv4 per page load | 1Mask |
 | Chrome extension id | \`${id.extensionId}\` | wallet.identity.json \`extension.key\` |
 
@@ -96,7 +96,7 @@ ${DRAFT(id.name)}
 
 Wallets are listed in the WalletConnect Explorer (the wallet list AppKit and WalletConnect-powered dapps show) through
 the Reown dashboard: cloud.reown.com, your wallet project, "Get listed". Reown reviews the submission and tests the
-wallet. ${id.name}'s WalletConnect side uses its own project id (CLIP_WALLETCONNECT_PROJECT_ID in packages/extension/.env,
+wallet. ${id.name}'s WalletConnect side uses its own project id (CLIP_WALLETCONNECT_PROJECT_ID in .env,
 never committed); the Explorer listing belongs to that same project.
 
 ## Draft entry
