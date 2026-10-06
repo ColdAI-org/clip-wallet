@@ -3,6 +3,7 @@
 > Non-custodial multi-chain wallet for every CLPR network (14 families), and a kit for building your own: @clip-wallet/* packages, @clip-wallet/extension-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, MIT.
 
 Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract), packages/config/src/index.ts (clip.config.ts schema).
+Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Markdown; every code sample is a typechecked file in apps/docs/src/snippets). Index of the pages agents need most: "## Docs" below.
 
 ## Commands
 - pnpm install && pnpm typecheck && pnpm test && pnpm harness   (all must pass)
@@ -58,6 +59,20 @@ Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/pr
 - services/backup, services/media-proxy, services/link-relay: Cloudflare Workers. contracts/handles: ClipHandles (Foundry).
 - templates/scaffold-hbar-clip-wallet: the Scaffold-HBAR template (ColdAI-org/scaffold-hbar-clip-wallet): packages/extension (wallet) + packages/nextjs (dapp, /debug), AGENTS.md, .harness, llms.txt, CI and fresh-scaffold workflows.
 - tools/harness/check.mjs: the rules above as checks (file:line, plain words). tools/release: build, manifests, pack-all, template sync. tools/kit: e2e.
+
+## Docs (https://coldai.org/clip/docs/; Markdown sources in apps/docs/src/<path>.md)
+- guide/quickstart: run the extension, desktop and phone apps locally. guide/rules: the harness rules and who may import the vault.
+- architecture/signing-flow: request → decode → sanitize → approval → single-use signing, with the code for each step. architecture/networks-invisible: asset keys, merged balances, when the network shows.
+- architecture/{vault,engine,extension-kit,onemask,chain-modules,route-settle,features,security,link,plugins,social-names-hardware,services}: one page per part.
+- dapps/: per-ecosystem guides (EIP-1193/6963 with wagmi, RainbowKit, AppKit; Wallet Standard for Solana, Sui, Aptos, Bitcoin; CIP-30; injectWeb3; Starknet; TON Connect; NEAR, Stellar, Algorand kit modules; Tezos Beacon; Hedera; WalletConnect), each linked to the dapp and picker matrix results.
+- connect/: Clip Connect (@clip-wallet/connect): connect(), request(), pay(), canPay(), balances(), React hooks, wagmi connector, Solana adapter, EIP-5792 wallet calls, ERC-7682 auxiliary funds, the compatibility promise.
+- kit/: create-clip-wallet, the Scaffold-HBAR template, clip.config.ts (networks, mainnet opt-in, branding, partner keys, services), build and store packaging, working with agents.
+- extend/chain-module (a complete worked ChainModule), extend/networks-and-tokens, extend/plugins (SES sandbox, manifest, permissions, insights API), extend/languages (ICU, glossary, bidi isolates), extend/threat-provider.
+- services/: backup, media-proxy, link-relay: APIs, self-hosting on Cloudflare with wrangler, secret names.
+- security/: threat model, vault cryptography, approval-bound signing, sanitization, scam checks, hardware wallets, disclosure.
+- testing/: unit, harness, extension e2e, dapp and picker matrices, funding a test wallet, reproducible builds.
+- reference/config (clip.config.ts schema), reference/errors (every ClipError code), reference/warnings (every Warning code), reference/dapp-errors (EIP-1193 and EIP-5792 codes), reference/cli, reference/api/<package>[/<subpath>] (TypeDoc for every published export). All generated from the source by apps/docs/scripts/generate.mjs.
+- Build and check the docs: pnpm --filter docs build (generate, VitePress, link and safety check); pnpm --filter docs test (snippets typecheck and run, README code blocks typecheck). Base path: DOCS_BASE (default /clip/docs/).
 
 ## Optional
 - .harness/README.md: every harness rule and what to do when one is wrong
