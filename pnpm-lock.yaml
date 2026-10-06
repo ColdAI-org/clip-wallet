@@ -1666,18 +1666,33 @@ importers:
       '@clip-wallet/chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
+      '@clip-wallet/chains-cosmos':
+        specifier: workspace:*
+        version: link:../chains-cosmos
       '@clip-wallet/chains-evm':
         specifier: workspace:*
         version: link:../chains-evm
+      '@clip-wallet/chains-fuel':
+        specifier: workspace:*
+        version: link:../chains-fuel
       '@clip-wallet/chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
+      '@clip-wallet/chains-icp':
+        specifier: workspace:*
+        version: link:../chains-icp
+      '@clip-wallet/chains-multiversx':
+        specifier: workspace:*
+        version: link:../chains-multiversx
       '@clip-wallet/chains-near':
         specifier: workspace:*
         version: link:../chains-near
       '@clip-wallet/chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
+      '@clip-wallet/chains-stacks':
+        specifier: workspace:*
+        version: link:../chains-stacks
       '@clip-wallet/chains-starknet':
         specifier: workspace:*
         version: link:../chains-starknet
@@ -1696,6 +1711,9 @@ importers:
       '@clip-wallet/chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
+      '@clip-wallet/chains-tron':
+        specifier: workspace:*
+        version: link:../chains-tron
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../config
@@ -1763,18 +1781,33 @@ importers:
       '@clip-wallet/chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
+      '@clip-wallet/chains-cosmos':
+        specifier: workspace:*
+        version: link:../chains-cosmos
       '@clip-wallet/chains-evm':
         specifier: workspace:*
         version: link:../chains-evm
+      '@clip-wallet/chains-fuel':
+        specifier: workspace:*
+        version: link:../chains-fuel
       '@clip-wallet/chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
+      '@clip-wallet/chains-icp':
+        specifier: workspace:*
+        version: link:../chains-icp
+      '@clip-wallet/chains-multiversx':
+        specifier: workspace:*
+        version: link:../chains-multiversx
       '@clip-wallet/chains-near':
         specifier: workspace:*
         version: link:../chains-near
       '@clip-wallet/chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
+      '@clip-wallet/chains-stacks':
+        specifier: workspace:*
+        version: link:../chains-stacks
       '@clip-wallet/chains-starknet':
         specifier: workspace:*
         version: link:../chains-starknet
@@ -1793,6 +1826,9 @@ importers:
       '@clip-wallet/chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
+      '@clip-wallet/chains-tron':
+        specifier: workspace:*
+        version: link:../chains-tron
       '@clip-wallet/config':
         specifier: workspace:*
         version: link:../config

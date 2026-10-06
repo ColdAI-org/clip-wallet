@@ -19,7 +19,7 @@ export default defineConfig({
   icon: "./assets/icon.svg",
   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },
   // All 14 families, testnets only (same as the extension).
-  networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand"],
+  networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand", "cosmos", "provenance", "thorchain", "initia", "tron", "xrpl", "antelope", "multiversx", "icp", "stacks", "fuel", "bitcoincash"],
   passkeys: { enabled: true },
   walletConnect: {},
   services: MAINNET ? {} : TESTNET_SERVICES,

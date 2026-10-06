@@ -16,6 +16,12 @@ import { createSuiModule } from "@clip-wallet/chains-sui";
 import { createAptosModule } from "@clip-wallet/chains-aptos";
 import { createCardanoModule } from "@clip-wallet/chains-cardano";
 import { createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { createCosmosModule } from "@clip-wallet/chains-cosmos";
+import { createTronModule } from "@clip-wallet/chains-tron";
+import { createMultiversXModule } from "@clip-wallet/chains-multiversx";
+import { createIcpModule } from "@clip-wallet/chains-icp";
+import { createStacksModule } from "@clip-wallet/chains-stacks";
+import { createFuelModule } from "@clip-wallet/chains-fuel";
 import { createStarknetModule } from "@clip-wallet/chains-starknet";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { createNearModule } from "@clip-wallet/chains-near";
@@ -71,6 +77,15 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     stellar: createStellarModule,
     tezos: createTezosModule,
     algorand: createAlgorandModule,
+    cosmos: () => createCosmosModule({ family: "cosmos" }),
+    provenance: () => createCosmosModule({ family: "provenance" }),
+    thorchain: () => createCosmosModule({ family: "thorchain" }),
+    initia: () => createCosmosModule({ family: "initia" }),
+    tron: createTronModule,
+    multiversx: createMultiversXModule,
+    icp: createIcpModule,
+    stacks: createStacksModule,
+    fuel: createFuelModule,
   };
   // One instance per enabled family for the engine's lifetime (modules keep prepare→finalize state).
   const chains: Partial<Record<Family, ChainModule>> = {};

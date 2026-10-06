@@ -4,7 +4,7 @@
  *   dependency         real (default build)                                  fixture mode (CLIP_MOCKS=1)
  *   -----------------  ----------------------------------------------------  ---------------------------
  *   vault              @clip-wallet/vault ClipVault                          same (always real)
- *   chain modules      @clip-wallet/chains-* (all 14 families)               mocks/mock-chains.ts
+ *   chain modules      @clip-wallet/chains-* (all 26 families)               mocks/mock-chains.ts
  *   networks/assets    chain packages via shared/catalog.ts + clip.config    mocks/networks.ts
  *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        same router over the fixture networks
  *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
@@ -344,6 +344,16 @@ export function createDependencies(opts: WiringOptions): Dependencies {
     substrate: lazyChain("substrate", "sr25519", () => import("@clip-wallet/chains-substrate").then((m) => m.createSubstrateModule())),
     starknet,
     ton,
+    // networks87: each loads on first use like the Phase 2 families.
+    cosmos: lazyChain("cosmos", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "cosmos" }))),
+    provenance: lazyChain("provenance", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "provenance" }))),
+    thorchain: lazyChain("thorchain", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "thorchain" }))),
+    initia: lazyChain("initia", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "initia" }))),
+    tron: lazyChain("tron", "secp256k1", () => import("@clip-wallet/chains-tron").then((m) => m.createTronModule())),
+    multiversx: lazyChain("multiversx", "ed25519", () => import("@clip-wallet/chains-multiversx").then((m) => m.createMultiversXModule())),
+    icp: lazyChain("icp", "secp256k1", () => import("@clip-wallet/chains-icp").then((m) => m.createIcpModule())),
+    stacks: lazyChain("stacks", "secp256k1", () => import("@clip-wallet/chains-stacks").then((m) => m.createStacksModule())),
+    fuel: lazyChain("fuel", "secp256k1", () => import("@clip-wallet/chains-fuel").then((m) => m.createFuelModule())),
   };
   const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);
   const eager = { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() };
