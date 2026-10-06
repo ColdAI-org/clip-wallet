@@ -5,7 +5,9 @@ against other people's wallets or funds.
 
 - **Preferred:** GitHub private vulnerability reporting on the repository: the **Security** tab, then **Report a
   vulnerability**.
-- The full policy, including the security contact, is in [`SECURITY.md`](repo:SECURITY.md).
+- Or e-mail [shayan@coldai.org](mailto:shayan@coldai.org). To encrypt your report, ask for the current key in a first,
+  detail-free message.
+- The full policy is in [`SECURITY.md`](repo:SECURITY.md).
 
 Include the affected component, the commit or release, the impact you expect, and a proof of concept; a failing test
 is ideal. Use test networks and the public BIP-39 test vectors only: never send a real recovery phrase or private key.
