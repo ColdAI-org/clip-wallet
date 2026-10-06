@@ -200,7 +200,8 @@ describe("Ledger errors in plain words", () => {
 
   it("a different Ledger (or passphrase) than the one the account came from", async () => {
     const { signer } = replay("evm-sign-tx");
-    const other = { ...evm[0]!, publicKey: evm[1]!.publicKey };
+    // A record from another seed: account 0's path, but another key (and that key's address, audit HW-01).
+    const other = { ...evm[0]!, publicKey: evm[1]!.publicKey, address: evm[1]!.address };
     const tx = I.evmTx();
     const q = I.payload(other.id, "ecdsa-secp256k1", tx.digest, { format: "evm-tx", bytes: tx.raw });
     const k = await keyringWith(signer, [other]);

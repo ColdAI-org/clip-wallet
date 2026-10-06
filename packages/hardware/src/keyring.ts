@@ -17,6 +17,7 @@ import type { HardwareAccount, HardwareKind, HardwareSigner } from "./types.js";
 import { isHardwareAccountId, parseHardwareAccountId } from "./types.js";
 import { HARDWARE_CURVE } from "./paths.js";
 import { verifiedSignature } from "./verify.js";
+import { hardwareAddress, sameAddress } from "./address.js";
 
 /** Same shape as the vault's VaultStorage (chrome.storage.local in the extension). Public data only. */
 export interface HardwareStorage {
@@ -62,6 +63,22 @@ function consistentAccount(a: HardwareAccount): boolean {
   );
 }
 
+/**
+ * Audit HW-01: the record's address must be the one its public key gives (see address.ts), and a Hedera account id
+ * is never taken from a record. Returns the record with the derived (canonical) address, or undefined.
+ */
+function withDerivedAddress(a: HardwareAccount): HardwareAccount | undefined {
+  let derived: string | undefined;
+  try {
+    derived = hardwareAddress(a);
+  } catch {
+    return undefined;
+  }
+  if (derived === undefined || typeof a.address !== "string" || !sameAddress(a.family, a.address, derived)) return undefined;
+  if (a.family === "hedera" && a.hederaAccountId !== undefined) return undefined;
+  return { ...a, address: derived };
+}
+
 interface Stored {
   v: 1;
   accounts: HardwareAccount[];
@@ -104,10 +121,11 @@ export class HardwareKeyring {
     const rec = await this.load();
     for (const a of accounts) {
       if (!this.owns(a.id)) throw new Error(`not a hardware account id: ${a.id}`);
-      if (!consistentAccount(a)) throw HardwareErrors.unknownAccount();
+      const checked = consistentAccount(a) ? withDerivedAddress(a) : undefined;
+      if (!checked) throw HardwareErrors.unknownAccount();
       const i = rec.accounts.findIndex((x) => x.id === a.id);
-      if (i >= 0) rec.accounts[i] = { ...a, label: rec.accounts[i]!.label ?? a.label, hederaAccountId: rec.accounts[i]!.hederaAccountId ?? a.hederaAccountId };
-      else rec.accounts.push(a);
+      if (i >= 0) rec.accounts[i] = { ...checked, label: rec.accounts[i]!.label ?? checked.label, hederaAccountId: rec.accounts[i]!.hederaAccountId };
+      else rec.accounts.push(checked);
     }
     await this.save(rec);
   }
@@ -116,7 +134,9 @@ export class HardwareKeyring {
     const rec = await this.load();
     const a = rec.accounts.find((x) => x.id === id);
     if (!a) throw HardwareErrors.unknownAccount();
-    Object.assign(a, patch);
+    // The address stays the one the key gives (HW-01); a host may set the Hedera account id it looked up itself.
+    if (patch.address !== undefined && !withDerivedAddress({ ...a, address: patch.address, hederaAccountId: undefined })) throw HardwareErrors.unknownAccount();
+    Object.assign(a, patch.address !== undefined ? { ...patch, address: a.address } : patch);
     await this.save(rec);
   }
 
