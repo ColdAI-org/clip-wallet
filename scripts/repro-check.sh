@@ -47,6 +47,8 @@ run() {
       pnpm install --frozen-lockfile --reporter=silent --filter \"@clip-wallet/extension...\"
       pnpm --filter @clip-wallet/extension package >/out/package.log 2>&1 || { tail -50 /out/package.log; exit 1; }
       cp apps/extension/release/SHA256SUMS apps/extension/release/TREE-DIGESTS /out/
+      # The container runs as root; with umask 077 the host user couldn't read what it wrote.
+      chmod a+r /out/*
     "
   echo "run $n ($tz, $lang, umask $mask):"
   sed 's/^/  /' "$WORK/out$n/SHA256SUMS"
