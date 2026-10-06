@@ -24,6 +24,34 @@ crypto end to end in `packages/vault/test/link.test.ts` (sync KAT on the public 
 wallet transfer, MITM), `services/backup/test/sync.test.ts` (D1, offline-signed fixtures) and
 `services/link-relay/test/relay.test.ts` (Durable Object in workerd, a pairing through it).
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/link
+```
+
+## Example
+
+```ts
+import { isLinkRequest, type LinkService } from "@clip-wallet/link";
+
+// In the wallet's background: the screens' linked-device messages go to the LinkService.
+export function routeLink(link: LinkService, message: { type: string }) {
+  return isLinkRequest(message) ? link.handle(message) : undefined;
+}
+```
+
+Clip Desktop and native messaging: `@clip-wallet/link/node` (host program, desktop socket server) and
+`@clip-wallet/link/native` (host manifests and install paths per browser and OS).
+
+## Documentation
+
+- [Linked devices](https://coldai.org/clip/docs/architecture/link.html)
+- [Link relay](https://coldai.org/clip/docs/services/link-relay.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/link.html)
+
 ## Threat model
 
 ### Assets
@@ -131,3 +159,13 @@ reconnecting role replaces its old socket and its stale queued frames are droppe
 - Durable Objects WebSocket hibernation: https://developers.cloudflare.com/durable-objects/best-practices/websockets/
 - X25519 (RFC 7748), Ed25519 (RFC 8032), HKDF (RFC 5869), XChaCha20-Poly1305 (draft-irtf-cfrg-xchacha); implementations: @noble/curves, @noble/hashes, @noble/ciphers.
 - SAS / commitment design follows Bluetooth LE Secure Connections numeric comparison and ZRTP (RFC 6189 §4.4.1.1 hash commitment).
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

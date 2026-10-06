@@ -27,6 +27,37 @@ itself can still use `HardwareKeyring.sign(payload, ctx)` with `signers`, which 
 Whatever the page sends back, only a signature over the approved bytes by the account's key is accepted, once:
 the page names the job it answers, never the payload.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/hardware
+```
+
+## Example
+
+The background imports only `@clip-wallet/hardware/core` (no device SDKs); the page that drives the device uses the root
+export or `@clip-wallet/hardware/qr`.
+
+```ts
+import { HardwareKeyring } from "@clip-wallet/hardware/core";
+import type { Signature, SignablePayload } from "@clip-wallet/core";
+
+// The background keeps its own copy of what was approved; a signature from the page is accepted only if it verifies
+// over those bytes with the account's key, once.
+export async function accept(keyring: HardwareKeyring, approvalId: string, payload: SignablePayload, fromDevice: Signature) {
+  keyring.registerApproval(approvalId, [payload], 10 * 60_000);
+  return keyring.acceptSignature(payload, fromDevice);
+}
+```
+
+## Documentation
+
+- [Hardware wallets](https://coldai.org/clip/docs/security/hardware.html)
+- [Social, names and hardware](https://coldai.org/clip/docs/architecture/social-names-hardware.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/hardware.html)
+
 ## API
 
 | export | what |
@@ -164,3 +195,13 @@ Ledger Live layouts appear only in Advanced mode ("Use Ledger Live's accounts").
 - Bitcoin messages on Keystone (`btc-sign-request`), Solana messages on Ledger (app limitation).
 - Hedera on Keystone (no Keystone support). Hedera on Ledger needs chains-hedera to accept Ed25519 accounts.
 - Real-device runs: everything is tested against Speculos recordings and Keystone's vectors only.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

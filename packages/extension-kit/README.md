@@ -4,11 +4,23 @@ The Clip Wallet browser extension as a library, for [WXT](https://wxt.dev). A wa
 (`clip.config.ts`, icon), `wxt.config.ts` and one-line entrypoints; the background (vault, approvals, security
 checks), the pages, 1Mask for all 14 network families and the build wiring come from here, versioned and signed.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/extension-kit @clip-wallet/config wxt @wxt-dev/module-react react react-dom
+```
+
+## Example
+
 ```ts
 // wxt.config.ts
 import { defineConfig } from "wxt";
+import { defineConfig as defineClipConfig } from "@clip-wallet/config";
 import { clipWallet } from "@clip-wallet/extension-kit/wxt";
-import clipConfig from "./clip.config";
+
+const clipConfig = defineClipConfig({ name: "Acme Wallet", rdns: "com.acme.wallet", networks: ["evm:*", "hedera", "solana"] });
 
 export default defineConfig(clipWallet({ config: clipConfig }));
 ```
@@ -17,7 +29,8 @@ export default defineConfig(clipWallet({ config: clipConfig }));
 // src/entrypoints/background.ts
 import { defineBackground } from "wxt/utils/define-background";
 import { startBackground } from "@clip-wallet/extension-kit/background";
-export default defineBackground(() => startBackground());
+
+export default defineBackground({ type: { firefox: "module" }, main: () => startBackground() });
 ```
 
 | Entrypoint | Import |
@@ -27,8 +40,8 @@ export default defineBackground(() => startBackground());
 | inpage (MAIN) | `installInpage()`, `CONTENT_MATCHES` from `/inpage` |
 | popup, tab | `mountWallet("popup" \| "tab")` from `/pages` |
 | approval | `mountApprovalWindow()` from `/pages` |
-| plugin-host (offscreen) | `startPluginHost()` from `/plugin-host` |
-| plugin-sandbox | `import "@clip-wallet/extension-kit/plugin-sandbox"` |
+| plugin host (offscreen) | `startPluginHost()` from `/plugin-host` |
+| plugin sandbox | `import "@clip-wallet/extension-kit/plugin-sandbox"` |
 
 `npx create-clip-wallet my-wallet` (or the Scaffold-HBAR template) writes all of this for you.
 
@@ -48,10 +61,19 @@ export default defineBackground(() => startBackground());
 
 Peer dependencies: `wxt`, `@wxt-dev/module-react`, `react`, `react-dom`.
 
+## Documentation
+
+- [Extension kit](https://coldai.org/clip/docs/architecture/extension-kit.html)
+- [Launch your own wallet](https://coldai.org/clip/docs/kit/)
+- [Build and ship](https://coldai.org/clip/docs/kit/build-and-ship.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/extension-kit.html)
+
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
 tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
-packages share one version; pin it exactly. Pre-release: test networks by default.
+packages share one version; pin it exactly.
 
-Apache-2.0 licence: see [LICENSE](LICENSE) and [NOTICE](NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

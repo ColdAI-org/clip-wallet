@@ -7,6 +7,37 @@ Built on `@aptos-labs/ts-sdk` 7.3 for BCS types, `generateSigningMessageForTrans
 ABI-based payload builder. All network access goes through the context's `fetch` (fullnode REST + indexer GraphQL); the SDK's own client is
 not used. It never uses the SDK's `Account`/private-key classes.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-aptos @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createAptosModule, APTOS_TESTNET } from "@clip-wallet/chains-aptos";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createAptosModule();
+console.log(module.family, module.derivationPath(0)); // "aptos" "m/44'/637'/0'/0'/0'"
+
+const network = APTOS_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Aptos guide for dapps](https://coldai.org/clip/docs/dapps/aptos.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-aptos.html)
+
 ## Networks
 
 | network | NetworkId (CAIP-2) | AIP-62 chain | chain id | fullnode / indexer |
@@ -102,3 +133,13 @@ a store observed on testnet. `LIVE=1 pnpm test` adds read-only testnet/devnet ch
 - No WalletConnect Aptos methods: Reown has no published Aptos namespace spec.
 - Script payloads are blind. Argument values of arbitrary entry functions aren't decoded (that would need an ABI fetch per decode).
 - `aptos:network` reports chain id 0 for devnet.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

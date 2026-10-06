@@ -1,26 +1,51 @@
 # @clip-wallet/core
 
 The shared contract between Clip Wallet packages: networks and assets, accounts, the `Vault` and `ChainModule`
-interfaces, `DappRequest` → `DecodedRequest`, `SignablePayload`, and `ClipError` (a plain-words `userMessage` plus a
-stable `code`). Types and a few constants only; no dependencies.
+interfaces, `DappRequest` → `DecodedRequest`, `SignablePayload`, warning and error codes, and `ClipError` (a plain-words
+`userMessage` plus a stable `code`). Types and a few helpers; no runtime dependencies.
 
-```ts
-import type { ChainModule, DecodedRequest, Network } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+Everything else in the kit agrees on these types. Changes are additive only: a field is never renamed or removed in a
+minor version.
+
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/core
 ```
 
-The rules every package follows (enforced by `pnpm harness` in the monorepo and in kit-built wallets):
+## Example
 
-- only `@clip-wallet/vault` touches recovery phrases and private keys;
-- chain modules build and decode, hand the vault a `SignablePayload`, and get signatures back;
-- every dapp request is decoded into a `DecodedRequest` before anyone approves it (undecodable = blind, off by default).
+```ts
+import { ClipError, FAMILIES, displaySafe, errorMsg, type DecodedRequest } from "@clip-wallet/core";
 
-Changes are additive only: a field is never renamed or removed in a minor version.
+console.log(FAMILIES.length); // 14 network families
+
+// Errors carry plain words for people and a stable code for programs.
+const error = new ClipError("You don't have enough SOL to pay the network fee.", "solana/insufficient-funds");
+console.log(error.userMessage, error.code, errorMsg(error)?.id); // the translatable message, when there is one
+
+// What an approval screen shows, with invisible and direction-changing characters removed.
+export function titleOf(decoded: DecodedRequest): string {
+  return decoded.blind ? "This request can't be read" : displaySafe(decoded.title);
+}
+```
+
+## Documentation
+
+- [Architecture overview](https://coldai.org/clip/docs/architecture/)
+- [The signing flow](https://coldai.org/clip/docs/architecture/signing-flow.html)
+- [Error codes](https://coldai.org/clip/docs/reference/errors.html)
+- [Warning codes](https://coldai.org/clip/docs/reference/warnings.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/core.html)
 
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
 tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
-packages share one version; pin it exactly. Pre-release: test networks by default.
+packages share one version; pin it exactly.
 
-Apache-2.0 licence: see [LICENSE](LICENSE) and [NOTICE](NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

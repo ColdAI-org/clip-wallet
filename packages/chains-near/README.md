@@ -9,6 +9,37 @@ Borsh is written by hand (`src/borsh.ts`), so there are no `near-api-js`, `@near
 encoder is tested byte for byte against near-api-js' published vector and against transactions encoded
 independently with `@near-js/transactions` 2.5.1.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-near @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createNearModule, NEAR_TESTNET } from "@clip-wallet/chains-near";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createNearModule();
+console.log(module.family, module.derivationPath(0)); // "near" "m/44'/397'/0'"
+
+const network = NEAR_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The NEAR guide for dapps](https://coldai.org/clip/docs/dapps/near.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-near.html)
+
 ## Networks
 
 | network | NetworkId | RPC (first is used) | FastNEAR API | explorer |
@@ -234,3 +265,13 @@ Helpers for wallet-built swaps on Ref Finance (now branded Rhea), used by `@clip
 - near-seed-phrase derivation path: https://www.npmjs.com/package/near-seed-phrase
 - Circle USDC addresses: https://developers.circle.com/stablecoins/usdc-contract-addresses
 - ChainAgnostic namespaces (no `near` entry): https://github.com/ChainAgnostic/namespaces
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

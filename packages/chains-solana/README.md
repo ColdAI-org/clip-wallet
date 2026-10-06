@@ -8,6 +8,37 @@ maintained SDK, and the Wallet Standard features only exchange raw bytes, so the
 `@solana/web3.js`. Token instructions are identified with `@solana-program/token` (the kit-native successor of
 `@solana/spl-token`). Token-2022 shares the base instruction layouts.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-solana @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createSolanaModule, SOLANA_DEVNET } from "@clip-wallet/chains-solana";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createSolanaModule();
+console.log(module.family, module.derivationPath(0)); // "solana" "m/44'/501'/0'/0'"
+
+const network = SOLANA_DEVNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Solana guide for dapps](https://coldai.org/clip/docs/dapps/solana.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-solana.html)
+
 ## Networks
 
 | cluster | NetworkId (CAIP-2, WalletConnect) | Wallet Standard chain |
@@ -119,3 +150,13 @@ devnet checks (balances, and a simulation of an unfunded payer).
   what moves). Jupiter has no devnet deployment, so its decoding is only exercised by fixtures.
 - Token-2022 extensions (transfer fees, hooks, permanent delegate) aren't flagged yet.
 - `solana:signAndSendAllTransactions` and `solana:signOffchainMessage` aren't handled (1Mask doesn't expose them).
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

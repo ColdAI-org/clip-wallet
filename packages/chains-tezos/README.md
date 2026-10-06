@@ -9,6 +9,37 @@ Oct 2026). Five forge results (XTZ send, reveal + send, FA2 transfer, delegation
 against the node's `POST …/helpers/forge/operations` on shadownet and are kept as test vectors. No Taquito signer
 packages are used. Base58check, blake2b and address maths come from `@scure/base` / `@noble/hashes`.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-tezos @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createTezosModule, TEZOS_SHADOWNET } from "@clip-wallet/chains-tezos";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createTezosModule();
+console.log(module.family, module.derivationPath(0)); // "tezos" "m/44'/1729'/0'/0'"
+
+const network = TEZOS_SHADOWNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Tezos guide for dapps](https://coldai.org/clip/docs/dapps/tezos.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-tezos.html)
+
 ## Accounts
 
 - Curve ed25519 (tz1). `derivationPath(i)` = `m/44'/1729'/i'/0'` (SLIP-44 coin type 1729, all hardened). Temple
@@ -223,3 +254,13 @@ Options: `simulate` (default true), `ipfsGateway`, `protocol` (a `ProtocolsHash`
 - TZIP-7 (FA1.2), TZIP-12 (FA2), TZIP-21 (metadata): https://gitlab.com/tezos/tzip
 - Circle USDC addresses (no Tezos L1): https://developers.circle.com/stablecoins/usdc-contract-addresses
 - Temple derivation path: https://github.com/madfish-solutions/templewallet-extension/blob/development/src/lib/temple/helpers.ts
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

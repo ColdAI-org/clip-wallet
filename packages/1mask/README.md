@@ -1,57 +1,66 @@
 # @clip-wallet/1mask
 
-1Mask is Clip Wallet's dapp-connector layer. It makes one wallet look native to every dapp by
-answering each network family's own wallet standard, plus WalletConnect.
+1Mask is Clip Wallet's dapp-connector layer. It makes one wallet look native to every dapp by answering each network
+family's own wallet standard (EIP-1193 + EIP-6963, the Wallet Standard, AIP-62, CIP-30, `injectedWeb3`, get-starknet,
+TON Connect, NEAR, SEP-43, ARC-1, Beacon), plus WalletConnect, all announced under the wallet's own identity.
 
-1Mask never touches keys and never imports `@clip-wallet/vault` or chain modules. It turns dapp
-calls into `DappRequest`s (from `@clip-wallet/core`) and sends them to the wallet background. The
-background decodes them, asks the user, signs and replies.
+1Mask never touches keys and never imports `@clip-wallet/vault` or chain modules. It turns dapp calls into
+`DappRequest`s (from `@clip-wallet/core`) and sends them to the wallet background. The background decodes them, asks
+the person, signs and replies.
 
-```
+```text
 page (MAIN world)          content script (ISOLATED)         extension background
 @clip-wallet/1mask/inpage ─postMessage─► /content ─runtime port─► /background router ─► handle(DappRequest)
                                                                                  ▲
 WalletConnect relay ─────────────────────────────────► /walletconnect ──────────┘ handle(DappRequest, ctx)
 ```
 
-## Entry points
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
-| Import | Runs in | What it does |
-| --- | --- | --- |
-| `@clip-wallet/1mask/inpage` | page, MAIN world | `installOneMask(config)`: sets up the EIP-1193 provider with EIP-6963 announce, the Solana and Bitcoin Wallet Standard wallets, and the postMessage transport. |
-| `@clip-wallet/1mask/content` | content script | `createContentBridge({ channel, connect? })`. Checks every message (source === window, channel, zod schema, size cap), attaches **its own** `location.origin`, and forwards over a `RuntimePort`. |
-| `@clip-wallet/1mask/background` | service worker | `createOneMaskRouter({ networks, handle, permissions, accountsFor, ... })`. Covers per-origin per-family permissions, method allowlists, the per-site network, request ids, timeouts, rate limits and event fan-out. |
-| `@clip-wallet/1mask/walletconnect` | background / popup | `createWalletConnectWallet({ projectId, metadata, networks, addressesFor, approveProposal, handle })`, built on Reown WalletKit. |
-| `@clip-wallet/1mask` | anywhere | Shared types: errors and codes, identity and config, network helpers, protocol constants. |
+## Install
 
-### Wiring (extension)
-
-```ts
-// inpage.ts (MAIN world)
-installOneMask({ networks: PUBLIC_REGISTRY, channel: BUILD_CHANNEL, identity: { name, icon, rdns } });
-
-// content.ts (ISOLATED world)
-createContentBridge({ channel: BUILD_CHANNEL });
-
-// background.ts
-const router = createOneMaskRouter({
-  networks: REGISTRY,
-  permissions: chromeStoragePermissionStore,        // implements PermissionStore
-  accountsFor: (origin, family) => sitesAccounts(origin, family),
-  handle: (req) => approvals.decodeAskSignReply(req), // chain module decode → UI → vault → finalize
-  isUnlocked: () => vault.status().then((s) => s === "unlocked"),
-});
-chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === PORT_NAME) router.attachPort(port, { senderOrigin: port.sender?.origin });
-});
+```sh
+npm i @clip-wallet/1mask @clip-wallet/core
 ```
 
-When `senderOrigin` is given, the router drops any request whose content-script origin differs
-from the browser-reported sender origin.
+## Example
 
-Identity comes from config. The defaults are name `"Clip Wallet"`, a placeholder SVG data-URI icon
-and rdns `org.coldai.clipwallet`. Kit-built wallets pass their own identity and announce as
-themselves. Icons must be base64 data URIs (svg, webp, png or gif). The rdns must be reverse-DNS.
+In a wallet built on `@clip-wallet/extension-kit` this is all wired for you. Hosting 1Mask yourself:
+
+```ts
+import { installOneMask } from "@clip-wallet/1mask/inpage"; // page, MAIN world
+import { createContentBridge } from "@clip-wallet/1mask/content"; // content script, ISOLATED world
+import { PORT_NAME, createMemoryPermissionStore, createOneMaskRouter, type AccountLike, type RouterPort } from "@clip-wallet/1mask/background";
+import type { DappRequest, Family, Network } from "@clip-wallet/core";
+
+export function inpage(networks: Network[], channel: string) {
+  installOneMask({ networks, channel, identity: { name: "Acme Wallet", rdns: "com.acme.wallet" } });
+}
+
+export function content(channel: string) {
+  createContentBridge({ channel }); // adds the page's real origin to every message
+}
+
+export function background(
+  networks: Network[],
+  handle: (req: DappRequest) => Promise<unknown>, // decode → ask the person → sign → reply
+  accountsFor: (origin: string, family: Family) => AccountLike[],
+) {
+  const router = createOneMaskRouter({ networks, handle, permissions: createMemoryPermissionStore(), accountsFor });
+  // For each runtime port the content script opens; the origin comes from the browser, never the page.
+  return (port: RouterPort & { name: string }, senderOrigin: string | undefined) => {
+    if (port.name === PORT_NAME) router.attachPort(port, { senderOrigin });
+  };
+}
+```
+
+## Documentation
+
+- [1Mask connectors](https://coldai.org/clip/docs/architecture/onemask.html)
+- [Guides for dapp developers](https://coldai.org/clip/docs/dapps/)
+- [Compatibility promise](https://coldai.org/clip/docs/connect/compatibility.html)
+- [Dapp-facing error codes](https://coldai.org/clip/docs/reference/dapp-errors.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/1mask.html)
 
 ## Method coverage
 
@@ -128,7 +137,10 @@ Hedera dapps reach the wallet in two ways:
    Events: `accountsChanged` and `chainChanged`. Accounts are `hedera:testnet:0.0.x`. These requests
    get `family: "hedera"`.
 
-v1 has no injected Hedera provider, and the router answers `4200` for injected `hedera` calls.
+There is no injected Hedera-native provider, and the router answers `4200` for injected `hedera` calls. In builds
+with a WalletConnect project id, `inpage/hedera.ts` answers the DAppConnector's extension discovery
+(`hedera-extension-query`) and hands its pairing code to the wallet's WalletConnect (router method
+`hedera:walletConnectPair`); the session then uses path 2.
 
 ### WalletConnect
 
@@ -151,10 +163,11 @@ extension's build config. It is never hardcoded.
   `via === "walletconnect"`. `eth_accounts`, `eth_chainId` and switching to a chain inside the
   session are answered locally.
 - **Verify API.** `ctx.warnings` carries `domain-mismatch` (validation `INVALID`, or the metadata
-  URL differs from the attested origin) and `known-scam` (`isScam`, or the local `isKnownScam`
+  URL differs from the origin Verify confirmed) and `known-scam` (`isScam`, or the local `isKnownScam`
   list). These go to `handle(req, ctx)` and `approveProposal(summary)` to be merged into
-  `DecodedRequest.warnings`. When validation is `VALID`, the DappRequest origin is the attested
-  origin.
+  `DecodedRequest.warnings`. When validation is `VALID`, the DappRequest origin is the origin Verify
+  confirmed; otherwise it is a pseudo-origin (`https://<host>.unverified.invalid`) that can't borrow a real site's
+  permissions.
 - **One-click auth.** `session_authenticate` (CAIP-122 / SIWE + ReCaps) is handled with
   `populateAuthPayload`. `handle` receives a single `wallet_authenticate` request
   (`{ message, address, domain, authPayload }`) and must return a personal_sign signature. The
@@ -212,10 +225,20 @@ Each of these would be recorded per origin next to the permission, and never set
 
 ## Known gaps
 
-- No EIP-5792 (`wallet_sendCalls`, `wallet_getCapabilities`), `wallet_watchAsset`,
-  `eth_signTransaction`, `eth_subscribe` or legacy `send` / `sendAsync`.
+- No `wallet_watchAsset`, `eth_signTransaction`, `eth_subscribe` or legacy `send` / `sendAsync`. (EIP-5792 is
+  served when the host passes `calls`; see above.)
 - No `solana:signAndSendAllTransactions` or `solana:signOffchainMessage` features.
 - sats-connect legacy JWT API and the `btc_providers` registry are not implemented.
 - One-click auth signs a single CACAO. It does not sign one per chain.
 - Permissions are per origin and family. Choosing which accounts a site sees is up to
   `accountsFor`.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

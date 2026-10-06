@@ -1,8 +1,8 @@
 # @clip-wallet/security
 
-The security features Phantom and MetaMask users expect, as background services. Pure logic, no keys: every
-action is a `DappRequest` on the normal approval path (decode, approve, vault signs). Screens live in
-`packages/ui/src/security/`. Wiring: `docs/phase25/integration/security.md`.
+The security features people expect from a modern wallet, as background services. Pure logic, no keys: every action
+is a `DappRequest` on the normal approval path (decode, approve, vault signs). Screens live in
+`packages/ui/src/security/`.
 
 | Area | Module | What it does |
 |---|---|---|
@@ -10,6 +10,32 @@ action is a `DappRequest` on the normal approval path (decode, approve, vault si
 | Scam detection | `threat/` | `ThreatIntelProvider` interface, consulted on connect and after decode. Open lists (MetaMask, ScamSniffer, Phantom, PolkadotJS), local heuristics (look-alike recipients, zero-value poisoning, new contracts), and optional Blockaid scanning. WalletConnect Verify stays in 1Mask; our lists feed its `isKnownScam`. |
 | Spam cleanup | `cleanup/` | Solana: close empty token accounts and burn + close spam (rent comes back). Hedera: dissociate unused and deleted-spam tokens. Everything else: hide on this device. |
 | Bus | `messages.ts`, `background.ts` | zod-validated `sec*` messages and `SecurityService.handle()`. |
+
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/security
+```
+
+## Example
+
+The security floor has no switch. A mainnet configuration that tries to lower it is refused:
+
+```ts
+import { securityFloorProblems } from "@clip-wallet/security";
+
+console.log(securityFloorProblems({ testnet: false, threat: { openLists: false } }));
+// ["threat.openLists: the open phishing lists can't be switched off on mainnet"]
+```
+
+## Documentation
+
+- [Security services](https://coldai.org/clip/docs/architecture/security.html)
+- [Phishing and scam checks](https://coldai.org/clip/docs/security/scam-checks.html)
+- [Add a scam-check source](https://coldai.org/clip/docs/extend/threat-provider.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/security.html)
 
 ## Privacy
 
@@ -90,3 +116,13 @@ check list parsing and matching, caching and refresh, the privacy contract (whic
 Blockaid on and off, the heuristics, the permission scan for each family (Blockscout, the `eth_getLogs`
 fallback, Solana and the Hedera mirror), the revoke transactions (decoded back from their bytes), and cleanup
 (the Solana close and burn instructions, Hedera dissociate, hide).
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

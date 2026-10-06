@@ -18,6 +18,38 @@ place to receive, or the only place a provider works. `networkId` is carried for
 | Prices | `prices/` | CoinGecko `PriceFeed` with caching, rate limiting and last-known fallback. |
 | Bus | `messages.ts`, `background.ts` | zod-validated `feat*` messages and `FeaturesService.handle()`. |
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/features
+```
+
+## Example
+
+```ts
+import { isFeaturedOrigin, type StakingProvider, type SwapProvider } from "@clip-wallet/features";
+
+// Every provider ends in ordinary approvals: a swap is its exact-amount permission, then the swap itself.
+export function describe(staking: StakingProvider[], swaps: SwapProvider[]) {
+  return {
+    stake: staking.map((p) => `${p.assetKey} on ${p.family}`),
+    swap: swaps.map((p) => `${p.name} (${p.family})`),
+  };
+}
+
+console.log(isFeaturedOrigin("https://app.uniswap.org")); // curated in Explore?
+```
+
+Partner keys come from the build environment (`CLIP_0X_API_KEY`, `CLIP_JUPITER_API_KEY`, `CLIP_MOONPAY_*`,
+`CLIP_BANXA_PARTNER`, `CLIP_C14_*`, `CLIP_COINGECKO_DEMO_KEY`); without one, the feature says it isn't switched on.
+
+## Documentation
+
+- [Features](https://coldai.org/clip/docs/architecture/features.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/features.html)
+
 ## Safety model
 
 - **No keys.** Nothing here imports the vault or key libraries. Solana stake accounts are created with
@@ -214,3 +246,13 @@ Nothing is signed, nothing is sent, and there is no live trading.
   - Minswap orders are batcher orders with no in-wallet cancel yet. Tonstakers round-end payouts aren't listed as positions.
   - Starknet native staking isn't built (needs a keyless pool list).
   - Reward rates are estimates; Tezos delegation rewards depend on the baker.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

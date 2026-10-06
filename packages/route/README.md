@@ -4,6 +4,38 @@
 bonded Connectors (Phase 3, `src/settle.ts`). Nothing in this package signs; it builds `DappRequest`s that go
 through the wallet's normal decode/approve path.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/route
+```
+
+## Example
+
+```ts
+import { findShortfall } from "@clip-wallet/route";
+import type { AssetRef, TokenBalance } from "@clip-wallet/core";
+
+const hbar: AssetRef = { key: "hbar", symbol: "HBAR", name: "HBAR", decimals: 8, networkId: "hedera:testnet" };
+const portfolio: TokenBalance[] = [{ asset: hbar, amount: "500000000" }]; // 5 HBAR
+
+// A request needs 25 HBAR on Hedera: what's missing, and where else the person holds money.
+const [shortfall] = findShortfall([{ asset: hbar, amount: "2500000000" }], portfolio);
+console.log(shortfall?.missing); // "2000000000" (20 HBAR)
+```
+
+Then `createRouteClient().quote({ to, asset, amount, portfolio })` turns routes into plain words (fee as an asset
+amount, p90 time, emissions, the weakest verification on the route, steps), and `planPayOnHedera()` builds the
+request to approve.
+
+## Documentation
+
+- [Route and settle](https://coldai.org/clip/docs/architecture/route-settle.html)
+- [Wallet calls (EIP-5792, ERC-7682)](https://coldai.org/clip/docs/connect/wallet-calls.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/route.html)
+
 ## Settle on Hedera (Phase 3)
 
 The user pays a bonded Connector on network Y through `SettleDeposit`, the Connector delivers on network X through
@@ -12,18 +44,27 @@ The user pays a bonded Connector on network Y through `SettleDeposit`, the Conne
 receives cover + penalty from the Connector's bond.
 
 ```ts
+import { SETTLE_DEPLOYMENTS, settleOnHedera, type ConnectorQuoteRequest } from "@clip-wallet/route";
+import type { AssetRef } from "@clip-wallet/core";
+
+const deployment = SETTLE_DEPLOYMENTS.find((d) => d.network === "testnet")!;
+const hbar: AssetRef = { key: "hbar", symbol: "HBAR", name: "HBAR", decimals: 8, networkId: "eip155:296" };
 const settle = settleOnHedera({
-  orderBook, hederaChainId: 296, mirrorNodeUrl: "https://testnet.mirrornode.hedera.com",
-  deposits: { "eip155:11155111": sepoliaDeposit },
-  connectors: [{ id: connectorHederaAddress, name: "Alpha", url: "https://alpha.example" }],
-  coverAssets: [{ address: "0x0000000000000000000000000000000000000000", asset: hbar }],
+  ...deployment,
+  mirrorNodeUrl: "https://testnet.mirrornode.hedera.com",
+  coverAssets: [{ address: "0x0000000000000000000000000000000000000000", asset: hbar }], // HBAR as cover
 });
-const [best] = await settle.quoteConnectors({ from, to, user, refundTo });
-const { order, requests } = await settle.createOrder(best, user); // approve (ERC-20 only) + deposit
+
+export async function payThroughAConnector(req: ConnectorQuoteRequest, user: string) {
+  const [best] = await settle.quoteConnectors(req); // every quote is checked before it is returned
+  if (!best) return null;
+  const { order, requests } = await settle.createOrder(best, user); // approve (ERC-20 only) + deposit
+  return { order, requests }; // each request goes through the wallet's normal approval
+}
 ```
 
-`settleOnHedera()` without options still rejects every call with `ClipError("Not available yet", "phase3")`:
-`SETTLE_DEPLOYMENTS` is empty because nothing is deployed yet.
+`SETTLE_DEPLOYMENTS` lists the testnet deployment. `settleOnHedera()` without options still rejects every call with
+`ClipError("Not available yet", "phase3")`.
 
 What `quoteConnectors` checks before a quote is shown (a quote failing any check is dropped; one Connector failing
 never fails the call):
@@ -62,3 +103,13 @@ the deposit transaction), `OPEN` → `deposited` (`defaulted` once Hedera's cloc
 ## Phase 1 sources
 See `src/clprouter.ts` (vendored CLPRouter SDK planner, commit 564e29e), `src/abi.ts` (ClprRouter ABI) and
 `src/deployments.ts` (testnet deployment).
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

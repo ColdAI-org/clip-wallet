@@ -5,28 +5,29 @@ Wallet: open source, wallet-agnostic, and built only on public standards (EIP-11
 Wallet Standard, CAIP-2/10). It never imports wallet internals, and it has no runtime dependencies. The core is about
 5 KB minified and gzipped.
 
+You don't need it for your dapp to work with Clip Wallet: Clip answers each ecosystem's own standard. Clip Connect is
+for its extras.
+
 - **`connect()`** finds Clip Wallet first through EIP-6963 or the Wallet Standard. If Clip isn't there, it falls back
   to any other injected wallet, then `window.ethereum`, then a provider you pass (Reown AppKit), then WalletConnect.
 - **Accounts as CAIP-10** across families: `eip155:84532:0x…`, `solana:EtWT…:9xQe…`.
-- **`request({ chain, method, params })`** sends any method on any connected chain. That means EVM JSON-RPC, or a
-  Wallet Standard feature such as `solana:signMessage`.
-- **`pay({ asset, amount, to })`** checks what the wallet supports:
-  - With a wallet that speaks EIP-5792 and ERC-7682, such as Clip Wallet, it sends `wallet_sendCalls` with
-    auxiliary funds. The wallet then brings in the shortfall from the user's other balances inside the same approval.
-  - With any other wallet it sends a plain same-chain transfer, and `result.fallback` tells you so.
-- **`balances()`** returns balances by asset key (`usdc`, `eth`, …) summed over your chains.
-- **Network-invisible helpers.** `pay()` and `canPay()` choose the chain themselves: where the user holds enough,
-  else where the wallet can bring the money in. The app speaks only in assets.
-- **Adapters:**
-  - React hooks: `@clip-wallet/connect/react`
-  - a wagmi connector: `@clip-wallet/connect/wagmi`
-  - a Solana wallet-adapter wrapper: `@clip-wallet/connect/solana`
+- **`request({ chain, method, params })`** sends any method on any connected chain: EVM JSON-RPC, or a Wallet Standard
+  feature such as `solana:signMessage`.
+- **`pay({ asset, amount, to })`** uses `wallet_sendCalls` with ERC-7682 auxiliary funds when the wallet offers them
+  (Clip does), so the wallet can bring the shortfall in from the person's other balances; with other wallets it sends a
+  plain transfer, and `result.fallback` says so.
+- **`balances()`** and **`canPay()`** speak in assets (`usdc`, `eth`), summed over your chains.
+- **Adapters:** React hooks (`/react`), a wagmi connector (`/wagmi`), a Solana wallet-adapter wrapper (`/solana`).
 
-## Quick start
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
-```bash
+## Install
+
+```sh
 npm i @clip-wallet/connect
 ```
+
+## Example
 
 ```ts
 import { connect } from "@clip-wallet/connect";
@@ -34,26 +35,34 @@ import { connect } from "@clip-wallet/connect";
 const wallet = await connect({ chains: [84532, 11155111] }); // Base Sepolia, Ethereum Sepolia
 console.log(wallet.wallet.name, wallet.accounts); // "Clip Wallet", ["eip155:84532:0x…"]
 
-const paid = await wallet.pay({ asset: "usdc", amount: "25", to: "0xShop…" });
+const paid = await wallet.pay({ asset: "usdc", amount: "25", to: "0x000000000000000000000000000000000000dEaD" });
 if (paid.fallback) console.log("Plain transfer: the balance on", paid.chain, "had to cover it.");
 const { status } = await paid.wait(); // "confirmed" | "failed"
+console.log(status);
 ```
 
 ### React
 
 ```tsx
-import { ClipConnectProvider, useClipConnect, usePay, useBalances } from "@clip-wallet/connect/react";
+import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@clip-wallet/connect/react";
 
-<ClipConnectProvider options={{ chains: [84532] }}>
-  <App />
-</ClipConnectProvider>;
-
-function App() {
-  const { connection, connect, status } = useClipConnect();
-  const { pay, result } = usePay();
+function Checkout() {
+  const { connection, connect } = useClipConnect();
+  const { pay, pending } = usePay();
   const { balances } = useBalances();
-  // …
+  if (!connection) return <button onClick={() => void connect()}>Connect</button>;
+  return (
+    <button disabled={pending} onClick={() => void pay({ asset: "usdc", amount: "25", to: "0x000000000000000000000000000000000000dEaD" })}>
+      Pay 25 USDC (you have {balances.usdc?.formatted ?? "0"})
+    </button>
+  );
 }
+
+export const App = () => (
+  <ClipConnectProvider options={{ chains: [84532] }}>
+    <Checkout />
+  </ClipConnectProvider>
+);
 ```
 
 ### wagmi
@@ -63,7 +72,7 @@ import { createConfig, http } from "@wagmi/core";
 import { baseSepolia } from "@wagmi/core/chains";
 import { clipConnect } from "@clip-wallet/connect/wagmi";
 
-createConfig({ chains: [baseSepolia], transports: { [baseSepolia.id]: http() }, connectors: [clipConnect()] });
+export const config = createConfig({ chains: [baseSepolia], transports: { [baseSepolia.id]: http() }, connectors: [clipConnect()] });
 ```
 
 The wagmi connector is wagmi's own `injected` connector pointed at Clip Wallet's EIP-6963 provider. It falls back to
@@ -73,30 +82,30 @@ another announced wallet, then to `window.ethereum`. wagmi's EIP-6963 discovery 
 
 ```ts
 import { clipSolanaAdapter } from "@clip-wallet/connect/solana";
-const adapter = clipSolanaAdapter(); // StandardWalletAdapter for Clip, else another Solana wallet, else null
+
+export const adapter = clipSolanaAdapter(); // StandardWalletAdapter for Clip, else another Solana wallet, else null
 ```
 
 ### WalletConnect or AppKit, when nothing is injected
 
-```ts
-await connect({
-  chains: [84532],
-  walletConnect: { projectId: "<your Reown project id>", load: () => import("@walletconnect/ethereum-provider") },
-  // or any EIP-1193 provider, e.g. Reown AppKit's:
-  // fallback: () => appKit.getProvider("eip155"),
-});
-```
-
-Clip Connect never ships a WalletConnect project id. Use your own. `@walletconnect/ethereum-provider` is an optional
-peer dependency, loaded only on this path.
+Pass `walletConnect: { projectId, load }` (your own Reown project id; `load` imports the optional peer
+`@walletconnect/ethereum-provider`) or `fallback: () => provider` with any EIP-1193 provider, such as Reown AppKit's.
+Clip Connect never ships a WalletConnect project id. See the [connect() guide](https://coldai.org/clip/docs/connect/connect.html).
 
 ### Kit-built wallets
 
-Wallets built on the Clip Wallet kit announce their own identity. Prefer yours like this:
+Wallets built on the Clip Wallet kit announce their own identity. Prefer yours with
+`connect({ prefer: { rdns: "com.example.mywallet", name: "My Wallet" } })`.
 
-```ts
-connect({ prefer: { rdns: "com.example.mywallet", name: "My Wallet" } });
-```
+Optional peers, for the parts you use: `react`, `@wagmi/core`, `@solana/wallet-standard-wallet-adapter-base`,
+`@walletconnect/ethereum-provider`.
+
+## Documentation
+
+- [Clip Connect](https://coldai.org/clip/docs/connect/)
+- [pay(), canPay(), balances()](https://coldai.org/clip/docs/connect/pay.html)
+- [Wallet calls (EIP-5792)](https://coldai.org/clip/docs/connect/wallet-calls.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/connect.html)
 
 ## Compatibility promise
 
@@ -144,3 +153,13 @@ Clip Wallet's side, in more detail:
   https://docs.walletconnect.com/wallets/web/eip5792
 - CAIP-2 / CAIP-10: https://chainagnostic.org/CAIPs/caip-2, https://chainagnostic.org/CAIPs/caip-10
 - Circle USDC addresses (the built-in `usdc` key): https://developers.circle.com/stablecoins/usdc-contract-addresses
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

@@ -6,6 +6,37 @@ vault signs (ed25519), and `finalize()` serializes the signature, then executes 
 Built on `@mysten/sui` 2.33 for BCS, `TransactionDataBuilder`, `Transaction.build` and the GraphQL client used to resolve transactions, plus
 `@noble/hashes` (blake2b) and `@noble/curves` (ed25519 verification only). It never imports `@mysten/sui/keypairs/*`.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-sui @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createSuiModule, SUI_TESTNET } from "@clip-wallet/chains-sui";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createSuiModule();
+console.log(module.family, module.derivationPath(0)); // "sui" "m/44'/784'/0'/0'/0'"
+
+const network = SUI_TESTNET;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Sui guide for dapps](https://coldai.org/clip/docs/dapps/sui.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-sui.html)
+
 ## Networks
 
 | network | NetworkId = Wallet Standard chain | RPC (GraphQL) |
@@ -104,3 +135,13 @@ Each builder returns Wallet Standard transaction JSON, which `sui:signAndExecute
 - WalletConnect `sui_signPersonalMessage` treats the message as UTF-8 text. Reown's reference doesn't specify an encoding.
 - `getNfts` scans at most 4 pages (200 objects) by default (`nftPages`). Kiosk-held items aren't listed.
 - Validator names aren't resolved in `decode()` (the address is shown). The features Stake screen shows names from the validator set.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

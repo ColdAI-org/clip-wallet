@@ -28,6 +28,7 @@
 
 <p align="center">
   <a href="https://coldai.org/clip">Website</a> ·
+  <a href="https://coldai.org/clip/docs">Developer docs</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#launch-your-own-wallet">Launch your own wallet</a> ·
   <a href="#clip-connect-for-dapps">Clip Connect SDK</a> ·
@@ -206,6 +207,10 @@ pnpm --filter @clip-wallet/extension e2e            # Playwright on the real bui
 pnpm --filter @clip-wallet/desktop dev              # the desktop app (Electron)
 cd apps/mobile && pnpm ios                          # or pnpm android (Expo dev build, see apps/mobile/README.md)
 ```
+
+The developer docs are at [coldai.org/clip/docs](https://coldai.org/clip/docs): architecture, the signing flow,
+per-ecosystem dapp guides, the kit, extending Clip Wallet, services, security and the API reference for every package.
+Their sources are in [`apps/docs`](apps/docs) (VitePress; `pnpm --filter docs build`).
 
 Coding agents start at [AGENTS.md](AGENTS.md) (rules that never break, recipes) and [llms.txt](llms.txt).
 

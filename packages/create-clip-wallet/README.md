@@ -1,13 +1,24 @@
 # create-clip-wallet
 
 Start your own non-custodial wallet on the [Clip Wallet](https://github.com/ColdAI-org/clip-wallet) kit: a branded
-browser extension for 14 network families, plus a Scaffold-HBAR dapp that connects to it on Hedera testnet.
+browser extension for 14 network families, with its own name, icon, extension id and EIP-6963 rdns, plus a
+Scaffold-HBAR dapp that connects to it on Hedera testnet. Test networks by default.
+
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Use
+
+```sh
+npx create-clip-wallet my-wallet
+```
+
+## Example
 
 ```sh
 npx create-clip-wallet my-wallet
 # or, without questions
 npx create-clip-wallet my-wallet --name "Acme Wallet" --rdns com.acme.wallet --accent "#0B7A3B" \
-  --networks "evm:*,hedera,solana,bitcoin" --homepage https://wallet.acme.com --yes
+  --networks "evm:*,hedera,solana,bitcoin" --homepage https://wallet.acme.example --yes
 cd my-wallet && pnpm install && pnpm extension:build && pnpm next:dev
 ```
 
@@ -20,6 +31,12 @@ cd <project> && pnpm install && pnpm wallet:identity --name "Acme Wallet" --rdns
 
 Both copy the template the same way (create-scaffold-hbar's copy step: skip `.git`/`node_modules`/`.env`, apply
 `template.json`'s rename map, delete it, `git init`), then write the identity.
+
+## Documentation
+
+- [Launch your own wallet](https://coldai.org/clip/docs/kit/)
+- [create-clip-wallet](https://coldai.org/clip/docs/kit/create-clip-wallet.html)
+- [CLI reference](https://coldai.org/clip/docs/reference/cli.html)
 
 ## What the identity step writes
 
@@ -56,10 +73,10 @@ remote icon) lists anything.
 
 ## Versioning and provenance
 
-create-clip-wallet is released with the `@clip-wallet/*` packages, one version for all, by CI with npm provenance. The
-projects it makes pin that version exactly; `pnpm verify:provenance` checks every kit package's attestation.
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
 
-The template (`template/` in the package) is bundled at `prepack` from `templates/scaffold-hbar-clip-wallet` in the
-monorepo; files npm won't pack (`.gitignore`, `.npmrc`) travel as `_gitignore` / `_npmrc` and are renamed back.
+## Licence
 
-Apache-2.0 licence: see [LICENSE](LICENSE) and [NOTICE](NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

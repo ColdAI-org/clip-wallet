@@ -4,6 +4,37 @@ Cardano `ChainModule` for Clip Wallet. It builds, decodes and assembles transact
 `prepare()` returns the blake2b-256 body hash (or the CIP-8 `Sig_structure`) for the vault to sign with ed25519, and
 `finalize()` turns the signatures into a witness set, a signed transaction or a COSE signature.
 
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
+
+## Install
+
+```sh
+npm i @clip-wallet/chains-cardano @clip-wallet/core
+```
+
+## Example
+
+```ts
+import type { ChainModule } from "@clip-wallet/core";
+import { createCardanoModule, CARDANO_PREPROD } from "@clip-wallet/chains-cardano";
+
+// A wallet's background holds one module per family; it never gives the module a key.
+const module: ChainModule = createCardanoModule();
+console.log(module.family, module.derivationPath(0)); // "cardano" "m/1852'/1815'/0'/0/0"
+
+const network = CARDANO_PREPROD;
+console.log(network.id, network.testnet); // a CAIP-2 id, true
+
+// The flow: decode() → the person approves → prepare() → the vault signs → finalize().
+```
+
+## Documentation
+
+- [Chain modules](https://coldai.org/clip/docs/architecture/chain-modules.html)
+- [Write a chain module](https://coldai.org/clip/docs/extend/chain-module.html)
+- [The Cardano guide for dapps](https://coldai.org/clip/docs/dapps/cardano.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/chains-cardano.html)
+
 ## Why no cardano-serialization-lib
 
 The extension's background is an MV3 service worker. `@emurgo/cardano-serialization-lib-browser` 17.0.0 ships a
@@ -164,3 +195,13 @@ certificates are tag-258 sets, and the TTL is tip + 7200 slots. The result is a 
   wallets (CIP-1852 change chain `1/n`) aren't scanned: the module uses the account's single base address.
 - No Plutus evaluation: script transactions are described from their body, not simulated.
 - Byron addresses decode for display but aren't accepted as send targets.
+
+## Versioning and provenance
+
+Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+packages share one version; pin it exactly.
+
+## Licence
+
+Apache-2.0: see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

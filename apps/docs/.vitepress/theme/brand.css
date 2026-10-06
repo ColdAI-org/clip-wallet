@@ -1,0 +1,54 @@
+/*
+ * Clip Wallet brand on VitePress (brand/README.md). ColdAI orange #FF3C00 is the mark and large accents. Small
+ * accent text uses the accent ink shades the wallet uses (#C22E00 on light, #FF6738 on dark) so links reach 4.5:1;
+ * button fills use #DE3400, the closest AA shade to ColdAI orange with white text.
+ */
+:root {
+  --clip-orange: #ff3c00;
+  --clip-ink: #141414;
+  --vp-c-brand-1: #c22e00;
+  --vp-c-brand-2: #de3400;
+  --vp-c-brand-3: #de3400;
+  --vp-c-brand-soft: rgba(255, 60, 0, 0.12);
+  --vp-button-brand-bg: #de3400;
+  --vp-button-brand-hover-bg: #c22e00;
+  --vp-button-brand-active-bg: #a82800;
+  --vp-button-brand-text: #ffffff;
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #ff3c00 20%, #c22e00);
+  --vp-home-hero-image-background-image: radial-gradient(circle, rgba(255, 60, 0, 0.35) 0%, rgba(255, 60, 0, 0) 70%);
+  --vp-home-hero-image-filter: blur(56px);
+}
+
+.dark {
+  --vp-c-brand-1: #ff6738;
+  --vp-c-brand-2: #ff5a26;
+  --vp-c-brand-3: #de3400;
+  --vp-c-brand-soft: rgba(255, 103, 56, 0.16);
+  --vp-c-bg: #18181a;
+  --vp-c-bg-alt: #141416;
+}
+
+.VPNavBarTitle .logo {
+  height: 28px;
+  border-radius: 7px;
+}
+
+/* Tables of codes and options read better a little tighter. */
+.vp-doc table {
+  font-size: 0.9em;
+}
+
+/* "Tested in the matrix" badges next to guide headings. */
+.clip-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: middle;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
