@@ -30,13 +30,8 @@ import {
   type SettleQuote,
 } from "./settle-quote.js";
 import { JsonRpcReader, MIRROR_LOG_WINDOW_S, MirrorNodeReader, type HederaReader } from "./settle-reader.js";
+import { withoutTrailingSlashes } from "./url.js";
 
-/** `url` without trailing slashes (a scan, not a regex: linear on any input). */
-function withoutTrailingSlashes(url: string): string {
-  let end = url.length;
-  while (end > 0 && url[end - 1] === "/") end--;
-  return url.slice(0, end);
-}
 
 /**
  * "Settle on Hedera" client (Phase 3). Reads the order book on Hedera, asks Connectors for signed quotes and

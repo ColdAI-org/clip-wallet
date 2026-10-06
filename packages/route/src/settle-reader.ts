@@ -1,6 +1,7 @@
 import { ClipError } from "@clip-wallet/core";
 import { hexToNumber, isHex } from "viem";
 import type { Hex } from "viem";
+import { withoutTrailingSlashes } from "./url.js";
 
 /**
  * Reads from Hedera for the settle client: contract calls, Hedera's clock and order-book logs.
@@ -56,7 +57,8 @@ export class MirrorNodeReader implements HederaReader {
   private readonly f: typeof fetch;
 
   constructor(baseUrl: string, fetchImpl?: typeof fetch) {
-    this.base = baseUrl.replace(/\/+$/, "").replace(/\/api\/v1$/, "");
+    const trimmed = withoutTrailingSlashes(baseUrl);
+    this.base = trimmed.endsWith("/api/v1") ? trimmed.slice(0, -"/api/v1".length) : trimmed;
     this.f = fetchImpl ?? globalThis.fetch.bind(globalThis);
   }
 
