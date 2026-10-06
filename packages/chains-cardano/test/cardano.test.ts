@@ -170,6 +170,21 @@ describe("signTx (CIP-30)", () => {
     expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "blind-signing" }));
   });
 
+  it("audit CHAIN-L: a map with a repeated key is refused (we'd show the first value, a node may use another)", async () => {
+    const { m, ctx } = setup([["POST", "/utxo_info", () => [koiosUtxo(TX_A, 0, FIX.address, 10_000_000n)]]]);
+    // The fee key (2) twice in the body: shown as 0.2 ADA, while a last-wins reader charges 5 ADA.
+    const body = decodeCbor(fromHex(txHex)) as unknown[];
+    const map = body[0] as CborMap;
+    const dup = new CborMap([...map.entries, [2, 5_000_000]]);
+    const bad = hex(encodeCbor([dup, body[1] as CborMap, true, body[3] as never]));
+    await expect(m.decode(req(CARDANO_METHODS.signTx, [bad, true]), ctx)).rejects.toMatchObject({ code: "cardano/bad-transaction" });
+    // Also nested maps (an output's multi-asset map naming a token twice) and keys spelled two ways (0x02 vs 0x1802).
+    expect(() => decodeCbor(fromHex("a201010103"))).toThrow(/duplicate/); // {1: 1, 1: 3}
+    expect(() => decodeCbor(fromHex("a20201180202"))).toThrow(/duplicate/); // {2: 1, 2 (as 0x1802): 2}
+    expect(() => decodeCbor(fromHex("a101a24101014101 02".replace(/ /g, "")))).toThrow(/duplicate/); // {1: {h'01': 1, h'01': 2}}
+    expect(decodeCbor(fromHex("a201010203"))).toBeInstanceOf(CborMap); // {1: 1, 2: 3}
+  });
+
   it("refuses a transaction that doesn't need this wallet", async () => {
     const { m, ctx } = setup([["POST", "/utxo_info", () => [koiosUtxo(TX_A, 0, FIX.otherAddress, 10_000_000n)]]]);
     await expect(m.decode(req(CARDANO_METHODS.signTx, [txHex, true]), ctx)).rejects.toMatchObject({ code: "cardano/proof-generation" });

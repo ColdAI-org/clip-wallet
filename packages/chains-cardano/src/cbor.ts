@@ -51,6 +51,25 @@ export type CborValue =
 
 export class CborError extends Error {}
 
+/**
+ * Audit CHAIN-L: a map may not name a key twice. Readers disagree on which value wins (CborMap.get takes the first,
+ * a last-wins reader the last), so a transaction could be shown as one thing and applied as another; the Conway
+ * ledger refuses duplicates too. Keys compare by value, so 2 and a non-canonical 0x1802 are the same key.
+ */
+function noRepeat(seen: Set<string>, key: CborValue): void {
+  const id = keyId(key);
+  if (seen.has(id)) throw new CborError("duplicate map key");
+  seen.add(id);
+}
+
+function keyId(k: CborValue): string {
+  if (typeof k === "bigint" || (typeof k === "number" && Number.isInteger(k))) return `i${BigInt(k)}`;
+  if (typeof k === "number") return `f${k}`;
+  if (typeof k === "string") return `t${k}`;
+  if (k instanceof Uint8Array) return `b${[...k].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+  return `c${[...encode(k)].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+}
+
 const td = new TextDecoder("utf-8", { fatal: true });
 const te = new TextEncoder();
 const MAX_DEPTH = 64;
@@ -135,9 +154,11 @@ export function readItem(b: Uint8Array, pos = 0, depth = 0): { value: CborValue;
     }
     case 5: {
       const m = new CborMap();
+      const seen = new Set<string>();
       const one = () => {
         const k = readItem(b, p, depth + 1);
         const v = readItem(b, k.end, depth + 1);
+        noRepeat(seen, k.value);
         m.entries.push([k.value, v.value]);
         p = v.end;
       };
@@ -222,9 +243,11 @@ export function splitMap(b: Uint8Array, pos = 0): { entries: [Uint8Array, Uint8A
   if (ib === undefined || ib >> 5 !== 5) throw new CborError("not a map");
   let { arg, pos: p } = readArg(b, pos + 1, ib & 31);
   const entries: [Uint8Array, Uint8Array][] = [];
+  const seen = new Set<string>();
   const one = () => {
     const k = readItem(b, p, 1);
     const v = readItem(b, k.end, 1);
+    noRepeat(seen, k.value);
     entries.push([b.subarray(p, k.end), b.subarray(k.end, v.end)]);
     p = v.end;
   };
