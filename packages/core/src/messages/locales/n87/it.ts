@@ -17,6 +17,12 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-stacks (stacks)
   // ---- end chains-stacks
   // ---- chains-fuel (fuel)
+  "bg.fuel.changeToOther": "Tutto ciò che resta dei tuoi {symbol} dopo questa operazione va a {to}, non torna a te.",
+  "bg.fuel.leftoverLost": "{amount} non viene inviato da nessuna parte da questa transazione e andrebbe perso.",
+  "bg.fuel.coinsSpent": "Alcune delle monete usate da questa transazione sono già state spese. Chiedi all'app di riprovare.",
+  "bg.fuel.feeRose": "La commissione di rete è aumentata da quando è stata preparata. Non è stato inviato nulla. Riprova.",
+  "bg.fuel.failedOnChain": "Questa transazione non è andata a buon fine sulla rete Fuel. È stata pagata solo la commissione di rete.",
+  "bg.fuel.tooManyCoins": "Servono troppe monete piccole tutte insieme. Invia prima un importo più piccolo.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
   // ---- end chains-bitcoincash

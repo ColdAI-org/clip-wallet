@@ -17,6 +17,12 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-stacks (stacks)
   // ---- end chains-stacks
   // ---- chains-fuel (fuel)
+  "bg.fuel.changeToOther": "كل ما يتبقى من \u2068{symbol}\u2069 بعد هذا يذهب إلى \u2068{to}\u2069، ولا يعود إليك.",
+  "bg.fuel.leftoverLost": "لا تُرسل هذه المعاملة \u2068{amount}\u2069 إلى أي مكان، وسيضيع.",
+  "bg.fuel.coinsSpent": "بعض العملات التي تستخدمها هذه المعاملة أُنفقت بالفعل. اطلب من التطبيق المحاولة مرة أخرى.",
+  "bg.fuel.feeRose": "ارتفعت رسوم الشبكة منذ تجهيز هذا. لم يُرسَل أي شيء. حاول مرة أخرى.",
+  "bg.fuel.failedOnChain": "فشلت هذه المعاملة على شبكة Fuel. لم يُدفع إلا رسوم الشبكة.",
+  "bg.fuel.tooManyCoins": "يحتاج هذا إلى عدد كبير جدًا من العملات الصغيرة في وقت واحد. أرسل مبلغًا أصغر أولًا.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
   // ---- end chains-bitcoincash

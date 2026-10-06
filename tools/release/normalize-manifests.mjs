@@ -86,6 +86,10 @@ for (const [f, label] of Object.entries(FAMILY)) {
     keywords: ["clip-wallet", "wallet", f, "chain-module"],
   };
 }
+EXTRA["@clip-wallet/chains-fuel"] = {
+  description: "Fuel ChainModule for Clip Wallet: builds and decodes transactions in plain words, dry-runs contract calls; never touches keys",
+  keywords: ["clip-wallet", "wallet", "fuel", "chain-module"],
+};
 
 /** Third-party code a package ships, with the licence text its NOTICE must carry (read from the vendored LICENSE). */
 const THIRD_PARTY = {
