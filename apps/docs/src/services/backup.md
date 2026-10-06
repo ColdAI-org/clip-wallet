@@ -52,7 +52,8 @@ Wallets use it through `@clip-wallet/backup-client`:
 
 - Sign-in links are single-use, last 15 minutes, travel in the URL fragment, and are bound to the device that asked
   (PKCE S256): a forwarded link is useless. Five wrong verifiers burn the link.
-- Only well-formed CLPB v1 blobs of the 12- or 24-word size are accepted, at most 10 per account and 20 uploads a day.
+- Only well-formed CLPB v1 blobs of the 12- or 24-word size are accepted, at most 10 per account (checked and
+  inserted in one statement) and 20 uploads a day. Bodies are cut off at their size limit while streaming.
 - Rate limits: sign-in 10 an hour per IP and 5 per email, verify 30 an hour per IP, API 120 an hour per account; sync
   2000 an hour per IP and 600 per key. `429` carries `Retry-After`.
 - Sync requests are signed (method, path, timestamp, nonce, body hash); more than 5 minutes off, or a reused nonce, is

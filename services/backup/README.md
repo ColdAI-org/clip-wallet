@@ -45,7 +45,8 @@ which needs the email inbox (or a copy of the blob). The UI says this in plain w
   token travels in the URL **fragment**, so it never reaches a web server's logs.
 - *Account probing.* `auth/start` answers 202 for any well-formed address; there is no "user not found".
 - *Abuse as free storage.* Only well-formed CLPB v1 blobs of exactly the 12- or 24-word size are accepted,
-  at most 10 per account, 20 uploads per day.
+  at most 10 per account (enforced by the INSERT itself, so concurrent uploads can't overshoot), 20 uploads per day.
+  Request bodies are read as a stream and cut off at their size limit, with or without `Content-Length`.
 - *Brute force / spam.* D1 fixed-window limits: sign-in 10/h per IP and 5/h per email; verify 30/h per IP;
   API 120/h per account (`src/ratelimit.ts`). 429 carries `Retry-After`.
 - *Malicious server.* It could withhold or swap blobs (a swapped blob fails the AEAD tag, so the restore

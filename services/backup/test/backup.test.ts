@@ -190,6 +190,58 @@ describe("backups", () => {
     await expect(c.upload(blob(), { credentialId: "AQID", rpId: null })).rejects.toMatchObject({ code: "backup/too-many-backups" });
   });
 
+  it("audit BKP-01: concurrent uploads can't get past the per-account cap (count and insert are one statement)", async () => {
+    const h = harness();
+    const { c } = await signedIn(h);
+    for (let i = 0; i < 9; i++) await c.upload(blob(BLOB_MIN_BYTES, i), { credentialId: "AQID", rpId: null });
+    const post = (i: number) =>
+      h.f("https://backup.test/v1/backups", {
+        method: "POST",
+        headers: { authorization: `Bearer ${c.session!.token}` },
+        body: JSON.stringify({ blob: b64url(blob(BLOB_MIN_BYTES, 100 + i)), credentialId: "AQID", rpId: null }),
+      });
+    const statuses = (await Promise.all([0, 1, 2, 3, 4, 5].map(post))).map((r) => r.status).sort();
+    expect(statuses).toEqual([201, 409, 409, 409, 409, 409]);
+    expect(await c.list()).toHaveLength(10);
+    // Nothing orphaned in R2 by the refused ones.
+    const listed = await E.BLOBS.list({ prefix: "b/" });
+    const ids = new Set((await c.list()).map((b) => `b/${b.id}`));
+    const { results } = await E.DB.prepare("SELECT id FROM backups").all<{ id: string }>();
+    const known = new Set(results.map((r) => `b/${r.id}`));
+    expect(listed.objects.filter((o) => !known.has(o.key))).toEqual([]);
+    expect(ids.size).toBe(10);
+  });
+
+  it("audit BKP-01: a chunked body (no Content-Length) is cut off at the size limit, not read whole", async () => {
+    const h = harness();
+    const { c } = await signedIn(h);
+    let pulled = 0;
+    let cancelled = false;
+    const chunk = new TextEncoder().encode(`{"pad":"${"x".repeat(1000)}`);
+    const body = new ReadableStream<Uint8Array>(
+      {
+        pull(ctl) {
+          if (pulled > 5_000_000) return ctl.close();
+          pulled += chunk.length;
+          ctl.enqueue(chunk.slice());
+        },
+        cancel() {
+          cancelled = true;
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    const res = await h.f("https://backup.test/v1/backups", {
+      method: "POST",
+      headers: { authorization: `Bearer ${c.session!.token}` },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    expect(res.status).toBe(413);
+    expect(pulled).toBeLessThanOrEqual(4096 + chunk.length);
+    expect(cancelled).toBe(true);
+  });
+
   it("delete one, then delete the whole account (blobs gone from R2 too)", async () => {
     const h = harness();
     const { c, email } = await signedIn(h);

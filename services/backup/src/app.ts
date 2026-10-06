@@ -31,7 +31,7 @@ import {
 import { EmailUnavailableError, UnconfiguredEmailSender, signInEmail, type EmailSender } from "./email.js";
 import { PROVIDERS, oidcCallback, oidcFinish, oidcStart, providerEnabled, type OidcEnv } from "./oidc.js";
 import { RULES, cleanupWindows, enforce } from "./ratelimit.js";
-import { HttpError, hmacHex, randomToken, readJson, safeEqual, sha256Hex } from "./util.js";
+import { HttpError, hmacHex, randomToken, readJson, readTextCapped, safeEqual, sha256Hex } from "./util.js";
 import { cleanupSync, syncRoute } from "./sync.js";
 
 export interface Env extends OidcEnv {
@@ -195,9 +195,7 @@ export function createApp(deps: AppDeps = {}) {
     let params = new URL(req.url).searchParams;
     if (req.method === "POST") {
       // Apple answers with an HTML form POST (response_mode=form_post).
-      const text = await req.text();
-      if (text.length > 8192) throw new HttpError(413, "too-large", "Request body too large.");
-      params = new URLSearchParams(text);
+      params = new URLSearchParams(await readTextCapped(req, 8192));
     }
     return oidcCallback(env, params, oidcDeps);
   }
@@ -227,13 +225,22 @@ export function createApp(deps: AppDeps = {}) {
     if (!credBytes || credBytes.length === 0 || credBytes.length > LIMITS.maxCredentialIdBytes) throw new HttpError(400, "bad-request", "credentialId is required.");
     const rpId = body.rpId ?? null;
     if (rpId !== null && (typeof rpId !== "string" || !RP_ID.test(rpId))) throw new HttpError(400, "bad-request", "rpId must be a domain or null.");
-    const count = await env.DB.prepare("SELECT COUNT(*) AS n FROM backups WHERE account = ?1").bind(account).first<{ n: number }>();
-    if ((count?.n ?? 0) >= LIMITS.maxBackupsPerAccount) throw new HttpError(409, "too-many-backups", "Delete an old backup first.");
+    // Audit BKP-01: the cap is checked by the INSERT itself (one statement, so concurrent uploads can't all pass a
+    // count taken before any of them inserted). The row reserves the slot; the blob follows, and a failed write
+    // gives the slot back.
     const id = randomToken(16);
-    await env.BLOBS.put(`b/${id}`, blob, { httpMetadata: { contentType: "application/octet-stream" } });
-    await env.DB.prepare("INSERT INTO backups (id, account, credential_id, rp_id, created_at) VALUES (?1, ?2, ?3, ?4, ?5)")
-      .bind(id, account, body.credentialId!, rpId, now())
+    const reserved = await env.DB.prepare(
+      "INSERT INTO backups (id, account, credential_id, rp_id, created_at) SELECT ?1, ?2, ?3, ?4, ?5 WHERE (SELECT COUNT(*) FROM backups WHERE account = ?2) < ?6",
+    )
+      .bind(id, account, body.credentialId!, rpId, now(), LIMITS.maxBackupsPerAccount)
       .run();
+    if (!reserved.meta.changes) throw new HttpError(409, "too-many-backups", "Delete an old backup first.");
+    try {
+      await env.BLOBS.put(`b/${id}`, blob, { httpMetadata: { contentType: "application/octet-stream" } });
+    } catch (e) {
+      await env.DB.prepare("DELETE FROM backups WHERE id = ?1 AND account = ?2").bind(id, account).run();
+      throw e;
+    }
     return json(201, { id });
   }
 

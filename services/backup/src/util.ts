@@ -34,12 +34,40 @@ export class HttpError extends Error {
   }
 }
 
+/**
+ * The body as text, at most `max` bytes (audit BKP-01): a larger Content-Length is refused before reading, and a
+ * chunked body is read as a stream and cancelled as soon as it passes `max`, so it is never buffered whole.
+ */
+export async function readTextCapped(req: Request, max: number): Promise<string> {
+  const tooLarge = () => new HttpError(413, "too-large", "Request body too large.");
+  const declared = req.headers.get("content-length");
+  if (declared !== null && Number(declared) > max) throw tooLarge();
+  if (!req.body) return "";
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > max) {
+      await reader.cancel().catch(() => {});
+      throw tooLarge();
+    }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) {
+    all.set(c, off);
+    off += c.byteLength;
+  }
+  return new TextDecoder().decode(all);
+}
+
 /** Reads a JSON body of at most `max` bytes. */
 export async function readJson<T>(req: Request, max = 8192): Promise<T> {
-  const len = Number(req.headers.get("content-length") ?? "0");
-  if (len > max) throw new HttpError(413, "too-large", "Request body too large.");
-  const text = await req.text();
-  if (text.length > max) throw new HttpError(413, "too-large", "Request body too large.");
+  const text = await readTextCapped(req, max);
   try {
     const v = JSON.parse(text) as unknown;
     if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("not an object");

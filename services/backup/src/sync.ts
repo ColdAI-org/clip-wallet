@@ -5,7 +5,10 @@
  */
 import { handleSync, SyncHttpError, type SyncStore } from "@clip-wallet/link/sync-server";
 import { RULES, enforce } from "./ratelimit.js";
-import { HttpError, sha256Hex } from "./util.js";
+import { HttpError, readTextCapped, sha256Hex } from "./util.js";
+
+/** @clip-wallet/link SYNC_LIMITS.maxBodyBytes (not exported from the sync-server entry). */
+const SYNC_MAX_BODY_BYTES = 512 * 1024;
 
 export class D1SyncStore implements SyncStore {
   constructor(
@@ -68,7 +71,8 @@ async function verifyEd25519(publicKey: Uint8Array, message: Uint8Array, signatu
 export async function syncRoute(req: Request, env: { DB: D1Database }, now: () => number, ip: string): Promise<Response> {
   await enforce(env.DB, RULES.syncPerIp, ip, now());
   const url = new URL(req.url);
-  const body = req.method === "GET" || req.method === "DELETE" ? "" : await req.text();
+  // Read capped (audit BKP-01); handleSync checks the exact limit (SYNC_LIMITS.maxBodyBytes) and answers 413 itself.
+  const body = req.method === "GET" || req.method === "DELETE" ? "" : await readTextCapped(req, SYNC_MAX_BODY_BYTES + 1);
   try {
     const r = await handleSync(
       { method: req.method, pathAndQuery: url.pathname + url.search, authorization: req.headers.get("authorization"), body },
