@@ -9,7 +9,7 @@ A [Scaffold-HBAR](https://github.com/hedera-dev/scaffold-hbar) template by [Cold
 
 [![CI](https://github.com/ColdAI-org/scaffold-hbar-clip-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ColdAI-org/scaffold-hbar-clip-wallet/actions/workflows/ci.yaml)
 [![Fresh scaffold](https://github.com/ColdAI-org/scaffold-hbar-clip-wallet/actions/workflows/fresh-scaffold.yaml/badge.svg)](https://github.com/ColdAI-org/scaffold-hbar-clip-wallet/actions/workflows/fresh-scaffold.yaml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENCE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENCE)
 [![Hedera testnet](https://img.shields.io/badge/Hedera-testnet-8259EF?logo=hedera)](#the-demo-dapp)
 [![npm provenance](https://img.shields.io/badge/npm-provenance-2ea043)](#signed-versioned-kit)
 
@@ -154,5 +154,7 @@ validators.
 
 ## License
 
-MIT, see [LICENCE](LICENCE). Created by [ColdAI](https://coldai.org). The dapp builds on Scaffold-HBAR (hedera-dev) and
-Scaffold-ETH 2 (BuidlGuidl); the wallet is the Clip Wallet kit.
+Apache-2.0, see [LICENCE](LICENCE) and [NOTICE](NOTICE). Created by [ColdAI](https://coldai.org). The dapp
+(`packages/nextjs`) builds on Scaffold-HBAR (hedera-dev) and Scaffold-ETH 2 (BuidlGuidl) and keeps their MIT licence
+([`packages/nextjs/LICENSE`](packages/nextjs/LICENSE)); the wallet is the Clip Wallet kit. "Clip Wallet", "1Mask" and
+the Clip Wallet logo are ColdAI trademarks and aren't licensed: your wallet uses its own name and icon.

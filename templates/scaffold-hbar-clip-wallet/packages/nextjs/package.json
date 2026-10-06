@@ -1,6 +1,16 @@
 {
   "name": "@sh/nextjs",
   "private": true,
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/templates/scaffold-hbar-clip-wallet/packages/nextjs#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "templates/scaffold-hbar-clip-wallet/packages/nextjs"
+  },
   "version": "0.1.0",
   "scripts": {
     "build": "next build",

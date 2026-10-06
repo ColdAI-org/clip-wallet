@@ -7,7 +7,7 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { normalize, publishablePackages } from "./manifest.mjs";
+import { noticeFor, normalize, publishablePackages } from "./manifest.mjs";
 
 const root = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const check = process.argv.includes("--check");
@@ -86,19 +86,42 @@ for (const [f, label] of Object.entries(FAMILY)) {
   };
 }
 
+/** Third-party code a package ships, with the licence text its NOTICE must carry (read from the vendored LICENSE). */
+const THIRD_PARTY = {
+  "@clip-wallet/route": [
+    {
+      title: "the CLPRouter SDK planner, vendored from github.com/ColdAI-org/clprouter",
+      files: "built into dist/ from src/vendor/clprouter-sdk",
+      licence: readFileSync(join(root, "packages/route/src/vendor/clprouter-sdk/LICENSE"), "utf8"),
+    },
+  ],
+  "create-clip-wallet": [
+    {
+      title: "the Scaffold-HBAR / Scaffold-ETH 2 dapp of the bundled template",
+      files: "template/packages/nextjs",
+      licence: readFileSync(join(root, "templates/scaffold-hbar-clip-wallet/packages/nextjs/LICENSE"), "utf8"),
+    },
+  ],
+};
+
+const read = (file) => (existsSync(file) ? readFileSync(file, "utf8") : undefined);
+const rootLicense = readFileSync(join(root, "LICENSE"), "utf8");
+
 let bad = 0;
 for (const { dir, path, pkg } of publishablePackages(root)) {
   const next = normalize(pkg, dir, EXTRA[pkg.name] ?? {});
   const text = `${JSON.stringify(next, null, 2)}\n`;
+  const notice = noticeFor(pkg.name, THIRD_PARTY[pkg.name]);
   const current = readFileSync(join(path, "package.json"), "utf8");
   const license = join(path, "LICENSE");
-  if (text !== current || !existsSync(license)) {
+  if (text !== current || read(license) !== rootLicense || read(join(path, "NOTICE")) !== notice) {
     if (check) {
-      process.stderr.write(`${dir}/package.json is not in the published shape: run node tools/release/normalize-manifests.mjs\n`);
+      process.stderr.write(`${dir}: package.json, LICENSE or NOTICE is not in the published shape: run node tools/release/normalize-manifests.mjs\n`);
       bad++;
     } else {
       writeFileSync(join(path, "package.json"), text);
       copyFileSync(join(root, "LICENSE"), license);
+      writeFileSync(join(path, "NOTICE"), notice);
       process.stdout.write(`normalized ${dir}\n`);
     }
   }

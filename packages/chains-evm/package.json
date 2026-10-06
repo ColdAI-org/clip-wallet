@@ -8,7 +8,7 @@
     "evm",
     "chain-module"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "ColdAI (https://coldai.org)",
   "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/chains-evm#readme",
   "bugs": {
@@ -33,7 +33,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "publishConfig": {
     "access": "public",

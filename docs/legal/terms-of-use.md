@@ -10,7 +10,7 @@
 These terms apply to the Clip Wallet browser extension, the Clip Wallet mobile app and the optional ColdAI
 services they use (passkey backup and media proxy), together "Clip Wallet". Clip Wallet is published by ColdAI
 ([legal entity, address]) ("we"). By installing or using Clip Wallet you agree to these terms. The source code is
-also available under the MIT licence (`LICENSE`); that licence governs the code, these terms govern your use of
+also available under the Apache License 2.0 (`LICENSE`, `NOTICE`); that licence governs the code, these terms govern your use of
 the apps and services we publish.
 
 ## 1. What Clip Wallet is, and isn't
@@ -68,7 +68,7 @@ unsafe or too large.
 
 ## 5. Open-source software
 
-The Clip Wallet source code is licensed under the MIT licence. Third-party components are licensed under their
+The Clip Wallet source code is licensed under the Apache License 2.0. It grants no rights to the "Clip Wallet" or "1Mask" names or the Clip Wallet logo, which are ColdAI trademarks. Third-party components are licensed under their
 own terms (see each package's licence). Builds published by ColdAI come with checksums and build provenance so
 you can verify them.
 

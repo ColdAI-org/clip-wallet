@@ -1,6 +1,6 @@
 # Clip Wallet
 
-> Non-custodial multi-chain wallet for every CLPR network (14 families), and a kit for building your own: @clip-wallet/* packages, @clip-wallet/extension-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, MIT.
+> Non-custodial multi-chain wallet for every CLPR network (14 families), and a kit for building your own: @clip-wallet/* packages, @clip-wallet/extension-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, Apache-2.0.
 
 Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract), packages/config/src/index.ts (clip.config.ts schema).
 

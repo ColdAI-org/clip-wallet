@@ -62,4 +62,4 @@ projects it makes pin that version exactly; `pnpm verify:provenance` checks ever
 The template (`template/` in the package) is bundled at `prepack` from `templates/scaffold-hbar-clip-wallet` in the
 monorepo; files npm won't pack (`.gitignore`, `.npmrc`) travel as `_gitignore` / `_npmrc` and are renamed back.
 
-MIT licence.
+Apache-2.0 licence: see [LICENSE](LICENSE) and [NOTICE](NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

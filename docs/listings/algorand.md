@@ -15,7 +15,7 @@ them in "Supported Wallets → Third-Party Adapters" (docs/resources/third-party
 `packages/kit-modules/src/algorand/index.ts` already follows this (`clipWallet()`, `ClipWalletAdapter`, `WALLET_ID`).
 
 ## Prerequisites
-- [ ] Publish a standalone package, e.g. `@coldai/use-wallet-clip` (same code, peer deps only; MIT; `repository` set),
+- [ ] Publish a standalone package, e.g. `@coldai/use-wallet-clip` (same code, peer deps only; Apache-2.0; `repository` set),
       with npm provenance from CI.
 - [ ] Public repo + issue tracker.
 - [ ] Icon (data URI in `defaultMetadata`).
@@ -30,7 +30,7 @@ them in "Supported Wallets → Third-Party Adapters" (docs/resources/third-party
 ```md
 ## Adapter
 - npm: https://www.npmjs.com/package/<package>
-- Source: <repo url> (MIT)
+- Source: <repo url> (Apache-2.0)
 - Wallet: Clip Wallet, a non-custodial browser extension (injected provider at `window.clipwallet.algorand`:
   ARC-1 signTxns, ARC-6 enable).
 

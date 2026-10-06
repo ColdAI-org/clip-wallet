@@ -11,6 +11,30 @@ import { join } from "node:path";
 
 export const REPO = "https://github.com/ColdAI-org/clip-wallet";
 export const NODE_ENGINE = ">=22";
+export const LICENSE_ID = "Apache-2.0";
+
+/**
+ * The NOTICE every published package ships (Apache-2.0 section 4(d)): ColdAI's notice, the trademark note and,
+ * for packages that carry third-party code, that code's licence text (`thirdParty`, from the vendored LICENSE files).
+ * @param {string} name
+ * @param {{ title: string, files: string, licence: string }[]} [thirdParty]
+ */
+export function noticeFor(name, thirdParty = []) {
+  const lines = [
+    `Clip Wallet: ${name}`,
+    "Copyright 2026 ColdAI (https://coldai.org)",
+    "",
+    "This product includes software developed by ColdAI (https://coldai.org).",
+    "Licensed under the Apache License, Version 2.0 (see LICENSE).",
+    "",
+    '"Clip Wallet", "1Mask" and the Clip Wallet logo are trademarks of ColdAI. The Apache',
+    "License 2.0 grants no rights to use them (Section 6).",
+  ];
+  for (const t of thirdParty) {
+    lines.push("", "-".repeat(78), "", `This package includes ${t.title} (${t.files}), under this licence:`, "", t.licence.trimEnd());
+  }
+  return `${lines.join("\n")}\n`;
+}
 
 /** packages/* that are published (everything that isn't private). */
 export function publishablePackages(root) {
@@ -90,7 +114,7 @@ export function normalize(pkg, dir, extra = {}) {
   const next = { ...pkg };
   next.description = extra.description ?? pkg.description;
   next.keywords = extra.keywords ?? pkg.keywords ?? ["clip-wallet", "wallet", "web3"];
-  next.license = "MIT";
+  next.license = LICENSE_ID;
   next.author = "ColdAI (https://coldai.org)";
   next.homepage = `${REPO}/tree/main/${dir}#readme`;
   next.bugs = { url: `${REPO}/issues` };
@@ -113,7 +137,7 @@ export function normalize(pkg, dir, extra = {}) {
     next.main = typeof root === "string" ? root : root?.import;
     next.types = typeof root === "string" ? undefined : root?.types;
     if (!next.types) delete next.types;
-    next.files = ["dist", "README.md", "LICENSE"];
+    next.files = ["dist", "README.md", "LICENSE", "NOTICE"];
     next.publishConfig = { access: "public", provenance: true, exports: pub };
     next.scripts = { build: "node ../../tools/release/build-package.mjs", ...pkg.scripts };
   } else {

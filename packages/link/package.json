@@ -7,7 +7,7 @@
     "wallet",
     "web3"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "ColdAI (https://coldai.org)",
   "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/link#readme",
   "bugs": {
@@ -74,7 +74,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "publishConfig": {
     "access": "public",

@@ -18,7 +18,7 @@ produces (`apps/extension/release/`); re-check it whenever `wxt.config.ts` (the 
 | Homepage | https://github.com/ColdAI-org/clip-wallet |
 | Support | https://github.com/ColdAI-org/clip-wallet/issues (security reports: see SECURITY.md, never public issues) |
 | Privacy policy URL | Publish `docs/legal/privacy-policy.md` (after legal review) and paste its public URL here |
-| Licence (AMO) | MIT |
+| Licence (AMO) | Apache-2.0 |
 | Visibility | Unlisted or a private test group while it is testnet-only (see "Before submitting") |
 
 ## Short description
@@ -63,7 +63,7 @@ same text.
 > **No tracking.** No analytics, no ads, and we never sell data. Settings → Your data lists everything the
 > wallet contacts and why.
 >
-> **Open source.** MIT-licensed, built by ColdAI: https://github.com/ColdAI-org/clip-wallet. Every release
+> **Open source.** Apache-2.0-licensed, built by ColdAI: https://github.com/ColdAI-org/clip-wallet. Every release
 > ships SHA-256 checksums and build provenance, and the extension builds reproducibly.
 
 ## Screenshots and graphics

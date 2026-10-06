@@ -6,6 +6,12 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
 
 ## [Unreleased]
 
+### Changed
+
+- **Licence:** Clip Wallet is now licensed under the Apache License 2.0 (was MIT). Every package ships `LICENSE` and
+  `NOTICE`; vendored MIT code (the CLPRouter SDK planner, the Scaffold-HBAR / Scaffold-ETH 2 dapp in the template) keeps
+  its notice. "Clip Wallet", "1Mask" and the logo are ColdAI trademarks and aren't covered by the licence.
+
 ## [0.1.0] - not yet tagged (testnet preview)
 
 First public preview. **Test networks only.** No external audit.

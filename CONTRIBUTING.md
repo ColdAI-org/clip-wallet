@@ -1,7 +1,12 @@
 # Contributing to Clip Wallet
 
-Thank you for helping. Clip Wallet is MIT-licensed. Contributions are accepted under the same licence, with a
-Developer Certificate of Origin sign-off and review before merge. Please read the [Code of Conduct](CODE_OF_CONDUCT.md).
+Thank you for helping. Clip Wallet is licensed under the [Apache License 2.0](LICENSE). Contributions are accepted
+under the same licence (inbound = outbound, as section 5 of the licence says), with a Developer Certificate of Origin
+sign-off and review before merge. Please read the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+The licence covers the code, not the brand: "Clip Wallet", "1Mask" and the Clip Wallet logo are ColdAI trademarks
+([NOTICE](NOTICE), [brand/README.md](brand/README.md)). Forks keep the `LICENSE` and `NOTICE` files and use their own
+name and icon. If you add third-party code, keep its licence file next to it and add it to `NOTICE`.
 
 ## Developer Certificate of Origin (DCO)
 

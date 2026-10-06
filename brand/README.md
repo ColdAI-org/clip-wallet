@@ -64,5 +64,5 @@ tested in `packages/ui/test/theme.test.ts`).
 - On orange use the white glyph; on white use `clip-mark.svg` or the orange glyph; on dark use the mark or the
   white glyph.
 - Forks and kit-built wallets must use their own name and icon (`clip.config.ts`); the Clip Wallet name and mark
-  aren't covered by the MIT licence.
+  are ColdAI trademarks and aren't licensed under Apache-2.0 (Section 6 grants no trademark rights; see `NOTICE`).
 - Wordmark typeface: [Inter](https://rsms.me/inter/) © The Inter Project Authors, SIL Open Font License 1.1.

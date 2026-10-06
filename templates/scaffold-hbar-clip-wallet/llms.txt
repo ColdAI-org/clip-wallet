@@ -1,6 +1,6 @@
 # Scaffold-HBAR × Clip Wallet
 
-> A non-custodial browser wallet with its own identity, built on the Clip Wallet kit (@clip-wallet/extension-kit), plus a Scaffold-HBAR Next.js dapp that connects to it on Hedera testnet. pnpm workspace, TypeScript, MIT. Test networks by default.
+> A non-custodial browser wallet with its own identity, built on the Clip Wallet kit (@clip-wallet/extension-kit), plus a Scaffold-HBAR Next.js dapp that connects to it on Hedera testnet. pnpm workspace, TypeScript, Apache-2.0. Test networks by default.
 
 Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (stories), packages/extension/clip.config.ts (typed config), packages/extension/wallet.identity.json (identity).
 

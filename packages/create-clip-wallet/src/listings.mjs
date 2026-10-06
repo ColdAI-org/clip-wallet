@@ -292,7 +292,7 @@ export const wallet = (options = {}) => clipWallet({ ...options, globalKey: "${i
 **Title:** \`docs: list ${id.name} third-party adapter\`
 
 \`\`\`md
-- npm: <package>  · Source: <repo url> (MIT)
+- npm: <package>  · Source: <repo url> (Apache-2.0)
 - Wallet: ${id.name}, a non-custodial browser extension (window.${id.key}.algorand: ARC-1 signTxns, ARC-6 enable).
 - Contract: extends BaseWallet; WALLET_ID = "${id.slug}"; peer deps @txnlab/use-wallet ^5, algosdk ^3.
 \`\`\`

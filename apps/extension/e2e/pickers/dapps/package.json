@@ -2,7 +2,16 @@
   "name": "clip-picker-dapps",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/apps/extension/e2e/pickers/dapps#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "apps/extension/e2e/pickers/dapps"
+  },
   "description": "Stock wallet-picker UIs (unmodified, default configuration) bundled by apps/extension/e2e/pickers.spec.ts. Its own package so each library gets the peer versions it supports (wagmi 2, React 18) without touching the extension's.",
   "type": "module",
   "scripts": {

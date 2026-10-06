@@ -2,7 +2,19 @@
   "name": "clip-plugin-address-label",
   "version": "1.0.0",
   "description": "Example Clip Wallet plugin: names well-known addresses (burn, zero, incinerator) in approvals.",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/plugins/examples/address-label#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/plugins/examples/address-label"
+  },
   "private": true,
-  "files": ["clip.plugin.json", "dist/bundle.js"]
+  "files": [
+    "clip.plugin.json",
+    "dist/bundle.js"
+  ]
 }

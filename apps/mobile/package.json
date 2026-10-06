@@ -1,7 +1,16 @@
 {
   "name": "@clip-wallet/mobile",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/apps/mobile#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "apps/mobile"
+  },
   "private": true,
   "main": "index.ts",
   "scripts": {

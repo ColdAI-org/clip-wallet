@@ -54,4 +54,4 @@ Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-walle
 tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
 packages share one version; pin it exactly. Pre-release: test networks by default.
 
-MIT licence.
+Apache-2.0 licence: see [LICENSE](LICENSE) and [NOTICE](NOTICE). "Clip Wallet" and "1Mask" are ColdAI trademarks (not licensed).

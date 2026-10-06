@@ -44,6 +44,7 @@ for (const { dir, path, pkg } of publishablePackages(root)) {
     if (/(?:^|\/)\.env(?:\..+)?$/.test(f) && !/\.env\.example$/.test(f) && !/env\.example$/.test(f)) problems.push(`${file}: ships ${f}`);
     if (/\.pem$|(?:^|\/)node_modules\//.test(f)) problems.push(`${file}: ships ${f}`);
   }
+  for (const f of ["LICENSE", "NOTICE"]) if (!list.includes(f)) problems.push(`${file}: doesn't ship ${f} (Apache-2.0 section 4)`);
   const targets = [];
   const walk = (v) => (typeof v === "string" ? targets.push(v) : v && typeof v === "object" ? Object.values(v).forEach(walk) : undefined);
   walk(manifest.exports);
