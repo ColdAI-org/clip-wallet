@@ -80,8 +80,9 @@
   },
   "devDependencies": {
     "@cosmjs/amino": "^0.39.0",
+    "@cosmjs/crypto": "^0.39.0",
     "@cosmjs/proto-signing": "^0.39.0",
-    "cosmjs-types": "^0.11.0",
-    "@cosmjs/crypto": "^0.39.0"
+    "@types/node": "^22.20.5",
+    "cosmjs-types": "^0.11.0"
   }
 }
