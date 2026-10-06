@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/ar.js";
 
 /** Arabic: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/ar/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{count, plural, zero {\u2068#\u2069 خطوة} one {خطوة واحدة} two {خطوتان} few {\u2068#\u2069 خطوات} many {\u2068#\u2069 خطوة} other {\u2068#\u2069 خطوة}} على \u2068{app}\u2069",
   "bg.act.batchStopped": "{count, plural, zero {\u2068#\u2069 خطوة} one {خطوة واحدة} two {خطوتان} few {\u2068#\u2069 خطوات} many {\u2068#\u2069 خطوة} other {\u2068#\u2069 خطوة}} على \u2068{app}\u2069، توقفت عند الخطوة \u2068{n}\u2069",
   "bg.err.batchHardware": "تنفيذ عدة خطوات بموافقة واحدة غير متاح بعد في المحافظ العتادية. اطلب من التطبيق إرسالها واحدة تلو الأخرى.",
+  ...n87,
 };
 export default messages;

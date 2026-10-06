@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/ja.js";
 
 /** Japanese: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/ja/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{app}で{count}ステップ",
   "bg.act.batchStopped": "{app}で{count}ステップ（ステップ{n}で停止）",
   "bg.err.batchHardware": "複数のステップを1回の承認で行う機能は、ハードウェアウォレットではまだ使えません。アプリに1つずつ送るよう依頼してください。",
+  ...n87,
 };
 export default messages;
