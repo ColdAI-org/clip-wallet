@@ -79,6 +79,7 @@ const FAMILY = {
   stellar: "Stellar",
   tezos: "Tezos",
   algorand: "Algorand",
+  stacks: "Stacks",
 };
 for (const [f, label] of Object.entries(FAMILY)) {
   EXTRA[`@clip-wallet/chains-${f}`] = {
