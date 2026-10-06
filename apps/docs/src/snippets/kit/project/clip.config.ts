@@ -1,4 +1,4 @@
-// packages/extension/clip.config.ts in a kit-built wallet (apps/extension/clip.config.ts in this repo).
+// clip.config.ts at the root of a kit-built wallet, for every platform (apps/*/clip.config.ts in this repo).
 import { defineConfig } from "@clip-wallet/config";
 
 export default defineConfig({

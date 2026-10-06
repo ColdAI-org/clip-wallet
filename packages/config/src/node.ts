@@ -1,6 +1,8 @@
 /**
  * Node-only helpers for build tools that need clip.config.ts outside a bundler: Expo's app.config.ts,
  * electron-builder's config file, create-clip-wallet. "@clip-wallet/config/node"; the main entry stays environment-free.
+ *
+ * @module
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";

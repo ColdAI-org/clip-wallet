@@ -13,6 +13,8 @@
  * Optional build-time env (never committed): CLIP_ASSOCIATED_DOMAIN (universal links + passkeys; needs a signed build
  * and the domain's AASA / assetlinks files), CLIP_WALLETCONNECT_PROJECT_ID or EXPO_PUBLIC_WC_PROJECT_ID (WalletConnect).
  * Node only, synchronous (Expo evaluates app.config.ts as CommonJS). No relative imports: build tools load it from source.
+ *
+ * @module
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

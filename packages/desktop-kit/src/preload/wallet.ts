@@ -2,6 +2,8 @@
  * Preload of the wallet, approval and browser-toolbar windows (sandboxed, isolated world). It exposes one small,
  * typed bridge object; the renderer never gets ipcRenderer itself. Every call is checked again in the main
  * process (schema, then sender: ipc-guard.ts).
+ *
+ * @module
  */
 import { contextBridge, ipcRenderer } from "electron";
 import { CH, type ChromeCall, type ChromeState, type DesktopCall, type HidJob, type HidReply } from "../shared/ipc";

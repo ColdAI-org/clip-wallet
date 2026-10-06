@@ -70,6 +70,18 @@ const CONFIG_DOCS: Record<string, string> = {
   "services.clipHandles.address": "The contract's EVM address (`0x…`).",
   "services.clipHandles.contractId": "The contract's Hedera id (`0.0.x`).",
   "services.clipHandles.ledger": "Which Hedera ledger the contract is on.",
+  languages: "The languages Settings → Language offers, from `LANGUAGES` (`en`, `de`, `fr`, `es`, `pt-BR`, `it`, `tr`, `ja`, `ko`, `zh-Hans`, `ar`, `hi`), each listed once. The first is the fallback. Unset: all twelve.",
+  appId: "The desktop and phone app id, a reverse-domain id. Unset: `rdns`. The iOS bundle id and Android package are `appId` (hyphens become `_` on Android), the desktop app id `<appId>.desktop`; `platformIds(config)` lists them all.",
+  scheme: "The deep-link URL scheme of the desktop and phone apps (`<scheme>://wc?uri=…`, `<scheme>://browse?url=…`). Unset: the wallet key, e.g. `acmewallet`.",
+  desktop: "Desktop app overrides.",
+  "desktop.appId": "The desktop app id (macOS bundle id, Windows AppUserModelID). Unset: `<appId>.desktop`.",
+  mobile: "Phone app overrides.",
+  "mobile.bundleId": "The iOS bundle id. Unset: `appId`.",
+  "mobile.androidPackage": "The Android package. Unset: `appId`, with hyphens as `_`.",
+  fees: "Reserved for Clip Cloud's hosted mode. Accepted (other fields are kept), never acted on by the kit. Default: off.",
+  "fees.enabled": "Reserved; the kit never collects fees, whatever this says.",
+  usage: "Reserved for Clip Cloud's hosted mode. Accepted (other fields are kept), never acted on by the kit. Default: off.",
+  "usage.enabled": "Reserved; the kit never reports usage, whatever this says.",
   mainnet: `\`false\` (default) or the checklist object \`{ enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT }\`. A mainnet build also needs \`mainnetProblems(config)\` to be empty.`,
 };
 

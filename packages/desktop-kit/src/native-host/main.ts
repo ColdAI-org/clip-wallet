@@ -4,6 +4,8 @@
  * browser's stdio and Clip Desktop's per-user socket; frames are end-to-end encrypted after pairing.
  * Bundled by scripts/build-native-host.mjs to out/native-host/clip-native-host.cjs and run with the app's own
  * executable as Node (src/main/native-hosts.ts writes the launcher).
+ *
+ * @module
  */
 import { nativeHostMain } from "@clip-wallet/link/node";
 

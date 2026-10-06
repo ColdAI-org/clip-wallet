@@ -10,6 +10,8 @@
  *
  * Nothing is exposed to the page: no contextBridge.exposeInMainWorld, so window.require, ipcRenderer, process and
  * electron stay out of its reach.
+ *
+ * @module
  */
 import { contextBridge, ipcRenderer } from "electron";
 import { createContentBridge, type RuntimePort } from "@clip-wallet/1mask/content";

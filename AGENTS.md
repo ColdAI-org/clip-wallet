@@ -3,8 +3,9 @@
 Clip Wallet is a non-custodial wallet for every CLPR network: 14 network families, 1Mask for every dapp, decoded
 approvals, a security floor, features (staking, swaps, on-ramps, Secure Trade), social (contacts, Clip handles,
 notifications, Discover), sandboxed Clip Plugins, and route-and-fund / settle-on-Hedera on CLPRouter. It is also a
-kit: the `@clip-wallet/*` packages, `@clip-wallet/extension-kit` and `create-clip-wallet` let anyone ship their own
-wallet. Pre-release: test networks only.
+kit: the `@clip-wallet/*` packages, `@clip-wallet/extension-kit`, `@clip-wallet/desktop-kit`, `@clip-wallet/mobile-kit`
+and `create-clip-wallet` let anyone ship their own wallet on every platform from one `clip.config.ts`. Pre-release: test
+networks only.
 
 ## Rules that never break
 1. Only `packages/vault` touches seed phrases or private keys. `tools/harness/check.mjs` fails otherwise.
@@ -21,20 +22,23 @@ wallet. Pre-release: test networks only.
 ```bash
 pnpm install && pnpm typecheck && pnpm test && pnpm harness
 ```
-Touching the extension: also `pnpm --filter @clip-wallet/extension e2e`. Touching packaging, `create-clip-wallet` or
-`templates/`: also `pnpm pack-all && pnpm kit:e2e` (and `pnpm kit:e2e:scaffold-hbar` for the template).
+Touching the extension: also `pnpm --filter @clip-wallet/extension e2e`. Touching the desktop app or desktop-kit: also
+`pnpm --filter @clip-wallet/desktop e2e`. Touching packaging, `create-clip-wallet`, the kits or `templates/`: also
+`pnpm pack-all && pnpm kit:e2e` (every platform from tarballs; and `pnpm kit:e2e:scaffold-hbar` for the template).
 
 Release work (Docker for the last one): `pnpm --filter @clip-wallet/extension package`, `actionlint`, `scripts/repro-check.sh`.
 
 ## Layout
 ```
 packages/core            shared types (the contract); additive changes only
-packages/config          clip.config.ts schema (zod): identity, theme, networks, route, services, mainnet
+packages/config          clip.config.ts schema (zod): identity, theme, networks, languages, app ids, scheme, route, services, mainnet; /node loader
 packages/vault           phrase, derivation for 14 families, encryption, approval-bound signing, passkey unlock
 packages/chains-*        evm hedera solana bitcoin sui aptos cardano substrate starknet ton near stellar tezos algorand
 packages/1mask           dapp connectors for all families + WalletConnect; announces the wallet's identity
 packages/engine          environment-free orchestration (approvals, portfolio, catalog, wiring) shared by extension and mobile
 packages/extension-kit   the browser extension as a library: background, pages, WXT config (clipWallet()), security floor
+packages/desktop-kit     the desktop app as a library: main process, preloads, pages, clipDesktop() (electron-vite), electronBuilderConfig()
+packages/mobile-kit      the phone app as a library: screens, background host, in-app browser, expoConfig(), withClipWallet() (Metro)
 packages/ui              React screens and theme tokens
 packages/i18n            translation layer (English + 11 languages)
 packages/route           CLPRouter route-and-fund; settle-on-Hedera (Phase 3) client
@@ -48,9 +52,10 @@ packages/link            linked devices: phone/desktop as signer, encrypted sync
 packages/connect         Clip Connect (@clip-wallet/connect): wallet-agnostic dapp SDK; public standards only, never wallet internals
 packages/kit-modules     modules for ecosystem pickers (NEAR Wallet Selector, Stellar Wallets Kit, use-wallet, Beacon)
 packages/backup-client, packages/media-client   clients for services/backup and services/media-proxy
-packages/create-clip-wallet   npx create-clip-wallet: the template + identity + listing drafts + mainnet check
+packages/create-clip-wallet   npx create-clip-wallet: the template, platforms (--platforms), identity, icons from one logo, listing drafts, mainnet check
 apps/extension           Clip Wallet's own extension: identity + one-line entrypoints on extension-kit (e2e lives here)
-apps/mobile              Expo app on engine
+apps/desktop             Clip Wallet's own desktop app: identity + one-line entrypoints on desktop-kit (Playwright e2e lives here)
+apps/mobile              Clip Wallet's own phone app: identity + index.ts / app.config.ts / metro.config.js on mobile-kit
 services/backup, services/media-proxy, services/link-relay   Cloudflare Workers (optional hosted services)
 brand/                   Clip Wallet's brand sources; tools/brand/render.mjs renders the icons
 contracts/handles        ClipHandles on Hedera (Foundry)
@@ -109,6 +114,18 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
    (`src/globals.ts`); the resolved config is the `virtual:clip-wallet/config` module (`src/config.ts`).
 3. Tests in `packages/extension-kit/test` (vitest aliases the virtual module to `test/clip.config.ts`); then `pnpm --filter @clip-wallet/extension e2e`.
 
+### Change the desktop or phone app
+1. The code lives in `packages/desktop-kit/src` (main process, preloads, pages) and `packages/mobile-kit/src` (screens,
+   background host, in-app browser), shared with every kit-built wallet; `apps/desktop` and `apps/mobile` only hold
+   Clip Wallet's identity, icons and one-line entrypoints.
+2. The resolved config is `virtual:clip-wallet/config` (default export + `icon` data URI): `clipDesktop()` in
+   `packages/desktop-kit/src/electron-vite.ts` provides it to electron-vite, `withClipWallet()` in
+   `packages/mobile-kit/src/metro.cjs` to Metro; ids and names come from `platformIds()` (`packages/config`), never a
+   literal. Node-side helpers (`electron-vite.ts`, `builder.ts`, `expo.ts`) have no relative imports: build tools load
+   them from source.
+3. Tests in each kit's `test/` (vitest and, for mobile, jest-expo; both alias the virtual module to `test/clip.config.ts`);
+   then `pnpm --filter @clip-wallet/desktop e2e` for the desktop app, and `pnpm kit:e2e` (both platforms, from tarballs).
+
 ### Security checks
 1. A new threat source implements `ThreatIntelProvider` (`packages/security/src/threat/types.ts`); say in its comment exactly what leaves the device.
 2. Anything that sends user data to a third party is off unless a key is configured, and Settings → Security says so.
@@ -142,8 +159,14 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
 
 ### Change the Scaffold-HBAR template or create-clip-wallet
 1. The template is `templates/scaffold-hbar-clip-wallet` (laid out as create-scaffold-hbar expects: `template.json`
-   capabilities nextjs-app / no Solidity / pnpm, rename map, outro). create-clip-wallet bundles it at `prepack`.
+   capabilities nextjs-app / no Solidity / pnpm, rename map, outro). It holds every part: one `clip.config.ts` at the
+   root, `packages/extension`, `packages/desktop`, `packages/mobile`, `packages/nextjs`. create-clip-wallet bundles it
+   at `prepack`.
 2. Both paths must keep producing the same project: create-clip-wallet copies the template the way create-scaffold-hbar
-   does (`packages/create-clip-wallet/src/template.mjs`), then runs the identity step that `pnpm wallet:identity` runs.
-3. `tools/harness/check.mjs` is copied into the template: `node tools/release/sync-template.mjs` after changing it.
-4. Verify: `pnpm --filter create-clip-wallet test`, `pnpm pack-all`, `pnpm kit:e2e`, `pnpm kit:e2e:scaffold-hbar`.
+   does (`packages/create-clip-wallet/src/template.mjs`), removes the parts that weren't chosen (`selectParts()`:
+   folders, root scripts, and docs blocks marked `platform:<part>` / `only:<part>`), then runs the identity step that
+   `pnpm wallet:identity` runs (`--scaffold-hbar` with every platform = the template unchanged).
+3. Icons come from one logo through `packages/create-clip-wallet/src/icons.mjs` (Node built-ins only); the files it
+   writes must stay the ones `electronBuilderConfig()` and `expoConfig()` point at (`test/icons.test.ts` checks).
+4. `tools/harness/check.mjs` is copied into the template: `node tools/release/sync-template.mjs` after changing it.
+5. Verify: `pnpm --filter create-clip-wallet test`, `pnpm pack-all`, `pnpm kit:e2e`, `pnpm kit:e2e:scaffold-hbar`.

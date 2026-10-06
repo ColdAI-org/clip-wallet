@@ -1,5 +1,11 @@
 # Clip Wallet desktop (macOS, Windows, Linux)
 
+> The app's code is [`@clip-wallet/desktop-kit`](../../packages/desktop-kit) (`packages/desktop-kit`), shared with every
+> kit-built wallet; this folder is Clip Wallet's brand on it: `clip.config.ts`, the icons rendered from `brand/`,
+> `electron.vite.config.ts` (`clipDesktop()`), `electron-builder.config.cjs` (`electronBuilderConfig()`), one-line
+> entrypoints, and the Playwright e2e. Paths in the tables below (`src/…`, `scripts/build-inpage.mjs`) are in the kit;
+> its unit tests run with `pnpm --filter @clip-wallet/desktop-kit test`.
+
 Electron app with the shared wallet engine in the main process, the extension's screens (`@clip-wallet/ui`) in the
 wallet and approval windows, and a built-in dapp browser where 1Mask is injected the way the extension injects it.
 Test networks only (`clip.config.ts`, `mainnet: false`).
@@ -7,7 +13,7 @@ Test networks only (`clip.config.ts`, `mainnet: false`).
 ```
 pnpm --filter @clip-wallet/desktop build      # electron-vite → out/ (main, sandboxed preloads, renderer)
 pnpm --filter @clip-wallet/desktop start      # run the built app
-pnpm --filter @clip-wallet/desktop test       # unit tests (IPC schema, origin binding, storage, Touch ID PRF, HID relay, i18n QA)
+pnpm --filter @clip-wallet/desktop-kit test   # unit tests (IPC schema, origin binding, storage, Touch ID PRF, HID relay, i18n QA, builder mapper)
 pnpm --filter @clip-wallet/desktop e2e        # build + Playwright _electron end-to-end (real vault, testnets)
 pnpm --filter @clip-wallet/desktop dist:mac   # electron-builder: dmg + zip, arm64 + x64 (dist:win, dist:linux, dist:dir)
 CLIP_EXTENSION_IDS=<id>[,<id>] pnpm … build   # Chromium extension ids allowed to use Clip Desktop (native messaging)
@@ -17,7 +23,7 @@ CLIP_EXTENSION_IDS=<id>[,<id>] pnpm … build   # Chromium extension ids allowed
 
 | Piece | Where | Notes |
 |---|---|---|
-| Engine + vault | `src/main/host/wallet.ts` | `@clip-wallet/engine` like the phone (`apps/mobile/src/background/host.ts`); the only place in this app that imports `@clip-wallet/vault` (harness allowlist). Features, Ledger/Keystone, social, security attached as on mobile. |
+| Engine + vault | `src/main/host/wallet.ts` | `@clip-wallet/engine` like the phone (`packages/mobile-kit/src/background/host.ts`); the only place in this app that imports `@clip-wallet/vault` (harness allowlist). Features, Ledger/Keystone, social, security attached as on mobile. |
 | Storage | `src/main/storage.ts` | `vault.json`: the vault record (already Argon2id-sealed) wrapped again with Electron `safeStorage` (Keychain / DPAPI / libsecret or KWallet). `app.json`: public app data. Atomic writes. |
 | IPC | `src/shared/ipc.ts`, `src/main/ipc-guard.ts`, `src/preload/wallet.ts` | One typed bridge object (`window.clipDesktop`) via `contextBridge`. Main checks zod schema, then the sender (registered window role + top frame + `clip-app://wallet` origin), then the engine's own zod schema. |
 | Wallet pages | `src/renderer/{wallet,approval}` | Served from `clip-app://wallet/…` (`src/main/app-protocol.ts`) with a strict CSP; only the default session knows the scheme. |

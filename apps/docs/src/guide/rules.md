@@ -32,7 +32,8 @@ only in:
 
 - `packages/vault` itself;
 - the extension background: `packages/extension-kit/src/background/` and `apps/extension/**/background*`;
-- the mobile background (`apps/mobile/src/background/`) and the desktop host (`apps/desktop/src/main/host/`);
+- the phone app's background (`packages/mobile-kit/src/background/`) and the desktop host
+  (`packages/desktop-kit/src/main/host/`);
 - the onboarding screen (`packages/ui/src/screens/Onboarding.tsx`, or an `onboarding/` folder).
 
 Screens talk to the background through messages (`packages/ui/src/client.ts`), never to the vault.

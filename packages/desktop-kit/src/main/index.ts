@@ -9,6 +9,8 @@
  * Security switches are set before anything loads: single instance, sandbox for every renderer, no remote content
  * in app windows (CSP + a request filter on the default session), no new windows, no <webview>, no navigation of
  * app windows, permission handlers that deny by default.
+ *
+ * @module
  */
 import {
   app,

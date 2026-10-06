@@ -1,12 +1,16 @@
 # Build and ship
 
+A project builds each platform from the same `clip.config.ts` at its root. No account or certificate is needed for
+anything on this page; signing and store accounts are only for shipping: see [Stores and code signing](./signing.md).
+
 ## The extension's files
 
 A wallet project keeps three things; the rest comes from `@clip-wallet/extension-kit`.
 
-**`wxt.config.ts`**: the whole build is `clipWallet()`.
+**`wxt.config.ts`**: the whole build is `clipWallet()`. `configDir` points at the project root, where the config, the
+icon, `MAINNET.md` and the wallet-wide `.env` live.
 
-<<< @/snippets/kit/wxt.config.ts
+<<< @/snippets/kit/project/packages/extension/wxt.config.ts
 
 **One-line entrypoints** in `src/entrypoints/`:
 
@@ -42,7 +46,8 @@ pnpm harness && pnpm check-types && pnpm build
 
 ## Package for the stores
 
-In a kit-built wallet, `pnpm extension:zip` writes the store zips with WXT. Clip Wallet's own extension in this repo
+In a kit-built wallet, `pnpm extension:zip` writes the store zips with WXT, named after the wallet
+(`acme-wallet-0.1.0-chrome.zip`). Clip Wallet's own extension in this repo
 uses a stricter script:
 
 ```sh
@@ -69,8 +74,64 @@ sends where (Settings → Security and Settings → Your data list it).
 ## Your extension id
 
 The extension id comes from the public key in `extension.key`. Keep the private key
-(`packages/extension/.keys/extension.pem`) offline and **use the same key for the store item**, so the id in the store
+(`.keys/extension.pem` at the project root) offline and **use the same key for the store item**, so the id in the store
 matches the one your listings, passkeys and native-messaging hosts know.
+
+## Desktop app
+
+<<< @/snippets/kit/project/packages/desktop/electron.vite.config.ts
+
+```sh
+pnpm dev:desktop          # electron-vite dev
+pnpm desktop:build        # → packages/desktop/out (main, sandboxed preloads, renderer, native-messaging host)
+pnpm desktop:start        # run the built app
+pnpm desktop:dist         # electron-builder for this computer → packages/desktop/release
+pnpm desktop:dist:mac     # dmg + zip, arm64 and x64
+pnpm desktop:dist:win     # NSIS + zip, x64 and arm64 (NSIS: on Windows or in CI)
+pnpm desktop:dist:linux   # AppImage + deb (on Linux or in CI) + tar.gz (anywhere)
+```
+
+`clipDesktop()` resolves the config with the build environment (`CLIP_WALLETCONNECT_PROJECT_ID`, `CLIP_UPDATES`,
+`CLIP_EXTENSION_IDS`, from the environment or `.env`), gives it to the main process, the preloads and the pages as
+`virtual:clip-wallet/config` (the icon inlined as the identity dapps see), fills the pages' title and Content Security
+Policy, bundles the native-messaging host, and refuses a mainnet config with open boxes. `electronBuilderConfig()`
+(in `electron-builder.config.cjs`) maps the config to electron-builder: app id, product name, executable and artifact
+names (`Acme-Wallet-0.1.0-mac-arm64.zip`), the `<scheme>://` protocol, the Chromium locales for the offered languages,
+the icons and the hardened-runtime entitlements, with signing, notarization and update publishing only when their
+variables are set.
+
+The app is the same as Clip Wallet's desktop app: vault and engine in the main process, every renderer sandboxed, a
+built-in dapp browser with 1Mask and one session per site, Touch ID, Ledger over WebHID, and linked devices.
+
+## Phone app
+
+<<< @/snippets/kit/project/packages/mobile/app.config.ts
+
+```sh
+pnpm mobile:start                    # Metro for a development build (the app uses native modules: not Expo Go)
+pnpm mobile:prebuild                 # generate ios/ and android/ (never committed; no CocoaPods install)
+pnpm --filter mobile ios             # build and run on the iOS simulator (Xcode); android: an emulator or a device
+pnpm mobile:export                   # the JavaScript bundles for iOS and Android: no account, no Xcode, no Android SDK
+pnpm --filter mobile eas:build       # EAS cloud builds (an Expo account)
+```
+
+`expoConfig()` maps the config to Expo's app config: name, slug, scheme, bundle id, package, icons, the adaptive icon
+and the splash on the accent colour, permission texts in the wallet's name, and universal links for
+`CLIP_ASSOCIATED_DOMAIN`. `withClipWallet()` (in `metro.config.js`) gives the app the resolved config as
+`virtual:clip-wallet/config`, written to `node_modules/.cache/clip-wallet/config.js` on every Metro start. Both refuse a
+mainnet config with open boxes. The kit's native modules are peer dependencies: the project lists them, so Expo
+autolinking finds them.
+
+## What the harness checks
+
+`pnpm harness`, in the project, must pass before every commit:
+
+- key material only in `@clip-wallet/vault` (inside the kits); no logged secrets; no tracked `.env` or key files;
+- the identity is the wallet's own (`rdns` and `appId` never `org.coldai.*`, the name never "Clip Wallet");
+- every platform builds through its kit: `clipWallet()`, `clipDesktop()` and `electronBuilderConfig()`, `expoConfig()`
+  and `withClipWallet()`; nothing switches the phishing lists off;
+- mainnet on means every box in `MAINNET.md` is ticked;
+- kit packages are pinned to one exact version.
 
 ## Listings
 
@@ -90,8 +151,8 @@ npm provenance attestation against the kit's public repository; `npm audit signa
 
 ::: danger Real funds
 Clip Wallet is pre-release and has had no external audit. A mainnet build moves real money. The checklist in
-`packages/extension/MAINNET.md` is the owner's decision, never an agent's.
+`MAINNET.md` (at the project root) is the owner's decision, never an agent's.
 :::
 
-`pnpm wallet:mainnet-check` lists what is left. The build refuses mainnet until it is empty: see
+`pnpm wallet:mainnet-check` lists what is left. Every platform's build refuses mainnet until it is empty: see
 [Configure clip.config.ts](./config.md#mainnet).

@@ -1,3 +1,4 @@
+/// <reference path="./pako.d.ts" />
 /**
  * gunzip for plugin installs on React Native: Hermes has no DecompressionStream, so @clip-wallet/plugins takes this
  * through `NpmOptions.gunzip`. pako 2.2.0 `Inflate` (windowBits 16+15 = gzip wrapper), stopping as soon as the

@@ -310,6 +310,9 @@ importers:
       '@clip-wallet/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@clip-wallet/desktop-kit':
+        specifier: workspace:*
+        version: link:../../packages/desktop-kit
       '@clip-wallet/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -334,6 +337,9 @@ importers:
       '@clip-wallet/media-client':
         specifier: workspace:*
         version: link:../../packages/media-client
+      '@clip-wallet/mobile-kit':
+        specifier: workspace:*
+        version: link:../../packages/mobile-kit
       '@clip-wallet/names':
         specifier: workspace:*
         version: link:../../packages/names

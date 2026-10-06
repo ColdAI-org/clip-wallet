@@ -10,6 +10,8 @@
  *
  *   "@clip-wallet/mobile-kit/expo"    expoConfig({ configFile }): app.config.ts from clip.config.ts (Node)
  *   "@clip-wallet/mobile-kit/metro"   withClipWallet(metroConfig, { configFile }): Metro wiring (Node, CommonJS)
+ *
+ * @module
  */
 // Background notification checks must be defined at load (expo-task-manager).
 import "./background/background-task";

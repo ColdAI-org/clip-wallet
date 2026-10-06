@@ -5,13 +5,24 @@ The Clip Wallet desktop app (Electron: macOS, Windows, Linux) as a library. A wa
 process (vault, engine, approvals, Touch ID, Ledger over WebHID, linked devices), the sandboxed preloads, the built-in
 dapp browser with 1Mask for all 14 network families and the pages come from here, versioned and signed.
 
-```ts
-// electron.vite.config.ts
-import { defineConfig } from "electron-vite";
-import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
-import clipConfig from "../../clip.config";
+> Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
-export default defineConfig(clipDesktop({ config: clipConfig, root: import.meta.dirname, configDir: "../.." }));
+## Install
+
+```sh
+npm i @clip-wallet/desktop-kit @clip-wallet/config electron electron-vite vite react react-dom
+```
+
+## Example
+
+```ts
+// electron.vite.config.ts (in a create-clip-wallet project: import clipConfig from "../../clip.config", configDir: "../..")
+import { defineConfig as defineClipConfig } from "@clip-wallet/config";
+import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
+
+const clipConfig = defineClipConfig({ name: "Acme Wallet", rdns: "com.acme.wallet", networks: ["evm:*", "hedera", "solana"] });
+
+export default clipDesktop({ config: clipConfig, root: import.meta.dirname });
 ```
 
 ```js
@@ -54,11 +65,18 @@ Developer ID Application), `APPLE_API_KEY` / `APPLE_API_KEY_ID` / `APPLE_API_ISS
 
 Peer dependencies: `electron`, `electron-vite`, `vite`, `react`, `react-dom`. Node 22.18 or newer for the build helpers.
 
+## Documentation
+
+- [Launch your own wallet](https://coldai.org/clip/docs/kit/)
+- [Build and ship: the desktop app](https://coldai.org/clip/docs/kit/build-and-ship.html#desktop-app)
+- [Stores and code signing](https://coldai.org/clip/docs/kit/signing.html)
+- [API reference](https://coldai.org/clip/docs/reference/api/desktop-kit.html)
+
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
 tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
-packages share one version; pin it exactly. Pre-release: test networks by default.
+packages share one version; pin it exactly.
 
 ## Licence
 

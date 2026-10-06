@@ -11,6 +11,8 @@
  *   "@clip-wallet/desktop-kit/preload/dapp"    (side effect) the dapp-tab preload (1Mask)
  *   "@clip-wallet/desktop-kit/renderer"        mountWallet(), mountApproval(), mountBrowserChrome()
  *   "@clip-wallet/desktop-kit/native-host"     (side effect) the native-messaging host program
+ *
+ * @module
  */
 export { parseDeepLink, deepLinkFromArgv, type DeepLink } from "./main/deeplink";
 export { walletCsp } from "./main/app-paths";

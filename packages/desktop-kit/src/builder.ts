@@ -17,6 +17,8 @@
  *   Windows signing    WIN_CSC_LINK + WIN_CSC_KEY_PASSWORD (or CSC_LINK on a Windows runner)
  * Auto-update metadata only for CLIP_UPDATES=1 builds, published to CLIP_UPDATES_OWNER / CLIP_UPDATES_REPO on GitHub.
  * Pure apart from reading clip.config.ts when only configFile is given (exported for tests).
+ *
+ * @module
  */
 import { resolve } from "node:path";
 import { platformIds, type ClipConfig } from "@clip-wallet/config";

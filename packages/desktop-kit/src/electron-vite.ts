@@ -17,6 +17,8 @@
  *   CLIP_UPDATES=1                  turn electron-updater on (signed release builds only)
  *   CLIP_EXTENSION_IDS              Chromium extension ids allowed to use the app over native messaging
  * Runs in Node (electron-vite loads it).
+ *
+ * @module
  */
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync } from "node:fs";
