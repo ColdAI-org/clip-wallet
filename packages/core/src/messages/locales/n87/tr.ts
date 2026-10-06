@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Turkish: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../tr.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC kanalı {channel}",
+  "bg.cosmos.ibcLeaves": "Bu, token'ları IBC ({channel}) üzerinden başka bir zincire gönderir. Adresin o zincir için doğru olduğunu kontrol edin.",
+  "bg.cosmos.unbonding": "{symbol} bakiyeniz, ağın unbonding süresi bitene kadar kilitli kalır ve kazanç getirmez.",
+  "bg.cosmos.moveStake": "{amount} stake'i {from} doğrulayıcısından {to} doğrulayıcısına taşı",
+  "bg.cosmos.claimRewardsFrom": "{validator} doğrulayıcısından stake ödüllerini al",
+  "bg.cosmos.grantAuthz": "{grantee} adresinin hesabınız adına işlem yapmasına izin ver",
+  "bg.cosmos.authzTakeAll": "Bu, {grantee} adresinin, izni geri alana kadar size tekrar sormadan paranızı taşımasına izin verir. Her şeyi alabilir.",
+  "bg.cosmos.authzActs": "Bu, {grantee} adresinin, izni geri alana kadar size tekrar sormadan hesabınız adına işlem yapmasına izin verir. Buna yalnızca güvendiğiniz uygulamalar için izin verin.",
+  "bg.cosmos.revokeAuthz": "{grantee} adresinin hesabınız adına işlem yapmasını durdur",
+  "bg.cosmos.grantFees": "{grantee} adresinin ağ ücretlerini {symbol} bakiyenizle ödemesine izin ver",
+  "bg.cosmos.feegrantUpTo": "Bu, {grantee} adresinin size tekrar sormadan ağ ücretleri için paranızdan en fazla {amount} harcamasına izin verir.",
+  "bg.cosmos.feegrantAll": "Bu, {grantee} adresinin size tekrar sormadan {symbol} bakiyenizi ağ ücretleri için limitsiz harcamasına izin verir.",
+  "bg.cosmos.revokeFees": "{grantee} adresinin ağ ücretlerini paranızla ödemesini durdur",
+  "bg.cosmos.block": "blok {height}",
+  "bg.cosmos.appGetsSigned": "{host} (imzalı işlemi alır)",
+  "bg.cosmos.wrongPrefix": "Bu adres başka bir ağa ait. {network} üzerindeki adresler {prefix} ile başlar.",
+  "bg.cosmos.noAccount": "Hesabınız henüz {network} üzerinde değil. Önce biraz {symbol} alın.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "Bu TRON hesabı başka bir anahtar tarafından kontrol ediliyor, bu yüzden Clip Wallet onun için imzalayamıyor.",

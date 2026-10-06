@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Korean: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../ko.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC 채널 {channel}",
+  "bg.cosmos.ibcLeaves": "토큰을 IBC({channel})로 다른 체인에 보내요. 그 체인에 맞는 주소인지 확인하세요.",
+  "bg.cosmos.unbonding": "네트워크의 언본딩 기간이 끝날 때까지 내 {symbol}은(는) 잠겨 있고 보상도 받지 못해요.",
+  "bg.cosmos.moveStake": "{amount} 스테이킹을 {from}에서 {to}(으)로 옮기기",
+  "bg.cosmos.claimRewardsFrom": "{validator}에서 스테이킹 보상 받기",
+  "bg.cosmos.grantAuthz": "{grantee}이(가) 내 계정으로 작업하도록 허용",
+  "bg.cosmos.authzTakeAll": "권한을 회수할 때까지 {grantee}이(가) 다시 묻지 않고 내 자금을 옮길 수 있게 돼요. 전부 가져갈 수도 있어요.",
+  "bg.cosmos.authzActs": "권한을 회수할 때까지 {grantee}이(가) 다시 묻지 않고 내 계정으로 작업할 수 있게 돼요. 신뢰하는 앱에만 허용하세요.",
+  "bg.cosmos.revokeAuthz": "{grantee}이(가) 내 계정으로 작업하지 못하게 하기",
+  "bg.cosmos.grantFees": "{grantee}이(가) 내 {symbol}(으)로 네트워크 수수료를 내도록 허용",
+  "bg.cosmos.feegrantUpTo": "{grantee}이(가) 다시 묻지 않고 내 자금에서 최대 {amount}을(를) 네트워크 수수료로 쓸 수 있게 돼요.",
+  "bg.cosmos.feegrantAll": "{grantee}이(가) 다시 묻지 않고 내 {symbol}을(를) 한도 없이 네트워크 수수료로 쓸 수 있게 돼요.",
+  "bg.cosmos.revokeFees": "{grantee}이(가) 내 자금으로 네트워크 수수료를 내지 못하게 하기",
+  "bg.cosmos.block": "블록 {height}",
+  "bg.cosmos.appGetsSigned": "{host} (서명된 트랜잭션을 받아요)",
+  "bg.cosmos.wrongPrefix": "다른 네트워크의 주소예요. {network} 주소는 {prefix}(으)로 시작해요.",
+  "bg.cosmos.noAccount": "내 계정이 아직 {network}에 없어요. 먼저 {symbol}을(를) 받으세요.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "이 TRON 계정은 다른 키가 관리하고 있어서 Clip Wallet이 서명할 수 없어요.",

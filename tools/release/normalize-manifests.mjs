@@ -126,6 +126,12 @@ EXTRA["@clip-wallet/chains-icp"] = {
   keywords: ["clip-wallet", "wallet", "icp", "internet-computer", "chain-module"],
 };
 
+EXTRA["@clip-wallet/chains-cosmos"] = {
+  description:
+    "Cosmos SDK ChainModule for Clip Wallet (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia): builds and decodes transactions in plain words; never touches keys",
+  keywords: ["clip-wallet", "wallet", "cosmos", "osmosis", "dydx", "provenance", "thorchain", "initia", "chain-module"],
+};
+
 let bad = 0;
 for (const { dir, path, pkg } of publishablePackages(root)) {
   const next = normalize(pkg, dir, EXTRA[pkg.name] ?? {});

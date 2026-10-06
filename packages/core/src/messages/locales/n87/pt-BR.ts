@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Brazilian Portuguese: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../pt-BR.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "Canal IBC {channel}",
+  "bg.cosmos.ibcLeaves": "Isto envia os tokens para outra chain por IBC ({channel}). Confira se o endereço está certo nessa chain.",
+  "bg.cosmos.unbonding": "Seus {symbol} ficam bloqueados e não rendem nada até o fim do período de desvinculação da rede.",
+  "bg.cosmos.moveStake": "Mover {amount} de staking de {from} para {to}",
+  "bg.cosmos.claimRewardsFrom": "Resgatar recompensas de staking de {validator}",
+  "bg.cosmos.grantAuthz": "Deixar {grantee} agir pela sua conta",
+  "bg.cosmos.authzTakeAll": "Isto permite que {grantee} mova seus fundos sem pedir de novo, até você retirar a permissão. Pode levar tudo.",
+  "bg.cosmos.authzActs": "Isto permite que {grantee} aja pela sua conta sem pedir de novo, até você retirar a permissão. Só permita isso para apps em que você confia.",
+  "bg.cosmos.revokeAuthz": "Impedir que {grantee} aja pela sua conta",
+  "bg.cosmos.grantFees": "Deixar {grantee} pagar taxas de rede com seus {symbol}",
+  "bg.cosmos.feegrantUpTo": "Isto permite que {grantee} gaste até {amount} dos seus fundos em taxas de rede, sem pedir de novo.",
+  "bg.cosmos.feegrantAll": "Isto permite que {grantee} gaste seus {symbol} em taxas de rede sem limite, sem pedir de novo.",
+  "bg.cosmos.revokeFees": "Impedir que {grantee} pague taxas de rede com seus fundos",
+  "bg.cosmos.block": "bloco {height}",
+  "bg.cosmos.appGetsSigned": "{host} (recebe a transação assinada)",
+  "bg.cosmos.wrongPrefix": "Esse endereço é de outra rede. Os endereços em {network} começam com {prefix}.",
+  "bg.cosmos.noAccount": "Sua conta ainda não está em {network}. Receba um pouco de {symbol} primeiro.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "Esta conta TRON é controlada por outra chave, então a Clip Wallet não pode assinar por ela.",

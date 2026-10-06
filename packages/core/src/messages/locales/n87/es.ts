@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Spanish: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../es.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "Canal IBC {channel}",
+  "bg.cosmos.ibcLeaves": "Esto envía los tokens a otra cadena por IBC ({channel}). Comprueba que la dirección sea correcta en esa cadena.",
+  "bg.cosmos.unbonding": "Tus {symbol} quedan bloqueados y no generan nada hasta que termine el período de desvinculación de la red.",
+  "bg.cosmos.moveStake": "Mover {amount} de staking de {from} a {to}",
+  "bg.cosmos.claimRewardsFrom": "Reclamar recompensas de staking de {validator}",
+  "bg.cosmos.grantAuthz": "Permitir que {grantee} actúe en nombre de tu cuenta",
+  "bg.cosmos.authzTakeAll": "Esto permite que {grantee} mueva tus fondos sin volver a preguntar, hasta que retires el permiso. Podría llevárselo todo.",
+  "bg.cosmos.authzActs": "Esto permite que {grantee} actúe en nombre de tu cuenta sin volver a preguntar, hasta que retires el permiso. Permítelo solo a apps en las que confíes.",
+  "bg.cosmos.revokeAuthz": "Impedir que {grantee} actúe en nombre de tu cuenta",
+  "bg.cosmos.grantFees": "Permitir que {grantee} pague comisiones de red con tus {symbol}",
+  "bg.cosmos.feegrantUpTo": "Esto permite que {grantee} gaste hasta {amount} de tus fondos en comisiones de red, sin volver a preguntar.",
+  "bg.cosmos.feegrantAll": "Esto permite que {grantee} gaste tus {symbol} en comisiones de red sin límite, sin volver a preguntar.",
+  "bg.cosmos.revokeFees": "Impedir que {grantee} pague comisiones de red con tus fondos",
+  "bg.cosmos.block": "bloque {height}",
+  "bg.cosmos.appGetsSigned": "{host} (recibe la transacción firmada)",
+  "bg.cosmos.wrongPrefix": "Esa dirección es de otra red. Las direcciones en {network} empiezan por {prefix}.",
+  "bg.cosmos.noAccount": "Tu cuenta aún no está en {network}. Recibe algo de {symbol} primero.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "Otra clave controla esta cuenta de TRON, así que Clip Wallet no puede firmar por ella.",

@@ -4,6 +4,23 @@
  */
 export default {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC channel {channel}",
+  "bg.cosmos.ibcLeaves": "This sends the tokens to another chain over IBC ({channel}). Check that the address is right for that chain.",
+  "bg.cosmos.unbonding": "Your {symbol} stays locked and earns nothing until the network's unbonding period ends.",
+  "bg.cosmos.moveStake": "Move {amount} of stake from {from} to {to}",
+  "bg.cosmos.claimRewardsFrom": "Claim staking rewards from {validator}",
+  "bg.cosmos.grantAuthz": "Let {grantee} act for your account",
+  "bg.cosmos.authzTakeAll": "This lets {grantee} move your funds without asking you again, until you take the permission back. They could take everything.",
+  "bg.cosmos.authzActs": "This lets {grantee} act for your account without asking you again, until you take the permission back. Only allow this for apps you trust.",
+  "bg.cosmos.revokeAuthz": "Stop {grantee} from acting for your account",
+  "bg.cosmos.grantFees": "Let {grantee} pay network fees with your {symbol}",
+  "bg.cosmos.feegrantUpTo": "This lets {grantee} spend up to {amount} of yours on network fees, without asking you again.",
+  "bg.cosmos.feegrantAll": "This lets {grantee} spend your {symbol} on network fees with no limit, without asking you again.",
+  "bg.cosmos.revokeFees": "Stop {grantee} from paying network fees with your funds",
+  "bg.cosmos.block": "block {height}",
+  "bg.cosmos.appGetsSigned": "{host} (it gets the signed transaction)",
+  "bg.cosmos.wrongPrefix": "That address is for another network. Addresses on {network} start with {prefix}.",
+  "bg.cosmos.noAccount": "Your account isn't on {network} yet. Receive some {symbol} first.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "This TRON account is controlled by another key, so Clip Wallet can't sign for it.",

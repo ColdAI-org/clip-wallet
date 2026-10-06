@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Arabic: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../ar.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "قناة IBC \u2068{channel}\u2069",
+  "bg.cosmos.ibcLeaves": "يرسل هذا الرموز إلى سلسلة أخرى عبر IBC (\u2068{channel}\u2069). تأكد من أن العنوان صحيح على تلك السلسلة.",
+  "bg.cosmos.unbonding": "تبقى \u2068{symbol}\u2069 الخاصة بك مقفلة ولا تحقق أي عائد حتى تنتهي فترة إلغاء الربط في الشبكة.",
+  "bg.cosmos.moveStake": "نقل تخزين \u2068{amount}\u2069 من \u2068{from}\u2069 إلى \u2068{to}\u2069",
+  "bg.cosmos.claimRewardsFrom": "المطالبة بمكافآت التخزين من \u2068{validator}\u2069",
+  "bg.cosmos.grantAuthz": "السماح لـ \u2068{grantee}\u2069 بالتصرف نيابةً عن حسابك",
+  "bg.cosmos.authzTakeAll": "يتيح هذا لـ \u2068{grantee}\u2069 نقل أموالك من دون أن يسألك مجددًا، حتى تسحب الإذن. قد يأخذ كل شيء.",
+  "bg.cosmos.authzActs": "يتيح هذا لـ \u2068{grantee}\u2069 التصرف نيابةً عن حسابك من دون أن يسألك مجددًا، حتى تسحب الإذن. لا تسمح بذلك إلا لتطبيقات تثق بها.",
+  "bg.cosmos.revokeAuthz": "منع \u2068{grantee}\u2069 من التصرف نيابةً عن حسابك",
+  "bg.cosmos.grantFees": "السماح لـ \u2068{grantee}\u2069 بدفع رسوم الشبكة من \u2068{symbol}\u2069 الخاصة بك",
+  "bg.cosmos.feegrantUpTo": "يتيح هذا لـ \u2068{grantee}\u2069 إنفاق ما يصل إلى \u2068{amount}\u2069 من أموالك على رسوم الشبكة، من دون أن يسألك مجددًا.",
+  "bg.cosmos.feegrantAll": "يتيح هذا لـ \u2068{grantee}\u2069 إنفاق \u2068{symbol}\u2069 الخاصة بك على رسوم الشبكة بلا حد، من دون أن يسألك مجددًا.",
+  "bg.cosmos.revokeFees": "منع \u2068{grantee}\u2069 من دفع رسوم الشبكة من أموالك",
+  "bg.cosmos.block": "الكتلة \u2068{height}\u2069",
+  "bg.cosmos.appGetsSigned": "\u2068{host}\u2069 (يحصل على المعاملة الموقّعة)",
+  "bg.cosmos.wrongPrefix": "هذا العنوان تابع لشبكة أخرى. تبدأ العناوين على \u2068{network}\u2069 بـ \u2068{prefix}\u2069.",
+  "bg.cosmos.noAccount": "حسابك غير موجود على \u2068{network}\u2069 بعد. استلم بعض \u2068{symbol}\u2069 أولًا.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "يتحكم مفتاح آخر في حساب TRON هذا، لذا لا تستطيع Clip Wallet التوقيع عنه.",

@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** French: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../fr.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "Canal IBC {channel}",
+  "bg.cosmos.ibcLeaves": "Ceci envoie les jetons vers une autre chaîne via IBC ({channel}). Vérifiez que l'adresse est la bonne sur cette chaîne.",
+  "bg.cosmos.unbonding": "Vos {symbol} restent bloqués et ne rapportent rien jusqu'à la fin de la période de déblocage du réseau.",
+  "bg.cosmos.moveStake": "Déplacer {amount} de staking de {from} vers {to}",
+  "bg.cosmos.claimRewardsFrom": "Récupérer les récompenses de staking de {validator}",
+  "bg.cosmos.grantAuthz": "Laisser {grantee} agir pour votre compte",
+  "bg.cosmos.authzTakeAll": "Ceci permet à {grantee} de déplacer vos fonds sans vous redemander, jusqu'à ce que vous retiriez l'autorisation. {grantee} pourrait tout prendre.",
+  "bg.cosmos.authzActs": "Ceci permet à {grantee} d'agir pour votre compte sans vous redemander, jusqu'à ce que vous retiriez l'autorisation. N'autorisez cela que pour des applications de confiance.",
+  "bg.cosmos.revokeAuthz": "Empêcher {grantee} d'agir pour votre compte",
+  "bg.cosmos.grantFees": "Laisser {grantee} payer les frais de réseau avec vos {symbol}",
+  "bg.cosmos.feegrantUpTo": "Ceci permet à {grantee} de dépenser jusqu'à {amount} de vos fonds en frais de réseau, sans vous redemander.",
+  "bg.cosmos.feegrantAll": "Ceci permet à {grantee} de dépenser vos {symbol} en frais de réseau sans limite, sans vous redemander.",
+  "bg.cosmos.revokeFees": "Empêcher {grantee} de payer les frais de réseau avec vos fonds",
+  "bg.cosmos.block": "bloc {height}",
+  "bg.cosmos.appGetsSigned": "{host} (reçoit la transaction signée)",
+  "bg.cosmos.wrongPrefix": "Cette adresse appartient à un autre réseau. Les adresses sur {network} commencent par {prefix}.",
+  "bg.cosmos.noAccount": "Votre compte n'existe pas encore sur {network}. Recevez d'abord des {symbol}.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "Ce compte TRON est contrôlé par une autre clé, donc Clip Wallet ne peut pas signer pour lui.",

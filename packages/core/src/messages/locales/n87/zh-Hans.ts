@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Simplified Chinese: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../zh-Hans.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC 通道 {channel}",
+  "bg.cosmos.ibcLeaves": "这会通过 IBC（{channel}）把代币发送到另一条链。请确认该地址在那条链上是正确的。",
+  "bg.cosmos.unbonding": "在网络的解绑期结束前，你的 {symbol} 会一直锁定，也不会产生收益。",
+  "bg.cosmos.moveStake": "将 {amount} 的质押从 {from} 转到 {to}",
+  "bg.cosmos.claimRewardsFrom": "领取来自 {validator} 的质押奖励",
+  "bg.cosmos.grantAuthz": "允许 {grantee} 代表你的账户操作",
+  "bg.cosmos.authzTakeAll": "这会让 {grantee} 在你收回权限之前，无需再次征得你同意即可转移你的资金。对方可能拿走全部资产。",
+  "bg.cosmos.authzActs": "这会让 {grantee} 在你收回权限之前，无需再次征得你同意即可代表你的账户操作。只对你信任的应用授予此权限。",
+  "bg.cosmos.revokeAuthz": "不再允许 {grantee} 代表你的账户操作",
+  "bg.cosmos.grantFees": "允许 {grantee} 用你的 {symbol} 支付网络手续费",
+  "bg.cosmos.feegrantUpTo": "这会让 {grantee} 无需再次征得你同意，用你的资金支付最多 {amount} 的网络手续费。",
+  "bg.cosmos.feegrantAll": "这会让 {grantee} 无需再次征得你同意，不限额地用你的 {symbol} 支付网络手续费。",
+  "bg.cosmos.revokeFees": "不再允许 {grantee} 用你的资金支付网络手续费",
+  "bg.cosmos.block": "区块 {height}",
+  "bg.cosmos.appGetsSigned": "{host}（会收到已签名的交易）",
+  "bg.cosmos.wrongPrefix": "这个地址属于另一个网络。{network} 上的地址以 {prefix} 开头。",
+  "bg.cosmos.noAccount": "你的账户还没有出现在 {network} 上。请先接收一些 {symbol}。",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "此 TRON 账户由另一个密钥控制，因此 Clip Wallet 无法为其签名。",

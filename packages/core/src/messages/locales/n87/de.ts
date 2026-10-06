@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** German: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../de.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC-Kanal {channel}",
+  "bg.cosmos.ibcLeaves": "Damit gehen die Token über IBC ({channel}) an eine andere Chain. Prüfe, ob die Adresse auf dieser Chain stimmt.",
+  "bg.cosmos.unbonding": "Deine {symbol} bleiben gesperrt und bringen nichts ein, bis die Unbonding-Frist des Netzwerks endet.",
+  "bg.cosmos.moveStake": "{amount} Stake von {from} zu {to} verschieben",
+  "bg.cosmos.claimRewardsFrom": "Staking-Belohnungen von {validator} abholen",
+  "bg.cosmos.grantAuthz": "{grantee} für dein Konto handeln lassen",
+  "bg.cosmos.authzTakeAll": "Damit kann {grantee} dein Guthaben bewegen, ohne erneut zu fragen, bis du die Berechtigung zurücknimmst. {grantee} könnte alles nehmen.",
+  "bg.cosmos.authzActs": "Damit kann {grantee} für dein Konto handeln, ohne erneut zu fragen, bis du die Berechtigung zurücknimmst. Erlaube das nur Apps, denen du vertraust.",
+  "bg.cosmos.revokeAuthz": "{grantee} nicht mehr für dein Konto handeln lassen",
+  "bg.cosmos.grantFees": "{grantee} Netzwerkgebühren mit deinen {symbol} bezahlen lassen",
+  "bg.cosmos.feegrantUpTo": "Damit kann {grantee} bis zu {amount} von deinem Guthaben für Netzwerkgebühren ausgeben, ohne erneut zu fragen.",
+  "bg.cosmos.feegrantAll": "Damit kann {grantee} deine {symbol} ohne Limit für Netzwerkgebühren ausgeben, ohne erneut zu fragen.",
+  "bg.cosmos.revokeFees": "{grantee} keine Netzwerkgebühren mehr mit deinem Guthaben bezahlen lassen",
+  "bg.cosmos.block": "Block {height}",
+  "bg.cosmos.appGetsSigned": "{host} (erhält die signierte Transaktion)",
+  "bg.cosmos.wrongPrefix": "Diese Adresse gehört zu einem anderen Netzwerk. Adressen auf {network} beginnen mit {prefix}.",
+  "bg.cosmos.noAccount": "Dein Konto ist noch nicht auf {network}. Empfange zuerst etwas {symbol}.",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "Dieses TRON-Konto wird von einem anderen Schlüssel kontrolliert, deshalb kann Clip Wallet dafür nicht signieren.",

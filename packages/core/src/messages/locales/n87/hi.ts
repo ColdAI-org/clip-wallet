@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Hindi: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../hi.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC चैनल {channel}",
+  "bg.cosmos.ibcLeaves": "इससे टोकन IBC ({channel}) के ज़रिए किसी दूसरी चेन पर जाते हैं। जाँच लें कि उस चेन के लिए एड्रेस सही है।",
+  "bg.cosmos.unbonding": "नेटवर्क की अनबॉन्डिंग अवधि खत्म होने तक आपके {symbol} लॉक रहते हैं और कुछ नहीं कमाते।",
+  "bg.cosmos.moveStake": "{amount} का स्टेक {from} से {to} पर ले जाएँ",
+  "bg.cosmos.claimRewardsFrom": "{validator} से स्टेकिंग रिवॉर्ड क्लेम करें",
+  "bg.cosmos.grantAuthz": "{grantee} को आपके अकाउंट की ओर से काम करने दें",
+  "bg.cosmos.authzTakeAll": "इससे {grantee} बिना दोबारा पूछे आपके फ़ंड ले जा सकता है, जब तक आप अनुमति वापस नहीं लेते। वह सब कुछ ले सकता है।",
+  "bg.cosmos.authzActs": "इससे {grantee} बिना दोबारा पूछे आपके अकाउंट की ओर से काम कर सकता है, जब तक आप अनुमति वापस नहीं लेते। इसकी अनुमति सिर्फ़ उन्हीं ऐप्स को दें जिन पर आपको भरोसा है।",
+  "bg.cosmos.revokeAuthz": "{grantee} को आपके अकाउंट की ओर से काम करने से रोकें",
+  "bg.cosmos.grantFees": "{grantee} को आपके {symbol} से नेटवर्क शुल्क चुकाने दें",
+  "bg.cosmos.feegrantUpTo": "इससे {grantee} बिना दोबारा पूछे नेटवर्क शुल्क पर आपके फ़ंड में से {amount} तक खर्च कर सकता है।",
+  "bg.cosmos.feegrantAll": "इससे {grantee} बिना दोबारा पूछे नेटवर्क शुल्क पर आपके {symbol} बिना किसी सीमा के खर्च कर सकता है।",
+  "bg.cosmos.revokeFees": "{grantee} को आपके फ़ंड से नेटवर्क शुल्क चुकाने से रोकें",
+  "bg.cosmos.block": "ब्लॉक {height}",
+  "bg.cosmos.appGetsSigned": "{host} (इसे साइन किया हुआ ट्रांज़ैक्शन मिलता है)",
+  "bg.cosmos.wrongPrefix": "यह एड्रेस किसी दूसरे नेटवर्क का है। {network} पर एड्रेस {prefix} से शुरू होते हैं।",
+  "bg.cosmos.noAccount": "आपका अकाउंट अभी {network} पर नहीं है। पहले कुछ {symbol} प्राप्त करें।",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "यह TRON अकाउंट किसी दूसरी कुंजी से नियंत्रित है, इसलिए Clip Wallet इसके लिए साइन नहीं कर सकता।",

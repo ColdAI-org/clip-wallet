@@ -3,6 +3,23 @@ import type N87 from "../../en/n87.js";
 /** Japanese: networks87 chain modules (same sections as ../../en/n87.ts). Follows ../ja.ts and its glossary. */
 const messages: { readonly [K in keyof typeof N87]: string } = {
   // ---- chains-cosmos (cosmos, provenance, thorchain, initia)
+  "bg.cosmos.ibcChannel": "IBC チャネル {channel}",
+  "bg.cosmos.ibcLeaves": "トークンを IBC（{channel}）で別のチェーンに送ります。そのチェーンで正しいアドレスか確認してください。",
+  "bg.cosmos.unbonding": "ネットワークのアンボンディング期間が終わるまで、あなたの{symbol}はロックされ、報酬も得られません。",
+  "bg.cosmos.moveStake": "{amount}のステーキングを{from}から{to}に移す",
+  "bg.cosmos.claimRewardsFrom": "{validator}からステーキング報酬を受け取る",
+  "bg.cosmos.grantAuthz": "{grantee}にあなたのアカウントでの操作を許可する",
+  "bg.cosmos.authzTakeAll": "これにより、{grantee}は許可を取り消すまで、改めて確認することなくあなたの資金を移動できます。すべて持ち出される可能性があります。",
+  "bg.cosmos.authzActs": "これにより、{grantee}は許可を取り消すまで、改めて確認することなくあなたのアカウントで操作できます。信頼できるアプリにのみ許可してください。",
+  "bg.cosmos.revokeAuthz": "{grantee}によるあなたのアカウントでの操作をやめさせる",
+  "bg.cosmos.grantFees": "{grantee}にあなたの{symbol}でネットワーク手数料を支払わせる",
+  "bg.cosmos.feegrantUpTo": "これにより、{grantee}は改めて確認することなく、あなたの資金から最大{amount}をネットワーク手数料に使えます。",
+  "bg.cosmos.feegrantAll": "これにより、{grantee}は改めて確認することなく、あなたの{symbol}を上限なくネットワーク手数料に使えます。",
+  "bg.cosmos.revokeFees": "{grantee}があなたの資金でネットワーク手数料を支払うのをやめさせる",
+  "bg.cosmos.block": "ブロック {height}",
+  "bg.cosmos.appGetsSigned": "{host}（署名済みトランザクションを受け取ります）",
+  "bg.cosmos.wrongPrefix": "このアドレスは別のネットワークのものです。{network}のアドレスは{prefix}で始まります。",
+  "bg.cosmos.noAccount": "あなたのアカウントはまだ{network}にありません。先に{symbol}を受け取ってください。",
   // ---- end chains-cosmos
   // ---- chains-tron (tron)
   "bg.tron.notControlled": "この TRON アカウントは別の鍵で管理されているため、Clip Wallet は署名できません。",
