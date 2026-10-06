@@ -539,21 +539,39 @@ importers:
       '@clip-wallet/chains-bitcoin':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoin
+      '@clip-wallet/chains-bitcoincash':
+        specifier: workspace:*
+        version: link:../../packages/chains-bitcoincash
       '@clip-wallet/chains-cardano':
         specifier: workspace:*
         version: link:../../packages/chains-cardano
+      '@clip-wallet/chains-cosmos':
+        specifier: workspace:*
+        version: link:../../packages/chains-cosmos
       '@clip-wallet/chains-evm':
         specifier: workspace:*
         version: link:../../packages/chains-evm
+      '@clip-wallet/chains-fuel':
+        specifier: workspace:*
+        version: link:../../packages/chains-fuel
       '@clip-wallet/chains-hedera':
         specifier: workspace:*
         version: link:../../packages/chains-hedera
+      '@clip-wallet/chains-icp':
+        specifier: workspace:*
+        version: link:../../packages/chains-icp
+      '@clip-wallet/chains-multiversx':
+        specifier: workspace:*
+        version: link:../../packages/chains-multiversx
       '@clip-wallet/chains-near':
         specifier: workspace:*
         version: link:../../packages/chains-near
       '@clip-wallet/chains-solana':
         specifier: workspace:*
         version: link:../../packages/chains-solana
+      '@clip-wallet/chains-stacks':
+        specifier: workspace:*
+        version: link:../../packages/chains-stacks
       '@clip-wallet/chains-starknet':
         specifier: workspace:*
         version: link:../../packages/chains-starknet
@@ -572,6 +590,9 @@ importers:
       '@clip-wallet/chains-ton':
         specifier: workspace:*
         version: link:../../packages/chains-ton
+      '@clip-wallet/chains-tron':
+        specifier: workspace:*
+        version: link:../../packages/chains-tron
       '@clip-wallet/connect':
         specifier: workspace:*
         version: link:../../packages/connect
@@ -1679,6 +1700,9 @@ importers:
       '@clip-wallet/chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
+      '@clip-wallet/chains-bitcoincash':
+        specifier: workspace:*
+        version: link:../chains-bitcoincash
       '@clip-wallet/chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
@@ -1794,6 +1818,9 @@ importers:
       '@clip-wallet/chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
+      '@clip-wallet/chains-bitcoincash':
+        specifier: workspace:*
+        version: link:../chains-bitcoincash
       '@clip-wallet/chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano

@@ -21,19 +21,38 @@ import { NEAR_TESTNET, createNearModule } from "@clip-wallet/chains-near";
 import { STELLAR_TESTNET, createStellarModule } from "@clip-wallet/chains-stellar";
 import { TEZOS_SHADOWNET, createTezosModule } from "@clip-wallet/chains-tezos";
 import { ALGORAND_TESTNET, createAlgorandModule } from "@clip-wallet/chains-algorand";
+import { INITIA_TESTNET, OSMOSIS_TESTNET, PROVENANCE_TESTNET, createCosmosModule } from "@clip-wallet/chains-cosmos";
+import { TRON_NILE, createTronModule } from "@clip-wallet/chains-tron";
+import { STACKS_TESTNET, createStacksModule } from "@clip-wallet/chains-stacks";
+import { FUEL_TESTNET, createFuelModule } from "@clip-wallet/chains-fuel";
+import { BCH_CHIPNET, createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
+import { MULTIVERSX_DEVNET, createMultiversXModule } from "@clip-wallet/chains-multiversx";
+import { ICP_TEST, createIcpModule } from "@clip-wallet/chains-icp";
 import ADDRESSES from "./addresses.json" with { type: "json" };
 
 export type MatrixFamily = Exclude<Family, never>;
-/** "hedera-evm" = Hedera testnet reached through 1Mask's EIP-1193 provider (the EVM account, chain 296). */
-export type Target = Family | "hedera-evm";
+/**
+ * "hedera-evm" = Hedera testnet reached through 1Mask's EIP-1193 provider (the EVM account, chain 296).
+ * networks87: "cosmos" is Osmosis testnet (osmo-test-5), "chainflip" the Chainflip Perseverance testnet (substrate
+ * family). Provenance, Initia, MultiversX, ICP and Bitcoin Cash are funding/balance targets only: no injected dapp
+ * standard Clip can answer under its own identity (docs/r1/networks87.md), so they have no dapp page.
+ */
+export type Target =
+  | "evm" | "hedera-evm" | "hedera" | "solana" | "bitcoin" | "sui" | "aptos" | "cardano" | "substrate" | "starknet" | "ton" | "near" | "stellar" | "tezos" | "algorand"
+  | "cosmos" | "tron" | "stacks" | "fuel" | "chainflip"
+  | "provenance" | "initia" | "multiversx" | "icp" | "bitcoincash";
 
 interface Entry {
   address: string;
   publicKey: string;
   path: string;
   taproot?: string;
+  /** The vault's own spelling when the target network spells it differently (Cosmos prefixes, Stacks ST, bchtest:, cF…). */
+  vaultAddress?: string;
 }
-const ADDR = ADDRESSES as unknown as Record<Family, Entry>;
+const ADDR = ADDRESSES as unknown as Record<string, Entry>;
+/** addresses.json entry: per target where it has one (networks87), else per family. */
+const entryOf = (t: Target): Entry => ADDR[t] ?? ADDR[TARGETS[t].family]!;
 
 const SEPOLIA = EVM_NETWORKS.find((n) => n.chainId === 11155111)!;
 const HEDERA_EVM = HEDERA_EVM_NETWORKS.find((n) => n.chainId === 296)!;
@@ -55,29 +74,43 @@ export const TARGETS: Record<Target, { network: Network; module: () => ChainModu
   stellar: { network: STELLAR_TESTNET, module: createStellarModule, family: "stellar", minimum: 15_000_000n, faucetHint: "1.5 XLM (account reserve 1 XLM + fees)" },
   tezos: { network: TEZOS_SHADOWNET, module: createTezosModule, family: "tezos", minimum: 1_000_000n, faucetHint: "1 XTZ (shadownet; first op reveals the key)" },
   algorand: { network: ALGORAND_TESTNET, module: createAlgorandModule, family: "algorand", minimum: 200_000n, faucetHint: "0.2 ALGO (min balance 0.1 + fees)" },
+  // networks87
+  cosmos: { network: OSMOSIS_TESTNET, module: () => createCosmosModule({ family: "cosmos" }), family: "cosmos", minimum: 100_000n, faucetHint: "0.1 OSMO (osmo-test-5)" },
+  tron: { network: TRON_NILE, module: createTronModule, family: "tron", minimum: 2_000_000n, faucetHint: "2 TRX (Nile)" },
+  stacks: { network: STACKS_TESTNET, module: createStacksModule, family: "stacks", minimum: 10_000n, faucetHint: "0.01 STX (testnet)" },
+  fuel: { network: FUEL_TESTNET, module: createFuelModule, family: "fuel", minimum: 200n, faucetHint: "0.0000002 ETH (Fuel testnet)" },
+  chainflip: { network: SUBSTRATE_NETWORKS.find((n) => n.name === "Chainflip Perseverance")!, module: createSubstrateModule, family: "substrate", minimum: 10n ** 17n, faucetHint: "0.1 tFLIP funded from Sepolia" },
+  provenance: { network: PROVENANCE_TESTNET, module: () => createCosmosModule({ family: "provenance" }), family: "provenance", minimum: 10n ** 9n, faucetHint: "1 HASH (pio-testnet-1)" },
+  initia: { network: INITIA_TESTNET, module: () => createCosmosModule({ family: "initia" }), family: "initia", minimum: 100_000n, faucetHint: "0.1 INIT (initiation-2)" },
+  multiversx: { network: MULTIVERSX_DEVNET, module: createMultiversXModule, family: "multiversx", minimum: 10n ** 16n, faucetHint: "0.01 xEGLD (devnet)" },
+  icp: { network: ICP_TEST, module: createIcpModule, family: "icp", minimum: 100_000n, faucetHint: "0.001 TESTICP" },
+  bitcoincash: { network: BCH_CHIPNET, module: createBitcoinCashModule, family: "bitcoincash", minimum: 5_000n, faucetHint: "5,000 sats (chipnet)" },
 };
 
-export const TARGET_ORDER: Target[] = ["evm", "hedera-evm", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand"];
+export const TARGET_ORDER: Target[] = [
+  "evm", "hedera-evm", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand",
+  "cosmos", "tron", "stacks", "fuel", "chainflip", "provenance", "initia", "multiversx", "icp", "bitcoincash",
+];
 
 const hexToBytes = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
 
 /** The matrix account for a target, shaped as the wallet's background holds it. */
 export function accountOf(t: Target): Account {
   const family = TARGETS[t].family;
-  const e = ADDR[family];
+  const e = entryOf(t);
   return {
     id: `${family}:0`,
     family,
     index: 0,
-    curve: "secp256k1",
+    curve: family === "substrate" ? "sr25519" : family === "multiversx" ? "ed25519" : "secp256k1",
     derivationPath: e.path,
     publicKey: e.publicKey,
-    address: e.address,
+    address: e.vaultAddress ?? e.address,
   } as Account;
 }
 
-export const addressOf = (t: Target): string => ADDR[TARGETS[t].family].address;
-export const publicKeyOf = (t: Target): string => ADDR[TARGETS[t].family].publicKey;
+export const addressOf = (t: Target): string => entryOf(t).address;
+export const publicKeyOf = (t: Target): string => entryOf(t).publicKey;
 
 const modules = new Map<Target, ChainModule>();
 const moduleOf = (t: Target) => {
@@ -180,6 +213,16 @@ export function explorerTx(t: Target, id: string): string {
       return `https://shadownet.tzkt.io/${id}`;
     case "algorand":
       return `https://lora.algokit.io/testnet/transaction/${id}`;
+    case "cosmos":
+      return `https://www.mintscan.io/osmosis-testnet/tx/${id}`;
+    case "tron":
+      return `https://nile.tronscan.org/#/transaction/${id}`;
+    case "stacks":
+      return `https://explorer.hiro.so/txid/${id.startsWith("0x") ? id : `0x${id}`}?chain=testnet`;
+    case "fuel":
+      return `https://app-testnet.fuel.network/tx/${id}`;
+    case "chainflip":
+      return `https://scan.perseverance.chainflip.io/blocks/${id}`;
     default:
       return `${n.explorerUrl}/tx/${id}`;
   }
@@ -253,6 +296,26 @@ export async function confirmTx(t: Target, id: string, timeoutMs = 120_000): Pro
       case "tezos": {
         const r = await j(`https://api.shadownet.tzkt.io/v1/operations/${id}`).catch(() => []);
         return Array.isArray(r) && r.length > 0 && r.every((o: { status?: string }) => o.status === "applied");
+      }
+      case "cosmos": {
+        const r = await j(`${n.rpcUrls[0]!.replace(/\/$/, "")}/cosmos/tx/v1beta1/txs/${id}`).catch(() => null);
+        return r?.tx_response?.code === 0 && Number(r.tx_response.height) > 0;
+      }
+      case "tron": {
+        const r = await j("https://nile.trongrid.io/wallet/gettransactioninfobyid", { method: "POST", body: JSON.stringify({ value: id }) }).catch(() => null);
+        return !!r?.blockNumber && (r.receipt?.result === undefined || r.receipt.result === "SUCCESS") && r.result !== "FAILED";
+      }
+      case "stacks": {
+        const r = await j(`https://api.testnet.hiro.so/extended/v1/tx/${id.startsWith("0x") ? id : `0x${id}`}`).catch(() => null);
+        return r?.tx_status === "success";
+      }
+      case "fuel": {
+        const r = await j("https://testnet.fuel.network/v1/graphql", { method: "POST", body: JSON.stringify({ query: `{ transaction(id: "${id}") { status { __typename } } }` }) }).catch(() => null);
+        return r?.data?.transaction?.status?.__typename === "SuccessStatus";
+      }
+      case "chainflip": {
+        const r = await rpc(n.rpcUrls[0]!, "chain_getBlock", [id]).catch(() => null);
+        return !!r;
       }
       case "algorand": {
         const r = await fetch(`https://testnet-idx.4160.nodely.dev/v2/transactions/${id}`);

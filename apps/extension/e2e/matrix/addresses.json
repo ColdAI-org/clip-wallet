@@ -1,5 +1,5 @@
 {
-  "//": "Public receive addresses of the dapp matrix wallet (account 0 per family, testnet), derived from DAPP_MATRIX_MNEMONIC with ClipVault defaults, exactly as the extension background derives them. The phrase lives only in the git-excluded .env.dapp-matrix. matrix.spec.ts checks every dapp connect returns these.",
+  "//": "Public receive addresses of the dapp matrix wallet (account 0 per family, testnet), derived from DAPP_MATRIX_MNEMONIC with ClipVault defaults, exactly as the extension background derives them. The phrase lives only in the git-excluded .env.dapp-matrix. matrix.spec.ts checks every dapp connect returns these. networks87 entries are keyed by matrix target; 'address' is the spelling on the target's testnet, 'vaultAddress' the vault's own (mainnet) spelling when it differs.",
   "evm": {
     "address": "0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717",
     "publicKey": "03d8ac1935c3bae4c197bd79e641ec34d576d58fb3c3fcf0dbc466b6a34b342928",
@@ -70,5 +70,77 @@
     "address": "4BSAZBB73QMGRVOUSB7YIFKHKKZ5CDBH2PWDTZGWSLCXU7ID67DLM2C7V4",
     "publicKey": "e0640c843fdc1868d5d4907f84154752b3d10c27d3ec39e4d692c57a7d03f7c6",
     "path": "m/44'/283'/0'/0/0"
+  },
+  "cosmos": {
+    "address": "osmo1re86ed5ck45dnyex8ajvytrae4c5ct7xjm6edd",
+    "publicKey": "02996ee5775c1a4a3768f070349d88b29fae8fea7d893e39cd92f5258a7ee3fe75",
+    "path": "m/44'/118'/0'/0/0",
+    "vaultAddress": "cosmos1re86ed5ck45dnyex8ajvytrae4c5ct7x6qffml",
+    "dydx": "dydx1re86ed5ck45dnyex8ajvytrae4c5ct7xne8dmg",
+    "zig": "zig1re86ed5ck45dnyex8ajvytrae4c5ct7xm2vmeh"
+  },
+  "provenance": {
+    "address": "tp16f3hw77j3vwa3chtnplx3qs4sn2z4ww0cdzgzd",
+    "publicKey": "0259c124b3fa12acf5a0eada8a480e3741a61262c2c74c7a90a5add75aea642edb",
+    "path": "m/44'/505'/0'/0/0",
+    "vaultAddress": "pb16f3hw77j3vwa3chtnplx3qs4sn2z4ww0tx8yq8"
+  },
+  "thorchain": {
+    "address": "thor13pajudku86vd59c8wkr4ctwcxdy8qpnap6afpx",
+    "publicKey": "0312ef34472f7bda3a6897e21c526a629c396b9b777d7e1282d66664f3ce1f5036",
+    "path": "m/44'/931'/0'/0/0"
+  },
+  "initia": {
+    "address": "init1qkkdq25wrrqnpkgzldejhd4dytdy7fch0qn2v7",
+    "publicKey": "03d8ac1935c3bae4c197bd79e641ec34d576d58fb3c3fcf0dbc466b6a34b342928",
+    "path": "m/44'/60'/0'/0/0"
+  },
+  "tron": {
+    "address": "TGZxYSGcQHaZMcSB2c7ZB1n97yMk2UPz41",
+    "publicKey": "03ae797c9eb51a0664d6d6db08b7aa2093fea8b67ff7bdc32c372aec96c0e7142e",
+    "path": "m/44'/195'/0'/0/0"
+  },
+  "xrpl": {
+    "address": "rDvWLtQL3Furv3sVzERai1MXvKFTQjZgrM",
+    "publicKey": "03fe696b09c509d16c13df23756973df369940903dd7981b31c5b5289ef44407b1",
+    "path": "m/44'/144'/0'/0/0"
+  },
+  "antelope": {
+    "address": "PUB_K1_7VxUN24cMwi94AHSbLkSnbKNfwoN8wjV4Fv1FA8W7bXQdTVzro",
+    "publicKey": "0357ecf6e9045a00598d81f83b9e818b9dd3938b1473b9fea160cb284fc2af8e81",
+    "path": "m/44'/194'/0'/0/0"
+  },
+  "multiversx": {
+    "address": "erd1qhkcc53w80nppnsprtzs7k2wh7xwvt54c8u88d0cd6pn3n6ldudshmqgfg",
+    "publicKey": "05ed8c522e3be610ce011ac50f594ebf8ce62e95c1f873b5f86e8338cf5f6f1b",
+    "path": "m/44'/508'/0'/0'/0'"
+  },
+  "icp": {
+    "address": "gm6de-vncl6-w4cya-5z35g-cincb-f2zqe-6jhln-cnvjw-gvqf6-3shog-6ae",
+    "publicKey": "024441fa83b13a740213901f59b896d13723c08a4970c905026b5352a4e1537c98",
+    "path": "m/44'/223'/0'/0/0"
+  },
+  "stacks": {
+    "address": "ST1EC4TTQPQX24TT3VY2H6YYW99N0HRQ5VMRB2M1T",
+    "publicKey": "02eeedf4fbb22fb0a2d49fdcea998350db0533f76719fafde4c17d0484a0dd8b39",
+    "path": "m/44'/5757'/0'/0/0",
+    "vaultAddress": "SP1EC4TTQPQX24TT3VY2H6YYW99N0HRQ5VQXK4TEJ"
+  },
+  "fuel": {
+    "address": "0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75",
+    "publicKey": "029369f709755465d14dcfae2ac912f7c8030e6e91c9d16f15ec3faae5fabe9083",
+    "path": "m/44'/1179993420'/0'/0/0"
+  },
+  "bitcoincash": {
+    "address": "bchtest:qq5jt8xqr6gckvpnn4dr4ajfd023mf7fzcj5tplmu2",
+    "publicKey": "0294f196fc1ba00ed17aa43b05b6e047e7ee2e958067bc76e6b91efd2dcbfd9de4",
+    "path": "m/44'/145'/0'/0/0",
+    "vaultAddress": "bitcoincash:qq5jt8xqr6gckvpnn4dr4ajfd023mf7fzckx0xavmk"
+  },
+  "chainflip": {
+    "address": "cFNXs2hYYRhGp1A4AfXaTbK3vQSgnSLvtvJrvJrCbNvhtTKc1",
+    "publicKey": "ce36fef24a0cbca4fff77554417922d15290a8296c08ef0759845140c1eab52d",
+    "path": "",
+    "vaultAddress": "5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb"
   }
 }
