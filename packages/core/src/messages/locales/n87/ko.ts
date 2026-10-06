@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "한 번에 너무 많은 작은 코인이 필요해요. 먼저 더 적은 금액을 보내세요.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "이 앱이 Clip Wallet에 키나 서명을 스마트 컨트랙트 데이터에 넣어 달라고 요청해요. Clip Wallet은 아직 이런 종류의 트랜잭션에 서명할 수 없어요.",
+  "bg.bch.spendsTokens": "지갑에서 CashTokens를 보내요: {tokens}.",
+  "bg.bch.highFee": "네트워크 수수료가 {fee}(으)로 비정상적으로 높아요.",
+  "bg.bch.othersInputs": "다른 소유자나 컨트랙트의 코인 {count}개",
+  "bg.bch.notCashAddr": "Bitcoin Cash 주소가 아닌 것 같아요. CashAddr 형식(bitcoincash:q…)을 사용하세요.",
+  "bg.bch.testAddressOnMainnet": "Bitcoin Cash 테스트 네트워크 주소(bchtest:…)예요. 메인넷 주소(bitcoincash:…)를 사용하세요.",
+  "bg.bch.mainAddressOnTestnet": "Bitcoin Cash 메인넷 주소(bitcoincash:…)예요. 테스트 네트워크 주소(bchtest:…)를 사용하세요.",
+  "bg.bch.tokenSendUnavailable": "CashTokens 보내기는 아직 지원되지 않아요.",
+  "bg.bch.belowDust": "{amount} 이상 보내세요. Bitcoin Cash에서는 이보다 적은 금액을 보낼 수 없어요.",
+  "bg.bch.feeTooLow": "수수료가 네트워크 기준보다 너무 낮았어요. 아무것도 전송되지 않았어요. 다시 시도하세요.",
+  "bg.bch.coinsSpent": "이 트랜잭션의 일부 코인은 이미 사용되었어요. 아무것도 전송되지 않았어요. 새로고침한 뒤 다시 시도하세요.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "一度に小さなコインが多すぎます。先に少ない金額を送ってください。",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "このアプリは、Clip Wallet の鍵または署名をスマートコントラクトのデータに入れるよう求めています。Clip Wallet はこの種類の取引への署名にはまだ対応していません。",
+  "bg.bch.spendsTokens": "ウォレットから CashTokens を送信します：{tokens}。",
+  "bg.bch.highFee": "ネットワーク手数料は{fee}で、異常に高額です。",
+  "bg.bch.othersInputs": "他の所有者またはコントラクトのコイン {count} 個",
+  "bg.bch.notCashAddr": "Bitcoin Cash のアドレスではないようです。CashAddr 形式（bitcoincash:q…）を使用してください。",
+  "bg.bch.testAddressOnMainnet": "これは Bitcoin Cash のテストネットワークのアドレス（bchtest:…）です。メインネットのアドレス（bitcoincash:…）を使用してください。",
+  "bg.bch.mainAddressOnTestnet": "これは Bitcoin Cash のメインネットのアドレス（bitcoincash:…）です。テストネットワークのアドレス（bchtest:…）を使用してください。",
+  "bg.bch.tokenSendUnavailable": "CashTokens の送信にはまだ対応していません。",
+  "bg.bch.belowDust": "{amount} 以上を送信してください。Bitcoin Cash ではこれより少ない金額は送信できません。",
+  "bg.bch.feeTooLow": "手数料がネットワークの基準より低すぎました。何も送信されていません。もう一度お試しください。",
+  "bg.bch.coinsSpent": "この取引の一部のコインはすでに使用済みでした。何も送信されていません。更新してから、もう一度お試しください。",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

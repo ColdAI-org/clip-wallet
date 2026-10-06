@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "Dafür werden zu viele kleine Coins auf einmal gebraucht. Sende zuerst einen kleineren Betrag.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "Diese App möchte, dass Clip Wallet seinen Schlüssel oder seine Signatur in die Daten eines Smart Contracts einfügt. Clip Wallet kann diese Art von Transaktion noch nicht signieren.",
+  "bg.bch.spendsTokens": "Damit werden CashTokens aus deiner Wallet gesendet: {tokens}.",
+  "bg.bch.highFee": "Die Netzwerkgebühr beträgt {fee}, das ist ungewöhnlich hoch.",
+  "bg.bch.othersInputs": "{count} Coins von anderen Eigentümern oder Verträgen",
+  "bg.bch.notCashAddr": "Das sieht nicht nach einer Adresse für Bitcoin Cash aus. Verwende ihre CashAddr-Form (bitcoincash:q…).",
+  "bg.bch.testAddressOnMainnet": "Das ist eine Adresse eines Testnetzwerks für Bitcoin Cash (bchtest:…). Verwende eine Mainnet-Adresse (bitcoincash:…).",
+  "bg.bch.mainAddressOnTestnet": "Das ist eine Mainnet-Adresse für Bitcoin Cash (bitcoincash:…). Verwende eine Adresse eines Testnetzwerks (bchtest:…).",
+  "bg.bch.tokenSendUnavailable": "Das Senden von CashTokens ist noch nicht verfügbar.",
+  "bg.bch.belowDust": "Sende mindestens {amount}. Kleinere Beträge können auf Bitcoin Cash nicht gesendet werden.",
+  "bg.bch.feeTooLow": "Die Gebühr war für das Netzwerk zu niedrig. Es wurde nichts gesendet. Versuch es noch einmal.",
+  "bg.bch.coinsSpent": "Einige Coins in dieser Transaktion wurden bereits ausgegeben. Es wurde nichts gesendet. Aktualisiere und versuch es noch einmal.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

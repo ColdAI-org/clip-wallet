@@ -113,6 +113,17 @@ export default {
   "bg.fuel.tooManyCoins": "This needs too many small coins at once. Send a smaller amount first.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "This app asks Clip Wallet to put its key or signature into a smart contract's data. Clip Wallet can't sign that kind of transaction yet.",
+  "bg.bch.spendsTokens": "This sends CashTokens from your wallet: {tokens}.",
+  "bg.bch.highFee": "The network fee is {fee}, which is unusually high.",
+  "bg.bch.othersInputs": "{count} coins from other owners or contracts",
+  "bg.bch.notCashAddr": "That doesn't look like a Bitcoin Cash address. Use its CashAddr form (bitcoincash:q…).",
+  "bg.bch.testAddressOnMainnet": "That's a Bitcoin Cash test-network address (bchtest:…). Use a mainnet address (bitcoincash:…).",
+  "bg.bch.mainAddressOnTestnet": "That's a Bitcoin Cash mainnet address (bitcoincash:…). Use a test-network address (bchtest:…).",
+  "bg.bch.tokenSendUnavailable": "Sending CashTokens isn't available yet.",
+  "bg.bch.belowDust": "Send at least {amount}. Smaller amounts can't be sent on Bitcoin Cash.",
+  "bg.bch.feeTooLow": "The fee was too low for the network. Nothing was sent. Try again.",
+  "bg.bch.coinsSpent": "Some coins in this transaction were already spent. Nothing was sent. Refresh and try again.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "Esto necesita demasiadas monedas pequeñas a la vez. Envía primero una cantidad menor.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "Esta app le pide a Clip Wallet que ponga su clave o su firma en los datos de un contrato inteligente. Clip Wallet aún no puede firmar ese tipo de transacción.",
+  "bg.bch.spendsTokens": "Esto envía CashTokens desde tu billetera: {tokens}.",
+  "bg.bch.highFee": "La comisión de red es {fee}, un importe inusualmente alto.",
+  "bg.bch.othersInputs": "{count} monedas de otros propietarios o contratos",
+  "bg.bch.notCashAddr": "Eso no parece una dirección de Bitcoin Cash. Usa su formato CashAddr (bitcoincash:q…).",
+  "bg.bch.testAddressOnMainnet": "Esa es una dirección de Bitcoin Cash de una red de prueba (bchtest:…). Usa una dirección de la red principal (bitcoincash:…).",
+  "bg.bch.mainAddressOnTestnet": "Esa es una dirección de Bitcoin Cash de la red principal (bitcoincash:…). Usa una dirección de una red de prueba (bchtest:…).",
+  "bg.bch.tokenSendUnavailable": "Todavía no se pueden enviar CashTokens.",
+  "bg.bch.belowDust": "Envía al menos {amount}. En Bitcoin Cash no se pueden enviar cantidades menores.",
+  "bg.bch.feeTooLow": "La comisión era demasiado baja para la red. No se envió nada. Inténtalo de nuevo.",
+  "bg.bch.coinsSpent": "Algunas monedas de esta transacción ya se habían gastado. No se envió nada. Actualiza e inténtalo de nuevo.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

@@ -1125,6 +1125,22 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
 
+  packages/chains-bitcoincash:
+    dependencies:
+      '@clip-wallet/core':
+        specifier: workspace:*
+        version: link:../core
+      '@noble/curves':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
+    devDependencies:
+      '@bitauth/libauth':
+        specifier: ^3.0.0
+        version: 3.0.0
+
   packages/chains-cardano:
     dependencies:
       '@clip-wallet/core':

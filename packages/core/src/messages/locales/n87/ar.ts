@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "يحتاج هذا إلى عدد كبير جدًا من العملات الصغيرة في وقت واحد. أرسل مبلغًا أصغر أولًا.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "يطلب هذا التطبيق من Clip Wallet وضع مفتاحها أو توقيعها في بيانات عقد ذكي. لا تستطيع Clip Wallet بعدُ توقيع هذا النوع من المعاملات.",
+  "bg.bch.spendsTokens": "يُرسل هذا CashTokens من محفظتك: \u2068{tokens}\u2069.",
+  "bg.bch.highFee": "رسوم الشبكة \u2068{fee}\u2069، وهي مرتفعة على نحو غير معتاد.",
+  "bg.bch.othersInputs": "عملات من مالكين آخرين أو عقود: \u2068{count}\u2069",
+  "bg.bch.notCashAddr": "لا يبدو هذا عنوان Bitcoin Cash. استخدم صيغة CashAddr الخاصة به (bitcoincash:q…).",
+  "bg.bch.testAddressOnMainnet": "هذا عنوان Bitcoin Cash على شبكة تجريبية (bchtest:…). استخدم عنوانًا على الشبكة الرئيسية (bitcoincash:…).",
+  "bg.bch.mainAddressOnTestnet": "هذا عنوان Bitcoin Cash على الشبكة الرئيسية (bitcoincash:…). استخدم عنوانًا على شبكة تجريبية (bchtest:…).",
+  "bg.bch.tokenSendUnavailable": "إرسال CashTokens غير متاح بعد.",
+  "bg.bch.belowDust": "أرسل \u2068{amount}\u2069 على الأقل. لا يمكن إرسال مبالغ أصغر على Bitcoin Cash.",
+  "bg.bch.feeTooLow": "كانت الرسوم منخفضة جدًا بالنسبة إلى الشبكة. لم يُرسَل أي شيء. حاول مرة أخرى.",
+  "bg.bch.coinsSpent": "بعض العملات في هذه المعاملة أُنفقت بالفعل. لم يُرسَل أي شيء. حدِّث ثم حاول مرة أخرى.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

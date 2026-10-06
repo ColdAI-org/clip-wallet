@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "这需要一次使用太多小额币。请先发送较小的金额。",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "此应用要求 Clip Wallet 将其密钥或签名放入智能合约的数据中。Clip Wallet 暂不支持签署此类交易。",
+  "bg.bch.spendsTokens": "这会从你的钱包发送 CashTokens：{tokens}。",
+  "bg.bch.highFee": "网络手续费为 {fee}，异常高。",
+  "bg.bch.othersInputs": "{count} 个来自其他所有者或合约的币",
+  "bg.bch.notCashAddr": "这看起来不像 Bitcoin Cash 地址。请使用其 CashAddr 格式（bitcoincash:q…）。",
+  "bg.bch.testAddressOnMainnet": "这是 Bitcoin Cash 测试网络地址（bchtest:…）。请使用主网地址（bitcoincash:…）。",
+  "bg.bch.mainAddressOnTestnet": "这是 Bitcoin Cash 主网地址（bitcoincash:…）。请使用测试网络地址（bchtest:…）。",
+  "bg.bch.tokenSendUnavailable": "暂不支持发送 CashTokens。",
+  "bg.bch.belowDust": "请至少发送 {amount}。在 Bitcoin Cash 上无法发送更小的金额。",
+  "bg.bch.feeTooLow": "手续费低于网络要求。没有发送任何内容。请重试。",
+  "bg.bch.coinsSpent": "此交易中的部分币已被花费。没有发送任何内容。请刷新后重试。",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

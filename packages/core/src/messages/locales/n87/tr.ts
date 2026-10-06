@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "Bunun için aynı anda çok fazla küçük coin gerekiyor. Önce daha küçük bir tutar gönderin.",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "Bu uygulama, Clip Wallet'tan anahtarını veya imzasını bir akıllı sözleşmenin verilerine eklemesini istiyor. Clip Wallet henüz bu tür bir işlemi imzalayamıyor.",
+  "bg.bch.spendsTokens": "Bu işlem cüzdanınızdan CashTokens gönderir: {tokens}.",
+  "bg.bch.highFee": "Ağ ücreti {fee}; bu alışılmadık derecede yüksek.",
+  "bg.bch.othersInputs": "Başka sahiplere veya sözleşmelere ait {count} coin",
+  "bg.bch.notCashAddr": "Bu bir Bitcoin Cash adresine benzemiyor. CashAddr biçimini (bitcoincash:q…) kullanın.",
+  "bg.bch.testAddressOnMainnet": "Bu bir Bitcoin Cash test ağı adresi (bchtest:…). Ana ağ adresi (bitcoincash:…) kullanın.",
+  "bg.bch.mainAddressOnTestnet": "Bu bir Bitcoin Cash ana ağ adresi (bitcoincash:…). Test ağı adresi (bchtest:…) kullanın.",
+  "bg.bch.tokenSendUnavailable": "CashTokens gönderimi henüz kullanılamıyor.",
+  "bg.bch.belowDust": "En az {amount} gönderin. Bitcoin Cash'te daha küçük tutarlar gönderilemez.",
+  "bg.bch.feeTooLow": "Ücret ağ için çok düşüktü. Hiçbir şey gönderilmedi. Tekrar deneyin.",
+  "bg.bch.coinsSpent": "Bu işlemdeki bazı coin'ler zaten harcanmış. Hiçbir şey gönderilmedi. Yenileyip tekrar deneyin.",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)

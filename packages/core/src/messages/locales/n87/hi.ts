@@ -112,6 +112,17 @@ const messages: { readonly [K in keyof typeof N87]: string } = {
   "bg.fuel.tooManyCoins": "इसके लिए एक साथ बहुत सारे छोटे कॉइन चाहिए। पहले कम राशि भेजें।",
   // ---- end chains-fuel
   // ---- chains-bitcoincash (bitcoincash)
+  "bg.bch.contractPlaceholders": "यह ऐप Clip Wallet से उसकी कुंजी या सिग्नेचर किसी स्मार्ट कॉन्ट्रैक्ट के डेटा में डालने को कह रहा है। Clip Wallet अभी इस तरह के ट्रांज़ैक्शन पर साइन नहीं कर सकता।",
+  "bg.bch.spendsTokens": "इससे आपके वॉलेट से CashTokens भेजे जाएंगे: {tokens}।",
+  "bg.bch.highFee": "नेटवर्क शुल्क {fee} है, जो असामान्य रूप से ज़्यादा है।",
+  "bg.bch.othersInputs": "दूसरे मालिकों या कॉन्ट्रैक्ट के {count} कॉइन",
+  "bg.bch.notCashAddr": "यह Bitcoin Cash एड्रेस जैसा नहीं लगता। इसका CashAddr रूप (bitcoincash:q…) इस्तेमाल करें।",
+  "bg.bch.testAddressOnMainnet": "यह Bitcoin Cash टेस्ट-नेटवर्क एड्रेस (bchtest:…) है। मेननेट एड्रेस (bitcoincash:…) इस्तेमाल करें।",
+  "bg.bch.mainAddressOnTestnet": "यह Bitcoin Cash मेननेट एड्रेस (bitcoincash:…) है। टेस्ट-नेटवर्क एड्रेस (bchtest:…) इस्तेमाल करें।",
+  "bg.bch.tokenSendUnavailable": "CashTokens भेजना अभी उपलब्ध नहीं है।",
+  "bg.bch.belowDust": "कम से कम {amount} भेजें। Bitcoin Cash पर इससे छोटी रकम नहीं भेजी जा सकती।",
+  "bg.bch.feeTooLow": "नेटवर्क के लिए शुल्क बहुत कम था। कुछ भी नहीं भेजा गया। दोबारा कोशिश करें।",
+  "bg.bch.coinsSpent": "इस ट्रांज़ैक्शन के कुछ कॉइन पहले ही खर्च हो चुके थे। कुछ भी नहीं भेजा गया। रीफ़्रेश करें और दोबारा कोशिश करें।",
   // ---- end chains-bitcoincash
   // ---- 1mask (networks87 providers) (1mask)
   // ---- end 1mask (networks87 providers)
