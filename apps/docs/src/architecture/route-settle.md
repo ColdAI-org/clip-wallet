@@ -52,8 +52,11 @@ See the [config reference](../reference/config.md).
 
 ### Safety
 
-- `isTestVerifier()` and `testVerifierEdges()` find hops (and the way back) that rely on test or stub verifiers. They
-  are allowed on test networks only ([`src/safety.ts`](repo:packages/route/src/safety.ts)).
+- Mainnet routes may only use verifier families on `MAINNET_VERIFIER_FAMILIES`, an exact-match allowlist of reviewed
+  verifiers (today `ethereum-sync-committee`). A family is never judged by its name, so a fetched graph can't pass a
+  stub off under a harmless-looking one. `isTestVerifier()` (anything not allowlisted, or flagged "TEST ONLY" by the
+  graph) and `testVerifierEdges()` find hops, and the way back, that mainnet refuses; test networks allow them and
+  flag the quote ([`src/safety.ts`](repo:packages/route/src/safety.ts)).
 - Planner behaviour is the vendored CLPRouter SDK (`src/vendor/clprouter-sdk`): change it upstream and re-vendor,
   never in place.
 

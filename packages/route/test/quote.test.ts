@@ -1,6 +1,6 @@
 import { ClipError } from "@clip-wallet/core";
 import { describe, expect, it } from "vitest";
-import { RouteClient, testnetGraph } from "../src/index.js";
+import { MAINNET_VERIFIER_FAMILIES, RouteClient, isTestVerifier, testnetGraph } from "../src/index.js";
 import {
   BASE_SEPOLIA,
   ETH_BASE,
@@ -83,6 +83,43 @@ describe("quote", () => {
     const [q] = await client({ graph: stubOnlyGraph() }).quote({ to: HEDERA, asset: HBAR, amount: "100000000", from: [SEPOLIA], now });
     expect(q!.usesTestVerifier).toBe(true);
     expect(q!.trust.tier).toBe("attested");
+  });
+
+  describe("audit ROUTE-01: mainnet verifiers come from an explicit allowlist, not from their names", () => {
+    /** The fixture graph with an audited verifier both ways, then the Sepolia -> Hedera hop given `family`. */
+    const graphWith = (family: string, notes?: string) => {
+      const g = fixtureGraph();
+      g.edges[1] = { ...g.edges[1]!, verifierFamily: "ethereum-sync-committee", trustTier: "committee", notes: undefined };
+      g.edges[0] = { ...g.edges[0]!, verifierFamily: family, ...(notes ? { notes } : {}) };
+      return g;
+    };
+    const mainnet = (graph: ReturnType<typeof fixtureGraph>) => new RouteClient({ network: "mainnet", graph: () => Promise.resolve(graph), deployments: fixtureDeployments(false) });
+    const pay = (c: RouteClient) => c.quote({ to: HEDERA, asset: HBAR, amount: "100000000", from: [SEPOLIA], now });
+
+    it("an allowlisted family routes on mainnet", async () => {
+      expect(MAINNET_VERIFIER_FAMILIES.has("ethereum-sync-committee")).toBe(true);
+      const [q] = await pay(mainnet(graphWith("ethereum-sync-committee")));
+      expect(q!.usesTestVerifier).toBe(false);
+    });
+
+    it.each(["zk-light-client", "ethereum-sync-committee-v2", "Ethereum-Sync-Committee", "hiero-tss"])(
+      "a fetched graph's unlisted family %s is refused on mainnet, whatever it is called",
+      async (family) => {
+        const e = await rejection(pay(mainnet(graphWith(family))));
+        expect(e.code).toBe("no-route");
+      },
+    );
+
+    it("an allowlisted family marked TEST ONLY in its notes is still refused", async () => {
+      expect((await rejection(pay(mainnet(graphWith("ethereum-sync-committee", "TEST ONLY: accepts anything"))))).code).toBe("no-route");
+    });
+
+    it("on testnet an unlisted family still routes, flagged", async () => {
+      const [q] = await pay(client({ graph: graphWith("zk-light-client") }));
+      expect(q!.usesTestVerifier).toBe(true);
+      expect(isTestVerifier({ verifierFamily: "zk-light-client" })).toBe(true);
+      expect(isTestVerifier({ verifierFamily: "ethereum-sync-committee" })).toBe(false);
+    });
   });
 
   it("won't build a mainnet client on testnet deployments", () => {

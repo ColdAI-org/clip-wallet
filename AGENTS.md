@@ -91,7 +91,8 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
 ### Change routing defaults or settle-on-Hedera
 1. Wallet-wide: `route.mode`, `route.filters` (`iso20022`, `mica`, `energy`, `trustFloor`, `maxHops`, `deadlineS`,
    `excludedJurisdictions`) and `route.settleOnHedera` in `clip.config.ts`; types in `packages/route/src/types.ts`.
-2. Never allow test/stub verifiers outside testnet (`packages/route/src/safety.ts`).
+2. Never allow test/stub verifiers outside testnet: mainnet routes use only the verifier families on the
+   `MAINNET_VERIFIER_FAMILIES` allowlist (`packages/route/src/safety.ts`); add one only after reviewing its verifier.
 3. Planner behaviour is the vendored CLPRouter SDK (`packages/route/src/vendor/clprouter-sdk`): change upstream and re-vendor.
 4. Settle-on-Hedera deployments go in `SETTLE_DEPLOYMENTS` (`packages/route/src/settle.ts`); until then calls reject with `phase3`.
 

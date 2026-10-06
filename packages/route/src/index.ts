@@ -50,7 +50,7 @@ export type { SettleQuote, SettleQuoteJson } from "./settle-quote.js";
 export { JsonRpcReader, MirrorNodeReader } from "./settle-reader.js";
 export type { HederaReader, LogQuery, RawLog } from "./settle-reader.js";
 export { SETTLE_DEPOSIT_ABI, SETTLE_DEPOSIT_SELECTOR, SETTLE_ORDER_BOOK_ABI } from "./settle-abi.js";
-export { isTestVerifier, testVerifierEdges } from "./safety.js";
+export { MAINNET_VERIFIER_FAMILIES, isMainnetVerifier, isTestVerifier, testVerifierEdges } from "./safety.js";
 export { testnetGraph } from "./graph.js";
 export * from "./deployments.js";
 export { CLPR_ROUTER_ABI } from "./abi.js";
