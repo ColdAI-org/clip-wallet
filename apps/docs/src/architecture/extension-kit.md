@@ -1,7 +1,7 @@
 # Extension kit
 
 `@clip-wallet/extension-kit` is the whole browser extension as a library for [WXT](https://wxt.dev): the background
-(vault, approvals, security checks), the pages, 1Mask for all fourteen families and the build wiring. A wallet project,
+(vault, approvals, security checks), the pages, 1Mask for every family and the build wiring. A wallet project,
 Clip Wallet's own `apps/extension` included, keeps only its identity, its `wxt.config.ts` and one-line entrypoints.
 
 ```mermaid

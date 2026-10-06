@@ -10,15 +10,16 @@
 <h3 align="center">One wallet for every network, and the networks stay out of your way.</h3>
 
 <p align="center">
-  A non-custodial wallet for 14 network families on one recovery phrase. It works with every dapp as it is, and it
-  decodes every request into plain words before you sign. It is also an open kit for launching your own wallet.
+  A non-custodial wallet for 85 of the 87 CLPR networks, 26 network families on one recovery phrase. It works with
+  dapps as they are, and it decodes every request into plain words before you sign. It is also an open kit for
+  launching your own wallet.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
   <a href="https://github.com/ColdAI-org/clip-wallet/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ColdAI-org/clip-wallet/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Tests: 2,300+ passing" src="https://img.shields.io/badge/tests-2%2C300%2B%20passing-2ea043">
-  <a href="#networks"><img alt="Networks: 14 families" src="https://img.shields.io/badge/networks-14%20families-FF3C00"></a>
+  <a href="#networks"><img alt="Networks: 26 families, 93 mainnets" src="https://img.shields.io/badge/networks-26%20families%20%C2%B7%2093%20mainnets-FF3C00"></a>
   <img alt="Status: testnet preview" src="https://img.shields.io/badge/status-testnet%20preview%20%C2%B7%20pre--audit-orange">
 </p>
 
@@ -59,13 +60,16 @@ mistake loses money. One example is an address that can receive on several netwo
   </tr>
 </table>
 
-- **One seed, 14 families.** EVM (Ethereum, Base, Arbitrum, Optimism, Hedera EVM and any EVM chain by id), Hedera,
-  Solana, Bitcoin, Sui, Aptos, Cardano, Polkadot SDK, Starknet, TON, NEAR, Stellar, Tezos and Algorand, all from one
-  BIP-39 phrase.
-- **Works with every dapp, with no changes to the dapp.** 1Mask speaks each ecosystem's own standard: EIP-1193 with
-  EIP-6963, the Wallet Standard (Solana, Sui, Aptos, Bitcoin), CIP-30, `injectedWeb3`, TON Connect, NEAR Wallet
-  Selector, SEP-43, Beacon, ARC-1, and WalletConnect v2. It is tested against stock wallet pickers and live testnet
-  dapps.
+- **One seed, 26 families.** EVM (Ethereum, Base, Arbitrum, Optimism, Hedera EVM and any EVM chain by id), Hedera,
+  Solana, Bitcoin, Sui, Aptos, Cardano, Polkadot SDK (with Chainflip), Starknet, TON, NEAR, Stellar, Tezos, Algorand,
+  the Cosmos SDK chains (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia), TRON, XRP Ledger, Stacks, Fuel,
+  Bitcoin Cash, MultiversX, Internet Computer and Antelope (Vaulta, Telos, XPR Network), all from one BIP-39 phrase:
+  85 of the 87 CLPR networks and 93 mainnets ([the list](https://coldai.org/clip/docs/reference/networks.html)).
+- **Works with dapps as they are.** 1Mask speaks each ecosystem's own standard: EIP-1193 with EIP-6963, the Wallet
+  Standard (Solana, Sui, Aptos, Bitcoin, XRPL's XLS-72d), CIP-30, `injectedWeb3`, TON Connect, NEAR Wallet Selector,
+  SEP-43, Beacon, ARC-1, a Keplr-compatible Cosmos API, TIP-1193 with TIP-6963, SIP-030 with WBIP-004, the
+  FuelConnector, and WalletConnect v2 (including Bitcoin Cash's wc2-bch-bcr). It is tested against stock wallet pickers
+  and live testnet dapps.
 - **Approval screens that decode what you sign.** Every request becomes a plain-words `DecodedRequest` that shows the
   title, balance changes, fee, time and warnings. Unlimited approvals, permits, look-alike tokens and unknown contract
   calls are called out. Requests the wallet can't read are **blocked by default**: no blind signing.
@@ -141,7 +145,9 @@ site gets its own session.
 <a id="networks"></a>
 ## Networks and dapp standards
 
-All 14 families are tested end to end on their public testnets with the real build, in two suites. The
+Clip supports 85 of the 87 CLPR networks: every one except Canton and Mixin, which have no model in which a
+self-custodial key wallet can hold funds ([why, and the full list](https://coldai.org/clip/docs/reference/networks.html)).
+The families are tested on their public testnets with the real build, in two suites. The
 [dapp matrix](docs/r1/dapp-matrix.md) drives each ecosystem's own dapp library (**connect**, **sign** and verify, **send**
 and confirm on chain, **approval** decoded). The [picker matrix](docs/r1/picker-matrix.md) drives the wallet pickers
 dapps actually ship, plus 8 hosted testnet dapps.
@@ -162,6 +168,15 @@ dapps actually ship, plus 8 hosted testnet dapps.
 | Stellar | Testnet | Stellar Wallets Kit module (SEP-43), SEP-53 | connect · sign · send · approval | Stellar Wallets Kit + module |
 | Tezos | Shadownet | Beacon (TZIP-10) | connect · sign · send · approval | Beacon lists Clip; connecting from its modal is a known gap |
 | Algorand | TestNet | use-wallet adapter (ARC-1, ARC-6) | connect · send · approval | use-wallet UI + `@clip-wallet/kit-modules/algorand` |
+| Cosmos SDK | osmo-test-5 | Keplr-compatible API at `window.clipwallet.cosmos` | connect · sign ¹ | cosmjs, with Clip's object in place of `window.keplr` |
+| TRON | Nile | TIP-1193 + TIP-6963 | connect · sign ¹ | TronWeb; the tronwallet adapters don't take TIP-6963 wallets yet |
+| XRP Ledger | Testnet | XLS-72d (Wallet Standard) | connect · send · approval (no message signing in XLS-72d) | Wallet Standard discovery |
+| Stacks | Testnet | SIP-030 + WBIP-004 | connect · sign · send · approval | `@stacks/connect` 8 |
+| Fuel | Testnet | FuelConnector | connect · sign ¹ | fuels-ts `Fuel` |
+| Chainflip (Polkadot SDK) | Perseverance | `injectedWeb3` | connect · sign · approval ¹ | `@polkadot/extension-dapp`, as lp.chainflip.io |
+| MultiversX | Devnet | best effort: sdk-dapp's undocumented custom-provider hook | connect · sign ¹ | sdk-dapp 5, where the dapp keeps `window.multiversx` |
+| Bitcoin Cash | Chipnet | WalletConnect (wc2-bch-bcr) | not run (needs a WalletConnect project id) | Cashonize-style WalletConnect dapps |
+| Internet Computer, Antelope | `icp:test`, Jungle4 | none: send and receive only | n/a | n/a |
 
 <sub>¹ The remaining steps wait for testnet funds in the matrix wallet. Each approval says plainly why it can't go
 ahead, for example "You don't have enough APT to pay the network fee". Bitcoin passed send and approval in an earlier
@@ -358,7 +373,7 @@ screens come from the fixture build. Details: [`packages/route`](packages/route)
 | Path | What |
 | --- | --- |
 | [`packages/core`](packages/core) | The contract: `ChainModule`, `DecodedRequest`, assets, errors |
-| [`packages/vault`](packages/vault) | Phrase, derivation for 14 families, encryption, approval-bound signing, passkeys. The only package that touches keys |
+| [`packages/vault`](packages/vault) | Phrase, derivation for 26 families, encryption, approval-bound signing, passkeys. The only package that touches keys |
 | [`packages/chains-*`](packages) | One `ChainModule` per family |
 | [`packages/1mask`](packages/1mask) | Dapp connectors for every family, the router, WalletConnect |
 | [`packages/engine`](packages/engine) | Orchestration shared by the extension, desktop and mobile |
@@ -389,10 +404,11 @@ screens come from the fixture build. Details: [`packages/route`](packages/route)
 - **Optional services see ciphertext and hashes only.** The threat model is in
   [`services/backup`](services/backup/README.md).
 
-**Audit status.** An internal review in October 2026 covered the vault, the approval path for all 14 families, 1Mask,
-WalletConnect, plugins, hardware signing, the services and the supply chain. It found 47 issues (2 critical, 5 high,
-18 medium, 22 low) and all of them are fixed, each with a regression test: there are no open findings
-([report](docs/audit/internal-audit-2026-10.md)). The **external audit comes before any mainnet build**.
+**Audit status.** An internal review in October 2026 covered the vault, the approval path for the first 14 families,
+1Mask, WalletConnect, plugins, hardware signing, the services and the supply chain. It found 47 issues (2 critical,
+5 high, 18 medium, 22 low) and all of them are fixed, each with a regression test: there are no open findings
+([report](docs/audit/internal-audit-2026-10.md)). The 12 newer families came after that review. The **external
+audit comes before any mainnet build**.
 
 Report vulnerabilities privately: [SECURITY.md](SECURITY.md) (GitHub private reporting, or
 [shayan@coldai.org](mailto:shayan@coldai.org)).

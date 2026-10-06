@@ -1,6 +1,6 @@
 # Launch your own wallet
 
-The Clip Wallet kit lets you ship a wallet under your own name on the same code Clip Wallet runs: fourteen network
+The Clip Wallet kit lets you ship a wallet under your own name on the same code Clip Wallet runs: 26 network
 families, 1Mask for every dapp, decoded approvals, the security floor, features, plugins and route-and-fund. One
 project gives you the wallet **on every platform**: a browser extension, a desktop app for macOS, Windows and Linux,
 and a phone app for iOS and Android, all described by one `clip.config.ts`. You change identity and configuration; the

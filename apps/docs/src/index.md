@@ -31,7 +31,7 @@ features:
     link: /connect/
     linkText: The SDK
   - title: A wallet of your own
-    details: create-clip-wallet gives you a branded extension for 14 network families, with its own name, icon and extension id, and a Scaffold-HBAR dapp next to it.
+    details: create-clip-wallet gives you a branded wallet for 26 network families, with its own name, icon and extension id, and a Scaffold-HBAR dapp next to it.
     link: /kit/
     linkText: The kit
   - title: Extend it

@@ -28,7 +28,19 @@ libraries against every build to prove it. See [Compatibility promise](../connec
 | Stellar | SEP-43 | Stellar Wallets Kit with `@clip-wallet/kit-modules/stellar` | [Stellar](./stellar.md) |
 | Algorand | ARC-1 | use-wallet with `@clip-wallet/kit-modules/algorand` | [Algorand](./algorand.md) |
 | Tezos | Beacon (TZIP-10) | Beacon finds Clip; its modal needs a listing to connect | [Tezos](./tezos.md) |
+| Cosmos SDK (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia) | Keplr-compatible API at `window.clipwallet.cosmos` | cosmjs and Keplr-style dapps, passing Clip's object instead of `window.keplr` | [Cosmos](./cosmos.md) |
+| TRON | TIP-1193 + TIP-6963 | TIP-6963 discovery; TronWeb for building transactions | [TRON](./tron.md) |
+| XRP Ledger | XLS-72d (Wallet Standard) | `@wallet-standard/app` with the XRPL feature filter | [XRP Ledger](./xrpl.md) |
+| Stacks | SIP-030 + WBIP-004 | `@stacks/connect` 8 | [Stacks](./stacks.md) |
+| Fuel | FuelConnector | fuels-ts `Fuel` | [Fuel](./fuel.md) |
+| Bitcoin Cash | WalletConnect (wc2-bch-bcr) | Cashonize-style WalletConnect dapps | [Bitcoin Cash](./bitcoincash.md) |
+| MultiversX | best effort: sdk-dapp's custom-provider hook | `@multiversx/sdk-dapp` 5, where the dapp keeps `window.multiversx` | [MultiversX](./multiversx.md) |
 | Any (phones, desktop apps) | WalletConnect v2 | Any WalletConnect dapp | [WalletConnect](./walletconnect.md) |
+
+Antelope (Vaulta, Telos, XPR Network) and the Internet Computer have no wallet standard Clip can answer as itself
+(WharfKit's plugins live in the dapp, Anchor Link and Scatter would mean posing as those wallets, and ICRC-94 is still a
+draft), so on those networks Clip sends and receives but doesn't connect to dapps. Every network, with how dapps reach
+it: [Networks](../reference/networks.md).
 
 Some ecosystems' pickers show only the wallets in their own registry. For those, the guide shows the one line a dapp
 adds (a module, an adapter, a list entry) until Clip is listed. Listing submissions are drafted and wait for the public

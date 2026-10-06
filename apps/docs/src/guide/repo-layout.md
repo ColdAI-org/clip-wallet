@@ -9,7 +9,7 @@ published to npm as `@clip-wallet/<name>` (plus `create-clip-wallet`), all at on
 | --- | --- |
 | `packages/core` | The contract: `Family`, `Network`, `AssetRef`, `ChainModule`, `DappRequest`, `DecodedRequest`, `SignablePayload`, `ClipError`, warning and error codes. Additive changes only. |
 | `packages/config` | The `clip.config.ts` schema (zod): identity, theme, networks, routing, services, the mainnet checklist. |
-| `packages/vault` | Recovery phrase, key derivation for 14 families, encryption at rest, approval-bound signing, passkey unlock. **The only package that touches keys.** |
+| `packages/vault` | Recovery phrase, key derivation for 26 families, encryption at rest, approval-bound signing, passkey unlock. **The only package that touches keys.** |
 | `packages/chains-*` | One `ChainModule` per family: `evm`, `hedera`, `solana`, `bitcoin`, `sui`, `aptos`, `cardano`, `substrate`, `starknet`, `ton`, `near`, `stellar`, `tezos`, `algorand`. |
 | `packages/1mask` | Dapp connectors for every family, plus WalletConnect. Announces the wallet's identity. |
 | `packages/engine` | Environment-free orchestration (approvals, permissions, portfolio, catalog) shared by mobile and desktop. |
