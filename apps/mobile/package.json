@@ -76,16 +76,16 @@
     "ses": "2.3.0"
   },
   "devDependencies": {
-    "@react-native/jest-preset": "0.86.3",
+    "@react-native/jest-preset": "0.87.1",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "@types/qrcode": "^1.5.6",
     "@types/react": "~19.2.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.2",
     "happy-dom": "^20.14.5",
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
-    "react-test-renderer": "19.2.3",
+    "react-test-renderer": "19.3.0",
     "typescript": "^5.9.3",
     "vitest": "~4.1.11"
   }
