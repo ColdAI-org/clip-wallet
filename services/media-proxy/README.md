@@ -15,10 +15,17 @@ the Worker re-validates with the same code (`parseProxyQuery`), so the two can't
 - **Sources:** `https`, `http`, `ipfs://<CIDv0|CIDv1>[/path]`, `ar://<43-char tx>[/path]`. Public IPFS path and
   subdomain gateway URLs and `arweave.net/<tx>` are rewritten to `ipfs://`/`ar://` and fetched through
   `IPFS_GATEWAY` (default `https://ipfs.filebase.io`; ipfs.io stopped serving HTTP content in Sept 2026) / `ARWEAVE_GATEWAY`. Rejected: `data:`, `blob:`, `javascript:`, `file:`, userinfo, non-default
-  ports, IP literals in private/loopback/link-local/CGNAT/multicast ranges, IPv6 literals, single-label hosts,
-  `localhost`, `.local`, `.internal`, `.home.arpa`.
+  ports, IPv4 in private/loopback/link-local/CGNAT/documentation/benchmark/multicast/reserved ranges (in any
+  spelling the URL parser accepts: `127.1`, `0x7f.0.0.1`, `2130706433`), IPv6 literals, single-label hosts, and
+  special-use or private-use names (`localhost`, `.local`, `.internal`, `.arpa`/`.home.arpa`, `.test`, `.invalid`,
+  `.onion`, `.alt`, `.lan`, `.home`, `.corp`, `.intranet`, `.private`). Hosts are parsed with the WHATWG URL parser
+  and compared as addresses or by labels (`parseHost` / `isBlockedHost` in `@clip-wallet/media-client`), never as
+  strings.
 - **Redirects:** followed by hand (`redirect: "manual"`), at most 3, and every hop is re-validated with the
-  same rules, so a public URL can't bounce to `169.254.169.254`.
+  same rules, so a public URL can't bounce to `169.254.169.254`, a private address or a `.lan` name.
+- **DNS:** a public name that resolves to a private address (DNS rebinding) is stopped by the platform: Cloudflare
+  Workers' `fetch()` can't reach private or loopback addresses. Self-hosting it anywhere else needs an egress
+  firewall that does the same.
 - **Types:** decided by sniffing the first bytes, never by the URL or upstream `Content-Type`: PNG, JPEG,
   GIF, WebP, AVIF, SVG, MP4, WebM. The sniffed kind must match the requested `kind`. HTML, JS, PDF → 415.
 - **Size:** 10 MiB images, 50 MiB video; checked against `Content-Length` and again while streaming

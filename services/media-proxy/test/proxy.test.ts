@@ -120,7 +120,18 @@ describe("media proxy", () => {
     );
     expect(ok.res.status).toBe(200);
     expect(ok.seen.map((s) => s.url)).toEqual(["https://a.example/x.png", "https://b.example/y.png"]);
-    for (const loc of ["http://169.254.169.254/latest/meta-data", "http://localhost/x.png", "javascript:alert(1)", "file:///etc/passwd"]) {
+    // Audit MEDIA-01: every hop is parsed; loopback/private/link-local/reserved addresses and private-use names are refused.
+    for (const loc of [
+      "http://169.254.169.254/latest/meta-data",
+      "http://localhost/x.png",
+      "javascript:alert(1)",
+      "file:///etc/passwd",
+      "http://127.1/x.png",
+      "http://[fe80::1]/x.png",
+      "http://router.lan/x.png",
+      "http://198.51.100.7/x.png",
+      "//nas.home/x.png",
+    ]) {
       const bad = await get({ "https://a.example/x.png": { status: 301, headers: { location: loc } } }, "https://a.example/x.png");
       expect(bad.res.status).toBe(403);
       expect(bad.seen).toHaveLength(1);

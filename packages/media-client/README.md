@@ -4,7 +4,9 @@ Decides what an untrusted NFT media URL may become. Shared by the wallet UI (to 
 service (to re-validate them), so both sides agree. Pure functions, no I/O.
 
 - Sources: https, http, `ipfs://` and `ar://`; public gateway URLs are rewritten to `ipfs://` / `ar://`.
-- Never: `data:`, `blob:`, `javascript:`, `file:`, credentials in URLs, odd ports, private or loopback hosts.
+- Never: `data:`, `blob:`, `javascript:`, `file:`, credentials in URLs, odd ports, private, loopback, link-local or
+  reserved addresses (in any spelling), IPv6 literals, single-label and special-use names. `parseHost()` reads a host
+  the way fetch does; `isBlockedHost()` compares it as an address or by labels, never as a string.
 - Output: raster images, sandboxed SVG, mp4/webm video, within `MEDIA_LIMITS`.
 
 > Pre-release: Clip Wallet runs on test networks only and has had no external audit.

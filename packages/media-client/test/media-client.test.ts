@@ -55,6 +55,39 @@ describe("normaliseMediaSource", () => {
   });
 });
 
+describe("audit MEDIA-01: hosts are parsed, not matched as strings", () => {
+  it("blocks loopback, private and link-local addresses in any spelling the URL parser accepts", () => {
+    for (const h of ["127.1", "0x7f.0.0.1", "0177.0.0.1", "２１３０７０６４３３", "１２７.0.0.1", "10.1", "192.168.1", "169.254.169.254", "[::1]", "[::ffff:127.0.0.1]", "[fe80::1]", "::1"]) {
+      expect([h, isBlockedHost(h)]).toEqual([h, true]);
+    }
+  });
+
+  it("blocks special-use and private-use names by their last labels, with any case or a trailing dot", () => {
+    for (const h of ["LOCALHOST.", "api.localhost", "Printer.LOCAL.", "a.b.home.arpa", "metadata.google.internal", "router.lan", "nas.home", "x.test", "x.invalid", "intranet", "exa mple.com", ""]) {
+      expect([h, isBlockedHost(h)]).toEqual([h, true]);
+    }
+  });
+
+  it("blocks reserved, documentation and benchmark ranges", () => {
+    for (const h of ["198.51.100.7", "203.0.113.9", "192.0.2.1", "192.88.99.1", "240.0.0.1", "255.255.255.255", "198.19.255.255"]) {
+      expect([h, isBlockedHost(h)]).toEqual([h, true]);
+    }
+  });
+
+  it("doesn't block public names that merely contain those words", () => {
+    for (const h of ["local.example.com", "localhost.example.com", "internal-cdn.example.com", "lan.party", "1.1.1.1", "203.0.114.1"]) {
+      expect([h, isBlockedHost(h)]).toEqual([h, false]);
+    }
+  });
+
+  it("normaliseMediaSource refuses those hosts too, and rewrites IPFS subdomain gateways by label", () => {
+    for (const raw of ["http://router.lan/a.png", "https://cdn.test/a.png", "http://198.51.100.7/a.png", "http://[fe80::1]/a.png"]) expect([raw, normaliseMediaSource(raw)]).toEqual([raw, null]);
+    const v1 = "bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi";
+    expect(normaliseMediaSource(`https://${v1}.ipfs.dweb.link/a.png`)).toEqual({ url: `ipfs://${v1}/a.png`, scheme: "ipfs" });
+    expect(normaliseMediaSource(`https://x.${v1}.ipfs.dweb.link/a.png`)!.scheme).toBe("https");
+  });
+});
+
 describe("isBlockedHost", () => {
   it("allows public names and IPs", () => {
     expect(isBlockedHost("example.com")).toBe(false);

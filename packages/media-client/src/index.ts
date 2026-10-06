@@ -7,8 +7,9 @@
  * Rules:
  *  - Sources: https, http, ipfs:// (CIDv0/CIDv1), ar:// (43-char Arweave tx id). Public IPFS/Arweave gateway
  *    URLs are rewritten to ipfs:// / ar:// so the proxy uses its own gateway and caches one copy.
- *  - Never: data:, blob:, javascript:, file:, credentials in the URL, non-default ports, IP literals in
- *    private/loopback/link-local ranges, localhost/.local/.internal names.
+ *  - Never: data:, blob:, javascript:, file:, credentials in the URL, non-default ports, IPv6 literals, IPv4 in
+ *    private/loopback/link-local/reserved ranges (any spelling), single-label names and special-use or private-use
+ *    names (localhost, .local, .internal, .home.arpa, .lan…). Hosts are parsed, never matched as strings.
  *  - Output types: raster images, SVG (served sandboxed), mp4/webm video. Decided by sniffing bytes in the
  *    proxy, never by the URL or the upstream Content-Type alone.
  *
@@ -60,25 +61,85 @@ function safeSubpath(p: string | undefined): string | null {
   return p;
 }
 
-/** True for hostnames the proxy must never fetch (SSRF guard). Expects a WHATWG-normalised hostname. */
-export function isBlockedHost(hostname: string): boolean {
-  const h = hostname.toLowerCase().replace(/\.$/, "");
-  if (!h) return true;
-  if (h.startsWith("[")) return true; // IPv6 literals: nothing legitimate needs them
-  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal") || h.endsWith(".home.arpa")) return true;
-  if (!h.includes(".")) return true; // single-label names resolve on local networks only
-  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (m) {
-    const [a, b] = [Number(m[1]), Number(m[2])];
-    if (a === 0 || a === 10 || a === 127 || a >= 224) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
-    if (a === 192 && b === 0) return true;
-    if (a === 198 && (b === 18 || b === 19)) return true;
+/**
+ * IPv4 ranges the proxy never fetches: "this network", private (RFC 1918), CGNAT, loopback, link-local (incl. cloud
+ * metadata), IETF protocol assignments, documentation (TEST-NET-1/2/3), the 6to4 relay, benchmarking, multicast and
+ * reserved (incl. broadcast). [first address, prefix length].
+ */
+const BLOCKED_V4: readonly [string, number][] = [
+  ["0.0.0.0", 8],
+  ["10.0.0.0", 8],
+  ["100.64.0.0", 10],
+  ["127.0.0.0", 8],
+  ["169.254.0.0", 16],
+  ["172.16.0.0", 12],
+  ["192.0.0.0", 24],
+  ["192.0.2.0", 24],
+  ["192.88.99.0", 24],
+  ["192.168.0.0", 16],
+  ["198.18.0.0", 15],
+  ["198.51.100.0", 24],
+  ["203.0.113.0", 24],
+  ["224.0.0.0", 4],
+  ["240.0.0.0", 4],
+];
+
+/**
+ * Top-level labels that only resolve on local networks or never resolve: special-use names (RFC 6761/6762/8375/9476:
+ * localhost, local, arpa incl. home.arpa, test, invalid, onion, alt), ICANN's reserved private TLD (internal) and the
+ * private-use names routers and companies hand out (lan, home, corp, intranet, private).
+ */
+const BLOCKED_TLDS = new Set(["localhost", "local", "internal", "arpa", "test", "invalid", "onion", "alt", "lan", "home", "corp", "intranet", "private"]);
+
+const v4Number = (dotted: string): number => dotted.split(".").reduce((n, o) => n * 256 + Number(o), 0);
+
+function inBlockedV4(n: number): boolean {
+  return BLOCKED_V4.some(([base, bits]) => Math.floor(n / 2 ** (32 - bits)) === Math.floor(v4Number(base) / 2 ** (32 - bits)));
+}
+
+export type ParsedHost = { kind: "ipv4"; address: string } | { kind: "ipv6"; address: string } | { kind: "name"; labels: string[] };
+
+/**
+ * A host as the WHATWG URL parser (what fetch uses) reads it: IDNA-mapped and lower-cased, IPv4 in any spelling
+ * (127.1, 0x7f.0.0.1, 2130706433, full-width digits) turned into dotted decimal, IPv6 in brackets. Null when it isn't
+ * a valid host on its own (spaces, credentials, a port, a path…).
+ */
+export function parseHost(hostname: string): ParsedHost | null {
+  let raw = hostname.trim();
+  if (!raw) return null;
+  if (raw.includes(":") && raw[0] !== "[") raw = `[${raw}]`; // a bare IPv6 address
+  let u: URL;
+  try {
+    u = new URL(`http://${raw}/`);
+  } catch {
+    return null;
   }
-  return false;
+  if (u.username || u.password || u.port || u.pathname !== "/" || u.search || u.hash || !u.hostname) return null;
+  const h = u.hostname;
+  if (h.includes(":")) return { kind: "ipv6", address: h };
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return { kind: "ipv4", address: h };
+  const labels = h.split(".");
+  if (labels.at(-1) === "") labels.pop(); // a trailing dot is the same name
+  if (!labels.length || labels.some((l) => !l)) return null;
+  return { kind: "name", labels };
+}
+
+/**
+ * True for hosts the proxy must never fetch (SSRF guard, audit MEDIA-01). The host is parsed (parseHost), never
+ * matched as a string: IPv4 against the blocked ranges, any IPv6 literal (nothing legitimate needs one), and names by
+ * their labels (single-label names and the special-use / private-use top-level labels above).
+ */
+export function isBlockedHost(hostname: string): boolean {
+  const host = parseHost(hostname);
+  if (!host) return true;
+  switch (host.kind) {
+    case "ipv6":
+      return true;
+    case "ipv4":
+      return inBlockedV4(v4Number(host.address));
+    case "name":
+      return host.labels.length < 2 || BLOCKED_TLDS.has(host.labels.at(-1)!);
+  }
 }
 
 /**
@@ -120,8 +181,11 @@ export function normaliseMediaSource(raw: string | null | undefined): MediaSourc
   // Gateway URLs → ipfs:// (path gateway or subdomain gateway), arweave.net/<tx> → ar://
   const ip = IPFS_PATH.exec(u.pathname);
   if (ip && ip[1] && isCid(ip[1]) && !u.search) return normaliseMediaSource(`ipfs://${ip[1]}${ip[2] ?? ""}`);
-  const sub = /^([a-z2-7]{50,})\.ipfs\./.exec(u.hostname);
-  if (sub && sub[1] && !u.search) return normaliseMediaSource(`ipfs://${sub[1]}${u.pathname === "/" ? "" : u.pathname}`);
+  // Subdomain gateway: <cidv1>.ipfs.<gateway host>, read by labels.
+  const labels = u.hostname.split(".");
+  if (labels.length >= 3 && labels[1] === "ipfs" && CID_V1.test(labels[0]!) && !u.search) {
+    return normaliseMediaSource(`ipfs://${labels[0]}${u.pathname === "/" ? "" : u.pathname}`);
+  }
   if ((u.hostname === "arweave.net" || u.hostname === "www.arweave.net") && !u.search) {
     const [, tx, ...path] = u.pathname.split("/");
     if (tx && AR_TX.test(tx)) return normaliseMediaSource(`ar://${tx}${path.length ? `/${path.join("/")}` : ""}`);
