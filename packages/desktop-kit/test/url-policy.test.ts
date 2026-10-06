@@ -1,3 +1,4 @@
+import { join, sep } from "node:path";
 import { describe, expect, it } from "vitest";
 import { displayHost, isNavigable, normalizeInput, partitionFor, promptFor, webOrigin } from "../src/main/browser/url-policy";
 import { resolveAppPath, walletCsp } from "../src/main/app-paths";
@@ -38,12 +39,14 @@ describe("url policy", () => {
 
 describe("clip-app protocol", () => {
   it("serves only files inside the bundle", () => {
-    expect(resolveAppPath("/app/out/renderer", "clip-app://wallet/wallet/index.html")).toBe("/app/out/renderer/wallet/index.html");
-    expect(resolveAppPath("/app/out/renderer", "clip-app://wallet/../../../etc/passwd")).toBe("/app/out/renderer/etc/passwd");
-    expect(resolveAppPath("/app/out/renderer", "clip-app://wallet/..%2F..%2Fsecret")).toBeNull();
-    expect(resolveAppPath("/app/out/renderer", "clip-app://wallet/%2e%2e/%2e%2e/secret")).toBe("/app/out/renderer/secret");
-    expect(resolveAppPath("/app/out/renderer", "clip-app://other/wallet/index.html")).toBeNull();
-    expect(resolveAppPath("/app/out/renderer", "https://wallet/index.html")).toBeNull();
+    // In the platform's own path form, as the app passes it (backslashes on Windows).
+    const root = join(sep, "app", "out", "renderer");
+    expect(resolveAppPath(root, "clip-app://wallet/wallet/index.html")).toBe(join(root, "wallet", "index.html"));
+    expect(resolveAppPath(root, "clip-app://wallet/../../../etc/passwd")).toBe(join(root, "etc", "passwd"));
+    expect(resolveAppPath(root, "clip-app://wallet/..%2F..%2Fsecret")).toBeNull();
+    expect(resolveAppPath(root, "clip-app://wallet/%2e%2e/%2e%2e/secret")).toBe(join(root, "secret"));
+    expect(resolveAppPath(root, "clip-app://other/wallet/index.html")).toBeNull();
+    expect(resolveAppPath(root, "https://wallet/index.html")).toBeNull();
   });
   it("CSP: no remote script, no eval, no frames; images only from the media proxy", () => {
     const csp = walletCsp("https://media.example/v1");

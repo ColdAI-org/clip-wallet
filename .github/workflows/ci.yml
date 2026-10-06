@@ -122,7 +122,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "./services/**..."
+      # Braces: the services and their workspace dependencies (packages/link, packages/backup-client).
+      - run: pnpm install --frozen-lockfile --filter "{./services/**}..."
       - name: Typecheck
         run: pnpm -r --filter "./services/**" typecheck
       - name: Test (inside workerd, local Miniflare D1/R2; nothing remote)

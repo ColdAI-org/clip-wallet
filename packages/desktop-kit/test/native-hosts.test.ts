@@ -33,7 +33,8 @@ describe("browser connector (native-messaging host registration)", () => {
     expect(chrome).toMatchObject({ name: "org.coldai.clipwallet.link", type: "stdio", path: launcherPath(e), allowed_origins: [`chrome-extension://${EXT}/`] });
     const ff = JSON.parse(readFileSync(join(e.home, "Library/Application Support/Mozilla/NativeMessagingHosts/org.coldai.clipwallet.link.json"), "utf8"));
     expect(ff.allowed_extensions).toEqual(["wallet@clipwallet.coldai.org"]);
-    expect(statSync(launcherPath(e)).mode & 0o777).toBe(0o700);
+    // POSIX permission bits (Windows has none: Node reports 0o666 for any writable file there).
+    if (process.platform !== "win32") expect(statSync(launcherPath(e)).mode & 0o777).toBe(0o700);
     expect(readFileSync(launcherPath(e), "utf8")).toContain("ELECTRON_RUN_AS_NODE=1");
     // Someone else's manifest with the same name (another install) is left alone.
     const brave = join(e.home, "Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/org.coldai.clipwallet.link.json");

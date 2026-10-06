@@ -78,6 +78,9 @@ jobs:
 
       - name: End-to-end (Playwright, real app)
         working-directory: apps/desktop
+        env:
+          # The e2e helpers import workspace packages from source (nothing is built to dist/ in this job).
+          NODE_OPTIONS: --conditions=development
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
             xvfb-run --auto-servernum -- pnpm exec playwright test

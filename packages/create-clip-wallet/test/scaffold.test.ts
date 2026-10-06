@@ -3,7 +3,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { deflateSync } from "node:zlib";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// Each project copies the template and renders every platform's icons: seconds on a shared CI runner, not milliseconds.
+vi.setConfig({ testTimeout: 60_000 });
 import {
   applyIdentity,
   copyTemplate,
