@@ -46,6 +46,14 @@ export const VAULT_IMPORT_ALLOW = [
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
 
+/**
+ * Crypto-critical dependencies (audit SUP-02): pinned to an exact version in every workspace package, so a lockfile
+ * regeneration can't pull in a new patch release of the code that derives keys, hashes and verifies signatures.
+ */
+export const CRYPTO_DEPS =
+  /^(?:@noble\/[\w.-]+|@scure\/[\w.-]+|hash-wasm|@walletconnect\/[\w.-]+|@ledgerhq\/[\w.-]+|@keystonehq\/[\w.-]+|@ngraveio\/bc-ur|@ton\/crypto|libsodium[\w.-]*|tweetnacl|ed25519-hd-key|@polkadot\/util-crypto)$/;
+const PINNED_VERSION = /^\d+\.\d+\.\d+(?:-[\w.]+)?$/;
+
 /** Where literal BIP-39 phrases may appear (the public test vectors). */
 export const PHRASE_LITERAL_ALLOW = [/^packages\/vault\/test\//, /^tools\/harness\/test\//];
 
@@ -432,6 +440,31 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
         lineOf(text, idx),
         `Chain modules never depend on the vault: remove @clip-wallet/vault from ${pkg}/package.json.`,
       );
+    }
+  }
+
+  // Audit SUP-02: crypto-critical dependencies are pinned exactly (peer dependencies stay ranges: they are the
+  // app's to choose). The kit's own projects pin @clip-wallet/* instead (kitChecks).
+  if (!isKitProject(root)) {
+    for (const f of files.filter((x) => /(?:^|\/)package\.json$/.test(x) && !x.startsWith("templates/"))) {
+      const text = readFileSync(join(root, f), "utf8");
+      let pj;
+      try {
+        pj = JSON.parse(text);
+      } catch {
+        continue;
+      }
+      for (const section of ["dependencies", "devDependencies", "optionalDependencies"]) {
+        for (const [name, spec] of Object.entries(pj[section] ?? {})) {
+          if (!CRYPTO_DEPS.test(name) || typeof spec !== "string" || spec.startsWith("workspace:") || PINNED_VERSION.test(spec)) continue;
+          fail(
+            "crypto-dep-unpinned",
+            f,
+            lineOf(text, Math.max(0, text.indexOf(`"${name}"`))),
+            `${name} is a crypto-critical dependency: pin it to an exact version (e.g. "${spec.replace(/^[\^~>=<\s]+/, "")}"), not "${spec}", and keep pnpm-lock.yaml in step.`,
+          );
+        }
+      }
     }
   }
 

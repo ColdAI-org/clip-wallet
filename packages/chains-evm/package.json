@@ -57,7 +57,10 @@
   },
   "dependencies": {
     "@clip-wallet/core": "workspace:*",
-    "@noble/curves": "^2.4.0",
+    "@noble/curves": "2.4.0",
     "viem": "^2.57.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5"
   }
 }

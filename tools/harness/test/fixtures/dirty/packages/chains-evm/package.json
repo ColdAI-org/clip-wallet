@@ -1,6 +1,11 @@
 {
   "name": "@clip-wallet/chains-evm",
   "dependencies": {
-    "@clip-wallet/vault": "workspace:*"
+    "@clip-wallet/vault": "workspace:*",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "2.4.0"
+  },
+  "peerDependencies": {
+    "@walletconnect/ethereum-provider": "^2.0.0"
   }
 }

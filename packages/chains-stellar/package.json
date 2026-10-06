@@ -69,8 +69,8 @@
   },
   "dependencies": {
     "@clip-wallet/core": "workspace:*",
-    "@noble/curves": "^2.4.0",
-    "@noble/hashes": "^2.4.0",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
     "@stellar/stellar-base": "^15.0.0"
   }
 }

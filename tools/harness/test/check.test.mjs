@@ -24,6 +24,7 @@ test("a dirty tree fails every rule, with file:line", () => {
   assert.deepEqual(where(r), [
     "chain-module-imports-vault packages/chains-evm/package.json:4",
     "chain-module-imports-vault packages/chains-evm/src/sign.ts:2",
+    "crypto-dep-unpinned packages/chains-evm/package.json:5",
     "env-tracked .env:0",
     "env-tracked apps/x/.env.local:0",
     "key-material-outside-vault packages/chains-evm/src/sign.ts:1",
@@ -40,7 +41,8 @@ test("a dirty tree fails every rule, with file:line", () => {
   ]);
   const text = format(r);
   assert.match(text, /FAIL {5}packages\/route\/src\/debug\.ts:8 {2}Never log key material: console\.log prints "mnemonic"/);
-  assert.match(text, /harness: 15 problems/);
+  assert.match(text, /harness: 16 problems/);
+  assert.match(text, /@noble\/curves is a crypto-critical dependency: pin it to an exact version \(e\.g\. "2\.4\.0"\)/);
 });
 
 test("without packages/vault the KAT rule is a warning, not a failure", () => {

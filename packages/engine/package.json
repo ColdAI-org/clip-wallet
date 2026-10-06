@@ -192,11 +192,11 @@
     "@clip-wallet/security": "workspace:*",
     "@clip-wallet/social": "workspace:*",
     "@clip-wallet/ui": "workspace:*",
-    "@noble/hashes": "^2.4.0",
+    "@noble/hashes": "2.4.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "~4.1.11"
   }
 }
