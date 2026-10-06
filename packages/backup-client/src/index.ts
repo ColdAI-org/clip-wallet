@@ -12,6 +12,8 @@
  *   const { authorizationUrl, pending } = await c.startSocialSignIn("google", returnTo);
  *   const ended = await chrome.identity.launchWebAuthFlow({ url: authorizationUrl, interactive: true });
  *   await c.completeSocialSignIn(ended, pending);
+ *
+ * @module
  */
 import { ClipError } from "@clip-wallet/core";
 import {

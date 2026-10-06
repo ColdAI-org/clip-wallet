@@ -1,6 +1,8 @@
 /**
  * Linked-devices requests on the wallet bus (merged into the extension's shared/messages.ts and the engine's
  * EngineRequest by the integration step; docs/r1/integration/connect.md). Zod-validated before LinkService sees them.
+ *
+ * @module
  */
 import { z } from "zod";
 import type { HandoffView, LinkStatusView, PairingView } from "./views.js";

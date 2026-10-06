@@ -7,6 +7,8 @@
  * announced wallet, then `window.ethereum`. wagmi's EIP-6963 discovery still lists every other wallet as usual; this
  * gives an app one "Connect" button that prefers Clip. Use @clip-wallet/connect's `connect()` (or the React hooks)
  * on the same provider for pay() with auxiliary funds.
+ *
+ * @module
  */
 import { injected, type CreateConnectorFn } from "@wagmi/core";
 import { CLIP_WALLET, discovered, rankEip6963, startDiscovery, type Preference } from "./discovery.js";

@@ -3,6 +3,8 @@
  *   chrome.offscreen.createDocument({ url: "plugin-host.html", reasons: ["IFRAME_SCRIPTING"], justification: "Run sandboxed plugins" })
  * Plugins run in sandboxed iframes inside THIS document, never in the approval popup, so a plugin that hangs can
  * only freeze this document; the background's own timeout then closes it (chrome.offscreen.closeDocument).
+ *
+ * @module
  */
 import { HostBridgeServer, PluginHost, iframeChannelFactory, type HostBridgeRequest } from "@clip-wallet/plugins";
 

@@ -2,6 +2,8 @@
  * Phase 2 injected sides (NEAR, Stellar, Tezos Beacon relay, Algorand), importable on their own as
  * @clip-wallet/1mask/inpage/p2 until installOneMask (inpage/index.ts) installs them — see
  * docs/phase2/integration/near-stellar-tezos-algorand.md.
+ *
+ * @module
  */
 import type { Network } from "@clip-wallet/core";
 import type { WalletIdentity } from "../shared/config.js";

@@ -1,6 +1,8 @@
 /**
  * Feature services (staking, swaps, buy, Secure Trade, explore, prices) for any host. Holds no keys: every
  * action ends in `enqueue`, the host's normal approval path.
+ *
+ * @module
  */
 import { WALLET_ORIGIN, type AssetRef, type ChainContext, type DappRequest, type DecodedRequest, type Network, type TokenBalance } from "@clip-wallet/core";
 import { CoinGeckoPriceFeed, FeaturesService, type FeatureHost, type FeaturesConfig } from "@clip-wallet/features";

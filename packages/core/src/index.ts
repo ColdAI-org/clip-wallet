@@ -7,6 +7,8 @@
  *  - Every dapp request is decoded into a DecodedRequest before the user approves it.
  *  - Networks are invisible in the default UI: anything user-facing speaks in assets and apps;
  *    `networkId` is carried for the "network chip" and Advanced mode only.
+ *
+ * @module
  */
 
 import { knownMsg, type Msg, type MsgValue } from "./messages/msg.js";

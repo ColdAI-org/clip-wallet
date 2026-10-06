@@ -1,4 +1,8 @@
-/** What the Linked devices screens see (plain data, no secrets). Type-only import for packages/ui and apps/mobile. */
+/**
+ * What the Linked devices screens see (plain data, no secrets). Type-only import for packages/ui and apps/mobile.
+ *
+ * @module
+ */
 
 export type LinkPlatform = "extension" | "desktop" | "mobile";
 export type LinkPurpose = "signer" | "device-add" | "desktop";

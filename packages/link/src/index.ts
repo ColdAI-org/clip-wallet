@@ -6,6 +6,8 @@
  *   - adding this wallet to another device                                           transfer/
  *   - continue a dapp on another device                                              handoff/
  * Holds no seed or private key: X25519 / Ed25519 run in @clip-wallet/vault (LinkVault). Threat model: README.md.
+ *
+ * @module
  */
 export * from "./keys.js";
 export { b64url, fromB64url } from "./bytes.js";

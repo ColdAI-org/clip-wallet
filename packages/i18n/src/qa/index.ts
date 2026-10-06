@@ -1,4 +1,8 @@
-/** Test-only translation QA helpers (not for app bundles). */
+/**
+ * Test-only translation QA helpers (not for app bundles).
+ *
+ * @module
+ */
 import type { LocaleCode } from "../locales.js";
 import type { GlossaryEntry } from "./lint.js";
 import de from "./glossary/de.js";

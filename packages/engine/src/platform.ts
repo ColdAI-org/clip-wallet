@@ -8,6 +8,8 @@
  * Key material: the phrase never comes through here. Backup encrypts inside the vault
  * (vault.createPasskeyBackup) and restore decrypts and imports inside it (vault.restorePasskeyBackup).
  * PRF outputs are wiped right after use.
+ *
+ * @module
  */
 import type { Account, Family } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";

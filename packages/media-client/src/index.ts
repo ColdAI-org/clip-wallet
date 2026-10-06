@@ -11,6 +11,8 @@
  *    private/loopback/link-local ranges, localhost/.local/.internal names.
  *  - Output types: raster images, SVG (served sandboxed), mp4/webm video. Decided by sniffing bytes in the
  *    proxy, never by the URL or the upstream Content-Type alone.
+ *
+ * @module
  */
 
 export type MediaKind = "image" | "video";

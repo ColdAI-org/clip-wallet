@@ -4,6 +4,8 @@
  * Keystone QR bridge and UR helpers. No device SDKs. The extension's background uses only this; the device
  * signers (LedgerSigner, KeystoneSigner) and their libraries stay in the root entry, which the approval
  * window `import()`s when a hardware account signs.
+ *
+ * @module
  */
 export * from "./types.js";
 export { HARDWARE_CURVE } from "./paths.js";

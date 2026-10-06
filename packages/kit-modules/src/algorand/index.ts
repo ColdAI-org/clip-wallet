@@ -12,6 +12,8 @@
  * (packages/1mask/src/inpage/algorand.ts: ARC-0001 signTxns + ARC-0006 enable). Clip Wallet is also
  * reachable through use-wallet's WalletConnect adapter (namespace "algorand", method algo_signTxn) once
  * the extension's WalletConnect side lists that namespace.
+ *
+ * @module
  */
 import algosdk from "algosdk";
 import {

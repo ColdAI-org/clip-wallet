@@ -9,6 +9,8 @@
  * (Firefox: an ES-module event page, so the background stays under addons-linter's 5 MB parse limit.)
  *
  * The background owns the vault, the security checks and every approval.
+ *
+ * @module
  */
 import "../shared/node-globals";
 

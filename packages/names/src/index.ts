@@ -1,6 +1,8 @@
 /**
  * @clip-wallet/names — "alice.eth" / "alice.sol" / "alice.hbar" → an address and the network it implies.
  * Used by Send (background resolveRecipient). Reads only; no keys, no signing.
+ *
+ * @module
  */
 import type { Family, Network, NetworkId } from "@clip-wallet/core";
 import { EnsBackend, type EnsClient } from "./ens.js";

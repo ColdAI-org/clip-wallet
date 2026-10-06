@@ -2,6 +2,8 @@
  * What the security screens see. Plain JSON (no bigint, no classes) so it crosses the message bus.
  * Type-only module: `packages/ui` imports it as `@clip-wallet/security/views` without pulling in chain SDKs.
  * Speaks in assets and apps; `networkId` is for the network chip and Advanced mode only.
+ *
+ * @module
  */
 import type { Family, NetworkId, Warning } from "@clip-wallet/core";
 

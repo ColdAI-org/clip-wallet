@@ -9,6 +9,8 @@
  *   field fails the strict schema.
  * - Relays responses and events back; fails in-flight requests with 4900 if the port drops and
  *   reconnects lazily on the next request (MV3 service workers restart).
+ *
+ * @module
  */
 import { RpcErrorCode, type RpcErrorShape } from "../shared/errors.js";
 import {

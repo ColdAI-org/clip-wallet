@@ -60,7 +60,7 @@ from a subframe is dropped in main. A dapp that needs the wallet inside an ifram
 most extension wallets' default). Replies go to the exact frame the port was opened for, only while it still shows
 that origin; any new document closes the port.
 
-**Keys**: only the vault, only in the main process. The vault file is the extension's format (Argon2id, AES-GCM)
+**Keys**: only the vault, only in the main process. The vault file is the extension's format (Argon2id, XChaCha20-Poly1305)
 wrapped with the OS secret store. Auto-lock: the user's timer, plus lock on screen lock and sleep (`powerMonitor`).
 
 **Touch ID (macOS)**: a random device secret, encrypted with `safeStorage` (key in the login Keychain), released only

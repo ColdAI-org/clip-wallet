@@ -3,6 +3,8 @@
  * worker and the mobile app build them the same way. Holds no keys: contacts are sealed by the vault's
  * app-data API, handle actions go through `enqueue` (the normal approval path), and notifications read public
  * data only (the account cache the wallet writes after unlock), so they work while the wallet is locked.
+ *
+ * @module
  */
 import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, Family, Msg, Network } from "@clip-wallet/core";
 import { resolveLocale, type LocaleCode } from "@clip-wallet/i18n";

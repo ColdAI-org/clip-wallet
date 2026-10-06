@@ -6,5 +6,7 @@
  *   @clip-wallet/kit-modules/stellar   Stellar Wallets Kit ModuleInterface (dApp side)
  *   @clip-wallet/kit-modules/algorand  TxnLab use-wallet v5 adapter        (dApp side)
  *   @clip-wallet/kit-modules/tezos     Beacon wallet side (extension peer + P2P), runs in the wallet
+ *
+ * @module
  */
 export const CLIP_WALLET_GLOBAL = "clipwallet";

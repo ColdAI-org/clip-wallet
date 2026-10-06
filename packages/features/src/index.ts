@@ -2,6 +2,8 @@
  * @clip-wallet/features — HashPack-parity features as background services: staking, swaps, on-ramp,
  * Secure Trade, featured apps, LP positions and the price feed. Pure logic, no keys: everything ends in a
  * DappRequest on the normal approval path.
+ *
+ * @module
  */
 export * from "./views.js";
 export * from "./host.js";

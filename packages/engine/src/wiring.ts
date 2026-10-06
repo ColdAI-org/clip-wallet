@@ -1,6 +1,8 @@
 /**
  * Real dependencies from the packages, for any host. The host constructs the vault (only hosts may import
  * @clip-wallet/vault) and passes it with the vault's hashSignablePayload.
+ *
+ * @module
  */
 import type { ChainModule, Family, SignablePayload } from "@clip-wallet/core";
 import type { ClipConfig } from "@clip-wallet/config";

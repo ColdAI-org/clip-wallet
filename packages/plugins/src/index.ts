@@ -4,6 +4,8 @@
  * v1 capabilities: transaction insights, name resolution, rate-limited notifications (+ optional network to
  * exact origins). A plugin can never sign, never see the recovery phrase, keys, the vault, storage or chrome.*;
  * everything it says is labelled "from <plugin>". Off by default; only in Advanced mode. See README.md.
+ *
+ * @module
  */
 export * from "./manifest.js";
 export * from "./messages.js";

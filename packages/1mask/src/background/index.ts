@@ -5,6 +5,8 @@
  *     if (port.name !== PORT_NAME) return;
  *     router.attachPort(port, { senderOrigin: port.sender?.origin });
  *   });
+ *
+ * @module
  */
 export {
   createOneMaskRouter,

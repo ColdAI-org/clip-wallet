@@ -4,6 +4,8 @@
  * this script then hardens the realm with SES and runs exactly one plugin.
  *
  * It only talks to `window.parent` (the wallet's offscreen host document) and ignores every other sender.
+ *
+ * @module
  */
 import "ses";
 import { createSandboxRuntime, type SesApi } from "./runtime.js";

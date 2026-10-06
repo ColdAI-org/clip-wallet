@@ -3,6 +3,8 @@
  * Sui), AIP-62 (Aptos), CIP-30 (Cardano), injectedWeb3 (Substrate), get-starknet, TON Connect,
  * window.<wallet key>.{near,stellar,algorand}, the Tezos Beacon relay and Hedera extension discovery (DAppConnector). Identity, networks and the message channel
  * are baked in at build time by clipWallet() (no chrome APIs in the MAIN world).
+ *
+ * @module
  */
 import { installOneMask } from "@clip-wallet/1mask/inpage";
 import type {} from "../globals";

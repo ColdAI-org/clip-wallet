@@ -1,6 +1,8 @@
 /**
  * What the social screens see. Plain JSON data (it crosses the extension bus). Type-only module: packages/ui
  * imports it as "@clip-wallet/social/views" without pulling in SDKs.
+ *
+ * @module
  */
 import type { Family } from "@clip-wallet/core";
 import type { ContactAddress, ContactInput } from "./contacts/types.js";

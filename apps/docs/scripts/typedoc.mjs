@@ -155,19 +155,8 @@ export async function runTypedoc({ root, out }) {
       const entry = byFile.get(file);
       if (!entry) continue;
       mod.name = entry.slug;
-      // An entry file's header comment (`/** @clip-wallet/x — what it is */` before its exports) is the module's
-      // description. Without a @module tag TypeDoc gives it to the first export instead: move it back.
-      const header = /^\s*\/\*\*([\s\S]*?)\*\//.exec(readFileSync(entry.file, "utf8"))?.[1];
-      const words = (s) => s.replace(/^\s*\*/gm, " ").replace(/[`*]/g, "").replace(/\s+/g, " ").trim().slice(0, 48);
-      if (!header) continue;
-      // TypeDoc copies it onto every declaration the export statement re-exports: take it off all of them.
-      for (const child of mod.children ?? []) {
-        const text = child.comment?.summary.map((p) => p.text).join("") ?? "";
-        if (text && words(text) === words(header)) {
-          mod.comment ??= child.comment;
-          child.comment = undefined;
-        }
-      }
+      // Each entry file's header comment carries @module, so TypeDoc makes it the module's description instead of
+      // copying it onto the declarations the first export statement re-exports (test/typedoc.test.ts checks the tag).
     }
     for (const r of Object.values(project.reflections)) {
       if (!r.kindOf(ReflectionKind.SomeExport | ReflectionKind.SomeMember)) continue;

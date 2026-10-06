@@ -2,6 +2,8 @@
  * The settings-sync server, storage-agnostic. services/backup runs it on D1 (src/sync.ts there); tests run it on
  * MemorySyncStore. It authenticates requests with the Ed25519 sync key (verify only, injected), enforces size
  * caps, and stores ciphertext it cannot read. See protocol.ts for the wire format.
+ *
+ * @module
  */
 import { fromB64url, toHex, sha256 } from "../bytes.js";
 import type { VerifyFn } from "../keys.js";

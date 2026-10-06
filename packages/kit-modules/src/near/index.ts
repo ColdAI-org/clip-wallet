@@ -10,6 +10,8 @@
  * (src/lib/wallet/wallet.types.d.ts). Actions are sent as wallet-selector `InternalAction` JSON (NAJ
  * `Action` objects are converted with the core's own `najActionToInternal`); bytes travel base64 as
  * `argsBase64` / `codeBase64`.
+ *
+ * @module
  */
 import type {
   Account,

@@ -4,6 +4,8 @@
  * Installs the EIP-1193 provider (announced via EIP-6963), the Solana and Bitcoin Wallet Standard
  * wallets, and a postMessage transport to the content script. Holds no secrets and makes no
  * decisions: the background router answers everything.
+ *
+ * @module
  */
 import { registerWallet } from "@wallet-standard/wallet";
 import { assertCompatibilityModeOff } from "../shared/compat.js";

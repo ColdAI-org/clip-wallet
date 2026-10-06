@@ -160,7 +160,7 @@ All green on `pnpm install && pnpm -r typecheck && pnpm -r test && pnpm harness`
 - **Name resolvers need validators** for handle records (wiring step 1 above).
 - **Swap of Discover tokens the wallet doesn't list** needs `token:` key resolution in the features swap service (step 3). On mobile, Discover opens Jupiter, Uniswap or SaucerSwap in the in-app browser, because the app has no native swap screen. SaucerSwap opens without a prefilled token.
 - **Market data is mainnet.** In testnet builds, Discover is informational: the wallet's testnet assets can't trade these tokens.
-- **Background-generated text is still English** (ClipErrors, decoded titles, activity titles, feature quotes), apart from the social error codes the UI maps and the notification text.
+- **Background-generated text is still English** (ClipErrors, decoded titles, activity titles, feature quotes), apart from the social error codes the UI maps and the notification text. (Since done: `r1/bg-i18n` made background text, including warnings, translatable in all 11 languages.)
 - **Notifications are best-effort on mobile** (OS-scheduled background tasks, nothing after a force-quit on iOS). There is no push server, by design.
 - **No Traditional Chinese** (zh-Hant falls back to zh-Hans). Native-speaker review of the 11 languages is recommended before release. The translators' open questions are in the stream report.
 - **Contacts aren't synced** between devices. They are sealed with a seed-derived key, so a future sync could carry the ciphertext.

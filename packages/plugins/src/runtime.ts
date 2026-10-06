@@ -11,6 +11,8 @@
  * `Function`/`eval` evaluate in the same powerless global, and SES rejects dynamic `import(...)`.
  *
  * This file has no DOM dependency so the same code runs in the unit tests (with real SES) and in the iframe.
+ *
+ * @module
  */
 import {
   type Grant,

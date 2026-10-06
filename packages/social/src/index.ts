@@ -1,6 +1,8 @@
 /**
  * @clip-wallet/social — address book, Clip handles, notifications and Discover. Holds no keys.
  * Hosts build a SocialService (service.ts); screens use the views (./views) over the message bus (./messages).
+ *
+ * @module
  */
 export { SocialService, type SocialHost } from "./service.js";
 export * from "./contacts/index.js";

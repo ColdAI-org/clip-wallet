@@ -8,6 +8,8 @@
  * end-to-end encrypted, or pairing messages that only carry public keys and MACs). If the other role isn't
  * connected, frames wait in the object's storage for at most RELAY_LIMITS.ttlMs, then everything is deleted.
  * The relay adds control frames of its own, always shaped { relay: … }.
+ *
+ * @module
  */
 export const RELAY_LIMITS = {
   maxFrameBytes: 64 * 1024,

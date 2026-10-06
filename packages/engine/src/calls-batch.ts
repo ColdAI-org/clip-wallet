@@ -16,6 +16,8 @@
  *      user approved, and sent. A call that fails or reverts stops the batch; `wallet_getCallsStatus` reports it.
  *
  * EOA accounts: no atomicity (`atomic: false` in every status; 1Mask refuses `atomicRequired: true` with 5760).
+ *
+ * @module
  */
 import type { AssetRef, BalanceChange, DappRequest, DecodedRequest, NetworkId } from "@clip-wallet/core";
 import { ClipError, msg } from "@clip-wallet/core";

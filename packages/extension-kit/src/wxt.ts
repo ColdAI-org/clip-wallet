@@ -12,6 +12,8 @@
  * (Blockaid only when CLIP_BLOCKAID_API_KEY is set), and a mainnet build is refused until mainnetProblems() is empty and
  * every box in the project's MAINNET.md is ticked.
  * Runs in Node (WXT loads it); nothing here reaches the browser except the values it defines.
+ *
+ * @module
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";

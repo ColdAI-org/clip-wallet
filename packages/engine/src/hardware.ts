@@ -11,6 +11,8 @@
  *
  * The host builds the signers (WebHID or Bluetooth for Ledger; the camera for Keystone) and hands them in.
  * Only public data is stored or returned: addresses, public keys, paths, device fingerprints.
+ *
+ * @module
  */
 import { z } from "zod";
 import { ClipError, type Account, type DappRequest, type DecodedRequest, type Family, type Signature, type SignablePayload } from "@clip-wallet/core";

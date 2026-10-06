@@ -6,6 +6,8 @@
  *
  * @solana/wallet-adapter-react already lists every Wallet Standard wallet by itself; this only helps an app that wants
  * a single adapter that prefers Clip Wallet (or another wallet you name).
+ *
+ * @module
  */
 import { StandardWalletAdapter } from "@solana/wallet-standard-wallet-adapter-base";
 import { CLIP_WALLET, discovered, rankStandard, startDiscovery, type Preference, type StandardWallet } from "./discovery.js";

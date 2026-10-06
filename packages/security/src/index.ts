@@ -2,6 +2,8 @@
  * @clip-wallet/security — the Phantom/MetaMask security gaps: a permission (approval) revoker, scam
  * detection (open lists, optional Blockaid, local heuristics) and spam cleanup. Pure logic, no keys:
  * every action is a DappRequest on the normal approval path.
+ *
+ * @module
  */
 export * from "./views.js";
 export * from "./host.js";

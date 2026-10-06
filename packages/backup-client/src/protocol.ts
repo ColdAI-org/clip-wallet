@@ -5,6 +5,8 @@
  * opaque "CLPB" ciphertext blobs from vault.createPasskeyBackup, the passkey credential id and rp id the
  * blob was made with (public WebAuthn identifiers, so a new device can ask for the right passkey), and
  * timestamps. Never a phrase, a key, or a PRF output.
+ *
+ * @module
  */
 
 export const API_VERSION = "v1";

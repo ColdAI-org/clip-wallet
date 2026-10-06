@@ -5,6 +5,8 @@
  *
  * Type-only module with no runtime imports, so `packages/ui` can import it (`@clip-wallet/features/views`)
  * without pulling in chain SDKs.
+ *
+ * @module
  */
 import type { BalanceChange, Family, Msg, NetworkId, Warning } from "@clip-wallet/core";
 

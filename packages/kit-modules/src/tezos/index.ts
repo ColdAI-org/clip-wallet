@@ -3,6 +3,8 @@
  *
  *  - createBeaconExtensionPeer: browser-extension discovery/pairing over postMessage (with 1Mask's page relay).
  *  - createBeaconP2PWallet: QR / pairing-string connections over Beacon's Matrix relays (@airgap/beacon-wallet).
+ *
+ * @module
  */
 import type { WalletClient } from "@airgap/beacon-wallet";
 import type { WalletClientLike } from "./p2p.js";

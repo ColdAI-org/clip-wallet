@@ -9,6 +9,8 @@
  * Phase 3 (settle on Hedera through bonded Connectors): ./phase3 (types, settleOnHedera) and ./settle (client).
  * `settleOnHedera()` without options is the "Not available yet" placeholder; `SETTLE_DEPLOYMENTS` lists the testnet
  * deployment and `SettleFunding` (./settle-funding) turns a Connector quote into a payment's funding.
+ *
+ * @module
  */
 export { RouteClient, createRouteClient, hederaRecipientToEvm, DEFAULT_NATIVE_ASSETS } from "./client.js";
 export { findShortfall, needsFromDecoded } from "./shortfall.js";

@@ -7,6 +7,8 @@
  * Everything but `name` and `rdns` has a default. Testnet by default: mainnet needs an explicit checklist object, and
  * a mainnet build also needs everything `mainnetProblems` asks for (own rdns, homepage, extension key, WalletConnect id).
  * Validation errors are plain sentences, one per problem, prefixed with the setting they are about.
+ *
+ * @module
  */
 import { z } from "zod";
 

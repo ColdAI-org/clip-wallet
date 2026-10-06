@@ -5,6 +5,8 @@
  *   const t = useT(UI_CATALOGS);          t("send.title")
  *   const f = useFormat();                f.fiat(12.5, "EUR"), f.amount(units, 18), f.parseAmount("0,5", 18)
  *   rich(t("x"), { b: (c) => <strong>{c}</strong> })
+ *
+ * @module
  */
 import { Fragment, createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { DEFAULT_LOCALE, dirOf, type LocaleCode } from "./locales.js";

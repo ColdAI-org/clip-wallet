@@ -5,6 +5,8 @@
  *     const { connection, connect, status } = useClipConnect();
  *     const { pay, result, error } = usePay();
  *     const { balances } = useBalances();
+ *
+ * @module
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { connect as connectWallet, type AssetBalance, type ClipConnection, type ConnectOptions, type PayRequest, type PayResult } from "./connect.js";

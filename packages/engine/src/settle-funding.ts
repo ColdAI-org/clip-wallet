@@ -10,6 +10,8 @@
  *   3. Late: Approve becomes the one-tap claim of cover + penalty on Hedera.
  *
  * The run edits the approval's `plan.funding` in place and calls `changed()` so screens re-render.
+ *
+ * @module
  */
 import type { AssetRef, DappRequest } from "@clip-wallet/core";
 import { ClipError } from "@clip-wallet/core";

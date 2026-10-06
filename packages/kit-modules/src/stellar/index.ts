@@ -10,6 +10,8 @@
  * (packages/1mask/src/inpage/stellar.ts). The interface below is copied structurally from
  * stellar-wallets-kit 2.7.0 `esm/types/mod.d.ts` (ModuleInterface, ModuleType, IKitError) so this
  * package doesn't pull the kit's dependency tree; `moduleType` is the enum's string value.
+ *
+ * @module
  */
 import { CLIP_WALLET_GLOBAL } from "../index.js";
 import { CLIP_ICON, announcedIdentity, injected } from "../shared.js";

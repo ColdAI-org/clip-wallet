@@ -8,6 +8,8 @@
  *   startDesktopLinkServer  the desktop app's side: a per-user socket / named pipe; each connection becomes a Channel.
  *
  * Exact wiring for apps/desktop: docs/r1/integration/connect.md.
+ *
+ * @module
  */
 import { chmodSync, mkdirSync, rmSync, statSync } from "node:fs";
 import { connect, createServer, type Server, type Socket } from "node:net";

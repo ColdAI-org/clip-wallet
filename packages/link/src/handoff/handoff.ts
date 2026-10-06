@@ -7,6 +7,8 @@
  * open it: { origin, families, issued at }. A valid token lets the receiving app offer a one-tap "Continue on
  * <site>" that restores the connection for that origin (the person still taps it; nothing connects silently).
  * A link without a token, a token from another wallet, or one older than 10 minutes just opens the page.
+ *
+ * @module
  */
 import { b64url, hkdf32, openJson, randomBytes, sealJson } from "../bytes.js";
 

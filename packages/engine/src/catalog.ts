@@ -2,6 +2,8 @@
  * The wallet's network and asset catalogue for all 14 families, from the chain packages, filtered by
  * clip.config. One copy for every host (the extension re-exports it).
  * Testnets only unless clip.config opts into mainnet with the checklist (AGENTS rule 6).
+ *
+ * @module
  */
 import type { AssetRef, Network } from "@clip-wallet/core";
 import { enabledFamilies, includesEvmChain, isMainnetEnabled, type ClipConfig } from "@clip-wallet/config";

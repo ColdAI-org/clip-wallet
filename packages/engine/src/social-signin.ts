@@ -7,6 +7,8 @@
  * Separate from platform.ts so the shared engine files stay untouched; it writes the same session record
  * (PLATFORM_KEYS.backupSession), so PlatformService's backup list/upload/restore just work afterwards.
  * Wiring: docs/phase25/integration/extensibility.md.
+ *
+ * @module
  */
 import { ClipError } from "@clip-wallet/core";
 import type { KV } from "./kv.js";

@@ -1,4 +1,8 @@
-/** @clip-wallet/1mask — shared types and helpers. Entry points: ./inpage, ./content, ./background, ./walletconnect. */
+/**
+ * @clip-wallet/1mask — shared types and helpers. Entry points: ./inpage, ./content, ./background, ./walletconnect.
+ *
+ * @module
+ */
 export * from "./shared/errors.js";
 export * from "./shared/config.js";
 export * from "./shared/compat.js";

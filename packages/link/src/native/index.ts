@@ -1,4 +1,8 @@
-/** Browser-safe parts of the desktop link (no Node APIs): framing, manifests, socket paths, the extension channel. */
+/**
+ * Browser-safe parts of the desktop link (no Node APIs): framing, manifests, socket paths, the extension channel.
+ *
+ * @module
+ */
 export * from "./framing.js";
 export * from "./manifests.js";
 export * from "./ipc.js";
