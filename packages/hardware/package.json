@@ -98,7 +98,7 @@
     "@keystonehq/bc-ur-registry-eth": "0.22.1",
     "@keystonehq/bc-ur-registry-sol": "0.9.5",
     "@ledgerhq/hw-transport-mocker": "6.35.0",
-    "@types/node": "^22.20.5",
+    "@types/node": "^26.6.4",
     "@types/qrcode": "^1.5.6",
     "qrcode": "^1.5.4",
     "typescript": "^5.6.0",
