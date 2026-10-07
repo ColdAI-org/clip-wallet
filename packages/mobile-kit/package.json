@@ -149,7 +149,7 @@
     "react-native-get-random-values": "~1.11.0",
     "react-native-passkey": "3.6.2",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-svg": "15.15.4",
+    "react-native-svg": "15.15.5",
     "react-native-webview": "13.16.1"
   },
   "devDependencies": {
@@ -191,7 +191,7 @@
     "react-native-get-random-values": "~1.11.0",
     "react-native-passkey": "3.6.2",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-svg": "15.15.4",
+    "react-native-svg": "15.15.5",
     "react-native-webview": "13.16.1",
     "react-test-renderer": "19.2.3",
     "typescript": "^5.9.3",
