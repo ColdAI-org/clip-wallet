@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/features",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet features as background services: staking, swaps, on-ramps, prices, featured dapps",
   "keywords": [
     "clip-wallet",

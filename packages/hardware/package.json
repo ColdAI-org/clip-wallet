@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/hardware",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hardware wallet accounts for Clip Wallet: Ledger (WebHID) and Keystone (QR); every signature is checked against what was approved",
   "keywords": [
     "clip-wallet",

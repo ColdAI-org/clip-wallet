@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/chains-stellar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Stellar ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   "keywords": [
     "clip-wallet",

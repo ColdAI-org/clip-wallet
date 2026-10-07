@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/media-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy",
   "keywords": [
     "clip-wallet",

@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/i18n",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet's translation layer: a small ICU message subset over Intl, 11 languages, optional React bindings",
   "keywords": [
     "clip-wallet",

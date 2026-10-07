@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/mobile-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build a branded Clip Wallet phone app (Expo / React Native: iOS, Android): screens, vault host, in-app dapp browser with 1Mask, configured by clip.config.ts",
   "keywords": [
     "clip-wallet",

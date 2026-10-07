@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/chains-fuel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fuel ChainModule for Clip Wallet: builds and decodes transactions in plain words, dry-runs contract calls; never touches keys",
   "keywords": [
     "clip-wallet",

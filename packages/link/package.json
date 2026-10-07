@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/link",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging",
   "keywords": [
     "clip-wallet",

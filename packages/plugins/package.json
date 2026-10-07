@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/plugins",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Plugins: small, SES-sandboxed wallet extensions installed from npm with integrity checks",
   "keywords": [
     "clip-wallet",

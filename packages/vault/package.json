@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/vault",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The only Clip Wallet package that touches recovery phrases and private keys: derivation, encrypted storage, approval-bound signing, passkey unlock",
   "keywords": [
     "clip-wallet",

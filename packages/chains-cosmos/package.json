@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/chains-cosmos",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cosmos SDK ChainModule for Clip Wallet (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia): builds and decodes transactions in plain words; never touches keys",
   "keywords": [
     "clip-wallet",
