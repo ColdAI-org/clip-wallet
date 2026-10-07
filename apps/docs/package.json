@@ -112,7 +112,7 @@
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.11.0",
     "typedoc-vitepress-theme": "^1.1.4",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "viem": "^2.57.1",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
