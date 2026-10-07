@@ -10,20 +10,20 @@
       "AGENTS.md",
       "llms.txt",
       ".harness/spec.yaml",
-      "packages/extension/wallet.identity.json",
-      "packages/extension/clip.config.ts",
+      "wallet.identity.json",
+      "clip.config.ts",
       "packages/extension/wxt.config.ts",
-      "packages/extension/MAINNET.md",
+      "MAINNET.md",
       "packages/nextjs/app/page.tsx",
       "packages/nextjs/app/debug/page.tsx",
       "tools/harness/check.mjs"
     ],
-    "forbidden": [".env", "packages/extension/.env.production", "packages/extension/.keys/extension.pem.bak"]
+    "forbidden": [".env", "packages/extension/.env.production", ".keys/extension.pem.bak"]
   },
   "textAssertions": [
     { "file": "packages/nextjs/app/page.tsx", "contains": ["useSignTypedData", "verifyTypedData", "Sign typed data"] },
     { "file": "packages/extension/wxt.config.ts", "contains": ["clipWallet({"] },
-    { "file": "packages/extension/clip.config.ts", "contains": ["mainnet: false,"] },
+    { "file": "clip.config.ts", "contains": ["mainnet: false,"] },
     { "file": "packages/nextjs/scaffold.config.ts", "contains": ["[chains.hederaTestnet]"] }
   ]
 }

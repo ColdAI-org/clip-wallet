@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened-runtime entitlements for the main app (Developer ID distribution, not the App Store sandbox).
+  allow-jit: V8's JIT (Electron requires it under the hardened runtime).
+  device.camera: the QR scanner (WalletConnect codes, Keystone). Ledger over WebHID needs no entitlement outside the
+  App Sandbox. Nothing else: no unsigned executable memory, no library validation exceptions, no microphone.
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.device.camera</key>
+    <true/>
+  </dict>
+</plist>

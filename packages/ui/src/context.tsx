@@ -79,7 +79,7 @@ export function ClipProvider(props: {
     return () => mq.removeEventListener?.("change", on);
   }, []);
 
-  const locale: LocaleCode = resolveLocale(state?.prefs.locale, deviceLanguages());
+  const locale: LocaleCode = resolveLocale(state?.prefs.locale, deviceLanguages(), config.languages);
   setFormatLocale(locale);
   useEffect(() => {
     document.documentElement.lang = locale;

@@ -4,12 +4,11 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": false,
-    // Type-check workspace packages against their TypeScript source ("development"), not the react-native
-    // condition. Metro still bundles the "react-native" export condition at runtime (see
-    // docs/phase2/integration/mobile.md, Hedera note).
+    // Type-check workspace packages against their TypeScript source ("development").
     "customConditions": ["development"],
-    "types": ["jest"]
+    "types": ["node"]
   },
-  "include": ["index.ts", "app.config.ts", "clip.config.ts", "src", "test", "scripts/*.d.ts"],
-  "exclude": ["node_modules", "dist", "ios", "android", "test/**/*.vitest.ts"]
+  // The kit's ambient declarations (pako) for its TypeScript source.
+  "include": ["index.ts", "app.config.ts", "clip.config.ts", "../../packages/mobile-kit/src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist", "ios", "android"]
 }

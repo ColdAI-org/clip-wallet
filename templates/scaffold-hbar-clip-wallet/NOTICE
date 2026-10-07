@@ -6,10 +6,11 @@ Licensed under the Apache License, Version 2.0 (see LICENCE).
 
 "Clip Wallet", "1Mask" and the Clip Wallet logo are trademarks of ColdAI. The Apache
 License 2.0 grants no rights to use them (Section 6). A wallet made from this template
-uses its own name and icon (packages/extension/wallet.identity.json).
+uses its own name and icon (wallet.identity.json).
 
-packages/nextjs/ is based on Scaffold-HBAR (https://github.com/hedera-dev/scaffold-hbar)
-and Scaffold-ETH 2 (https://github.com/scaffold-eth/scaffold-eth-2), MIT licence,
-Copyright (c) 2023 BuidlGuidl and Copyright (c) 2026 hedera-dev; see
-packages/nextjs/LICENSE. The Hedera logos in packages/nextjs/public/ are trademarks of
-Hedera Hashgraph, LLC and are not covered by either licence.
+packages/nextjs/, the Scaffold-HBAR dapp in projects that include it, is based on
+Scaffold-HBAR (https://github.com/hedera-dev/scaffold-hbar) and Scaffold-ETH 2
+(https://github.com/scaffold-eth/scaffold-eth-2), MIT licence, Copyright (c) 2023
+BuidlGuidl and Copyright (c) 2026 hedera-dev; see packages/nextjs/LICENSE. The Hedera
+logos in packages/nextjs/public/ are trademarks of Hedera Hashgraph, LLC and are not
+covered by either licence.

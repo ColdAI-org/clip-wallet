@@ -108,9 +108,9 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "apps/extension/src/background/index.ts",
     "packages/ui/src/screens/Onboarding.tsx",
     "packages/ui/src/screens/onboarding/Create.tsx",
-    "apps/mobile/src/background/host.ts",
-    "apps/desktop/src/main/host/wallet.ts",
-    "apps/desktop/src/main/host/link.ts",
+    "packages/mobile-kit/src/background/host.ts",
+    "packages/desktop-kit/src/main/host/wallet.ts",
+    "packages/desktop-kit/src/main/host/link.ts",
     "apps/desktop/e2e/mock-extension.ts",
     "packages/extension-kit/src/background/wiring.ts",
   ]) assert.ok(allowed(f), f);
@@ -119,21 +119,25 @@ test("vault importers: background, mobile/desktop hosts, onboarding screen and t
     "packages/route/src/onboarding.ts",
     "packages/chains-evm/src/onboarding.ts",
     "apps/extension/entrypoints/popup/main.tsx",
-    "apps/mobile/src/screens/Home.tsx",
-    "apps/mobile/src/browser/bridge.ts",
+    "packages/mobile-kit/src/screens/Home.tsx",
+    "packages/mobile-kit/src/browser/bridge.ts",
     "packages/engine/src/engine.ts",
-    "apps/desktop/src/main/index.ts",
-    "apps/desktop/src/main/browser/browser.ts",
-    "apps/desktop/src/preload/dapp.ts",
-    "apps/desktop/src/preload/wallet.ts",
-    "apps/desktop/src/renderer/shared/clients.ts",
-    "apps/desktop/src/main/hostile/wallet.ts",
-    "apps/desktop/src/main/native-hosts.ts",
+    "packages/desktop-kit/src/main/index.ts",
+    "packages/desktop-kit/src/main/browser/browser.ts",
+    "packages/desktop-kit/src/preload/dapp.ts",
+    "packages/desktop-kit/src/preload/wallet.ts",
+    "packages/desktop-kit/src/renderer/shared/clients.ts",
+    "packages/desktop-kit/src/main/hostile/wallet.ts",
+    "packages/desktop-kit/src/main/native-hosts.ts",
     "apps/desktop/e2e/desktop.spec.ts",
     "apps/desktop/e2e/link.spec.ts",
     "apps/desktop/e2e/mock-extension.tsx",
     "packages/extension-kit/src/pages/mount.tsx",
     "packages/extension-kit/src/wxt.ts",
+    "apps/desktop/src/main/index.ts",
+    "apps/mobile/index.ts",
+    "packages/desktop-kit/src/electron-vite.ts",
+    "packages/mobile-kit/src/screens/Onboarding.tsx",
   ]) assert.ok(!allowed(f), f);
 });
 
@@ -154,25 +158,42 @@ test("kit-built wallets: Clip Wallet's identity, a switched-off security floor, 
   try {
     cpSync(join(repo, "templates", "scaffold-hbar-clip-wallet"), dir, { recursive: true });
     const ext = join(dir, "packages", "extension");
-    writeFileSync(join(ext, "wallet.identity.json"), JSON.stringify({ name: "Clip Wallet", rdns: "org.coldai.clipwallet", icon: "./icon.svg" }));
+    writeFileSync(join(dir, "wallet.identity.json"), JSON.stringify({ name: "Clip Wallet", rdns: "org.coldai.clipwallet", appId: "org.coldai.clipwallet", icon: "./icon.svg" }));
     writeFileSync(join(ext, "wxt.config.ts"), 'import { defineConfig } from "wxt";\nexport default defineConfig({ srcDir: "src" });\n');
     writeFileSync(join(ext, "src", "security.ts"), "export const threat = {\n  openLists: false,\n};\n");
-    const cfg = join(ext, "clip.config.ts");
+    // The desktop and phone apps must build through their kits too.
+    writeFileSync(join(dir, "packages", "desktop", "electron.vite.config.ts"), 'import { defineConfig } from "electron-vite";\nexport default defineConfig({});\n');
+    writeFileSync(join(dir, "packages", "mobile", "metro.config.js"), 'const { getDefaultConfig } = require("expo/metro-config");\n// withClipWallet( is only mentioned here\nmodule.exports = getDefaultConfig(__dirname);\n');
+    const cfg = join(dir, "clip.config.ts");
     const on = readFileSync(cfg, "utf8").replace(/^(\s*)mainnet: false,$/m, "$1mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT },");
     writeFileSync(cfg, on);
     const mainnetLine = on.split("\n").findLastIndex((l) => l.includes("mainnet: { enabled")) + 1;
     const pkg = join(ext, "package.json");
     writeFileSync(pkg, readFileSync(pkg, "utf8").replace('"@clip-wallet/extension-kit": "0.1.0"', '"@clip-wallet/extension-kit": "^0.1.0"'));
-    const r = runChecks({ root: dir, tracked: ["packages/extension/.keys/extension.pem"], wordlistFrom: repo });
+    const r = runChecks({ root: dir, tracked: [".keys/extension.pem"], wordlistFrom: repo });
     assert.deepEqual(where(r), [
-      "key-file-tracked packages/extension/.keys/extension.pem:0",
-      "kit-identity packages/extension/wallet.identity.json:0",
-      "kit-identity packages/extension/wallet.identity.json:0",
-      `kit-mainnet packages/extension/clip.config.ts:${mainnetLine}`,
+      "key-file-tracked .keys/extension.pem:0",
+      "kit-identity wallet.identity.json:0",
+      "kit-identity wallet.identity.json:0",
+      "kit-identity wallet.identity.json:0",
+      `kit-mainnet clip.config.ts:${mainnetLine}`,
       "kit-pinned packages/extension/package.json:0",
+      "kit-security packages/desktop/electron.vite.config.ts:0",
       "kit-security packages/extension/src/security.ts:2",
       "kit-security packages/extension/wxt.config.ts:0",
+      "kit-security packages/mobile/metro.config.js:0",
     ]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("kit-built wallets: a project with only some platforms checks only those", () => {
+  const dir = mkdtempSync(join(tmpdir(), "clip-kit-"));
+  try {
+    cpSync(join(repo, "templates", "scaffold-hbar-clip-wallet"), dir, { recursive: true });
+    for (const p of ["extension", "desktop", "nextjs"]) rmSync(join(dir, "packages", p), { recursive: true, force: true });
+    assert.deepEqual(runChecks({ root: dir, tracked: [], wordlistFrom: repo }).failures, []);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

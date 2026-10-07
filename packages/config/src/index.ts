@@ -38,6 +38,9 @@ export const NETWORK_FAMILIES = [
 export const ROUTE_MODES = ["balanced", "cheapest", "fastest", "reliable", "greenest"] as const;
 export const TRUST_TIERS = ["attested", "committee", "light-client", "validity-proof"] as const;
 export const HARDWARE = ["ledger", "keystone"] as const;
+/** The languages the wallet ships (BCP 47), same order as @clip-wallet/i18n LOCALE_CODES (config has no runtime dependency on i18n). */
+export const LANGUAGES = ["en", "de", "fr", "es", "pt-BR", "it", "tr", "ja", "ko", "zh-Hans", "ar", "hi"] as const;
+export type Language = (typeof LANGUAGES)[number];
 
 /** "evm:*", "evm:8453", "evm:base-sepolia", or a non-EVM family name ("hedera", "solana", "cardano", …). */
 const NETWORK_PATTERN = new RegExp(`^(?:evm:(?:\\*|[1-9]\\d*|[a-z][a-z0-9-]*)|${NETWORK_FAMILIES.filter((f) => f !== "evm").join("|")})$`);
@@ -49,6 +52,12 @@ const NETWORK_MESSAGE = `use "evm:*", "evm:<chain id>", ${NETWORK_FAMILIES.filte
 const HTTPS_BASE = /^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/[\w.~-]+)*$/;
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const RDNS = /^[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)+$/;
+/** Application / bundle ids: reverse-domain, letters, digits and hyphens, at least two parts (com.example.mywallet). */
+const APP_ID = /^[a-zA-Z][a-zA-Z0-9-]*(?:\.[a-zA-Z0-9-]+)+$/;
+/** Android application ids: each part starts with a letter, then letters, digits and underscores (no hyphens). */
+const ANDROID_PACKAGE = /^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)+$/;
+/** A URL scheme for deep links (RFC 3986 scheme, lower case, 2–32 characters). */
+const SCHEME = /^[a-z][a-z0-9+.-]{1,31}$/;
 
 function env(name: string): string | undefined {
   const v = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[name];
@@ -129,6 +138,14 @@ const mainnet = z.unknown().optional().transform((v, ctx): MainnetSetting => {
   });
   return z.NEVER;
 });
+
+/** A hosted-mode block: { enabled } plus whatever Clip Cloud's spec adds (kept as given, never acted on here). */
+function hostedSwitch() {
+  return z
+    .object({ enabled: z.boolean("use true or false").default(false) })
+    .loose()
+    .default({ enabled: false });
+}
 
 export const clipConfigSchema = z
   .object({
@@ -217,6 +234,45 @@ export const clipConfigSchema = z
       })
       .strict()
       .default({}),
+    /**
+     * Languages the wallet offers in Settings → Language (and matches the device against). Default: all twelve.
+     * The first one listed is the fallback when the device's language isn't offered.
+     */
+    languages: z
+      .array(z.enum(LANGUAGES, `use the languages the wallet ships: ${LANGUAGES.join(", ")}`))
+      .min(1, "offer at least one language")
+      .refine((l) => new Set(l).size === l.length, "each language is listed once")
+      .default([...LANGUAGES]),
+    /**
+     * The desktop and mobile apps' id (reverse domain, like com.example.mywallet). Default: rdns. Platform ids derive
+     * from it (platformIds()): iOS bundle id and Android package = appId, desktop = appId + ".desktop"; override them
+     * one by one under desktop / mobile.
+     */
+    appId: z.string().regex(APP_ID, "use a reverse-domain id like com.example.mywallet (letters, digits, hyphens)").optional(),
+    /** Deep links (<scheme>://wc?uri=…, <scheme>://browse?url=…). Default: the wallet key, e.g. "acmewallet". */
+    scheme: z.string().regex(SCHEME, "use a lower-case URL scheme like acmewallet (letters, digits, + . -; 2 to 32 characters)").optional(),
+    /** Desktop app (Electron) overrides. */
+    desktop: z
+      .object({ appId: z.string().regex(APP_ID, "use a reverse-domain id like com.example.mywallet.desktop").optional() })
+      .strict()
+      .default({}),
+    /** Mobile app (Expo) overrides. */
+    mobile: z
+      .object({
+        bundleId: z.string().regex(APP_ID, "use a reverse-domain iOS bundle id like com.example.mywallet").optional(),
+        androidPackage: z
+          .string()
+          .regex(ANDROID_PACKAGE, "use an Android package like com.example.mywallet (each part starts with a letter; letters, digits and _ only)")
+          .optional(),
+      })
+      .strict()
+      .default({}),
+    /**
+     * Reserved for Clip Cloud's hosted mode. Accepted so a hosted config validates here too; the open-source kit never
+     * collects fees or reports usage, whatever these say. Default: off.
+     */
+    fees: hostedSwitch(),
+    usage: hostedSwitch(),
     mainnet,
   })
   .strict();
@@ -329,4 +385,87 @@ export function mainnetProblems(config: ClipConfig, env: Record<string, string |
   if (!config.walletConnect.projectId && !env[WALLETCONNECT_ENV]) out.push(`walletConnect: set ${WALLETCONNECT_ENV} to your own WalletConnect Cloud project id`);
   if (/^https?:\/\//.test(config.icon)) out.push("icon: ship the icon inside the extension (./icon.svg or ./icon.png), not from a URL");
   return out;
+}
+
+/* ------------------------------------------------------------------ platforms */
+
+/** `s` without leading and trailing hyphens (a scan, not a regex: linear on any input). */
+function trimHyphens(s: string): string {
+  let a = 0;
+  let b = s.length;
+  while (a < b && s[a] === "-") a++;
+  while (b > a && s[b - 1] === "-") b--;
+  return s.slice(a, b);
+}
+
+/** "Acme Wallet" -> "acme-wallet": file-safe, for executables, packages and artifact names. */
+export function slugOfName(name: string): string {
+  return (
+    trimHyphens(
+      name
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-"),
+    ) || "wallet"
+  );
+}
+
+/** An Android package from any reverse-domain id: hyphens become underscores, parts that start with a digit get a prefix. */
+export function androidPackageOf(id: string): string {
+  return id
+    .split(".")
+    .map((p) => p.replace(/-/g, "_").replace(/[^A-Za-z0-9_]/g, ""))
+    .map((p) => (/^[A-Za-z]/.test(p) ? p : `x${p}`))
+    .join(".");
+}
+
+/** Every id a wallet's platforms use, from clip.config (pure; the kits and create-clip-wallet share it). */
+export interface PlatformIds {
+  /** The wallet's display name on every platform. */
+  name: string;
+  /** Base application id (appId, else rdns). */
+  appId: string;
+  /** Deep-link scheme (scheme, else the wallet key). */
+  scheme: string;
+  extension: { /** Firefox add-on id. */ geckoId: string };
+  desktop: {
+    /** electron-builder appId: macOS CFBundleIdentifier, Windows AppUserModelID. */
+    appId: string;
+    productName: string;
+    /** Linux executable, deb package and file-safe name ("acme-wallet"). */
+    executableName: string;
+    /** electron-builder artifactName pattern ("Acme-Wallet-${version}-${os}-${arch}.${ext}"). */
+    artifactName: string;
+  };
+  ios: { bundleIdentifier: string };
+  android: { package: string };
+  /** Expo slug ("acme-wallet"). */
+  slug: string;
+}
+
+export function platformIds(config: Pick<ClipConfig, "name" | "rdns" | "appId" | "scheme" | "desktop" | "mobile">): PlatformIds {
+  const appId = config.appId ?? config.rdns;
+  const slug = slugOfName(config.name);
+  const fileName = trimHyphens(config.name.replace(/[^A-Za-z0-9]+/g, "-")) || "Wallet";
+  return {
+    name: config.name,
+    appId,
+    scheme: config.scheme ?? walletKey(config),
+    extension: { geckoId: `wallet@${config.rdns.split(".").reverse().join(".")}` },
+    desktop: {
+      appId: config.desktop?.appId ?? `${appId}.desktop`,
+      productName: config.name,
+      executableName: slug,
+      artifactName: `${fileName}-\${version}-\${os}-\${arch}.\${ext}`,
+    },
+    ios: { bundleIdentifier: config.mobile?.bundleId ?? appId },
+    android: { package: config.mobile?.androidPackage ?? androidPackageOf(appId) },
+    slug,
+  };
+}
+
+/** The languages the wallet offers, in config order (all twelve unless clip.config narrows them). */
+export function enabledLanguages(config: Partial<Pick<ClipConfig, "languages">>): Language[] {
+  return config.languages?.length ? [...config.languages] : [...LANGUAGES];
 }

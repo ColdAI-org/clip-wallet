@@ -14,6 +14,8 @@ published to npm as `@clip-wallet/<name>` (plus `create-clip-wallet`), all at on
 | `packages/1mask` | Dapp connectors for every family, plus WalletConnect. Announces the wallet's identity. |
 | `packages/engine` | Environment-free orchestration (approvals, permissions, portfolio, catalog) shared by mobile and desktop. |
 | `packages/extension-kit` | The browser extension as a library: background, pages, WXT build (`clipWallet()`), security floor. |
+| `packages/desktop-kit` | The desktop app as a library: main process, sandboxed preloads, pages, built-in dapp browser, electron-vite build (`clipDesktop()`), installers (`electronBuilderConfig()`). |
+| `packages/mobile-kit` | The phone app as a library: screens, vault host, in-app dapp browser, plugins, Expo config (`expoConfig()`), Metro wiring (`withClipWallet()`). |
 | `packages/ui` | React screens and theme tokens. |
 | `packages/i18n` | The translation layer: English plus 11 languages, and the translation QA checks. |
 | `packages/route` | Route and fund on CLPRouter; settle-on-Hedera (Phase 3) client. |
@@ -34,8 +36,8 @@ published to npm as `@clip-wallet/<name>` (plus `create-clip-wallet`), all at on
 | Path | What it is |
 | --- | --- |
 | `apps/extension` | Clip Wallet's own extension: its identity and one-line entrypoints on `extension-kit`. The Playwright end-to-end tests live here. |
-| `apps/mobile` | The Expo app for iOS and Android, on `engine`. |
-| `apps/desktop` | The Electron app for macOS, Windows and Linux, on `engine`. |
+| `apps/mobile` | Clip Wallet's own phone app (iOS and Android): its identity and one-line entrypoints on `mobile-kit`. |
+| `apps/desktop` | Clip Wallet's own desktop app (macOS, Windows and Linux): its identity and one-line entrypoints on `desktop-kit`. The desktop Playwright tests live here. |
 | `apps/docs` | This site. |
 | `services/backup`, `services/media-proxy`, `services/link-relay` | Optional Cloudflare Workers. See [Services](../services/). |
 | `templates/scaffold-hbar-clip-wallet` | The Scaffold-HBAR template (its own workspace, not part of this one). |
@@ -55,7 +57,7 @@ flowchart TB
   chains["chains-*<br/>(14 modules)"]
   onemask["1mask"]
   engine["engine"]
-  kit["extension-kit"]
+  kit["extension-kit · desktop-kit<br/>mobile-kit"]
   ui["ui + i18n"]
   extras["security · features · social<br/>route · plugins · hardware<br/>names · link"]
   connect["connect<br/>(dapp side)"]

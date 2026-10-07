@@ -1,7 +1,7 @@
 {
   "name": "create-clip-wallet",
   "version": "0.1.0",
-  "description": "Scaffold your own wallet on the Clip Wallet kit: its own name, icon, extension id and rdns, testnet by default",
+  "description": "Scaffold your own wallet on the Clip Wallet kit, on every platform from one clip.config.ts: browser extension, desktop app (Electron) and phone app (Expo), with its own name, ids and icons; testnet by default",
   "keywords": [
     "clip-wallet",
     "wallet",
@@ -9,7 +9,11 @@
     "hedera",
     "create",
     "template",
-    "browser-extension"
+    "browser-extension",
+    "electron",
+    "expo",
+    "desktop",
+    "mobile"
   ],
   "license": "Apache-2.0",
   "author": "ColdAI (https://coldai.org)",

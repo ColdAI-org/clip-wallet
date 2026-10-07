@@ -12,7 +12,7 @@ if (process.argv.includes("--clean")) process.exit(0);
 
 const src = join(pkg, "..", "..", "templates", "scaffold-hbar-clip-wallet");
 if (!existsSync(join(src, "template.json"))) throw new Error(`no template at ${src}`);
-const SKIP = new Set(["node_modules", ".next", ".output", ".output-fixtures", ".wxt", ".keys", ".env", ".harness/runs"]);
+const SKIP = new Set(["node_modules", ".next", ".output", ".output-fixtures", ".wxt", ".keys", ".env", ".harness/runs", ".expo"]);
 cpSync(src, out, {
   recursive: true,
   filter: (p) => !SKIP.has(basename(p)) && !/\.tsbuildinfo$/.test(p) && !/(?:^|\/)\.env\.(?!example$)[^/]+$/.test(p),

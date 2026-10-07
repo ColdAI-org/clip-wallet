@@ -8,7 +8,7 @@
       "statement": "The home page names this wallet (not Clip Wallet) and explains how to load the extension when it isn't installed.",
       "howToVerify": [
         "Open http://localhost:3000/ in a browser without the extension.",
-        "Confirm the heading is the name in packages/extension/wallet.identity.json.",
+        "Confirm the heading is the name in wallet.identity.json.",
         "Confirm step 1 says the wallet isn't installed and lists pnpm extension:build and Load unpacked."
       ],
       "severity": "critical",

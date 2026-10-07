@@ -102,6 +102,7 @@ const build: Item[] = [
       { text: "Scaffold-HBAR template", link: "/kit/scaffold-hbar" },
       { text: "Configure clip.config.ts", link: "/kit/config" },
       { text: "Build and ship", link: "/kit/build-and-ship" },
+      { text: "Stores and code signing", link: "/kit/signing" },
       { text: "Work with AI agents", link: "/kit/ai-agents" },
     ],
   },

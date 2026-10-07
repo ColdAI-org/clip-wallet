@@ -1,0 +1,5 @@
+dist/
+# Built from @clip-wallet/1mask at typecheck/test/build time.
+src/browser/inpage.generated.ts
+# Built from @clip-wallet/plugins (SES + runtime) with the inpage bundle.
+src/plugins/sandbox.generated.ts

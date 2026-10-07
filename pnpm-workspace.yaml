@@ -6,6 +6,9 @@ packages:
   - services/*
   # Stock wallet-picker UIs for the extension's picker e2e (own peer versions: wagmi 2, React 18). Private.
   - apps/extension/e2e/pickers/dapps
+# Scripts set variables POSIX-style (NODE_OPTIONS=--conditions=development …); the emulator runs them the same way on
+# Windows (cmd.exe has no VAR=value prefix), so the desktop app builds and packages there too.
+shellEmulator: true
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true

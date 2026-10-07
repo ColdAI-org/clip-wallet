@@ -12,8 +12,9 @@
  * mistakes agents actually make: importing key-material libraries outside the vault, importing the
  * vault from the wrong place, logging secrets, committing .env files or key files, losing the vault's test vectors.
  *
- * In a wallet built on the kit (packages/extension/clip.config.ts, no packages/vault) it also checks the wallet's own
- * identity, the security floor, the mainnet checklist and that kit packages are pinned (kitChecks below).
+ * In a wallet built on the kit (clip.config.ts and wallet.identity.json at the root, no packages/vault) it also checks
+ * the wallet's own identity, that every platform builds through its kit (the security floor), the mainnet checklist and
+ * that kit packages are pinned (kitChecks below).
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -36,15 +37,20 @@ export const VAULT_IMPORT_ALLOW = [
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
   // The extension background as a library (@clip-wallet/extension-kit), which every kit-built wallet runs.
   /^packages\/extension-kit\/src\/background\//,
-  // The mobile app's background (it builds the vault for @clip-wallet/engine, like the extension background).
-  /^apps\/mobile\/src\/background\//,
-  // The desktop app's main-process host (it builds the vault for @clip-wallet/engine; renderers and preloads never may).
-  /^apps\/desktop\/src\/main\/host\//,
+  // The phone app's background as a library (@clip-wallet/mobile-kit): it builds the vault for @clip-wallet/engine,
+  // like the extension background.
+  /^packages\/mobile-kit\/src\/background\//,
+  // The desktop app's main-process host as a library (@clip-wallet/desktop-kit): it builds the vault for
+  // @clip-wallet/engine; renderers and preloads never may.
+  /^packages\/desktop-kit\/src\/main\/host\//,
   // The desktop e2e's stand-in for the browser extension: an EMPTY vault, used only for ephemeral pairing keys.
   /^apps\/desktop\/e2e\/mock-extension\.ts$/,
   // The onboarding screen (packages/ui/src/screens/Onboarding.tsx) or an onboarding folder in the UI or extension.
   /^(?:packages\/ui|apps\/extension)\/(?:.*\/)?onboarding(?:\/|\.[cm]?[jt]sx?$)/i,
 ];
+
+/** A string as a literal inside a RegExp (every metacharacter escaped, backslash included). */
+const escapeRegExp = (s) => s.replace(/[\\^$.*+?()[\]{}|/]/g, "\\$&");
 
 /**
  * Crypto-critical dependencies (audit SUP-02): pinned to an exact version in every workspace package, so a lockfile
@@ -281,7 +287,7 @@ function keyMaterialHits(imp, code) {
     let hit = false;
     for (const b of bs) {
       if (!b.namespace && rule.symbols.includes(b.imported)) hit = true;
-      const name = b.name.replace(/\$/g, "\\$");
+      const name = escapeRegExp(b.name);
       const sym = rule.symbols.join("|");
       // binding.sign(…), binding.utils.randomSecretKey(…), ns.secp256k1.sign(…)
       if (new RegExp(`\\b${name}\\s*(?:\\.\\s*[\\w$]+\\s*)?\\.\\s*(?:utils\\s*\\.\\s*)?(?:${sym})\\b`).test(code)) hit = true;
@@ -479,7 +485,7 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
         fail("env-tracked", f, 0, `${f} is tracked by git. .env files hold secrets: run \`git rm --cached ${f}\` and keep it in .gitignore.`);
       }
       if (/\.pem$/.test(base) || /(?:^|\/)\.keys\//.test(f)) {
-        fail("key-file-tracked", f, 0, `${f} is tracked by git. It looks like a private key (the extension's signing key lives in packages/extension/.keys): run \`git rm --cached ${f}\` and keep it out of git.`);
+        fail("key-file-tracked", f, 0, `${f} is tracked by git. It looks like a private key (the extension's signing key lives in .keys/): run \`git rm --cached ${f}\` and keep it out of git.`);
       }
     }
   }
@@ -517,24 +523,29 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
 /** Clip Wallet's own identity, which no kit-built wallet may announce. */
 export const CLIP_WALLET_RDNS = "org.coldai.clipwallet";
 export const KIT_EXTENSION = "packages/extension";
+export const KIT_DESKTOP = "packages/desktop";
+export const KIT_MOBILE = "packages/mobile";
 export const KIT_PACKAGES = /^(?:@clip-wallet\/[\w-]+|create-clip-wallet)$/;
 const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[\w.]+)?$/;
 
-/** A wallet made from the template: its extension is packages/extension with clip.config.ts, and there is no vault source. */
+/**
+ * A wallet made from the template or create-clip-wallet: one clip.config.ts and wallet.identity.json at the root for
+ * every platform (packages/extension, packages/desktop, packages/mobile), and no vault source.
+ */
 export function isKitProject(root) {
-  return existsSync(join(root, KIT_EXTENSION, "clip.config.ts")) && !existsSync(join(root, "packages/vault"));
+  return existsSync(join(root, "clip.config.ts")) && existsSync(join(root, "wallet.identity.json")) && !existsSync(join(root, "packages/vault"));
 }
 
 function kitChecks(root, files, parsed, fail, warn) {
   const ext = KIT_EXTENSION;
 
   // kit-identity: the wallet announces its own identity, never Clip Wallet's, and never carries a private key.
-  const idFile = `${ext}/wallet.identity.json`;
+  const idFile = "wallet.identity.json";
   let id;
   try {
     const text = readFileSync(join(root, idFile), "utf8");
     if (/PRIVATE KEY/.test(text)) {
-      fail("kit-identity", idFile, 0, "wallet.identity.json contains a private key. Only the public key belongs here (extension.key); the private key stays in packages/extension/.keys, out of git.");
+      fail("kit-identity", idFile, 0, "wallet.identity.json contains a private key. Only the public key belongs here (extension.key); the private key stays in .keys/, out of git.");
     }
     id = JSON.parse(text);
   } catch {
@@ -544,6 +555,9 @@ function kitChecks(root, files, parsed, fail, warn) {
     if (id.rdns === CLIP_WALLET_RDNS || /^org\.coldai\./.test(String(id.rdns))) {
       fail("kit-identity", idFile, 0, `rdns ${id.rdns} belongs to Clip Wallet. Announce your own: \`pnpm wallet:identity --rdns <a reverse domain you own>\`.`);
     }
+    if (/^org\.coldai\./.test(String(id.appId ?? ""))) {
+      fail("kit-identity", idFile, 0, `appId ${id.appId} belongs to Clip Wallet. Use your own: \`pnpm wallet:identity --id <a reverse domain you own>\`.`);
+    }
     if (String(id.name).trim().toLowerCase() === "clip wallet") {
       fail("kit-identity", idFile, 0, "The name Clip Wallet is taken. Give your wallet its own: `pnpm wallet:identity --name \"…\"`.");
     }
@@ -552,15 +566,27 @@ function kitChecks(root, files, parsed, fail, warn) {
     }
   }
 
-  // kit-security: the build goes through clipWallet(), which has no switch for the security floor.
-  const wxtFile = `${ext}/wxt.config.ts`;
-  const wxt = parsed.get(wxtFile);
-  const usesKit =
-    wxt &&
-    findImports(wxt.src, wxt.lexed).some((i) => i.module === "@clip-wallet/extension-kit/wxt" && /\bclipWallet\b/.test(i.clause)) &&
-    /\bclipWallet\s*\(/.test(wxt.lexed.code);
-  if (!usesKit) {
-    fail("kit-security", wxtFile, 0, "wxt.config.ts must build the extension with clipWallet() from @clip-wallet/extension-kit/wxt: it carries the security floor and the mainnet checklist. Restore it from the template.");
+  // kit-security: every platform's build goes through its kit (clipWallet(), clipDesktop(), expoConfig() +
+  // withClipWallet()), none of which has a switch for the security floor, and all of which enforce the mainnet checklist.
+  const builds = [
+    { dir: ext, file: `${ext}/wxt.config.ts`, module: "@clip-wallet/extension-kit/wxt", fn: "clipWallet", what: "the extension" },
+    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron.vite.config.ts`, module: "@clip-wallet/desktop-kit/electron-vite", fn: "clipDesktop", what: "the desktop app" },
+    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron-builder.config.cjs`, module: "@clip-wallet/desktop-kit/builder", fn: "electronBuilderConfig", what: "the desktop installers" },
+    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/app.config.ts`, module: "@clip-wallet/mobile-kit/expo", fn: "expoConfig", what: "the phone app's Expo config" },
+    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/metro.config.js`, module: "@clip-wallet/mobile-kit/metro", fn: "withClipWallet", what: "the phone app's bundle" },
+  ];
+  for (const b of builds) {
+    if (!existsSync(join(root, b.dir, "package.json"))) continue;
+    const f = parsed.get(b.file);
+    // Code with comments stripped (for the call); the raw text for a CommonJS require (strings are blanked in `code`).
+    const raw = f ? f.src : existsSync(join(root, b.file)) ? readFileSync(join(root, b.file), "utf8") : "";
+    const code = f ? f.lexed.code : raw;
+    const imported =
+      (f && findImports(f.src, f.lexed).some((i) => i.module === b.module && new RegExp(`\\b${b.fn}\\b`).test(i.clause))) ||
+      new RegExp(`\\b${b.fn}\\b[^;]*=\\s*require\\(\\s*["']${escapeRegExp(b.module)}["']\\s*\\)`).test(raw);
+    if (!imported || !new RegExp(`\\b${b.fn}\\s*\\(`).test(code)) {
+      fail("kit-security", b.file, 0, `${b.file.split("/").pop()} must build ${b.what} with ${b.fn}() from ${b.module}: it carries the wallet's config, the security floor and the mainnet checklist. Restore it from the template.`);
+    }
   }
   for (const [f, { src, lexed }] of parsed) {
     if (!f.startsWith("packages/")) continue;
@@ -571,11 +597,11 @@ function kitChecks(root, files, parsed, fail, warn) {
   }
 
   // kit-mainnet: mainnet on means every box in MAINNET.md is ticked.
-  const cfgFile = `${ext}/clip.config.ts`;
+  const cfgFile = "clip.config.ts";
   const cfg = parsed.get(cfgFile);
   const on = cfg && /\bmainnet\s*:\s*\{/.exec(cfg.lexed.code);
   if (on) {
-    const listFile = `${ext}/MAINNET.md`;
+    const listFile = "MAINNET.md";
     const list = existsSync(join(root, listFile)) ? readFileSync(join(root, listFile), "utf8") : "";
     const open = list.split(/\r?\n/).filter((l) => /^\s*- \[ \]/.test(l)).length;
     if (!list) fail("kit-mainnet", listFile, 0, "Mainnet is on in clip.config.ts but MAINNET.md is missing. Restore it from the template and work through it.");

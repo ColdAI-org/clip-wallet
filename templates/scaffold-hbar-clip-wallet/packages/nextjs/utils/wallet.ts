@@ -1,8 +1,9 @@
 /**
- * The wallet this dapp is built to show off: the identity in packages/extension/wallet.identity.json (written by
- * `pnpm wallet:identity`), so the dapp and the extension always agree on the name and the EIP-6963 rdns.
+ * The wallet this dapp is built to show off: the identity in the project's wallet.identity.json (written by
+ * `pnpm wallet:identity`, read by clip.config.ts), so the dapp and the wallet always agree on the name and the
+ * EIP-6963 rdns.
  */
-import identity from "@sh/extension/wallet.identity.json";
+import identity from "../../../wallet.identity.json";
 
 export const WALLET_NAME: string = identity.name;
 /** EIP-6963 reverse-DNS id the extension announces (also the wagmi connector id). */

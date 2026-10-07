@@ -1,7 +1,8 @@
 # @clip-wallet/config
 
-The typed schema for `clip.config.ts`, the one file a wallet maker edits: identity (name, description, rdns, homepage,
-icon, extension key), theme, networks (14 families), routing defaults and settle-on-Hedera, hardware wallets,
+The typed schema for `clip.config.ts`, the one file a wallet maker edits, for every platform the wallet ships (browser
+extension, desktop app, phone app): identity (name, description, rdns, homepage, icon, extension key, app ids,
+deep-link scheme), theme, networks (14 families), languages, routing defaults and settle-on-Hedera, hardware wallets,
 WalletConnect, passkeys, optional hosted services, and the mainnet switch.
 
 `defineConfig()` validates and fills defaults; problems come back as plain sentences, one per setting
@@ -35,6 +36,22 @@ export default defineConfig({
 Mainnet stays off until `mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT }`, and the extension build
 also refuses it while `mainnetProblems(config)` lists anything (placeholder rdns, no homepage, no extension key, no
 WalletConnect project id, a remote icon). Clip Wallet is pre-release and unaudited: a mainnet build moves real funds.
+
+Platform settings, all optional:
+
+| Setting | Default | |
+| --- | --- | --- |
+| `languages` | all twelve (`LANGUAGES`) | what Settings → Language offers; the first is the fallback |
+| `appId` | `rdns` | the desktop and phone app id |
+| `desktop.appId` | `<appId>.desktop` | macOS bundle id, Windows AppUserModelID |
+| `mobile.bundleId`, `mobile.androidPackage` | from `appId` | iOS bundle id, Android package |
+| `scheme` | the wallet key | deep links: `<scheme>://wc?uri=…` |
+| `fees`, `usage` | `{ enabled: false }` | reserved for Clip Cloud's hosted mode; accepted, never acted on by the kit |
+
+`platformIds(config)` returns every id the platforms use (extension gecko id, desktop app id, product, executable and
+artifact names, iOS bundle id, Android package, scheme, slug). `@clip-wallet/config/node` has `loadClipConfigSync(file)`
+(evaluates a clip.config.ts in a child Node process: Node 22.18+, for Expo's app.config.ts and electron-builder) and the
+build-environment helpers the kits share (`buildEnv`, `resolveBuildConfig`, `iconDataUri`, `openChecklistItems`).
 
 Helpers: `validateConfig`, `walletKey`, `rdnsDomain`, `enabledFamilies`, `includesEvmChain`, `isMainnetEnabled`,
 `defaults`.

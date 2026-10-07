@@ -30,7 +30,6 @@
     "@scaffold-hbar-ui/components": "^2.0.0",
     "@scaffold-hbar-ui/debug-contracts": "^2.0.0",
     "@scaffold-hbar-ui/hooks": "^1.1.0",
-    "@sh/extension": "workspace:*",
     "@tanstack/react-query": "^5.59.15",
     "blo": "^1.2.0",
     "burner-connector": "0.0.20",

@@ -2,7 +2,7 @@
   "name": "clip-wallet-project",
   "version": "0.1.0",
   "private": true,
-  "description": "Your own non-custodial wallet on the Clip Wallet kit, with a Scaffold-HBAR dapp that connects to it on Hedera testnet",
+  "description": "Your own non-custodial wallet on the Clip Wallet kit: a browser extension, a desktop app and a phone app from one clip.config.ts, with a Scaffold-HBAR dapp that connects to it on Hedera testnet",
   "license": "Apache-2.0",
   "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/templates/scaffold-hbar-clip-wallet#readme",
   "bugs": {
@@ -14,8 +14,18 @@
     "directory": "templates/scaffold-hbar-clip-wallet"
   },
   "scripts": {
-    "build": "pnpm extension:build && pnpm next:build",
-    "check-types": "pnpm extension:check-types && pnpm next:check-types",
+    "build": "pnpm extension:build && pnpm desktop:build && pnpm next:build",
+    "check-types": "pnpm extension:check-types && pnpm desktop:check-types && pnpm mobile:check-types && pnpm next:check-types",
+    "dev:desktop": "pnpm --filter @sh/desktop dev",
+    "dev:extension": "pnpm --filter @sh/extension dev",
+    "dev:mobile": "pnpm --filter @sh/mobile start",
+    "desktop:build": "pnpm --filter @sh/desktop build",
+    "desktop:check-types": "pnpm --filter @sh/desktop check-types",
+    "desktop:dist": "pnpm --filter @sh/desktop dist",
+    "desktop:dist:linux": "pnpm --filter @sh/desktop dist:linux",
+    "desktop:dist:mac": "pnpm --filter @sh/desktop dist:mac",
+    "desktop:dist:win": "pnpm --filter @sh/desktop dist:win",
+    "desktop:start": "pnpm --filter @sh/desktop start",
     "extension:build": "pnpm --filter @sh/extension build",
     "extension:build:fixtures": "pnpm --filter @sh/extension build:fixtures",
     "extension:check-types": "pnpm --filter @sh/extension check-types",
@@ -24,6 +34,10 @@
     "format": "pnpm next:format",
     "harness": "node tools/harness/check.mjs",
     "lint": "pnpm next:lint",
+    "mobile:check-types": "pnpm --filter @sh/mobile check-types",
+    "mobile:export": "pnpm --filter @sh/mobile export",
+    "mobile:prebuild": "pnpm --filter @sh/mobile prebuild",
+    "mobile:start": "pnpm --filter @sh/mobile start",
     "next:build": "pnpm --filter @sh/nextjs build",
     "next:check-types": "pnpm --filter @sh/nextjs check-types",
     "next:dev": "pnpm --filter @sh/nextjs dev",
@@ -31,15 +45,17 @@
     "next:lint": "pnpm --filter @sh/nextjs lint",
     "next:serve": "pnpm --filter @sh/nextjs serve",
     "verify:provenance": "node tools/verify-provenance.mjs",
+    "wallet:brand": "create-clip-wallet brand",
     "wallet:identity": "create-clip-wallet identity",
     "wallet:listings": "create-clip-wallet listings",
     "wallet:mainnet-check": "create-clip-wallet mainnet-check"
   },
   "devDependencies": {
+    "@clip-wallet/config": "0.1.0",
     "create-clip-wallet": "0.1.0"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.18",
     "pnpm": ">=10"
   }
 }

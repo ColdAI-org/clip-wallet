@@ -5,6 +5,10 @@ packages:
 # through an install script; the native add-ons below have pure-JS fallbacks, so they stay off.
 allowBuilds:
   esbuild: true
+  # The desktop app (packages/desktop): downloads the Electron binary for this computer.
+  electron: true
+  # electron-builder's Squirrel.Windows helper; not used (NSIS + zip targets only).
+  electron-winstaller: false
   '@parcel/watcher': false
   bufferutil: false
   keccak: false

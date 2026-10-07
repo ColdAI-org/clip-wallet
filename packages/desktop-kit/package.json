@@ -1,0 +1,203 @@
+{
+  "name": "@clip-wallet/desktop-kit",
+  "version": "0.1.0",
+  "description": "Build a branded Clip Wallet desktop app (Electron: macOS, Windows, Linux): main process, preloads, pages, built-in dapp browser with 1Mask, configured by clip.config.ts",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "web3"
+  ],
+  "license": "Apache-2.0",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/desktop-kit#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/desktop-kit"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./src/main/index.ts",
+    "./src/preload/*.ts",
+    "./src/native-host/main.ts",
+    "./dist/main/index.js",
+    "./dist/preload/*.js",
+    "./dist/native-host/main.js"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./electron-vite": {
+      "development": "./src/electron-vite.ts",
+      "types": "./dist/electron-vite.d.ts",
+      "import": "./dist/electron-vite.js",
+      "default": "./dist/electron-vite.js"
+    },
+    "./builder": {
+      "development": "./src/builder.ts",
+      "types": "./dist/builder.d.ts",
+      "import": "./dist/builder.js",
+      "default": "./dist/builder.js"
+    },
+    "./main": {
+      "development": "./src/main/index.ts",
+      "types": "./dist/main/index.d.ts",
+      "import": "./dist/main/index.js",
+      "default": "./dist/main/index.js"
+    },
+    "./preload/wallet": {
+      "development": "./src/preload/wallet.ts",
+      "types": "./dist/preload/wallet.d.ts",
+      "import": "./dist/preload/wallet.js",
+      "default": "./dist/preload/wallet.js"
+    },
+    "./preload/dapp": {
+      "development": "./src/preload/dapp.ts",
+      "types": "./dist/preload/dapp.d.ts",
+      "import": "./dist/preload/dapp.js",
+      "default": "./dist/preload/dapp.js"
+    },
+    "./renderer": {
+      "development": "./src/renderer/index.ts",
+      "types": "./dist/renderer/index.d.ts",
+      "import": "./dist/renderer/index.js",
+      "default": "./dist/renderer/index.js"
+    },
+    "./native-host": {
+      "development": "./src/native-host/main.ts",
+      "types": "./dist/native-host/main.d.ts",
+      "import": "./dist/native-host/main.js",
+      "default": "./dist/native-host/main.js"
+    },
+    "./browser.css": {
+      "development": "./src/renderer/browser/browser.css",
+      "default": "./dist/renderer/browser/browser.css"
+    },
+    "./csp": {
+      "development": "./src/csp.ts",
+      "types": "./dist/csp.d.ts",
+      "import": "./dist/csp.js",
+      "default": "./dist/csp.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./electron-vite": {
+        "types": "./dist/electron-vite.d.ts",
+        "import": "./dist/electron-vite.js",
+        "default": "./dist/electron-vite.js"
+      },
+      "./builder": {
+        "types": "./dist/builder.d.ts",
+        "import": "./dist/builder.js",
+        "default": "./dist/builder.js"
+      },
+      "./main": {
+        "types": "./dist/main/index.d.ts",
+        "import": "./dist/main/index.js",
+        "default": "./dist/main/index.js"
+      },
+      "./preload/wallet": {
+        "types": "./dist/preload/wallet.d.ts",
+        "import": "./dist/preload/wallet.js",
+        "default": "./dist/preload/wallet.js"
+      },
+      "./preload/dapp": {
+        "types": "./dist/preload/dapp.d.ts",
+        "import": "./dist/preload/dapp.js",
+        "default": "./dist/preload/dapp.js"
+      },
+      "./renderer": {
+        "types": "./dist/renderer/index.d.ts",
+        "import": "./dist/renderer/index.js",
+        "default": "./dist/renderer/index.js"
+      },
+      "./native-host": {
+        "types": "./dist/native-host/main.d.ts",
+        "import": "./dist/native-host/main.js",
+        "default": "./dist/native-host/main.js"
+      },
+      "./browser.css": "./dist/renderer/browser/browser.css",
+      "./csp": {
+        "types": "./dist/csp.d.ts",
+        "import": "./dist/csp.js",
+        "default": "./dist/csp.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build-inpage.mjs && node ../../tools/release/build-package.mjs",
+    "inpage": "node scripts/build-inpage.mjs",
+    "typecheck": "node scripts/build-inpage.mjs && tsc -p . --noEmit",
+    "test": "node scripts/build-inpage.mjs && vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/1mask": "workspace:*",
+    "@clip-wallet/chains-ton": "workspace:*",
+    "@clip-wallet/config": "workspace:*",
+    "@clip-wallet/core": "workspace:*",
+    "@clip-wallet/engine": "workspace:*",
+    "@clip-wallet/features": "workspace:*",
+    "@clip-wallet/hardware": "workspace:*",
+    "@clip-wallet/i18n": "workspace:*",
+    "@clip-wallet/link": "workspace:*",
+    "@clip-wallet/security": "workspace:*",
+    "@clip-wallet/social": "workspace:*",
+    "@clip-wallet/ui": "workspace:*",
+    "@clip-wallet/vault": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@ledgerhq/hw-transport": "6.36.0",
+    "@ledgerhq/hw-transport-webhid": "6.36.0",
+    "@noble/hashes": "2.4.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "buffer": "^6.0.3",
+    "electron-updater": "^6.8.9",
+    "esbuild": "^0.25.0",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "electron": ">=44.0.0",
+    "electron-vite": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "electron": "44.5.1",
+    "electron-vite": "^5.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.0",
+    "vitest": "~4.1.11"
+  }
+}

@@ -143,7 +143,18 @@ describe("pages", () => {
         manifests.set(p.name.replace(/^@clip-wallet\//, ""), p.scripts ?? {});
       }
     }
-    const rootScripts = (JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { scripts: Record<string, string> }).scripts;
+    // A kit-built wallet's packages (packages/extension, desktop, mobile, nextjs as @sh/*): the pages show its commands too.
+    const template = join(root, "templates", "scaffold-hbar-clip-wallet");
+    for (const d of readdirSync(join(template, "packages"))) {
+      const pj = join(template, "packages", d, "package.json");
+      if (!existsSync(pj)) continue;
+      const p = JSON.parse(readFileSync(pj, "utf8")) as { name: string; scripts?: Record<string, string> };
+      const short = p.name.replace(/^@sh\//, "");
+      manifests.set(p.name, p.scripts ?? {});
+      manifests.set(short, { ...manifests.get(short), ...p.scripts });
+    }
+    const readScripts = (dir: string) => (JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as { scripts: Record<string, string> }).scripts;
+    const rootScripts = { ...readScripts(template), ...readScripts(root) };
     const bad: string[] = [];
     let seen = 0;
     for (const f of all) {
@@ -223,8 +234,8 @@ async function run(path: string): Promise<unknown[][]> {
 describe("runnable snippets print what the docs say", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("kit/clip.config.ts is a valid configuration", async () => {
-    const mod = (await import(pathToFileURL(join(snippets, "kit/clip.config.ts")).href)) as { default: { name: string; mainnet: unknown; networks: string[] } };
+  it("kit/project/clip.config.ts is a valid configuration", async () => {
+    const mod = (await import(pathToFileURL(join(snippets, "kit/project/clip.config.ts")).href)) as { default: { name: string; mainnet: unknown; networks: string[] } };
     expect(mod.default.name).toBe("Acme Wallet");
     expect(mod.default.mainnet).toBe(false);
   });

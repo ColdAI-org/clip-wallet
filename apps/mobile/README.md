@@ -1,5 +1,11 @@
 # Clip Wallet mobile (iOS + Android)
 
+> The app's code is [`@clip-wallet/mobile-kit`](../../packages/mobile-kit) (`packages/mobile-kit`), shared with every
+> kit-built wallet; this folder is Clip Wallet's brand on it: `clip.config.ts`, `assets/` rendered from `brand/`,
+> `index.ts` (`registerClipWallet()`), `app.config.ts` (`expoConfig()`), `metro.config.js` (`withClipWallet()`) and the
+> local test dapp. Paths in "What's where" (`src/…`, `test/…`) are in the kit; its tests run with
+> `pnpm --filter @clip-wallet/mobile-kit test`.
+
 Expo SDK 57 (React Native 0.86.3, React 19.2.3, Hermes, New Architecture, which is the only architecture in
 RN 0.82+). It runs the same packages as the extension through `@clip-wallet/engine`. Testnets only.
 
@@ -12,7 +18,7 @@ cp .env.example .env              # optional: EXPO_PUBLIC_WC_PROJECT_ID, EXPO_PU
 pnpm ios                          # builds the inpage bundle, then `expo run:ios` (needs Xcode, CocoaPods, an iOS Simulator runtime)
 pnpm android                      # `expo run:android`
 pnpm dapp                         # local test dapp on http://localhost:8787 (EIP-6963 + personal_sign); open it in Browse
-pnpm test                         # vitest (bridge e2e, Argon2, deep links, storage) + jest-expo (screens)
+pnpm --filter @clip-wallet/mobile-kit test   # vitest (bridge e2e, Argon2, deep links, storage) + jest-expo (screens)
 pnpm typecheck
 pnpm export:ios                   # Metro + Hermes bytecode bundle only (no Xcode needed)
 ```

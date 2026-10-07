@@ -62,23 +62,35 @@ export function dirOf(tag: string): "ltr" | "rtl" {
  *   "zh", "zh-CN", "zh-Hans-SG" → zh-Hans; "zh-TW", "zh-Hant-HK" also → zh-Hans (no Traditional yet; most
  *                                 Traditional readers read Simplified more easily than English)
  */
-export function negotiateLocale(requested: readonly (string | undefined | null)[]): LocaleCode {
+export function negotiateLocale(requested: readonly (string | undefined | null)[], offered?: readonly LocaleCode[]): LocaleCode {
+  // A wallet may offer fewer languages (clip.config languages); the first one it offers is its fallback.
+  const codes: readonly LocaleCode[] = offered?.length ? offered.filter(isLocaleCode) : LOCALE_CODES;
+  const fallback = offered?.length ? (codes[0] ?? DEFAULT_LOCALE) : DEFAULT_LOCALE;
   for (const raw of requested) {
     if (!raw) continue;
     const tag = raw.replace(/_/g, "-");
-    const exact = LOCALE_CODES.find((c) => c.toLowerCase() === tag.toLowerCase());
+    const exact = codes.find((c) => c.toLowerCase() === tag.toLowerCase());
     if (exact) return exact;
     const lang = tag.split("-")[0]!.toLowerCase();
-    if (lang === "pt") return "pt-BR";
-    if (lang === "zh") return "zh-Hans";
-    const byLang = LOCALE_CODES.find((c) => c.split("-")[0]!.toLowerCase() === lang);
+    if (lang === "pt" && codes.includes("pt-BR")) return "pt-BR";
+    if (lang === "zh" && codes.includes("zh-Hans")) return "zh-Hans";
+    const byLang = codes.find((c) => c.split("-")[0]!.toLowerCase() === lang);
     if (byLang) return byLang;
   }
-  return DEFAULT_LOCALE;
+  return fallback;
+}
+
+/** The shipped locales a wallet offers (all of them when `offered` is empty or missing), in LOCALES order. */
+export function offeredLocales(offered?: readonly string[]): readonly LocaleInfo[] {
+  return offered?.length ? LOCALES.filter((l) => offered.includes(l.code)) : LOCALES;
 }
 
 /** The locale to use for a preference: the shipped one chosen, or the device's best match. */
-export function resolveLocale(pref: string | undefined | null, deviceLanguages: readonly (string | undefined | null)[] = []): LocaleCode {
-  if (isLocaleCode(pref)) return pref;
-  return negotiateLocale(deviceLanguages);
+export function resolveLocale(
+  pref: string | undefined | null,
+  deviceLanguages: readonly (string | undefined | null)[] = [],
+  offered?: readonly LocaleCode[],
+): LocaleCode {
+  if (isLocaleCode(pref) && (!offered?.length || offered.includes(pref))) return pref;
+  return negotiateLocale(deviceLanguages, offered);
 }

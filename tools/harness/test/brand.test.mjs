@@ -14,11 +14,12 @@ const mark = read("brand/clip-mark.svg");
 const dataUri = `data:image/svg+xml;base64,${mark.toString("base64")}`;
 
 test("icon.svg copies match brand/clip-mark.svg", () => {
-  for (const p of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg", "apps/desktop/src/renderer/public/icon.svg"]) assert.ok(read(p).equals(mark), `${p}: run node tools/brand/render.mjs`);
+  // The desktop and phone apps inline their clip.config icon (these files) as the EIP-6963 identity at build time.
+  for (const p of ["apps/extension/icon.svg", "apps/mobile/assets/icon.svg", "apps/desktop/icon.svg"]) assert.ok(read(p).equals(mark), `${p}: run node tools/brand/render.mjs`);
 });
 
 test("inline identity icons are the brand mark, not a placeholder", () => {
-  for (const p of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts", "apps/mobile/src/env.ts", "apps/desktop/src/shared/app-config.ts"]) {
+  for (const p of ["packages/1mask/src/shared/config.ts", "packages/kit-modules/src/shared.ts"]) {
     assert.ok(read(p).toString().includes(JSON.stringify(dataUri)), `${p}: run node tools/brand/render.mjs`);
   }
 });

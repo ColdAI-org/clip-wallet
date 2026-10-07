@@ -13,9 +13,6 @@
     "directory": "templates/scaffold-hbar-clip-wallet/packages/extension"
   },
   "type": "module",
-  "exports": {
-    "./wallet.identity.json": "./wallet.identity.json"
-  },
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox --mv3",

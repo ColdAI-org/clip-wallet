@@ -9,8 +9,8 @@ export type ScaffoldConfig = {
 };
 
 /**
- * Hedera testnet only, like the wallet (packages/extension/clip.config.ts). Add chains.hedera here only after the
- * wallet itself has passed its mainnet checklist (packages/extension/MAINNET.md).
+ * Hedera testnet only, like the wallet (clip.config.ts at the project root). Add chains.hedera here only after the
+ * wallet itself has passed its mainnet checklist (MAINNET.md).
  */
 const targetNetworks = [chains.hederaTestnet] as const satisfies readonly [chains.Chain, ...chains.Chain[]];
 

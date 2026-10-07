@@ -218,7 +218,9 @@ export function mediaProxyUrl(base: string | null | undefined, raw: string | nul
   if (!source) return null;
   const kind = opts.kind ?? guessKind(source.url);
   if (!kind) return null;
-  const root = base.replace(/\/+$/, "");
+  let end = base.length;
+  while (end > 0 && base[end - 1] === "/") end--;
+  const root = base.slice(0, end);
   return { kind, src: `${root}/v1/media?src=${encodeURIComponent(source.url)}&kind=${kind}` };
 }
 

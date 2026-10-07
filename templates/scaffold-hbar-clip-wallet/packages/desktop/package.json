@@ -1,0 +1,42 @@
+{
+  "name": "@sh/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/templates/scaffold-hbar-clip-wallet/packages/desktop#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "templates/scaffold-hbar-clip-wallet/packages/desktop"
+  },
+  "type": "module",
+  "main": "out/main/index.mjs",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron .",
+    "check-types": "tsc --noEmit",
+    "dist": "electron-vite build && electron-builder --config electron-builder.config.cjs --publish never",
+    "dist:dir": "electron-vite build && electron-builder --dir --config electron-builder.config.cjs --publish never",
+    "dist:mac": "electron-vite build && electron-builder --mac --config electron-builder.config.cjs --publish never",
+    "dist:win": "electron-vite build && electron-builder --win --config electron-builder.config.cjs --publish never",
+    "dist:linux": "electron-vite build && electron-builder --linux --config electron-builder.config.cjs --publish never"
+  },
+  "devDependencies": {
+    "@clip-wallet/config": "0.1.0",
+    "@clip-wallet/desktop-kit": "0.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "electron": "44.5.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.0"
+  }
+}

@@ -1,8 +1,9 @@
 # Scaffold-HBAR template
 
 The template (`templates/scaffold-hbar-clip-wallet` in the repo, published as `ColdAI-org/scaffold-hbar-clip-wallet`)
-is a [Scaffold-HBAR](https://github.com/hedera-dev/scaffold-hbar) project with two packages: **your wallet** as a
-browser extension, and a **Next.js dapp** on Hedera testnet that connects to it.
+is a [Scaffold-HBAR](https://github.com/hedera-dev/scaffold-hbar) project with **your wallet** on every platform (a
+browser extension, a desktop app and a phone app, from one `clip.config.ts` at the root) and a **Next.js dapp** on
+Hedera testnet that connects to it. It is the same project as `npx create-clip-wallet --scaffold-hbar`.
 
 ```sh
 npm create scaffold-hbar@latest -- --template ColdAI-org/scaffold-hbar-clip-wallet
@@ -13,7 +14,7 @@ pnpm extension:build          # → packages/extension/.output/chrome-mv3
 pnpm next:dev                 # → http://localhost:3000
 ```
 
-Prerequisites: Node 22 or later, pnpm 10 or later, Git, and a Chromium browser. Load the extension unpacked, create a
+Prerequisites: Node 22.18 or later, pnpm 10 or later, Git, and a Chromium browser. Load the extension unpacked, create a
 wallet in it, get testnet HBAR from the [Hedera portal faucet](https://portal.hedera.com/faucet), and open the dapp.
 
 ## The demo dapp
@@ -33,10 +34,12 @@ your wallet's approval window, decoded in plain words.
 | --- | --- |
 | `pnpm extension:build` / `extension:dev` / `extension:zip` | build, watch, or zip the extension for the stores |
 | `pnpm extension:build:fixtures` | the extension with sample data and no network, for screenshots |
+| `pnpm dev:desktop` / `desktop:build` / `desktop:dist` | run, build, or package the desktop app (installers in `packages/desktop/release`) |
+| `pnpm mobile:start` / `mobile:prebuild` / `mobile:export` | the phone app: Metro for a development build, the native projects, the JavaScript bundles |
 | `pnpm next:dev` / `next:build` / `next:serve` | the demo dapp |
 | `pnpm harness` | the rules; must pass before every commit |
-| `pnpm check-types`, `pnpm build`, `pnpm lint` | types, both builds, lint |
-| `pnpm wallet:identity`, `wallet:listings`, `wallet:mainnet-check` | identity, listing drafts, what blocks mainnet |
+| `pnpm check-types`, `pnpm build`, `pnpm lint` | types, the builds, lint |
+| `pnpm wallet:identity`, `wallet:brand`, `wallet:listings`, `wallet:mainnet-check` | identity, every platform's icons from the logo, listing drafts, what blocks mainnet |
 | `pnpm verify:provenance` | checks the kit packages were built by the kit's CI from its public repository |
 
 ## How it relates to the monorepo

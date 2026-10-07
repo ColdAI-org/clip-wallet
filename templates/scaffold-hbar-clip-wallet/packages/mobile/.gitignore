@@ -1,0 +1,5 @@
+# Generated native projects (pnpm prebuild): never committed.
+ios/
+android/
+.expo/
+dist/

@@ -1,5 +1,5 @@
 import { generateKeyPairSync } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -95,6 +95,24 @@ describe("clipWallet()", () => {
     writeFileSync(join(withList, "MAINNET.md"), "# Mainnet\n- [x] done\n- [x] Back up\n");
     expect(() => wallet(ready)).not.toThrow();
     expect(String(ok.manifest({ browser: "chrome", manifestVersion: 3 }).description)).not.toMatch(/Test networks/);
+  });
+
+  it("reads the icon, MAINNET.md and the wallet-wide .env from configDir (one clip.config.ts for every platform)", () => {
+    const wallet_ = project();
+    const ext = join(wallet_, "packages", "extension");
+    mkdirSync(ext, { recursive: true });
+    writeFileSync(join(ext, "package.json"), JSON.stringify({ name: "@sh/extension", version: "0.2.0" }));
+    rmSync(join(wallet_, "package.json"));
+    writeFileSync(join(wallet_, ".env"), `CLIP_WALLETCONNECT_PROJECT_ID=${"c".repeat(32)}\n`);
+    const cfg = wallet({ config: acme({ icon: "./icon.svg" }), root: ext, configDir: "../..", env: undefined });
+    const v = vite(cfg);
+    expect(JSON.parse(v.define.__CLIP_IDENTITY__!).icon).toMatch(/^data:image\/svg\+xml;base64,/);
+    expect(JSON.parse(v.define.__CLIP_WALLETCONNECT__!)).toBe(true);
+    expect(JSON.parse(v.define.__CLIP_TON_CONNECT__!).appVersion).toBe("0.2.0");
+    expect((cfg as unknown as { zip: { artifactTemplate: string } }).zip.artifactTemplate).toBe("acme-wallet-{{version}}-{{browser}}.zip");
+    writeFileSync(join(wallet_, "MAINNET.md"), "- [ ] audited\n");
+    const config = acme({ mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT }, homepage: "https://acme.example", extension: { key: publicKey } });
+    expect(() => wallet({ config, root: ext, configDir: wallet_, env: { CLIP_WALLETCONNECT_PROJECT_ID: "b".repeat(32) } })).toThrow(/MAINNET\.md: audited/);
   });
 
   it("refuses an icon from someone else's server", () => {

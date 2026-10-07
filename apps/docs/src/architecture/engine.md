@@ -9,8 +9,8 @@ and passkey ceremonies, all on injected seams.
 flowchart TB
   subgraph Hosts
     EXT["Browser extension<br/>extension-kit background<br/>(WalletService)"]
-    MOB["Phone app<br/>apps/mobile/src/background"]
-    DESK["Clip Desktop<br/>apps/desktop/src/main/host"]
+    MOB["Phone app<br/>mobile-kit src/background"]
+    DESK["Desktop app<br/>desktop-kit src/main/host"]
   end
   ENGINE["@clip-wallet/engine<br/>WalletEngine"]
   WIRING["@clip-wallet/engine/wiring<br/>catalog + the 14 chain modules"]

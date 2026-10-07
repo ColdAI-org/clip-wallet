@@ -101,10 +101,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile --filter "@clip-wallet/mobile..."
       - run: pnpm --filter @clip-wallet/mobile typecheck
-      - name: Test (vitest + jest-expo)
-        run: pnpm --filter @clip-wallet/mobile test
+      - name: Test (vitest + jest-expo; the app's code is @clip-wallet/mobile-kit)
+        run: pnpm --filter @clip-wallet/mobile-kit test
       - name: Expo config resolves (icons, splash, plugins)
         working-directory: apps/mobile
+        env:
+          NODE_OPTIONS: --conditions=development
         run: npx expo config --type prebuild --json > /dev/null
 
   services:
@@ -120,14 +122,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "./services/**..."
+      # Braces: the services and their workspace dependencies (packages/link, packages/backup-client).
+      - run: pnpm install --frozen-lockfile --filter "{./services/**}..."
       - name: Typecheck
         run: pnpm -r --filter "./services/**" typecheck
       - name: Test (inside workerd, local Miniflare D1/R2; nothing remote)
         run: pnpm -r --filter "./services/**" test
 
   kit:
-    name: kit e2e (create-clip-wallet and the Scaffold-HBAR template, from tarballs)
+    name: kit e2e (create-clip-wallet on every platform, and the Scaffold-HBAR template, from tarballs)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -144,7 +147,7 @@ jobs:
         run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
       - name: Git identity for the scaffolded projects' first commit
         run: git config --global user.name "kit e2e" && git config --global user.email "kit-e2e@users.noreply.github.com"
-      - name: create-clip-wallet from the packed tarballs
+      - name: create-clip-wallet from the packed tarballs (extension, desktop, mobile)
         run: pnpm kit:e2e
       - name: Scaffold-HBAR template (reuses the tarballs)
         run: pnpm kit:e2e:scaffold-hbar --no-pack
