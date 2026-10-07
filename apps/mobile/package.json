@@ -49,7 +49,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-task-manager": "~57.0.21",
     "expo-web-browser": "~57.0.3",
-    "react": "19.2.3",
+    "react": "19.3.0",
     "react-native": "0.86.3",
     "react-native-argon2": "4.0.0",
     "react-native-ble-plx": "3.4.0",
@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
-    "@types/react": "~19.2.0",
+    "@types/react": "~19.3.0",
     "typescript": "^5.9.3"
   }
 }
