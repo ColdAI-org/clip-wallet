@@ -100,7 +100,7 @@
   },
   "devDependencies": {
     "@hiero-ledger/sdk": "^2.89.1",
-    "typescript": "^5.6.0",
+    "typescript": "^7.0.2",
     "vitest": "~4.1.11"
   }
 }
