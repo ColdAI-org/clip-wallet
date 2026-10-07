@@ -156,7 +156,7 @@
     "@ledgerhq/react-native-hw-transport-ble": "6.41.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
-    "@react-native/jest-preset": "0.86.3",
+    "@react-native/jest-preset": "0.87.1",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.20.5",
@@ -193,7 +193,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
-    "react-test-renderer": "19.2.3",
+    "react-test-renderer": "19.3.0",
     "typescript": "^5.9.3",
     "vitest": "~4.1.11"
   }
