@@ -175,7 +175,7 @@
     "@ledgerhq/hw-transport": "6.36.0",
     "@ledgerhq/hw-transport-webhid": "6.36.0",
     "@noble/hashes": "2.4.0",
-    "@vitejs/plugin-react": "^5.1.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "buffer": "^6.0.3",
     "electron-updater": "^6.8.9",
     "esbuild": "^0.25.0",
