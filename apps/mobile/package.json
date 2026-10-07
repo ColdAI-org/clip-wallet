@@ -50,7 +50,7 @@
     "expo-task-manager": "~57.0.21",
     "expo-web-browser": "~57.0.3",
     "react": "19.2.3",
-    "react-native": "0.86.3",
+    "react-native": "0.87.1",
     "react-native-argon2": "4.0.0",
     "react-native-ble-plx": "3.4.0",
     "react-native-get-random-values": "~1.11.0",
