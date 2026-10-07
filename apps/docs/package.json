@@ -97,7 +97,7 @@
     "@tonconnect/sdk": "4.0.2",
     "@tonconnect/ui": "3.0.2",
     "@txnlab/use-wallet": "5.0.1",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@wagmi/core": "^3.6.5",
