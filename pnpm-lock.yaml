@@ -2357,8 +2357,8 @@ importers:
         specifier: 2.4.0
         version: 2.4.0
       pako:
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 3.0.2
+        version: 3.0.2
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -44587,7 +44587,7 @@ snapshots:
 
   compressible@2.0.18:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   compression@1.8.2(supports-color@10.2.2):
     dependencies:
@@ -51036,7 +51036,7 @@ snapshots:
   pkijs@3.4.1:
     dependencies:
       '@noble/hashes': 1.8.0
-      asn1js: 3.0.6
+      asn1js: 3.0.10
       bytestreamjs: 2.0.1
       pvtsutils: 1.3.6
       pvutils: 1.2.0
