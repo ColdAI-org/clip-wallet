@@ -1,5 +1,12 @@
 import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
 
+/** `url` without trailing slashes (a scan, not a regex: linear on any input). */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return url.slice(0, end);
+}
+
 /**
  * Hedera networks. Ids are the CAIP-2 ids used by Hedera WalletConnect (HIP-30), verified against
  * `LEDGER_ID_MAPPINGS` in @hashgraph/hedera-wallet-connect 2.1.3 (src/lib/shared/utils.ts):
@@ -71,7 +78,7 @@ export function ledgerOf(networkId: NetworkId): HederaLedger {
 }
 
 export function mirrorUrl(net: Network): string {
-  return (net.indexerUrl ?? MIRROR_NODE_URLS[ledgerOf(net.id)]).replace(/\/+$/, "");
+  return withoutTrailingSlashes(net.indexerUrl ?? MIRROR_NODE_URLS[ledgerOf(net.id)]);
 }
 
 /** Canonical asset key for an HTS token: native USDC merges with USDC elsewhere; everything else is per-token. */

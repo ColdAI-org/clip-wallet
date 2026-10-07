@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Family } from "@clip-wallet/core";
+import { FAMILIES, type Family } from "@clip-wallet/core";
 import config from "./clip.config";
 import { FAST_ARGON2 } from "./helpers";
 import { MemoryKV } from "../src/shared/storage";
@@ -17,7 +17,7 @@ describe("chain module derivation paths match the vault's accounts", () => {
     await deps.loadChains();
     await deps.vault.create("a long test password");
     const families = Object.keys(deps.chains).sort() as Family[];
-    expect(families).toHaveLength(14);
+    expect(families).toHaveLength(FAMILIES.length);
     for (const family of families) {
       const mod = deps.chains[family]!;
       for (const i of [0, 1]) {

@@ -10,6 +10,7 @@ with no Clip-specific code.
 | `solana` | devnet | `solana_signTransaction`, `solana_signAndSendTransaction`, `solana_signMessage` |
 | `bip122` | testnet4 | `signPsbt`, `signMessage`, `sendTransfer` |
 | `hedera` | testnet | `hedera_signMessage`, `hedera_signTransaction`, `hedera_signAndExecuteTransaction`, … |
+| `bch` | `bch:bchtest` (chipnet) | `bch_getAddresses`, `bch_signTransaction`, `bch_signMessage` (wc2-bch-bcr; see [Bitcoin Cash](./bitcoincash.md)) |
 
 - **Proposals.** Required chains or methods Clip can't serve reject the proposal (`5100`, `5101`); optional ones are
   dropped and listed on the approval screen.

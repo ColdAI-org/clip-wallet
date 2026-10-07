@@ -29,6 +29,18 @@ export const CURVE_OF: Record<Family, Curve> = {
   stellar: "ed25519",
   tezos: "ed25519",
   algorand: "bip32-ed25519", // ARC-52 default; "ed25519" with algorandScheme "slip10" (see curveOf)
+  cosmos: "secp256k1",
+  provenance: "secp256k1",
+  thorchain: "secp256k1",
+  initia: "secp256k1", // ethsecp256k1: same curve, keccak address and digest
+  tron: "secp256k1",
+  xrpl: "secp256k1",
+  antelope: "secp256k1",
+  multiversx: "ed25519",
+  icp: "secp256k1",
+  stacks: "secp256k1",
+  fuel: "secp256k1",
+  bitcoincash: "secp256k1",
 };
 
 /** Which Algorand derivation to follow. See README "Algorand". */
@@ -118,6 +130,31 @@ export function derivationPath(family: Family, index: number, opts: PathOptions 
       return `${accountNodePath("cardano", index)}/0/0`; // CIP-1852 first external (payment) address
     case "substrate":
       return substrateJunction(index);
+    /* networks87: each ecosystem's most used BIP-39 wallet (README "Derivation"). */
+    case "cosmos":
+      return `m/44'/118'/0'/0/${index}`; // Keplr, Leap, Cosmostation: Osmosis, dYdX, ZIGChain (chain-registry slip44 118)
+    case "provenance":
+      return `m/44'/505'/0'/0/${index}`; // chain-registry slip44 505 (Keplr, Leap, Provenance Blockchain Wallet)
+    case "thorchain":
+      return `m/44'/931'/0'/0/${index}`; // SLIP-44 931 (Keplr, Ctrl/XDEFI, Vultisig)
+    case "initia":
+      return `m/44'/60'/0'/0/${index}`; // chain-registry slip44 60, ethsecp256k1 (Initia Wallet, Keplr): the EVM key
+    case "tron":
+      return `m/44'/195'/0'/0/${index}`; // TronLink (account i = address index i), TronWeb fromMnemonic
+    case "xrpl":
+      return `m/44'/144'/${index}'/0/0`; // xrpl.js Wallet.fromMnemonic (i = 0), Ledger Live, GemWallet
+    case "antelope":
+      return `m/44'/194'/0'/0/${index}`; // SLIP-44 194 (EOS/Vaulta), TokenPocket; one key for Vaulta, Telos and XPR
+    case "multiversx":
+      return `m/44'/508'/0'/0'/${index}'`; // xPortal, MultiversX DeFi Wallet, sdk-wallet Mnemonic.deriveKey(i)
+    case "icp":
+      return `m/44'/223'/0'/0/${index}`; // Plug, dfx identity import, @dfinity/identity-secp256k1 fromSeedPhrase
+    case "stacks":
+      return `m/44'/5757'/0'/0/${index}`; // Leather, Xverse (@stacks/wallet-sdk account i)
+    case "fuel":
+      return `m/44'/1179993420'/${index}'/0/0`; // Fuel Wallet, fuels-ts WalletManager
+    case "bitcoincash":
+      return `m/44'/145'/0'/0/${index}`; // Electron Cash, Paytaca, Bitcoin.com Wallet (P2PKH receive chain)
     case "starknet":
       switch (opts.starknetScheme ?? "argent-x") {
         case "argent-x":

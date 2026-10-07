@@ -81,3 +81,29 @@ Both Hedera rows are this matrix's wallet, on Hedera testnet:
   account, as they would with MetaMask. Send to it as an EVM address (the portal faucet accepts both).
 
 10 HBAR each is plenty; 2 HBAR each is the floor the matrix checks for.
+
+## networks87 accounts (2026-10-06)
+
+Account 0 of the new families, derived from the same matrix phrase (public keys in `addresses.json`; `node
+scripts/dapp-matrix-balances.mjs` re-derives every address with the family's own chain module: all "ok"). Addresses
+are spelled for the testnet. I used only plain public APIs with no captcha, account or terms (Hiro's STX faucet API,
+the XRPL testnet faucet API); everything else, and every account creation, is for you.
+
+| Target | Testnet | Receive address | Faucet | What the faucet needs | Matrix minimum | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| Stacks | testnet | `ST1EC4TTQPQX24TT3VY2H6YYW99N0HRQ5VMRB2M1T` | `POST https://api.testnet.hiro.so/extended/v1/faucets/stx?address=…` | **API-only** | 0.01 STX | **Funded by me:** 500 STX, tx `0x5fa11ca9fd59c0900a9d6bf45589ca310993d20c1999f9d596d04fa6ab151cd3`; L3 passed |
+| XRP Ledger | testnet | `rDvWLtQL3Furv3sVzERai1MXvKFTQjZgrM` | `POST https://faucet.altnet.rippletest.net/accounts {"destination":"r…"}` | **API-only** | 1.1 XRP (1 XRP reserve + fees) | **Funded by me:** 100 XRP, tx `7207EF46614D51E4134F93EFAC19E4FF8E1CCAF2789102933D82307631D976EB`; L3 passed |
+| Cosmos (Osmosis) | osmo-test-5 | `osmo1re86ed5ck45dnyex8ajvytrae4c5ct7xjm6edd` | [faucet.testnet.osmosis.zone](https://faucet.testnet.osmosis.zone) | Cloudflare Turnstile captcha | 0.1 OSMO | **You fund this** |
+| TRON | Nile | `TGZxYSGcQHaZMcSB2c7ZB1n97yMk2UPz41` | [nileex.io/join/getJoinPage](https://nileex.io/join/getJoinPage) | Turnstile captcha | 2 TRX | **You fund this** |
+| Fuel | testnet | `0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75` | [faucet-testnet.fuel.network](https://faucet-testnet.fuel.network) | Cloudflare challenge | any ETH (0.0000002) | **You fund this** |
+| Chainflip | Perseverance | `cFNXs2hYYRhGp1A4AfXaTbK3vQSgnSLvtvJrvJrCbNvhtTKc1` | tFLIP (ERC-20 on Sepolia `0xdC27c60956cB065D19F08bb69a707E37b36d8086`) from the Chainflip Discord, then fund the State Chain account at [auctions.perseverance.chainflip.io](https://auctions.perseverance.chainflip.io) from the matrix EVM account (it has Sepolia ETH) | Discord account | 0.1 FLIP | **You fund this** |
+| MultiversX | devnet | `erd1qhkcc53w80nppnsprtzs7k2wh7xwvt54c8u88d0cd6pn3n6ldudshmqgfg` | [devnet-wallet.multiversx.com](https://devnet-wallet.multiversx.com) faucet (r3d4.fr/faucet untested) | Logged-in wallet + reCAPTCHA | 0.01 EGLD | **You fund this** |
+| Initia | initiation-2 | `init1qkkdq25wrrqnpkgzldejhd4dytdy7fch0qn2v7` | [app.testnet.initia.xyz/faucet](https://app.testnet.initia.xyz/faucet) | Turnstile captcha | 0.1 INIT | balance only (no matrix page) |
+| Provenance | pio-testnet-1 | `tp16f3hw77j3vwa3chtnplx3qs4sn2z4ww0cdzgzd` | none: the explorer faucet reached end of life | n/a | 1 HASH | no public faucet found |
+| ICP | `icp:test` (DFINITY test ledgers on mainnet) | principal `gm6de-vncl6-w4cya-5z35g-cincb-f2zqe-6jhln-cnvjw-gvqf6-3shog-6ae` | [faucet.internetcomputer.org](https://faucet.internetcomputer.org) (10 TESTICP) | Web form (no login or captcha seen) | 0.001 TESTICP | **You fund this** (balance only) |
+| Bitcoin Cash | chipnet | `bchtest:qq5jt8xqr6gckvpnn4dr4ajfd023mf7fzcj5tplmu2` | [tbch.googol.cash](https://tbch.googol.cash) | Image captcha | 5,000 sats | **You fund this** (balance only) |
+| Antelope | Jungle4 | key `PUB_K1_7VxUN24cMwi94AHSbLkSnbKNfwoN8wjV4Fv1FA8W7bXQdTVzro` (no account yet) | account: `POST https://jungle4.greymass.com/account/create` (no captcha) or [monitor.jungletestnet.io](https://monitor.jungletestnet.io); tokens: Jungle4 faucet (reCAPTCHA). Telos testnet: `POST https://api-dev.telos.net/v1/testnet/account` then `/faucet/<account>`; XPR testnet needs an e-mail code | Creating an account is yours to do | an account + 1 EOS + CPU | **You create the account** (balance only) |
+| dYdX, ZIGChain | dydx-testnet-4, zig-test-2 | `dydx1re86ed5ck45dnyex8ajvytrae4c5ct7xne8dmg`, `zig1re86ed5ck45dnyex8ajvytrae4c5ct7xm2vmeh` | dYdX `POST faucet.v4testnet.dydx.exchange/faucet/native-token` (unverified); faucet.zigchain.com (Cloudflare challenge) | | | not matrix targets (same provider as Osmosis) |
+| THORChain | none | `thor13pajudku86vd59c8wkr4ctwcxdy8qpnap6afpx` (mainnet) | no public testnet (stagenet uses real funds) | | | not testable without mainnet funds |
+
+Then: `pnpm --filter @clip-wallet/extension matrix -- -g "matrix: (cosmos|tron|fuel|chainflip|multiversx)"`.

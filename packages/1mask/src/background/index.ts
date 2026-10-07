@@ -39,3 +39,17 @@ export {
 } from "./starknet-ton.js";
 export { createCallsDispatch, type CallsRouterHelpers } from "./eip5792.js";
 export * from "../shared/calls.js";
+/* networks87: dispatchers live in router.ts; hosts need the connect and read-only method names. */
+export { COSMOS_CONNECT_METHODS, COSMOS_INJECTED, COSMOS_FAMILIES } from "../shared/cosmos.js";
+export { TRON_CONNECT_METHODS } from "./tron.js";
+export { STACKS_INJECTED } from "../shared/stacks.js";
+export { FUEL_CONNECT_METHODS } from "../shared/fuel.js";
+import { COSMOS_CONNECT_METHODS as _COSMOS_CONNECT, COSMOS_INJECTED as _COSMOS } from "../shared/cosmos.js";
+import { TRON_CONNECT_METHODS as _TRON_CONNECT } from "./tron.js";
+import { STACKS_INJECTED as _STACKS } from "../shared/stacks.js";
+import { FUEL_CONNECT_METHODS as _FUEL_CONNECT } from "../shared/fuel.js";
+import { MULTIVERSX_CONNECT_METHODS as _MVX_CONNECT } from "./multiversx.js";
+/** Methods the host treats as a connect approval (Keplr enable, TIP-1193 accounts, SIP-030 addresses, FuelConnector connect, MultiversX provider login). */
+export const N87_CONNECT_METHODS: readonly string[] = [..._COSMOS_CONNECT, ..._TRON_CONNECT, _STACKS.connect, ..._FUEL_CONNECT, ..._MVX_CONNECT];
+/** Read-only chain calls answered by a chain module without an approval (Keplr sendTx of an already-signed tx, verifyArbitrary). */
+export const N87_CHAIN_READ: readonly string[] = [_COSMOS.sendTx, _COSMOS.verifyArbitrary];

@@ -1,5 +1,6 @@
 /**
- * Phase 2: all 14 chain families (real wiring) and the new screens (fixture mode).
+ * Phase 2 and networks87: every chain family the build ships (real wiring) and the new screens (fixture mode).
+ * THORChain has no public testnet, so a testnet build has no THORChain account to list.
  */
 import path from "node:path";
 import type { Page } from "@playwright/test";
@@ -25,12 +26,28 @@ const ADDRESS: Record<string, RegExp> = {
   stellar: /^G[A-Z2-7]{55}$/,
   tezos: /^tz1[1-9A-HJ-NP-Za-km-z]{33}$/,
   algorand: /^[A-Z2-7]{58}$/,
+  // networks87: the vault's own (mainnet) spelling; Receive spells it per network (receiveAddress).
+  cosmos: /^cosmos1[02-9ac-hj-np-z]{38}$/,
+  provenance: /^pb1[02-9ac-hj-np-z]{38}$/,
+  initia: /^init1[02-9ac-hj-np-z]{38}$/,
+  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+  xrpl: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/,
+  antelope: /^PUB_K1_[1-9A-HJ-NP-Za-km-z]{50}$/,
+  multiversx: /^erd1[02-9ac-hj-np-z]{58}$/,
+  icp: /^([a-z2-7]{5}-){10}[a-z2-7]{3}$/,
+  stacks: /^SP[0-9A-HJKMNP-TV-Z]{38,39}$/,
+  fuel: /^0x[0-9a-fA-F]{64}$/,
+  bitcoincash: /^bitcoincash:q[02-9ac-hj-np-z]{41}$/,
 };
 
 /** One coin per family, as Receive lists them (Substrate testnets: Westend and Paseo). */
-const RECEIVE_SYMBOLS = ["ETH", "HBAR", "SOL", "BTC", "SUI", "APT", "ADA", "WND", "PAS", "STRK", "GRAM", "NEAR", "XLM", "XTZ", "ALGO"];
+const RECEIVE_SYMBOLS = [
+  "ETH", "HBAR", "SOL", "BTC", "SUI", "APT", "ADA", "WND", "PAS", "STRK", "GRAM", "NEAR", "XLM", "XTZ", "ALGO",
+  // networks87 testnets (Chainflip Perseverance's FLIP, Jungle4's EOS, MultiversX devnet EGLD, ICP test ledger TESTICP)
+  "OSMO", "ZIG", "HASH", "INIT", "TRX", "XRP", "EOS", "TLOS", "XPR", "EGLD", "TESTICP", "STX", "BCH", "FLIP",
+];
 
-extensionTest(REAL_BUILD)("real: accounts for all 14 families derive after onboarding and show in Receive", async ({ context, extensionId }) => {
+extensionTest(REAL_BUILD)("real: accounts for every family derive after onboarding and show in Receive", async ({ context, extensionId }) => {
   const page = await openPage(context, extensionId, "popup.html");
   const shot = shotOf(page);
   await onboard(page);
@@ -64,6 +81,13 @@ extensionTest(REAL_BUILD)("real: accounts for all 14 families derive after onboa
   await expect(page.getByTestId("receive-address")).toHaveText(sui);
   await expect(page.getByRole("img", { name: /QR code/ })).toBeVisible();
   await shot("receive-sui");
+
+  // networks87: an address spelled per network. OSMO on osmo-test-5 receives on the osmo1… form of the vault's key.
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await page.getByRole("button", { name: "Receive" }).click();
+  await page.locator(".clip-asset-row", { has: page.locator(".clip-asset-row__symbol", { hasText: /^OSMO$/ }) }).first().click();
+  await expect(page.getByTestId("receive-address")).toHaveText(/^osmo1[02-9ac-hj-np-z]{38}$/);
+  await shot("receive-osmo");
 });
 
 extensionTest(FIXTURE_BUILD)("fixtures: Stake, Swap, Explore, Backup and Accounts screens", async ({ context, extensionId }) => {

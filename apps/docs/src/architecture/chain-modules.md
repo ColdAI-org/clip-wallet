@@ -25,7 +25,10 @@ the change-address helpers. A module that can't decode something throws a `ClipE
 
 How to write one, step by step with a complete example: [Write a chain module](../extend/chain-module.md).
 
-## The fourteen modules
+## The modules
+
+One package per family; the Cosmos SDK package serves four families (cosmos, provenance, thorchain, initia) and
+the Antelope package three chains. Every network and its CLPR status: [Networks](../reference/networks.md).
 
 | Family | Package | Factory | Test networks | Dapp standard |
 | --- | --- | --- | --- | --- |
@@ -43,6 +46,15 @@ How to write one, step by step with a complete example: [Write a chain module](.
 | Stellar | `@clip-wallet/chains-stellar` | `createStellarModule()` | Testnet | SEP-43 |
 | Tezos | `@clip-wallet/chains-tezos` | `createTezosModule()` | Shadownet | Beacon |
 | Algorand | `@clip-wallet/chains-algorand` | `createAlgorandModule()` | TestNet | ARC-1, use-wallet |
+| Cosmos SDK | `@clip-wallet/chains-cosmos` | `createCosmosModule()` | osmo-test-5, dydx-testnet-4, zig-test-2, pio-testnet-1, initiation-2 (THORChain: none) | Keplr-compatible API |
+| TRON | `@clip-wallet/chains-tron` | `createTronModule()` | Nile, Shasta | TIP-1193 + TIP-6963 |
+| XRP Ledger | `@clip-wallet/chains-xrpl` | `createXrplModule()` | Testnet, Devnet | XLS-72d (Wallet Standard) |
+| Stacks | `@clip-wallet/chains-stacks` | `createStacksModule()` | Testnet | SIP-030 + WBIP-004 |
+| Fuel | `@clip-wallet/chains-fuel` | `createFuelModule()` | Testnet | FuelConnector |
+| Bitcoin Cash | `@clip-wallet/chains-bitcoincash` | `createBitcoinCashModule()` | Chipnet, Testnet4 | WalletConnect (wc2-bch-bcr) |
+| MultiversX | `@clip-wallet/chains-multiversx` | `createMultiversXModule()` | Devnet, Testnet | best effort (sdk-dapp hook) |
+| Internet Computer | `@clip-wallet/chains-icp` | `createIcpModule()` | `icp:test` (DFINITY test ledgers) | none: send and receive |
+| Antelope | `@clip-wallet/chains-antelope` | `createAntelopeModule()` | Jungle4, Telos testnet, XPR testnet | none: send and receive |
 
 Each package also exports its networks (most at `@clip-wallet/chains-<family>/networks`) and its token tables. The
 catalogue in [`packages/engine/src/catalog.ts`](repo:packages/engine/src/catalog.ts) assembles them for a wallet,

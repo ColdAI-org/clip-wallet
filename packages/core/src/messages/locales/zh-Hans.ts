@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/zh-Hans.js";
 
 /** Simplified Chinese: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/zh-Hans/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "在 {app} 上的 {count} 个步骤",
   "bg.act.batchStopped": "在 {app} 上的 {count} 个步骤，在第 {n} 步停止",
   "bg.err.batchHardware": "硬件钱包暂不支持在一次批准中完成多个步骤。请让应用逐个发送。",
+  ...n87,
 };
 export default messages;

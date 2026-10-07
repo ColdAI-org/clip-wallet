@@ -1,7 +1,7 @@
 # Vault
 
 `@clip-wallet/vault` is the only package that touches recovery phrases and private keys. It implements the `Vault`
-interface from `@clip-wallet/core` as `ClipVault`: create or import a phrase, derive accounts for fourteen families,
+interface from `@clip-wallet/core` as `ClipVault`: create or import a phrase, derive accounts for 26 families,
 encrypt everything at rest, and sign only what the person approved.
 
 ```mermaid
@@ -52,6 +52,18 @@ the same addresses:
 | stellar | ed25519 | `m/44'/148'/i'` (SEP-0005) | Stellar wallets |
 | tezos | ed25519 | `m/44'/1729'/i'/0'` | Temple, Kukai |
 | algorand | BIP32-Ed25519 (ARC-52) | `m/44'/283'/i'/0/0` | Pera Universal Wallet |
+| cosmos | secp256k1 | `m/44'/118'/0'/0/i` | Keplr, Leap, Cosmostation |
+| provenance | secp256k1 | `m/44'/505'/0'/0/i` | Keplr, Leap |
+| thorchain | secp256k1 | `m/44'/931'/0'/0/i` | Keplr, Ctrl (XDEFI), Vultisig |
+| initia | ethsecp256k1 | `m/44'/60'/0'/0/i` (the EVM key) | Initia Wallet, Keplr |
+| tron | secp256k1 | `m/44'/195'/0'/0/i` | TronLink, TronWeb `fromMnemonic` |
+| xrpl | secp256k1 | `m/44'/144'/i'/0/0` | xrpl.js `Wallet.fromMnemonic`, Ledger Live |
+| antelope | secp256k1 (K1, canonical signatures) | `m/44'/194'/0'/0/i` | TokenPocket; one key for Vaulta, Telos and XPR Network |
+| multiversx | ed25519 | `m/44'/508'/0'/0'/i'` | xPortal, DeFi Wallet |
+| icp | secp256k1 | `m/44'/223'/0'/0/i` | Plug, dfx `identity import` |
+| stacks | secp256k1 | `m/44'/5757'/0'/0/i` | Leather, Xverse |
+| fuel | secp256k1 | `m/44'/1179993420'/i'/0/0` | Fuel Wallet, fuels-ts |
+| bitcoincash | secp256k1 | `m/44'/145'/0'/0/i` | Electron Cash, Paytaca, Bitcoin.com Wallet |
 
 The [vault README](repo:packages/vault/README.md) gives the source for every row and the cases where wallets disagree
 (Hedera key types, Algorand's three schemes, TON's native mnemonics, Starknet's account schemes).

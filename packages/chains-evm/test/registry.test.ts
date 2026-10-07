@@ -15,21 +15,31 @@ describe("network registry", () => {
     }
   });
 
-  it("covers 59 CLPR EVM networks plus the Sepolia testnets", () => {
-    expect(EVM_NETWORKS).toHaveLength(63);
-    expect(EVM_TESTNETS.map((n) => n.chainId).sort((a, b) => a! - b!)).toEqual([84532, 421614, 5042002, 11155111, 11155420]);
+  it("covers 61 CLPR EVM networks plus the Sepolia, Arc and STRATO testnets", () => {
+    expect(EVM_NETWORKS).toHaveLength(66);
+    expect(EVM_NETWORKS.filter((n) => !n.testnet)).toHaveLength(60);
+    expect(EVM_TESTNETS.map((n) => n.chainId).sort((a, b) => a! - b!)).toEqual([84532, 421614, 5042002, 11155111, 11155420, 195049586845898]);
   });
 
   it("pins well-known chain ids", () => {
     const by = Object.fromEntries(EVM_NETWORK_SPECS.map((s) => [s.slug, s.chainId]));
-    expect(by).toMatchObject({ ethereum: 1, base: 8453, "arbitrum-one": 42161, "op-mainnet": 10, "bnb-smart-chain": 56, "polygon-pos": 137, "avalanche-c-chain": 43114, linea: 59144, scroll: 534352, "zksync-era": 324, monad: 143 });
+    expect(by).toMatchObject({ ethereum: 1, base: 8453, "arbitrum-one": 42161, "op-mainnet": 10, "bnb-smart-chain": 56, "polygon-pos": 137, "avalanche-c-chain": 43114, linea: 59144, scroll: 534352, "zksync-era": 324, monad: 143, arc: 5042, "arc-testnet": 5042002, strato: 123354377739506 });
   });
 
   it("does not include Hedera (its own module) or non-EVM ledgers", () => {
     const ids = EVM_NETWORKS.map((n) => n.chainId);
     expect(ids).not.toContain(295);
     expect(ids).not.toContain(296);
-    expect(ids).not.toContain(123354377739506); // STRATO, SolidVM
+  });
+
+  it("STRATO: legacy transactions, unpriced gas plus a flat 0.01 USDST per transaction", async () => {
+    const { specFor } = await import("../src/networks.js");
+    for (const id of ["eip155:123354377739506", "eip155:195049586845898"]) {
+      const s = specFor(id)!;
+      expect(s.legacyGas).toBe(true);
+      expect(s.flatFee).toBe(10n ** 16n);
+      expect(s.native).toMatchObject({ symbol: "USDST", decimals: 18 });
+    }
   });
 
   it("keeps Hedera's EVM apart: request-only networks 296/295, HBAR in weibars, specFor knows them", async () => {

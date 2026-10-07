@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/tr.js";
 
 /** Turkish: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/tr/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{app} üzerinde {count} adım",
   "bg.act.batchStopped": "{app} üzerinde {count} adım, {n}. adımda durdu",
   "bg.err.batchHardware": "Tek onayda birden fazla adım donanım cüzdanlarında henüz kullanılamıyor. Uygulamadan adımları tek tek göndermesini isteyin.",
+  ...n87,
 };
 export default messages;

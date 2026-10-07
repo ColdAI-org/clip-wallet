@@ -1,4 +1,5 @@
 import { ClipError } from "@clip-wallet/core";
+import { withoutTrailingSlashes } from "./url.js";
 
 /**
  * Client for the CLPRouter route status API (clprouter services/, `GET /routes/{routeId}`, schema RouteStatus in
@@ -27,7 +28,7 @@ export class RouteStatusClient {
   private readonly fetchImpl: typeof fetch;
 
   constructor(opts: { baseUrl: string; fetch?: typeof fetch }) {
-    this.baseUrl = opts.baseUrl.replace(/\/+$/, "");
+    this.baseUrl = withoutTrailingSlashes(opts.baseUrl);
     this.fetchImpl = opts.fetch ?? globalThis.fetch.bind(globalThis);
   }
 

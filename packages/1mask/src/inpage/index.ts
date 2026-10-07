@@ -13,6 +13,7 @@ import { resolveChannel, resolveIdentity, type InpageConfig, type WalletIdentity
 import { ClipBitcoinWallet } from "./bitcoin.js";
 import { ClipEthereumProvider, announceEip6963, claimWindowEthereum, type EIP6963ProviderDetail } from "./evm.js";
 import { installP2Providers, type InstalledP2 } from "./p2.js";
+import { installN87Providers, type InstalledN87 } from "./n87.js";
 import { ClipSolanaWallet } from "./solana.js";
 import { ClipSuiWallet } from "./sui.js";
 import { ClipAptosWallet } from "./aptos.js";
@@ -37,6 +38,8 @@ export interface InstalledOneMask {
   ton?: ClipTonConnectBridge;
   /** NEAR (window.clipwallet.near + NEAR Connect), Stellar (SEP-43), Algorand, Tezos (Beacon relay). */
   p2?: InstalledP2;
+  /** networks87: TRON (TIP-6963), Stacks (WBIP-004), Fuel (FuelConnector). */
+  n87?: InstalledN87;
   /** Hedera extension discovery (DAppConnector / HashConnect): the id dApps address the wallet by. */
   hedera?: { extensionId: string };
   destroy(): void;
@@ -114,6 +117,12 @@ export function installOneMask(config: InpageConfig, win: Window = window): Inst
   });
   stops.push(p2.stop);
   out.p2 = p2;
+  const n87 = installN87Providers(win, identity, config.networks, transport, {
+    want: { cosmos: want.cosmos ?? true, tron: want.tron ?? true, stacks: want.stacks ?? true, fuel: want.fuel ?? true, xrpl: want.xrpl ?? true, multiversx: want.multiversx ?? true },
+    ...(config.globalKey ? { globalKey: config.globalKey } : {}),
+  });
+  stops.push(n87.stop);
+  out.n87 = n87;
   return out;
 }
 
@@ -127,6 +136,7 @@ export { ClipAptosWallet, APTOS_FEATURES, METHOD_APTOS_NETWORK, aptosChain, toWi
 export * from "./bitcoin-features.js";
 export { createInpageTransport, type InpageTransport } from "./transport.js";
 export * from "./p2.js";
+export * from "./n87.js";
 export { ClipCardanoWallet, Cip30Error, CIP30_METHODS, APIErrorCode, TxSignErrorCode, DataSignErrorCode, TxSendErrorCode, cardanoWalletKey, installCardano, toCip30Error } from "./cardano.js";
 export { ClipSubstrateProvider, SUBSTRATE_INPAGE_METHODS, installSubstrate, substrateExtensionName, caip2FromGenesis } from "./substrate.js";
 export { ClipStarknetWallet, StarknetWalletError, STARKNET_ERRORS, injectStarknet, starknetWalletId, toStarknetError } from "./starknet.js";

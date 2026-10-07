@@ -29,6 +29,10 @@ export interface SubstrateSpec {
    * start times at historical blocks: Polkadot 24 h, Kusama 6 h, Westend 6 h, Paseo 6 h.
    */
   eraHours?: number;
+  /** Native token name when it isn't the network's name (Chainflip's FLIP). */
+  tokenName?: string;
+  /** Explorer path for an extrinsic hash (default "extrinsic", Subscan). */
+  txPath?: string;
 }
 
 export const SUBSTRATE_SPECS: SubstrateSpec[] = [
@@ -154,12 +158,54 @@ export const SUBSTRATE_SPECS: SubstrateSpec[] = [
       { id: 1984, symbol: "USDT", name: "Tether USD", decimals: 6, key: "usdt" },
     ],
   },
+  /*
+   * Chainflip State Chain (a Substrate solo chain). Read 2026-10-06 with chain_getBlockHash(0), system_properties
+   * ({ ss58Format: 2112, tokenDecimals: 18, tokenSymbol: "FLIP" }) and state_getRuntimeVersion (chainflip-node
+   * 20216 on mainnet, 20302 on Perseverance, transactionVersion 13). There's no Balances pallet: FLIP lives in
+   * `Flip.Account` ({ balance, bond }), reaches the State Chain by funding from Ethereum (StateChainGateway) and
+   * leaves by `Funding.redeem` to an Ethereum address. scan.chainflip.io takes an extrinsic hash at /extrinsics/.
+   */
+  {
+    slug: "chainflip",
+    name: "Chainflip",
+    genesisHash: "0x8b8c140b0af9db70686583e3f6bf2a59052bfe9584b97d20c45068281e976eb9",
+    ss58: 2112,
+    symbol: "FLIP",
+    decimals: 18,
+    key: "flip",
+    testnet: false,
+    rpc: ["https://mainnet-rpc.chainflip.io", "https://rpc.chainflip.io"],
+    explorer: "https://scan.chainflip.io",
+    assetHub: false,
+    tokenName: "Chainflip",
+    txPath: "extrinsics",
+  },
+  /*
+   * Perseverance, Chainflip's public testnet ("Chainflip-Perseverance"). Its FLIP is funded from tFLIP on Ethereum
+   * Sepolia (0xdC27c60956cB065D19F08bb69a707E37b36d8086, from the Chainflip Discord faucet) through
+   * auctions.perseverance.chainflip.io; the chain itself reports the symbol FLIP.
+   */
+  {
+    slug: "chainflip-perseverance",
+    name: "Chainflip Perseverance",
+    genesisHash: "0x7a5d4db858ada1d20ed6ded4933c33313fc9673e5fffab560d0ca714782f2080",
+    ss58: 2112,
+    symbol: "FLIP",
+    decimals: 18,
+    key: "flip-testnet",
+    testnet: true,
+    rpc: ["https://archive.perseverance.chainflip.io", "https://perseverance.chainflip.xyz"],
+    explorer: "https://scan.perseverance.chainflip.io",
+    assetHub: false,
+    tokenName: "Test FLIP",
+    txPath: "extrinsics",
+  },
 ];
 
 export const caip2Of = (genesisHash: string): NetworkId => `polkadot:${genesisHash.replace(/^0x/, "").slice(0, 32).toLowerCase()}`;
 
 export function nativeAsset(spec: SubstrateSpec): AssetRef {
-  return { key: spec.key, symbol: spec.symbol, name: spec.name.replace(/ Asset Hub$/, ""), decimals: spec.decimals, networkId: caip2Of(spec.genesisHash) };
+  return { key: spec.key, symbol: spec.symbol, name: spec.tokenName ?? spec.name.replace(/ Asset Hub$/, ""), decimals: spec.decimals, networkId: caip2Of(spec.genesisHash) };
 }
 
 function network(spec: SubstrateSpec): Network {
@@ -201,11 +247,13 @@ export const POLKADOT = SUBSTRATE_NETWORK("polkadot");
 export const POLKADOT_ASSET_HUB = SUBSTRATE_NETWORK("polkadot-asset-hub");
 export const KUSAMA = SUBSTRATE_NETWORK("kusama");
 export const KUSAMA_ASSET_HUB = SUBSTRATE_NETWORK("kusama-asset-hub");
+export const CHAINFLIP = SUBSTRATE_NETWORK("chainflip");
+export const CHAINFLIP_PERSEVERANCE = SUBSTRATE_NETWORK("chainflip-perseverance");
 
 export function assetKey(networkId: NetworkId, assetId: number): string {
   return specOf(networkId)?.assets?.find((a) => a.id === assetId)?.key ?? `asset:${assetId}`;
 }
 
 export function explorerTxUrl(net: Network, hash: string): string {
-  return `${net.explorerUrl}/extrinsic/${hash}`;
+  return `${net.explorerUrl}/${specOf(net.id)?.txPath ?? "extrinsic"}/${hash}`;
 }

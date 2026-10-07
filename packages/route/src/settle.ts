@@ -30,6 +30,8 @@ import {
   type SettleQuote,
 } from "./settle-quote.js";
 import { JsonRpcReader, MIRROR_LOG_WINDOW_S, MirrorNodeReader, type HederaReader } from "./settle-reader.js";
+import { withoutTrailingSlashes } from "./url.js";
+
 
 /**
  * "Settle on Hedera" client (Phase 3). Reads the order book on Hedera, asks Connectors for signed quotes and
@@ -276,7 +278,7 @@ export class SettleClient implements SettleOnHederaClient {
     });
     try {
       const res = await Promise.race([
-        this.fetchImpl(`${c.url.replace(/\/+$/, "")}/quote`, {
+        this.fetchImpl(`${withoutTrailingSlashes(c.url)}/quote`, {
           method: "POST",
           headers: { "content-type": "application/json", accept: "application/json" },
           body: JSON.stringify(body),

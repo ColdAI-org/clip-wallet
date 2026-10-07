@@ -1,0 +1,79 @@
+{
+  "name": "@clip-wallet/chains-antelope",
+  "version": "0.1.0",
+  "description": "Antelope (Vaulta, Telos, XPR Network) ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
+  "keywords": [
+    "clip-wallet",
+    "wallet",
+    "antelope",
+    "chain-module"
+  ],
+  "license": "Apache-2.0",
+  "author": "ColdAI (https://coldai.org)",
+  "homepage": "https://github.com/ColdAI-org/clip-wallet/tree/main/packages/chains-antelope#readme",
+  "bugs": {
+    "url": "https://github.com/ColdAI-org/clip-wallet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ColdAI-org/clip-wallet.git",
+    "directory": "packages/chains-antelope"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./networks": {
+      "development": "./src/networks.ts",
+      "types": "./dist/networks.d.ts",
+      "import": "./dist/networks.js",
+      "default": "./dist/networks.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./networks": {
+        "types": "./dist/networks.d.ts",
+        "import": "./dist/networks.js",
+        "default": "./dist/networks.js"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ../../tools/release/build-package.mjs",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clip-wallet/core": "workspace:*",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "@scure/base": "2.4.0"
+  },
+  "devDependencies": {
+    "@wharfkit/antelope": "^4.0.2"
+  }
+}

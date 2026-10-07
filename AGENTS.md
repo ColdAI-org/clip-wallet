@@ -1,6 +1,6 @@
 # AGENTS.md: Clip Wallet
 
-Clip Wallet is a non-custodial wallet for every CLPR network: 14 network families, 1Mask for every dapp, decoded
+Clip Wallet is a non-custodial wallet for the CLPR networks (85 of 87; Canton and Mixin have no self-custodial model, docs/r1/networks87.md): 26 network families, 1Mask for every dapp, decoded
 approvals, a security floor, features (staking, swaps, on-ramps, Secure Trade), social (contacts, Clip handles,
 notifications, Discover), sandboxed Clip Plugins, and route-and-fund / settle-on-Hedera on CLPRouter. It is also a
 kit: the `@clip-wallet/*` packages, `@clip-wallet/extension-kit`, `@clip-wallet/desktop-kit`, `@clip-wallet/mobile-kit`
@@ -32,8 +32,9 @@ Release work (Docker for the last one): `pnpm --filter @clip-wallet/extension pa
 ```
 packages/core            shared types (the contract); additive changes only
 packages/config          clip.config.ts schema (zod): identity, theme, networks, languages, app ids, scheme, route, services, mainnet; /node loader
-packages/vault           phrase, derivation for 14 families, encryption, approval-bound signing, passkey unlock
+packages/vault           phrase, derivation for 26 families, encryption, approval-bound signing, passkey unlock
 packages/chains-*        evm hedera solana bitcoin sui aptos cardano substrate starknet ton near stellar tezos algorand
+                         cosmos (+provenance thorchain initia) tron xrpl antelope multiversx icp stacks fuel bitcoincash
 packages/1mask           dapp connectors for all families + WalletConnect; announces the wallet's identity
 packages/engine          environment-free orchestration (approvals, portfolio, catalog, wiring) shared by extension and mobile
 packages/extension-kit   the browser extension as a library: background, pages, WXT config (clipWallet()), security floor

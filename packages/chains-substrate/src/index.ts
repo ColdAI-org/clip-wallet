@@ -1,4 +1,5 @@
 export { readStorage, runtimeCall, storageKeys } from "./chain.js";
+export { CHAINFLIP_ASSETS, type FlipAccount, assetAmount, ethAddress, foreignAddress, isChainflip, readFlipAccount } from "./chainflip.js";
 export { type AssetInfo, type DecodedCall, type Described, describeCall, show } from "./describe.js";
 export { type Runtime, clearRuntimeCache, loadRuntime, provideRuntime, runtimeFromBytes } from "./metadata.js";
 export * from "./module.js";

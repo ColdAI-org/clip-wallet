@@ -25,7 +25,7 @@ export default defineConfig({
   // ColdAI orange; white text on orange buttons is the owner's preference (contrast 3.6:1 ≥ the schema's 3:1).
   theme: { accent: "#FF3C00", accentText: "#FFFFFF", font: "Inter", radius: 14 },
   // All 14 families (testnets; mainnet stays gated below).
-  networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand"],
+  networks: ["evm:*", "hedera", "solana", "bitcoin", "sui", "aptos", "cardano", "substrate", "starknet", "ton", "near", "stellar", "tezos", "algorand", "cosmos", "provenance", "thorchain", "initia", "tron", "xrpl", "antelope", "multiversx", "icp", "stacks", "fuel", "bitcoincash"],
   // rpOrigin unset: the extension's own origin is the WebAuthn RP (Chrome 122+). Set an https origin you
   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
   passkeys: { enabled: true },

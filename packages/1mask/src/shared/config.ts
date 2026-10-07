@@ -46,6 +46,13 @@ export interface InpageConfig {
     stellar?: boolean;
     tezos?: boolean;
     algorand?: boolean;
+    /** networks87: Cosmos SDK (Keplr-compatible), TRON (TIP-1193/TIP-6963), Stacks (SIP-030/WBIP-004), Fuel (FuelConnector). */
+    cosmos?: boolean;
+    tron?: boolean;
+    stacks?: boolean;
+    fuel?: boolean;
+    xrpl?: boolean;
+    multiversx?: boolean;
     cardano?: boolean;
     substrate?: boolean;
     starknet?: boolean;

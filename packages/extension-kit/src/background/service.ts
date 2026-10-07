@@ -24,7 +24,7 @@ import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
 import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
-import { CARDANO_METHODS_ALLOWED } from "@clip-wallet/1mask/background";
+import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ } from "@clip-wallet/1mask/background";
 import type { LazyChainModule } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 import { PlatformService, type PlatformRequest } from "./platform";
@@ -741,9 +741,13 @@ export class WalletService implements DappHost {
     for (const asset of this.deps.assets.filter((a) => a.key === assetKey && !a.bridged)) {
       const network = this.network(asset.networkId);
       const acct = await this.account(network.family);
-      const t = byAddress.get(acct.address) ?? { asset, address: acct.address, displayAddress: acct.hederaAccountId, networks: [] };
+      // networks87: families whose address is spelled per network (Cosmos prefixes, Stacks SP/ST, CashAddr) or lives
+      // on chain (Antelope account names) say which one receives here; a plain-words ClipError when none can yet.
+      const mod = this.deps.chains[network.family];
+      const address = mod?.receiveAddress ? await mod.receiveAddress(await this.ctx(network.id)) : acct.address;
+      const t = byAddress.get(address) ?? { asset, address, displayAddress: acct.hederaAccountId, networks: [] };
       t.networks.push(this.networkView(network));
-      byAddress.set(acct.address, t);
+      byAddress.set(address, t);
     }
     return [...byAddress.values()];
   }
@@ -1282,6 +1286,14 @@ export class WalletService implements DappHost {
   }
 
   async chainRead(req: DappRequest): Promise<unknown> {
+    // networks87: Keplr sendTx / verifyArbitrary on the Cosmos SDK families (chains-cosmos read()).
+    if ((COSMOS_FAMILIES as readonly string[]).includes(req.family) && N87_CHAIN_READ.includes(req.method)) {
+      type Readable = ChainModule & { read?(method: string, params: unknown, ctx: ChainContext): Promise<unknown> };
+      const e = this.deps.chains[req.family] as (Readable | LazyChainModule<Readable>) | undefined;
+      const c = e && "load" in e ? await e.load() : e;
+      if (!c || typeof c.read !== "function") throw new ClipError("This request isn't available.", "chain-read/unsupported");
+      return c.read(req.method, req.params, await this.ctx(req.networkId, req.origin));
+    }
     const entry = this.deps.chains.cardano as (CardanoModule | LazyChainModule<CardanoModule>) | undefined;
     if (req.family !== "cardano" || !entry || !(CARDANO_METHODS_ALLOWED.readOnly as readonly string[]).includes(req.method)) {
       throw new ClipError("This request isn't available.", "chain-read/unsupported");

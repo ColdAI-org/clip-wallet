@@ -5,7 +5,7 @@ Clip-specific on the dapp side.
 
 ## The dapp matrix
 
-For each of the fourteen families, that ecosystem's own dapp library in a local page talks to the real public testnet.
+For each family with a dapp standard, that ecosystem's own dapp library in a local page talks to the real public testnet.
 
 | Level | Passes when |
 | --- | --- |

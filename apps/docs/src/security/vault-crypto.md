@@ -50,9 +50,10 @@ PRF input plays the same role. On macOS desktop, Touch ID releases a device secr
 XChaCha20-Poly1305(entropy)`, with the header as associated data, under a key from a fixed backup PRF input. The phrase
 never leaves the vault. The [backup service](../services/backup.md) stores the blob and can't open it.
 
-## Key derivation for fourteen families
+## Key derivation for every family
 
-BIP-32 for secp256k1, SLIP-10 for ed25519, BIP32-Ed25519 for Cardano and Algorand, sr25519 for Polkadot SDK chains,
-and the Stark curve's key grinding for Starknet. The paths match each ecosystem's popular wallets; see
+BIP-32 for secp256k1 (Initia's ethsecp256k1 included), SLIP-10 for ed25519, BIP32-Ed25519 for Cardano and Algorand,
+sr25519 for Polkadot SDK chains, and the Stark curve's key grinding for Starknet; Antelope signatures are made
+canonical, as its chains require. The paths match each ecosystem's popular wallets; see
 [Vault](../architecture/vault.md#derivation). Every family is checked against its own SDK in the tests, with public test
 vectors only.

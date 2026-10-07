@@ -34,12 +34,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send <0.000001 ETH to 0x05AC…2717",
+        "why": "Send <0.000001 ETH to 0x05AC\u20262717",
         "detail": {
-          "title": "Send <0.000001 ETH to 0x05AC…2717",
+          "title": "Send <0.000001 ETH to 0x05AC\u20262717",
           "network": "Sepolia",
           "rows": "Fee $0.07 Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 ETH Requested by matrix-dapp.example Network fee at most 0.000074 ETH",
-          "details": "1 Network fee 2 Send <0.000001 ETH to 0x05AC…2717 If it fails, nothing leaves your balance.",
+          "details": "1 Network fee 2 Send <0.000001 ETH to 0x05AC\u20262717 If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -96,12 +96,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send <0.000001 HBAR to 0x05AC…2717",
+        "why": "Send <0.000001 HBAR to 0x05AC\u20262717",
         "detail": {
-          "title": "Send <0.000001 HBAR to 0x05AC…2717",
+          "title": "Send <0.000001 HBAR to 0x05AC\u20262717",
           "network": "Hedera Testnet (EVM)",
           "rows": "From Your balance Fee $0.0023 Ready in about 10 seconds To 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717 Amount <0.000001 HBAR Requested by matrix-dapp.example Network fee at most 0.067385 HBAR",
-          "details": "1 Network fee 2 Send <0.000001 HBAR to 0x05AC…2717 −<0.000001 HBAR If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "details": "1 Network fee 2 Send <0.000001 HBAR to 0x05AC\u20262717 \u2212<0.000001 HBAR If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
           "notices": [
             "We couldn't preview the exact result of this on the network. Check the details before you approve.",
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -184,12 +184,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.000000001 SOL to G1zR…dxzk",
+        "why": "Send 0.000000001 SOL to G1zR\u2026dxzk",
         "detail": {
-          "title": "Send 0.000000001 SOL to G1zR…dxzk",
+          "title": "Send 0.000000001 SOL to G1zR\u2026dxzk",
           "network": "Solana Devnet",
           "rows": "Fee $0.0006 Ready in a moment To G1zRMYPBYE6CvsvZY1gAwfNnr5ZjW6eZJeGARQZvdxzk (you) gets 0.000000001 SOL Network fee 0.000005 SOL",
-          "details": "1 Network fee 2 Send 0.000000001 SOL to G1zR…dxzk If it fails, nothing leaves your balance.",
+          "details": "1 Network fee 2 Send 0.000000001 SOL to G1zR\u2026dxzk If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -312,12 +312,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.000000001 SUI to 0x6103…c5f9",
+        "why": "Send 0.000000001 SUI to 0x6103\u2026c5f9",
         "detail": {
-          "title": "Send 0.000000001 SUI to 0x6103…c5f9",
+          "title": "Send 0.000000001 SUI to 0x6103\u2026c5f9",
           "network": "Sui Testnet",
           "rows": "Fee $0.0012 Ready in a moment Sends to Your own account Network fee 0.00100988 SUI (at most 0.002988)",
-          "details": "1 Network fee 2 Send 0.000000001 SUI to 0x6103…c5f9 If it fails, nothing leaves your balance.",
+          "details": "1 Network fee 2 Send 0.000000001 SUI to 0x6103\u2026c5f9 If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -434,7 +434,7 @@
           "approval": {
             "title": "Sign a message for matrix-dapp.example",
             "network": "Cardano Preprod",
-            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Signed as addr_test1qr…v5dr79",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet) Signed as addr_test1qr\u2026v5dr79",
             "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
             "notices": [
               "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
@@ -508,12 +508,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.000000000001 WND to 5Gj64M…HCQb",
+        "why": "Send 0.000000000001 WND to 5Gj64M\u2026HCQb",
         "detail": {
-          "title": "Send 0.000000000001 WND to 5Gj64M…HCQb",
+          "title": "Send 0.000000000001 WND to 5Gj64M\u2026HCQb",
           "network": "Westend",
           "rows": "Fee $0.02 Ready in about 10 seconds To 5Gj64MPAV7C2ezdS5tpq4fVgDYteHCptB62RFxvaVyECHCQb Amount 0.000000000001 WND Network fee 0.015627473774 WND Valid for about 6 minutes Sent by matrix-dapp.example (it gets your signature)",
-          "details": "1 Network fee 2 Send 0.000000000001 WND to 5Gj64M…HCQb If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "details": "1 Network fee 2 Send 0.000000000001 WND to 5Gj64M\u2026HCQb If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -571,12 +571,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.000000000000000001 STRK to 0x014f…e6b8",
+        "why": "Send 0.000000000000000001 STRK to 0x014f\u2026e6b8",
         "detail": {
-          "title": "Send 0.000000000000000001 STRK to 0x014f…e6b8",
+          "title": "Send 0.000000000000000001 STRK to 0x014f\u2026e6b8",
           "network": "Starknet Sepolia",
           "rows": "Fee $0.001 Ready in about 10 seconds To 0x014ff78c22689465708f38822fe1cc843d857e3b29647ba01908074e65d8e6b8 Amount 0.000000000000000001 STRK Network fee 0.018781775980538304 STRK Network fee at most 0.042259649934599701 STRK",
-          "details": "1 Network fee 2 Send 0.000000000000000001 STRK to 0x014f…e6b8 If it fails, nothing leaves your balance.",
+          "details": "1 Network fee 2 Send 0.000000000000000001 STRK to 0x014f\u2026e6b8 If it fails, nothing leaves your balance.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -634,12 +634,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.000000001 GRAM to 0QBQ…aXFi",
+        "why": "Send 0.000000001 GRAM to 0QBQ\u2026aXFi",
         "detail": {
-          "title": "Send 0.000000001 GRAM to 0QBQ…aXFi",
+          "title": "Send 0.000000001 GRAM to 0QBQ\u2026aXFi",
           "network": "TON Testnet",
-          "rows": "From Your balance Fee $0.0011 Ready in about 5 seconds To 0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi Amount 0.000000001 GRAM Wallet Not active yet. This first transfer also activates it. Network fee ≈ 0.000742136 GRAM",
-          "details": "1 Network fee 2 Send 0.000000001 GRAM to 0QBQ…aXFi −<0.000001 GRAM Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "rows": "From Your balance Fee $0.0011 Ready in about 5 seconds To 0QBQBJfGnfXxWzVRhBaupSxxbZH81iSAlSPw7YdZNopaaXFi Amount 0.000000001 GRAM Wallet Not active yet. This first transfer also activates it. Network fee \u2248 0.000742136 GRAM",
+          "details": "1 Network fee 2 Send 0.000000001 GRAM to 0QBQ\u2026aXFi \u2212<0.000001 GRAM Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
           "notices": [
             "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
             "You don't have enough GRAM for this and its network fee.",
@@ -764,12 +764,12 @@
       },
       "approval": {
         "status": "pass",
-        "why": "Send 0.0000001 XLM to GB4N…VYVJ",
+        "why": "Send 0.0000001 XLM to GB4N\u2026VYVJ",
         "detail": {
-          "title": "Send 0.0000001 XLM to GB4N…VYVJ",
+          "title": "Send 0.0000001 XLM to GB4N\u2026VYVJ",
           "network": "Stellar Testnet",
           "rows": "Fee $0.00 Ready in about 5 seconds To GB4NG3E6SHS5PKVVIRSYJZFG5GKLBLHLR7B46F2HJF5L2FZIKGYBVYVJ Asset XLM (native) Valid until 2026-10-05T14:04:00Z Network fee up to 0.00001 XLM Sent by matrix-dapp.example (it gets the signed transaction)",
-          "details": "1 Network fee 2 Send 0.0000001 XLM to GB4N…VYVJ If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "details": "1 Network fee 2 Send 0.0000001 XLM to GB4N\u2026VYVJ If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
           "notices": [
             "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
           ],
@@ -906,7 +906,7 @@
     "levels": {
       "connect": {
         "status": "pass",
-        "why": "EIP-6963 \"Use Clip Wallet\" → eth_requestAccounts → 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
+        "why": "EIP-6963 \"Use Clip Wallet\" \u2192 eth_requestAccounts \u2192 0x05ACD02A8E18c130D902FB732bb6AD22DA4f2717"
       },
       "sign": {
         "status": "n/a",
@@ -925,5 +925,390 @@
       "evm-live-connected.png"
     ],
     "at": "2026-10-05T14:00:16.723Z"
+  },
+  "cosmos": {
+    "target": "cosmos",
+    "network": "cosmos:osmo-test-5",
+    "dapp": "Keplr API on window.clipwallet.cosmos + @cosmjs/stargate SigningStargateClient in a local page, osmo-test-5",
+    "dappWhy": "Osmosis dapps talk to Keplr's API through cosmjs; the hosted Osmosis frontend only knows wallet-specific globals",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account osmo1re86ed5ck45dnyex8ajvytrae4c5ct7xjm6edd",
+        "detail": {
+          "address": "osmo1re86ed5ck45dnyex8ajvytrae4c5ct7xjm6edd",
+          "algo": "secp256k1",
+          "accounts": 1
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "ADR-36 amino doc (Keplr makeADR36AminoSignDoc) via @cosmjs/amino, sha256, @cosmjs/crypto Secp256k1.verifySignature",
+        "detail": {
+          "valid": true,
+          "how": "ADR-36 amino doc (Keplr makeADR36AminoSignDoc) via @cosmjs/amino, sha256, @cosmjs/crypto Secp256k1.verifySignature",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Osmosis Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first: the account doesn't exist on osmo-test-5 yet"
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.1 OSMO on Osmosis Testnet at osmo1re86ed5ck45dnyex8ajvytrae4c5ct7xjm6edd; has 0",
+        "detail": {
+          "declinedAs": "NeedsFunds"
+        }
+      }
+    },
+    "shots": [
+      "cosmos-sign.png"
+    ],
+    "at": "2026-10-06T12:16:20.574Z"
+  },
+  "tron": {
+    "target": "tron",
+    "network": "tron:0xcd8690dc",
+    "dapp": "TIP-6963 discovery + TIP-1193 provider + TronWeb 6 in a local page, Nile",
+    "dappWhy": "TIP-6963/TIP-1193 is the TRON standard for injected wallets; tronwallet-adapters has no adapter for a generic TIP-6963 wallet",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account TGZxYSGcQHaZMcSB2c7ZB1n97yMk2UPz41",
+        "detail": {
+          "address": "TGZxYSGcQHaZMcSB2c7ZB1n97yMk2UPz41",
+          "chainId": "0xcd8690dc",
+          "name": "Clip Wallet"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "TronWeb Trx.verifyMessageV2 (TIP-104 signMessageV2)",
+        "detail": {
+          "valid": true,
+          "how": "TronWeb Trx.verifyMessageV2 (TIP-104 signMessageV2)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "TRON Nile Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first: the account doesn't exist on Nile yet (receive TRX first)"
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 2 TRX on TRON Nile Testnet at TGZxYSGcQHaZMcSB2c7ZB1n97yMk2UPz41; has 0",
+        "detail": {
+          "declinedAs": "NeedsFunds"
+        }
+      }
+    },
+    "shots": [
+      "tron-sign.png"
+    ],
+    "at": "2026-10-06T12:16:37.425Z"
+  },
+  "stacks": {
+    "target": "stacks",
+    "network": "stacks:2147483648",
+    "dapp": "@stacks/connect 8 request() (SIP-030) + WBIP-004 discovery + @stacks/encryption in a local page, testnet",
+    "dappWhy": "Connect's request() is what Stacks dapps call (the picker modal lists wbip_providers; the page picks Clip's entry instead of clicking the modal)",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account ST1EC4TTQPQX24TT3VY2H6YYW99N0HRQ5VMRB2M1T",
+        "detail": {
+          "address": "ST1EC4TTQPQX24TT3VY2H6YYW99N0HRQ5VMRB2M1T",
+          "publicKey": "02eeedf4fbb22fb0a2d49fdcea998350db0533f76719fafde4c17d0484a0dd8b39",
+          "providerId": "clipwallet.stacks"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@stacks/encryption verifyMessageSignatureRsv (\\x17Stacks Signed Message prefix) + getAddressFromPublicKey === connected address",
+        "detail": {
+          "valid": true,
+          "how": "@stacks/encryption verifyMessageSignatureRsv (\\x17Stacks Signed Message prefix) + getAddressFromPublicKey === connected address",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Stacks Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Send 0.000001 STX to ST000\u2026W42H",
+        "detail": {
+          "title": "Send 0.000001 STX to ST000\u2026W42H",
+          "network": "Stacks Testnet",
+          "rows": "From Your balance Fee 0.000387 STX Ready in about 10 seconds To ST000000000000000000002AMW42H Amount 0.000001 STX Memo clip matrix Network fee 0.000387 STX Nonce 0",
+          "details": "1 Network fee 2 Send 0.000001 STX to ST000\u2026W42H \u22120.000001 STX If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://explorer.hiro.so/txid/0xdcb787f4291329664e5b5d8df9dac80770639b8df2a45394259153a435b2d069?chain=testnet",
+        "detail": {
+          "id": "dcb787f4291329664e5b5d8df9dac80770639b8df2a45394259153a435b2d069",
+          "publicKey": "02eeedf4fbb22fb0a2d49fdcea998350db0533f76719fafde4c17d0484a0dd8b39"
+        }
+      }
+    },
+    "shots": [
+      "stacks-sign.png",
+      "stacks-approval.png"
+    ],
+    "at": "2026-10-06T12:16:54.327Z"
+  },
+  "fuel": {
+    "target": "fuel",
+    "network": "fuel:0",
+    "dapp": "fuels-ts Fuel connector manager (FuelConnector event discovery) + fuels Provider in a local page, Fuel testnet",
+    "dappWhy": "fuels-ts Fuel is the connector API every Fuel dapp (and @fuels/react) uses; a local page avoids a dapp's own build and its WalletConnect setup",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account 0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75",
+        "detail": {
+          "address": "0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75",
+          "connector": "Clip Wallet",
+          "accounts": [
+            "0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75"
+          ],
+          "chainId": 0
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "fuels-ts Signer.recoverAddress(hashMessage(message), signature)",
+        "detail": {
+          "valid": true,
+          "how": "fuels-ts Signer.recoverAddress(hashMessage(message), signature)",
+          "signature": "0x37441bc6e6fd214cfdec31ed174524898ba4b4f4d11cfc4c5f1c98bf915c4734babb7814aeab15e704f85743b58be752fd8acb58a186ea4cc100ecd431168082",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Fuel Testnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first: the Fuel testnet account has no ETH (faucet-testnet.fuel.network)"
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.0000002 ETH on Fuel Testnet at 0x1Cc3e8E1B340846d9Eb275D51435189deDe13f20801bbc3693B2D04c1B322A75; has 0",
+        "detail": {
+          "declinedAs": "NeedsFunds"
+        }
+      }
+    },
+    "shots": [
+      "fuel-sign.png"
+    ],
+    "at": "2026-10-06T12:17:27.393Z"
+  },
+  "chainflip": {
+    "target": "chainflip",
+    "network": "polkadot:7a5d4db858ada1d20ed6ded4933c3331",
+    "dapp": "@polkadot/extension-dapp + @polkadot/api in a local page, Chainflip Perseverance",
+    "dappWhy": "what lp.chainflip.io uses to reach Polkadot-style wallets; the portal itself needs a funded LP account",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account cFNXs2hYYRhGp1A4AfXaTbK3vQSgnSLvtvJrvJrCbNvhtTKc1",
+        "detail": {
+          "address": "cFNXs2hYYRhGp1A4AfXaTbK3vQSgnSLvtvJrvJrCbNvhtTKc1",
+          "source": "clip-wallet"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "@polkadot/util-crypto signatureVerify over <Bytes>-wrapped message",
+        "detail": {
+          "valid": true,
+          "how": "@polkadot/util-crypto signatureVerify over <Bytes>-wrapped message",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "Westend",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Register as a Chainflip liquidity provider",
+        "detail": {
+          "title": "Register as a Chainflip liquidity provider",
+          "network": "Chainflip Perseverance",
+          "rows": "Fee 0.000006 FLIP Ready in about 10 seconds Network fee 0.000006079018 FLIP Valid for about 6 minutes Sent by matrix-dapp.example (it gets your signature)",
+          "details": "1 Network fee 2 Register as a Chainflip liquidity provider Settles once delivery is proven. If it doesn't arrive in time, the money comes back to you. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "Paying on this network from another one isn't available yet. Today we can pay on Hedera.",
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": false,
+          "overflowing": [],
+          "declinedAs": "ProviderRpcError 4001"
+        }
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.1 FLIP on Chainflip Perseverance at cFNXs2hYYRhGp1A4AfXaTbK3vQSgnSLvtvJrvJrCbNvhtTKc1; has 0",
+        "detail": {
+          "declinedAs": "ProviderRpcError 4001"
+        }
+      }
+    },
+    "shots": [
+      "chainflip-sign.png",
+      "chainflip-approval.png"
+    ],
+    "at": "2026-10-06T12:17:43.985Z"
+  },
+  "multiversx": {
+    "target": "multiversx",
+    "network": "mvx:D",
+    "dapp": "@multiversx/sdk-dapp 5.7.3 initApp + ProviderFactory (custom provider from window.multiversx.providers), native auth, devnet",
+    "dappWhy": "sdk-dapp is how MultiversX dapps connect wallets; it has no wallet discovery, so Clip lists itself through the undocumented window.multiversx.providers hook",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account erd1qhkcc53w80nppnsprtzs7k2wh7xwvt54c8u88d0cd6pn3n6ldudshmqgfg",
+        "detail": {
+          "address": "erd1qhkcc53w80nppnsprtzs7k2wh7xwvt54c8u88d0cd6pn3n6ldudshmqgfg",
+          "name": "Clip Wallet"
+        }
+      },
+      "sign": {
+        "status": "pass",
+        "why": "sdk-dapp verifyMessage (MessageComputer + UserVerifier)",
+        "detail": {
+          "valid": true,
+          "how": "sdk-dapp verifyMessage (MessageComputer + UserVerifier)",
+          "approval": {
+            "title": "Sign a message for matrix-dapp.example",
+            "network": "MultiversX Devnet",
+            "rows": "Message Clip Wallet dapp matrix: sign-in check (testnet)",
+            "details": "1 Sign a message for matrix-dapp.example If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+            "notices": [
+              "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+            ],
+            "approveEnabled": true,
+            "overflowing": []
+          }
+        }
+      },
+      "approval": {
+        "status": "skip",
+        "why": "needs funds first: the account has no devnet EGLD for the fee (devnet wallet faucet)"
+      },
+      "send": {
+        "status": "skip",
+        "why": "needs 0.01 EGLD on MultiversX Devnet at erd1qhkcc53w80nppnsprtzs7k2wh7xwvt54c8u88d0cd6pn3n6ldudshmqgfg; has 0",
+        "detail": {
+          "declinedAs": "NeedsFunds"
+        }
+      }
+    },
+    "shots": [
+      "multiversx-sign.png"
+    ],
+    "at": "2026-10-06T12:25:02.345Z"
+  },
+  "xrpl": {
+    "target": "xrpl",
+    "network": "xrpl:1",
+    "dapp": "XLS-72d Wallet Standard discovery (@wallet-standard/app + the @xrpl-wallet-standard/app filter) in a local page, testnet",
+    "dappWhy": "@xrpl-wallet-standard/app only wraps getWallets() with that filter but pulls in xrpl.js and an alpha Xahau fork; the page runs the same filter",
+    "levels": {
+      "connect": {
+        "status": "pass",
+        "why": "account rDvWLtQL3Furv3sVzERai1MXvKFTQjZgrM",
+        "detail": {
+          "address": "rDvWLtQL3Furv3sVzERai1MXvKFTQjZgrM",
+          "chains": [
+            "xrpl:1",
+            "xrpl:2"
+          ]
+        }
+      },
+      "sign": {
+        "status": "n/a",
+        "why": "XLS-72d (the XRPL browser wallet standard) has no message signing."
+      },
+      "approval": {
+        "status": "pass",
+        "why": "Change your account settings",
+        "detail": {
+          "title": "Change your account settings",
+          "network": "XRP Ledger Testnet",
+          "rows": "Fee 0.00001 XRP Ready in about 5 seconds Memo clip dapp matrix Network fee 0.00001 XRP",
+          "details": "1 Network fee 2 Change your account settings If it fails, nothing leaves your balance. These changes are estimated; this network can't preview them.",
+          "notices": [
+            "matrix-dapp.example isn't a site Clip Wallet recognises. Only continue if you opened it yourself."
+          ],
+          "approveEnabled": true,
+          "overflowing": []
+        }
+      },
+      "send": {
+        "status": "pass",
+        "why": "https://testnet.xrpl.org/transactions/601CC50503CD39B6783D609863C218159DC44EE1C7E34FB4DC51EA13BD8D8E32",
+        "detail": {
+          "id": "601CC50503CD39B6783D609863C218159DC44EE1C7E34FB4DC51EA13BD8D8E32",
+          "validated": true
+        }
+      }
+    },
+    "shots": [
+      "xrpl-approval.png"
+    ],
+    "at": "2026-10-06T12:25:22.497Z"
   }
 }

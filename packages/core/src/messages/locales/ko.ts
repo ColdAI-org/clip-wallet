@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/ko.js";
 
 /** Korean: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/ko/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{app}에서 {count}단계",
   "bg.act.batchStopped": "{app}에서 {count}단계, {n}단계에서 멈춤",
   "bg.err.batchHardware": "여러 단계를 한 번에 승인하는 기능은 아직 하드웨어 지갑에서 쓸 수 없어요. 앱에 하나씩 보내 달라고 요청하세요.",
+  ...n87,
 };
 export default messages;

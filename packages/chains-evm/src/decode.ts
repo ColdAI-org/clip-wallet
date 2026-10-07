@@ -14,6 +14,7 @@ import {
   toFunctionSelector,
 } from "viem";
 import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
+import { specFor } from "./networks.js";
 import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
 import { type TxParams, type TypedData, parsePersonalSign, parseTx, parseTypedData } from "./params.js";
@@ -186,6 +187,14 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
     }
   } catch {
     /* fee unknown: the UI shows "fee unavailable" */
+  }
+  // A per-transaction fee outside gas (STRATO: 0.01 USDST), charged even if the transaction fails.
+  const flat = specFor(ctx.network.id)?.flatFee;
+  if (flat) {
+    d.fee = { asset: native, amount: (BigInt(d.fee?.amount ?? "0") + flat).toString() };
+    const amount = `${formatAmount(flat, native.decimals)} ${native.symbol}`;
+    const value = msg("bg.evm.flatFee", { amount });
+    d.lines.push({ label: "Network charge", value: value.fallback, labelMsg: msg("bg.label.networkCharge"), valueMsg: value });
   }
   return d;
 }

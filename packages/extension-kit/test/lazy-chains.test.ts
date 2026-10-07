@@ -4,13 +4,16 @@ import { MemoryKV } from "../src/shared/storage";
 import { createDependencies, type LazyChainModule } from "../src/background/wiring";
 
 describe("lazily loaded chain modules", () => {
-  it("cover all 14 families; the Phase 2 ones match their real module once loaded", async () => {
+  it("cover all 26 families; the lazy ones match their real module once loaded", async () => {
     const deps = createDependencies({ kv: new MemoryKV(), mocks: false, config, iconUrl: "x", currency: async () => "USD" });
     expect(Object.keys(deps.chains).sort()).toEqual(
-      ["algorand", "aptos", "bitcoin", "cardano", "evm", "hedera", "near", "solana", "starknet", "stellar", "substrate", "sui", "tezos", "ton"],
+      [
+        "algorand", "antelope", "aptos", "bitcoin", "bitcoincash", "cardano", "cosmos", "evm", "fuel", "hedera", "icp", "initia", "multiversx",
+        "near", "provenance", "solana", "stacks", "starknet", "stellar", "substrate", "sui", "tezos", "thorchain", "ton", "tron", "xrpl",
+      ],
     );
     const lazy = Object.values(deps.chains).filter((m): m is LazyChainModule => "load" in m!);
-    expect(lazy).toHaveLength(10);
+    expect(lazy).toHaveLength(22);
     // Synchronous members refuse plainly until the module is loaded.
     expect(() => deps.chains.sui!.isAddress("0x1")).toThrow(/still loading/);
     await deps.loadChains();

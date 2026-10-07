@@ -51,7 +51,11 @@ interface QuoteInternals {
 const internals = new WeakMap<Quote, QuoteInternals>();
 
 function shortName(l: Ledger | undefined, fallback: string): string {
-  return l ? l.name.replace(/\s*\(.*\)\s*$/, "") : fallback;
+  if (!l) return fallback;
+  // "Name (detail)" -> "Name": the first "(" when the name ends in ")" (a scan, not a regex: linear on any input).
+  const t = l.name.trimEnd();
+  const open = t.endsWith(")") ? t.indexOf("(") : -1;
+  return open >= 0 ? t.slice(0, open).trimEnd() : l.name;
 }
 
 /** 0.0.N (shard 0, realm 0) -> long-zero EVM address; EVM addresses pass through checksummed. */

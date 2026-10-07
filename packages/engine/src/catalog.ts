@@ -23,6 +23,16 @@ import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip
 import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar/networks";
 import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos/networks";
 import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand/networks";
+// networks87
+import { COSMOS_NETWORKS, assetOf as cosmosAssetOf, specOf as cosmosSpecOf } from "@clip-wallet/chains-cosmos/networks";
+import { TRON_NETWORKS, usdtAsset as tronUsdt } from "@clip-wallet/chains-tron/networks";
+import { MULTIVERSX_NETWORKS } from "@clip-wallet/chains-multiversx/networks";
+import { ICP_IDS, ICP_NETWORKS, LEDGERS as ICP_LEDGERS, ledgerAsset as icpLedgerAsset } from "@clip-wallet/chains-icp/networks";
+import { STACKS_NETWORKS, specFor as stacksSpecFor, tokenAsset as stacksTokenAsset } from "@clip-wallet/chains-stacks/networks";
+import { BCH_NETWORKS } from "@clip-wallet/chains-bitcoincash/networks";
+import { XRPL_NETWORKS } from "@clip-wallet/chains-xrpl/networks";
+import { ANTELOPE_NETWORKS } from "@clip-wallet/chains-antelope/networks";
+import { FUEL_NETWORKS, assetFor as fuelAssetFor, specFor as fuelSpecFor } from "@clip-wallet/chains-fuel/networks";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
 function curatedAsset(t: CuratedToken): AssetRef {
@@ -55,6 +65,15 @@ export function walletNetworks(config: Pick<ClipConfig, "networks" | "mainnet">)
     ...STELLAR_NETWORKS,
     ...TEZOS_NETWORKS,
     ...ALGORAND_NETWORKS,
+    ...COSMOS_NETWORKS,
+    ...TRON_NETWORKS,
+    ...MULTIVERSX_NETWORKS,
+    ...ICP_NETWORKS,
+    ...STACKS_NETWORKS,
+    ...FUEL_NETWORKS,
+    ...BCH_NETWORKS,
+    ...XRPL_NETWORKS,
+    ...ANTELOPE_NETWORKS,
   ];
   return all.filter((n) => (families as readonly string[]).includes(n.family) && (mainnet || n.testnet));
 }
@@ -121,6 +140,19 @@ export function walletAssets(networks: Network[]): AssetRef[] {
       const id = ALGORAND_NETS[n.testnet ? "testnet" : "mainnet"].usdc;
       out.push({ key: asaAssetKey(n.id, id), symbol: "USDC", name: "USD Coin", decimals: 6, networkId: n.id, address: id });
     }
+    // networks87: the curated tokens each module lists even at zero.
+    const cs = cosmosSpecOf(n.id);
+    if (cs) for (const t of cs.tokens ?? []) if (t.alwaysShow || t.key === "usdc") out.push(cosmosAssetOf(cs, t.denom));
+    if (n.family === "tron") {
+      const u = tronUsdt(n.id);
+      if (u) out.push(u);
+    }
+    if (n.family === "icp") {
+      const net = n.id === ICP_IDS.mainnet ? "mainnet" : "test";
+      for (const l of ICP_LEDGERS[net].slice(1)) out.push(icpLedgerAsset(n.id, l, false));
+    }
+    if (n.family === "stacks") for (const t of stacksSpecFor(n.id)?.tokens ?? []) out.push(stacksTokenAsset(n.id, t.assetId, t));
+    if (n.family === "fuel") for (const t of fuelSpecFor(n.id)?.tokens ?? []) out.push(fuelAssetFor(n.id, t.assetId));
     if (n.family === "tezos") {
       for (const t of TEZOS_TOKENS.filter((t) => t.networkId === n.id && t.key === "usdt")) {
         out.push({ key: t.key, symbol: t.symbol, name: t.name, decimals: t.decimals, networkId: n.id, address: `${t.contract}:${t.tokenId}` });

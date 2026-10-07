@@ -5,6 +5,7 @@
  */
 import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings";
+import { describeChainflip } from "./chainflip.js";
 import { locationAsset } from "./defi.js";
 import { assetKey } from "./networks.js";
 import { equal, formatUnits, hex, joinWords, short, textOf } from "./util.js";
@@ -28,6 +29,8 @@ export interface DescribeCtx {
   host: string;
   /** Asset Hub asset metadata by id (curated list or Assets.Metadata). */
   asset(id: number): Promise<AssetInfo | null>;
+  /** Chainflip runtime (`isChainflip`): its Funding / LP / Swapping / LendingPools calls get plain words. */
+  chainflip?: boolean;
 }
 
 export interface Described {
@@ -300,6 +303,11 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     }
   }
 
+  if (c.chainflip) {
+    const cf = await describeChainflip(pallet, name, a, { native: c.native, isMe: (x) => isMe(x, c.me), inner: (x) => describeCall(x, c, depth + 1) });
+    if (cf) return cf;
+  }
+
   // Not described: show the decoded call. Root-level powers stay blind.
   out.title = `${pallet}.${name} for ${c.host}`;
   out.lines.push({ label: "Action", value: `${pallet}.${name}(${show(a)})` });
@@ -308,6 +316,11 @@ export async function describeCall(call: DecodedCall, c: DescribeCtx, depth = 0)
     out.warnings.push({ level: "danger", code: "blind-signing", message: "This asks for powers over the whole network or your account. Don't sign it unless you know exactly why." });
   } else {
     out.warnings.push({ level: "caution", code: "blind-signing", message: "Clip Wallet can't explain this action in plain words yet. Check the details before you sign." });
+  }
+  // Chainflip escrows up to 1 FLIP for LP order calls and scales their fee per call in a block (cf-flip
+  // on_charge_transaction.rs, runtime LpOrderCallIndexer), which TransactionPaymentApi's estimate doesn't show.
+  if (c.chainflip && pallet === "LiquidityPools" && /^(set|update)_(limit|range)_order$/.test(name)) {
+    out.warnings.push({ level: "caution", code: "high-fee", message: say("bg.chainflip.orderFee", { symbol: sym }) });
   }
   return out;
 }

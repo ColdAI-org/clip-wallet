@@ -2,7 +2,7 @@
 
 The Clip Wallet browser extension as a library, for [WXT](https://wxt.dev). A wallet project keeps its identity
 (`clip.config.ts`, icon), `wxt.config.ts` and one-line entrypoints; the background (vault, approvals, security
-checks), the pages, 1Mask for all 14 network families and the build wiring come from here, versioned and signed.
+checks), the pages, 1Mask for all 26 network families and the build wiring come from here, versioned and signed.
 
 > Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 

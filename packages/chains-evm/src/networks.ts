@@ -5,9 +5,14 @@
  * runs an EVM a user wallet can sign for with an eip155 address, plus the Sepolia testnets.
  * Several CLPR networks are multi-VM: their EVM layer is listed here (Cronos, Kava, Sei, Mezo, Stable,
  * MANTRA, Injective, Telos, Hydration, Bittensor, Bifrost). Hedera is its own module.
- * Not included: STRATO (SolidVM, not the EVM), Vaulta EVM (17777; its public RPC, explorer and bridge were shut
- * down on 2025-10-08 and api.evm.eosnetwork.com no longer resolves), TRON (own address format), Starknet, Fuel, Mixin and the
- * non-EVM ledgers.
+ * STRATO runs SolidVM, not the EVM, but its nodes take signed legacy Ethereum transactions (EIP-155) through
+ * `eth_sendRawTransaction`: a value transfer with empty data moves the native USDST, a call's selector is matched to the
+ * SolidVM function (strato-net/strato-platform techdocs/platform/transactions-and-fees.md, reference/json-rpc.md;
+ * `EthereumTX` in strato/core/blockapps-data/src/Blockchain/Data/Transaction.hs). Gas is unpriced (eth_gasPrice 0x0);
+ * the network charges a flat 0.01 USDST (or a voucher) per transaction: `flatFee`.
+ * Not included: Vaulta EVM (17777; its public RPC, explorer and bridge were shut down on 2025-10-08 and
+ * api.evm.eosnetwork.com no longer resolves; Vaulta itself is in chains-antelope), TRON (own address format), Starknet,
+ * Fuel, Mixin and the non-EVM ledgers.
  *
  * Chain ids: cross-checked against viem's chain definitions (viem 2.57) and chainlist (chainid.network),
  * and for the four chains neither has under these ids (Anubis 6714, BOT Chain 677, GRX 1110, Hydration 222222) against the CLPR verifier docs (docs/chains/*.md, live `eth_chainId`) and a live `eth_chainId`
@@ -31,6 +36,11 @@ export interface EvmNetworkSpec {
   legacyGas?: boolean;
   /** Which CLPR network this EVM belongs to when it is one VM of a multi-VM chain. */
   evmLayerOf?: string;
+  /**
+   * A fee the network charges per transaction outside gas × price (base units of the native asset), shown on the
+   * approval screen with the gas fee. STRATO: 0.01 USDST (or one fee voucher).
+   */
+  flatFee?: bigint;
 }
 
 const ETH = { symbol: "ETH", name: "Ether", decimals: 18, key: "eth" };
@@ -42,8 +52,10 @@ export const EVM_NETWORK_SPECS: EvmNetworkSpec[] = [
   { slug: "anubis", name: "Anubis", chainId: 6714, native: coin("gasDAI", "Gas DAI", "gasdai"), rpcUrls: ["https://rpc.anubispace.org"], explorerUrl: "https://anubisscan.io", testnet: false },
   { slug: "arbitrum-nova", name: "Arbitrum Nova", chainId: 42170, native: ETH, rpcUrls: ["https://nova.arbitrum.io/rpc"], explorerUrl: "https://nova.arbiscan.io", blockscout: "https://arbitrum-nova.blockscout.com", testnet: false },
   { slug: "arbitrum-one", name: "Arbitrum One", chainId: 42161, native: ETH, rpcUrls: ["https://arb1.arbitrum.io/rpc", "https://arbitrum-one-rpc.publicnode.com"], explorerUrl: "https://arbiscan.io", blockscout: "https://arbitrum.blockscout.com", testnet: false },
-  // CLPR's Arc docs pin the testnet id; Arc mainnet is not live in the sources. Native gas is USDC (18 decimals on the EVM side).
-  { slug: "arc-testnet", name: "Arc Testnet", chainId: 5042002, native: { symbol: "USDC", name: "USD Coin", decimals: 18, key: "usdc" }, rpcUrls: ["https://rpc.testnet.arc.network"], explorerUrl: "https://testnet.arcscan.app", testnet: true },
+  // Arc mainnet went live on 2026-09-16 (docs.arc.io/arc/references/connect-to-arc: chain 5042, rpc.mainnet.arc.io,
+  // explorer.arc.io; eth_chainId 0x13b2 checked 2026-10-06). Native gas is USDC (18 decimals on the EVM side), Circle's own.
+  { slug: "arc", name: "Arc", chainId: 5042, native: { symbol: "USDC", name: "USD Coin", decimals: 18, key: "usdc" }, rpcUrls: ["https://rpc.mainnet.arc.io"], explorerUrl: "https://explorer.arc.io", testnet: false },
+  { slug: "arc-testnet", name: "Arc Testnet", chainId: 5042002, native: { symbol: "USDC", name: "USD Coin", decimals: 18, key: "usdc" }, rpcUrls: ["https://rpc.testnet.arc.io", "https://rpc.testnet.arc.network"], explorerUrl: "https://explorer.testnet.arc.io", testnet: true },
   { slug: "aurora", name: "Aurora", chainId: 1313161554, native: ETH, rpcUrls: ["https://mainnet.aurora.dev"], explorerUrl: "https://explorer.mainnet.aurora.dev", blockscout: "https://explorer.mainnet.aurora.dev", testnet: false },
   { slug: "avalanche-c-chain", name: "Avalanche C-Chain", chainId: 43114, native: coin("AVAX", "Avalanche"), rpcUrls: ["https://api.avax.network/ext/bc/C/rpc", "https://avalanche-c-chain-rpc.publicnode.com"], explorerUrl: "https://snowtrace.io", testnet: false },
   { slug: "bnb-smart-chain", name: "BNB Smart Chain", chainId: 56, native: coin("BNB", "BNB"), rpcUrls: ["https://bsc-dataseed.bnbchain.org", "https://bsc-rpc.publicnode.com"], explorerUrl: "https://bscscan.com", testnet: false },
@@ -97,9 +109,13 @@ export const EVM_NETWORK_SPECS: EvmNetworkSpec[] = [
   { slug: "linea", name: "Linea", chainId: 59144, native: ETH, rpcUrls: ["https://rpc.linea.build"], explorerUrl: "https://lineascan.build", testnet: false },
   { slug: "scroll", name: "Scroll", chainId: 534352, native: ETH, rpcUrls: ["https://rpc.scroll.io", "https://scroll-rpc.publicnode.com"], explorerUrl: "https://scrollscan.com", blockscout: "https://scroll.blockscout.com", testnet: false },
   { slug: "morph", name: "Morph", chainId: 2818, native: ETH, rpcUrls: ["https://rpc.morphl2.io"], explorerUrl: "https://explorer.morphl2.io", testnet: false },
+  // STRATO (mainnet "upquark"): eth_chainId 0x7030addddcf2, live 2026-10-06. Native USDST (18 decimals, token 0x937e…1010).
+  { slug: "strato", name: "STRATO", chainId: 123354377739506, native: { symbol: "USDST", name: "USDST", decimals: 18, key: "usdst" }, rpcUrls: ["https://noderpc.strato.nexus/rpc", "https://app.strato.nexus/rpc"], explorerUrl: "https://stratoscan.strato.nexus", testnet: false, legacyGas: true, flatFee: 10n ** 16n },
   { slug: "etherlink", name: "Etherlink", chainId: 42793, native: coin("XTZ", "Tez"), rpcUrls: ["https://node.mainnet.etherlink.com"], explorerUrl: "https://explorer.etherlink.com", blockscout: "https://explorer.etherlink.com", testnet: false, evmLayerOf: "etherlink" },
 
   /* ---------------------------------------------------------- testnets (default build) */
+  // STRATO testnet "helium": eth_chainId 0xb165855668ca, live 2026-10-06.
+  { slug: "strato-helium", name: "STRATO Helium", chainId: 195049586845898, native: { symbol: "USDST", name: "Test USDST", decimals: 18, key: "usdst-testnet" }, rpcUrls: ["https://app.testnet.strato.nexus/rpc"], explorerUrl: "https://stratoscan.testnet.strato.nexus", testnet: true, legacyGas: true, flatFee: 10n ** 16n },
   { slug: "sepolia", name: "Sepolia", chainId: 11155111, native: TEST_ETH, rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com", "https://11155111.rpc.thirdweb.com"], explorerUrl: "https://sepolia.etherscan.io", blockscout: "https://eth-sepolia.blockscout.com", testnet: true },
   { slug: "base-sepolia", name: "Base Sepolia", chainId: 84532, native: TEST_ETH, rpcUrls: ["https://sepolia.base.org"], explorerUrl: "https://sepolia.basescan.org", blockscout: "https://base-sepolia.blockscout.com", testnet: true },
   { slug: "arbitrum-sepolia", name: "Arbitrum Sepolia", chainId: 421614, native: TEST_ETH, rpcUrls: ["https://sepolia-rollup.arbitrum.io/rpc"], explorerUrl: "https://sepolia.arbiscan.io", blockscout: "https://arbitrum-sepolia.blockscout.com", testnet: true },

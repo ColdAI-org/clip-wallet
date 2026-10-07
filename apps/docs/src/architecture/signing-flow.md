@@ -1,6 +1,6 @@
 # The signing flow
 
-Every request takes the same path, whichever dapp library sent it and whichever of the fourteen families it is for:
+Every request takes the same path, whichever dapp library sent it and whichever family it is for:
 **request → decode → sanitise → approval → single-use signing**. This page follows one request end to end and points
 at the code for each step.
 

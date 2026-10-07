@@ -16,6 +16,15 @@ import { createSuiModule } from "@clip-wallet/chains-sui";
 import { createAptosModule } from "@clip-wallet/chains-aptos";
 import { createCardanoModule } from "@clip-wallet/chains-cardano";
 import { createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { createCosmosModule } from "@clip-wallet/chains-cosmos";
+import { createTronModule } from "@clip-wallet/chains-tron";
+import { createMultiversXModule } from "@clip-wallet/chains-multiversx";
+import { createIcpModule } from "@clip-wallet/chains-icp";
+import { createStacksModule } from "@clip-wallet/chains-stacks";
+import { createFuelModule } from "@clip-wallet/chains-fuel";
+import { createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
+import { createXrplModule } from "@clip-wallet/chains-xrpl";
+import { createAntelopeModule } from "@clip-wallet/chains-antelope";
 import { createStarknetModule } from "@clip-wallet/chains-starknet";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { createNearModule } from "@clip-wallet/chains-near";
@@ -56,7 +65,7 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
   // Defaults match the vault's: Starknet OpenZeppelin account, TON wallet v5r1, Algorand ARC-52.
   const starknet = createStarknetModule();
   const ton = createTonModule();
-  const all: Record<Family, () => ChainModule> = {
+  const all: Partial<Record<Family, () => ChainModule>> = {
     evm: createEvmModule,
     hedera: () => hedera,
     solana: createSolanaModule,
@@ -71,10 +80,25 @@ export function createEngineDependencies(o: EngineWiringOptions): Dependencies &
     stellar: createStellarModule,
     tezos: createTezosModule,
     algorand: createAlgorandModule,
+    cosmos: () => createCosmosModule({ family: "cosmos" }),
+    provenance: () => createCosmosModule({ family: "provenance" }),
+    thorchain: () => createCosmosModule({ family: "thorchain" }),
+    initia: () => createCosmosModule({ family: "initia" }),
+    tron: createTronModule,
+    multiversx: createMultiversXModule,
+    icp: createIcpModule,
+    stacks: createStacksModule,
+    fuel: createFuelModule,
+    bitcoincash: createBitcoinCashModule,
+    xrpl: createXrplModule,
+    antelope: createAntelopeModule,
   };
   // One instance per enabled family for the engine's lifetime (modules keep prepare→finalize state).
   const chains: Partial<Record<Family, ChainModule>> = {};
-  for (const f of families) chains[f] = all[f]();
+  for (const f of families) {
+    const make = all[f];
+    if (make) chains[f] = make();
+  }
   const prices = o.kv ? createPriceFeed(o.kv, o.coingeckoDemoKey) : new ReferencePriceFeed();
   const backupUrl = o.config.services.backupUrl;
   // Phase 3 "settle on Hedera": only with route.settleOnHedera and a known deployment (testnet only).

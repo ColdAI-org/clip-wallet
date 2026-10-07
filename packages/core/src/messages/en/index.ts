@@ -16,9 +16,11 @@ import chainsB from "./chainsB.js";
 import chainsC from "./chainsC.js";
 /** features (staking, swaps, trade, steps), security, route, social handles */
 import features from "./features.js";
+/** networks87: chains-cosmos, -tron, -xrpl, -antelope, -multiversx, -icp, -stacks, -fuel, -bitcoincash, their 1Mask providers */
+import n87 from "./n87.js";
 
 /** The parts, for the duplicate-id test (a later part must never silently replace an earlier id). */
-export const BG_MESSAGE_PARTS = { requests, labels, warnings, errors, activity, chainsA, chainsB, chainsC, features } as const;
+export const BG_MESSAGE_PARTS = { requests, labels, warnings, errors, activity, chainsA, chainsB, chainsC, features, n87 } as const;
 
 export const BG_MESSAGES = {
   ...requests,
@@ -30,6 +32,7 @@ export const BG_MESSAGES = {
   ...chainsB,
   ...chainsC,
   ...features,
+  ...n87,
 } as const;
 
 export type BgMessages = typeof BG_MESSAGES;

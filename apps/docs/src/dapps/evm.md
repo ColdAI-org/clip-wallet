@@ -9,7 +9,7 @@ MetaMask.
 | EIP-6963 name | `Clip Wallet` |
 | EIP-6963 rdns | `org.coldai.clipwallet` (kit-built wallets announce their own) |
 | `window.ethereum` | left alone |
-| Networks | the EVM test networks the wallet ships with: Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia, Arc, Hedera EVM and more |
+| Networks | the EVM test networks the wallet ships with: Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia, Arc, STRATO Helium, Hedera EVM and more (every mainnet: [Networks](../reference/networks.md)) |
 
 ## Without a library
 
@@ -58,3 +58,9 @@ Send standard, readable requests: EIP-712 typed data instead of raw hashes, real
 - **Picker matrix**: RainbowKit, ConnectKit and Reown AppKit list Clip under "Installed" with its icon, connect,
   reconnect and restore after a reload; Reown AppKit Lab on Sepolia signs a message.
   [Results](../testing/results/picker-matrix.md)
+
+## STRATO
+
+STRATO's nodes take signed legacy (EIP-155) Ethereum transactions, so EIP-1193 dapps work unchanged: gas is unpriced,
+and the flat per-transaction fee (0.01 USDST, or a voucher) shows on the approval as its own line. Contract calls are
+matched to SolidVM functions by selector; STRATO's EIP-712 "function call" transactions aren't supported.

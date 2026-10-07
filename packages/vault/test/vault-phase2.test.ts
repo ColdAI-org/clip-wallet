@@ -146,7 +146,7 @@ describe("signing per scheme", () => {
 
   it("unknown account families are refused", async () => {
     const { vault } = await imported();
-    expect(await code(vault.sign({ accountId: "cosmos:0", scheme: "ed25519", bytes: MSG, approvalId: "a" }))).toBe("vault/unknown-account");
+    expect(await code(vault.sign({ accountId: "dogecoin:0", scheme: "ed25519", bytes: MSG, approvalId: "a" }))).toBe("vault/unknown-account");
   });
 });
 
@@ -290,7 +290,7 @@ describe("accounts and labels (encrypted metadata)", () => {
     const a = await vault.addAccount("tezos", "x".repeat(200));
     expect(a.label).toHaveLength(64);
     await expect(vault.setAccountLabel("tezos", 0, 5 as unknown as string)).rejects.toThrow(/string/);
-    await expect(vault.addAccount("cosmos" as Family)).rejects.toThrow(/unknown family/);
+    await expect(vault.addAccount("dogecoin" as Family)).rejects.toThrow(/unknown family/);
   });
 });
 

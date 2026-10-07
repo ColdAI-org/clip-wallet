@@ -102,3 +102,28 @@ services/backup/test/oidc-fixtures.ts:jwt:20
 services/backup/test/oidc-fixtures.ts:jwt:21
 services/backup/test/oidc-fixtures.ts:jwt:22
 services/backup/test/oidc-fixtures.ts:jwt:23
+
+# packages/chains-antelope/test/fixtures.ts: an Antelope public key (PUB_K1) in a test fixture
+e5aaffa83cc45b83045fa3ab2b1c4514f8aa83f8:packages/chains-antelope/test/fixtures.ts:generic-api-key:53
+packages/chains-antelope/test/fixtures.ts:generic-api-key:53
+# packages/chains-antelope/test/serializer.test.ts: an Antelope public key (PUB_K1) in a serializer test
+e5aaffa83cc45b83045fa3ab2b1c4514f8aa83f8:packages/chains-antelope/test/serializer.test.ts:generic-api-key:44
+packages/chains-antelope/test/serializer.test.ts:generic-api-key:44
+# packages/chains-xrpl/test/codec.test.ts: XRPL NFToken and offer ids (public ledger object ids) in codec tests
+1fb0d0f6ce12beeec2764035960fdba226889570:packages/chains-xrpl/test/codec.test.ts:generic-api-key:27
+1fb0d0f6ce12beeec2764035960fdba226889570:packages/chains-xrpl/test/codec.test.ts:generic-api-key:28
+packages/chains-xrpl/test/codec.test.ts:generic-api-key:27
+packages/chains-xrpl/test/codec.test.ts:generic-api-key:28
+# packages/chains-xrpl/test/xrpl.test.ts: an XRPL NFToken offer id (a public ledger object id)
+1fb0d0f6ce12beeec2764035960fdba226889570:packages/chains-xrpl/test/xrpl.test.ts:generic-api-key:329
+packages/chains-xrpl/test/xrpl.test.ts:generic-api-key:329
+# packages/1mask/src/shared/cosmos.ts: Initia chain feature names (eth key sign, eth secp256k1 initia)
+b96d0e3f552b0471e9f435f9c7d4daa424d978dd:packages/1mask/src/shared/cosmos.ts:generic-api-key:102
+b96d0e3f552b0471e9f435f9c7d4daa424d978dd:packages/1mask/src/shared/cosmos.ts:generic-api-key:103
+packages/1mask/src/shared/cosmos.ts:generic-api-key:102
+packages/1mask/src/shared/cosmos.ts:generic-api-key:103
+# packages/chains-cosmos/test/helpers.ts: a secp256k1 public key (base64) in a test helper
+b96d0e3f552b0471e9f435f9c7d4daa424d978dd:packages/chains-cosmos/test/helpers.ts:generic-api-key:92
+packages/chains-cosmos/test/helpers.ts:generic-api-key:92
+# .gitleaksignore itself: the comment above quoted those feature names in the commit that added it
+ffcd993f6685732a06c3f4d751d75f77f8c1a2dc:.gitleaksignore:generic-api-key:120

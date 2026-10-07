@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/hi.js";
 
 /** Hindi: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/hi/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{app} पर {count} स्टेप",
   "bg.act.batchStopped": "{app} पर {count} स्टेप, स्टेप {n} पर रुके",
   "bg.err.batchHardware": "एक ही मंज़ूरी में कई स्टेप अभी हार्डवेयर वॉलेट के लिए उपलब्ध नहीं हैं। ऐप से इन्हें एक-एक करके भेजने को कहें।",
+  ...n87,
 };
 export default messages;

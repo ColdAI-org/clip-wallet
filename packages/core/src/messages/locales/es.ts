@@ -1,4 +1,5 @@
 import type { BgTranslation } from "../en/index.js";
+import n87 from "./n87/es.js";
 
 /** Spanish: background messages (approval titles, labels, warnings, errors, activity). Follows packages/ui/src/i18n/es/index.ts. */
 const messages: BgTranslation = {
@@ -586,5 +587,6 @@ const messages: BgTranslation = {
   "bg.act.batch": "{count} pasos en {app}",
   "bg.act.batchStopped": "{count} pasos en {app}, detenido en el paso {n}",
   "bg.err.batchHardware": "Varios pasos en una sola aprobación todavía no están disponibles para billeteras de hardware. Pide a la app que los envíe de uno en uno.",
+  ...n87,
 };
 export default messages;

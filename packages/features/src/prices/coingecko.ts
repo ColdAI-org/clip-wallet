@@ -1,5 +1,12 @@
 import { COINGECKO_IDS, PEGGED_USD, TESTNET_ALIASES } from "./ids.js";
 
+/** `url` without trailing slashes (a scan, not a regex: linear on any input). */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return url.slice(0, end);
+}
+
 /** The background's PriceFeed seam (packages/extension-kit/src/background/wiring.ts): synchronous reads. */
 export interface SyncPriceFeed {
   usd(assetKey: string): number | undefined;
@@ -109,7 +116,7 @@ export class CoinGeckoPriceFeed implements SyncPriceFeed {
 
   private async fetchAll(): Promise<void> {
     const ids = [...new Set(Object.values(this.ids))].sort();
-    const base = (this.opts.baseUrl ?? "https://api.coingecko.com/api/v3").replace(/\/+$/, "");
+    const base = withoutTrailingSlashes(this.opts.baseUrl ?? "https://api.coingecko.com/api/v3");
     const url = `${base}/simple/price?ids=${encodeURIComponent(ids.join(","))}&vs_currencies=${FIAT.join(",")}`;
     const headers: Record<string, string> = { accept: "application/json" };
     if (this.opts.demoApiKey) headers["x-cg-demo-api-key"] = this.opts.demoApiKey;

@@ -5,7 +5,7 @@ import type { Family, Network, Warning } from "@clip-wallet/core";
 import { ClipError, knownMsg, recallMsg, msg } from "@clip-wallet/core";
 import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
 import { rdnsDomain, type ClipConfig } from "@clip-wallet/config";
-import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
+import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, N87_CHAIN_READ, N87_CONNECT_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
 import type { createStarknetModule } from "@clip-wallet/chains-starknet";
 import type { createTonModule } from "@clip-wallet/chains-ton";
 import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/background/p2";
@@ -25,9 +25,10 @@ const CONNECT_METHODS = new Set<string>([
   "substrate_enable",
   "wallet_requestAccounts", // Starknet (get-starknet)
   "tonconnect:connect",
+  ...N87_CONNECT_METHODS,
 ]);
 /** Read-only chain calls a module answers without an approval (CIP-30 getUtxos, getBalance, …). */
-const CHAIN_READ = new Set<string>(CARDANO_METHODS_ALLOWED.readOnly);
+const CHAIN_READ = new Set<string>([...CARDANO_METHODS_ALLOWED.readOnly, ...N87_CHAIN_READ]);
 const READ_ONLY = new Set<string>(EVM_METHODS.readOnly);
 
 /* ------------------------------------------------------------------ 1Mask */
@@ -233,6 +234,19 @@ const PLAIN_ETA: Record<Family, number> = {
   stellar: 6,
   tezos: 10,
   algorand: 4,
+  // networks87
+  cosmos: 6,
+  provenance: 6,
+  thorchain: 6,
+  initia: 2,
+  tron: 3,
+  xrpl: 4,
+  antelope: 2,
+  multiversx: 6,
+  icp: 2,
+  stacks: 10,
+  fuel: 2,
+  bitcoincash: 600,
 };
 
 /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */

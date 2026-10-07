@@ -1,8 +1,8 @@
 # What Clip is
 
-Clip Wallet is a non-custodial wallet for every CLPR network: one recovery phrase for fourteen network families,
-one balance per asset, and plain words before anything is signed. It runs as a browser extension (Chrome, Edge,
-Firefox), an iOS and Android app, and a desktop app.
+Clip Wallet is a non-custodial wallet for the CLPR networks (85 of the 87; see [Networks](../reference/networks.md)):
+one recovery phrase for 26 network families, one balance per asset, and plain words before anything is signed. It
+runs as a browser extension (Chrome, Edge, Firefox), an iOS and Android app, and a desktop app.
 
 It is also three things for developers:
 

@@ -126,6 +126,8 @@ async function openDapp(context: BrowserContext, dapp: string): Promise<Page> {
   });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  // MATRIX_DEBUG=1: the dapp page's console in the test output (no secrets reach a dapp page).
+  if (process.env.MATRIX_DEBUG) page.on("console", (m) => process.stdout.write(`[${dapp} page] ${m.type()}: ${m.text().slice(0, 300)}\n`));
   await page.goto(`${ORIGIN}/`);
   await page.waitForFunction(() => !!(window as unknown as { __matrix?: unknown }).__matrix, undefined, { timeout: 30_000 }).catch(() => {
     throw new Error(`${dapp} dapp didn't start: ${errors.join(" | ") || "no page error"}`);
@@ -216,8 +218,10 @@ interface Spec {
   recipient?: RegExp;
   /** Message signing isn't part of this ecosystem's dapp API. */
   noSign?: string;
+  /** L3/L4 is a call, not a transfer (Chainflip has no FLIP transfer): the approval title must match this instead. */
+  call?: RegExp;
 }
-const SPECS: Record<Target, Spec> = {
+const SPECS: Partial<Record<Target, Spec>> = {
   evm: { amount: "0.000000000000000001", symbol: "ETH" },
   "hedera-evm": { amount: "0.00000001", symbol: "HBAR" },
   // Hedera refuses transfers to yourself, so this one pays the matrix's EVM-path account (alias 0x05AC…).
@@ -235,6 +239,17 @@ const SPECS: Record<Target, Spec> = {
   stellar: { amount: "0.0000001", symbol: "XLM" },
   tezos: { amount: "0.000001", symbol: "XTZ" },
   algorand: { amount: "0.000001", symbol: "ALGO", noSign: "Algorand's dapp APIs (use-wallet v5, ARC-1) have no message signing; ARC-60 signData is a draft Clip doesn't offer." },
+  // networks87
+  cosmos: { amount: "0.000001", symbol: "OSMO" },
+  // java-tron refuses transfers to yourself: 1 sun to the Nile black-hole address (it exists, so no opening fee).
+  tron: { amount: "0.000001", symbol: "TRX", recipient: /T9yD14/ },
+  // 1 µSTX to the testnet burn address (stx_transferStx refuses the sender as recipient).
+  stacks: { amount: "0.000001", symbol: "STX", recipient: /ST0000/ },
+  fuel: { amount: "0.000000001", symbol: "ETH" },
+  chainflip: { amount: "", symbol: "FLIP", call: /Register as a Chainflip liquidity provider/ },
+  multiversx: { amount: "0.000000000000000001", symbol: "EGLD" },
+  // rippled refuses an XRP payment to yourself (temREDUNDANT): L3 is a no-op AccountSet with a memo.
+  xrpl: { amount: "", symbol: "XRP", call: /Change your account settings/, noSign: "XLS-72d (the XRPL browser wallet standard) has no message signing." },
 };
 
 /** Hedera over WalletConnect answers with the 0.0.x account id: it must be the account behind our key's EVM alias. */
@@ -267,7 +282,7 @@ async function runTarget(target: Target, context: BrowserContext, extensionId: s
     }
     test.skip(!!why, why ?? "");
   }
-  const spec = SPECS[target];
+  const spec = SPECS[target]!;
   const net = TARGETS[target].network;
   const expected = addressOf(target);
   // The chain module derives the same address from the vault's public key (what the wallet shows on Receive).
@@ -333,10 +348,14 @@ async function runTarget(target: Target, context: BrowserContext, extensionId: s
     const short = expected.slice(0, 6);
     const recipientShown = spec.recipient ? spec.recipient.test(text) : text.includes(short) || /yourself|your own|to you\b/i.test(text);
     const problems: string[] = [];
-    if (!text.includes(spec.symbol)) problems.push(`no ${spec.symbol}`);
-    // Amounts below the display precision show as "<0.000001 ETH" (the wallet's formatting); either form is right.
-    if (!text.includes(spec.amount) && !new RegExp(`<0\\.0*1\\s*${spec.symbol}`).test(text)) problems.push(`amount ${spec.amount} not shown`);
-    if (!recipientShown) problems.push(`recipient ${spec.recipient ?? `${short}…`} not shown`);
+    if (spec.call) {
+      if (!spec.call.test(view.title)) problems.push(`title "${view.title}" isn't ${spec.call}`);
+    } else {
+      if (!text.includes(spec.symbol)) problems.push(`no ${spec.symbol}`);
+      // Amounts below the display precision show as "<0.000001 ETH" (the wallet's formatting); either form is right.
+      if (!text.includes(spec.amount) && !new RegExp(`<0\\.0*1\\s*${spec.symbol}`).test(text)) problems.push(`amount ${spec.amount} not shown`);
+      if (!recipientShown) problems.push(`recipient ${spec.recipient ?? `${short}…`} not shown`);
+    }
     if (view.overflowing.length) problems.push(`row values overflow their label: ${view.overflowing.join(", ")}`);
     const fundsReason = view.notices.find((n) => /enough|can't pay|no \S+ yet|isn't on \S+ yet|doesn't exist (?:on \S+ )?yet|receive some \S+ first/i.test(n));
     if (/unreadable|blind/i.test(view.title) && !funded && fundsReason) {

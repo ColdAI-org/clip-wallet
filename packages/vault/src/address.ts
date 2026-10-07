@@ -23,6 +23,18 @@ import {
   type Network2,
   type TonWalletVersion,
 } from "./encodings.js";
+import {
+  antelopePublicKey,
+  bitcoincashAddress,
+  cosmosAddress,
+  fuelAddress,
+  icpPrincipal,
+  initiaAddress,
+  multiversxAddress,
+  stacksAddress,
+  tronAddress,
+  xrplAddress,
+} from "./encodings87.js";
 
 export type BitcoinNetwork = "mainnet" | "testnet";
 export type BitcoinAddressType = "p2wpkh" | "p2tr";
@@ -120,6 +132,35 @@ export const defaultAddressOf: AddressOf = (family, publicKey, ctx) => {
     case "starknet":
       if (!ctx.starknetAccountClassHash) throw new Error("starknet addresses need an account class hash");
       return starknetOzAccountAddress(publicKey, ctx.starknetAccountClassHash);
+    /*
+     * networks87. Where the format differs per network the vault writes the mainnet form (generic "cosmos" for the
+     * coin-118 family) and the chain module's receiveAddress() gives each network's own spelling.
+     */
+    case "cosmos":
+      return cosmosAddress(publicKey, "cosmos");
+    case "provenance":
+      return cosmosAddress(publicKey, "pb");
+    case "thorchain":
+      return cosmosAddress(publicKey, "thor");
+    case "initia":
+      return initiaAddress(publicKey);
+    case "tron":
+      return tronAddress(publicKey);
+    case "xrpl":
+      return xrplAddress(publicKey);
+    case "antelope":
+      // Antelope accounts are names created on chain; until one points at this key, the key is what identifies it.
+      return antelopePublicKey(publicKey);
+    case "multiversx":
+      return multiversxAddress(publicKey);
+    case "icp":
+      return icpPrincipal(publicKey);
+    case "stacks":
+      return stacksAddress(publicKey, "mainnet");
+    case "fuel":
+      return fuelAddress(publicKey);
+    case "bitcoincash":
+      return bitcoincashAddress(publicKey, "mainnet");
     default:
       throw new Error(`addresses for ${String(family)} are not supported`);
   }

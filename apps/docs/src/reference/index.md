@@ -1,6 +1,8 @@
 # Reference
 
-Everything on these pages is generated from the source on every build, so it can't fall behind the code.
+Everything on these pages is generated from the source on every build, so it can't fall behind the code. The
+[Networks](./networks.md) page lists every network the wallet ships, which CLPR network each one is, and how dapps
+reach it; its coverage is checked by a test over the wallet's own catalogue.
 
 | Page | Generated from |
 | --- | --- |

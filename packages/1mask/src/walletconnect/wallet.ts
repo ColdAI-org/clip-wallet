@@ -8,6 +8,8 @@ import {
   isServedMethod,
   mapProposalNamespaces,
   namespaceOf,
+  networkIdForWcChain,
+  wcAccount,
   type NamespaceMapping,
   type ProposalNamespace,
   type SessionNamespace,
@@ -18,6 +20,7 @@ import { assessVerify, type Verification, type VerifyContextLike } from "./verif
 import { namedAccounts, sessionHasAccount } from "./accounts.js";
 import { CALLS_METHODS, CallsErrorCode, callsError, chainCapabilities, isCallsMethod, parseSendCalls, type CallsHost, type Hex, type SendCallsParams } from "../shared/calls.js";
 import { rpcError } from "../shared/errors.js";
+import { BCH_WC, bchWcChainFor } from "../shared/bitcoincash.js";
 
 /* ------------------------------------------------------------------ SDK error codes */
 
@@ -220,7 +223,9 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
     metadata: opts.metadata,
     ...(opts.coreOptions ? { coreOptions: opts.coreOptions } : {}),
   });
-  const familyFor = opts.familyForChain ?? defaultFamilyForChain;
+  const baseFamilyFor = opts.familyForChain ?? defaultFamilyForChain;
+  /** Chain aliases (wc2-bch-bcr): a Bitcoin Cash bip122 network id is "bitcoincash", never the bip122 namespace's "bitcoin". */
+  const familyFor = (chain: string): Family => (bchWcChainFor(chain) ? "bitcoincash" : baseFamilyFor(chain));
   const newId = opts.newId ?? randomId;
   const registry = new Set(opts.networks.map((n) => n.id));
   const inflight = new Map<number, string>();
@@ -229,7 +234,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
   const mapProposal: WalletConnectWallet["mapProposal"] = (p) =>
     mapProposalNamespaces(p, {
       networks: opts.networks,
-      addressesFor: (chain) => opts.addressesFor(chain, familyFor(chain)),
+      addressesFor: (networkId) => opts.addressesFor(networkId, familyFor(networkId)),
       ...(extraMethods ? { extraMethods } : {}),
     });
 
@@ -255,7 +260,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       const approvedChains = Object.values(mapping.namespaces).flatMap((n) => n.chains);
       // Audit WC-04: the connect screen names one network and address; say plainly when the app also gets the
       // user's addresses of other kinds of account (other namespaces have other addresses).
-      const names = [...new Set(approvedChains.map((c) => opts.networks.find((n) => n.id === c)?.name ?? c))];
+      const names = [...new Set(approvedChains.map((c) => opts.networks.find((n) => n.id === networkIdForWcChain(c))?.name ?? c))];
       const shared: Warning[] =
         Object.keys(mapping.namespaces).length > 1
           ? [{ level: "info", code: "network-matters", message: `This app gets your addresses on ${names.length} networks: ${names.join(", ")}.` }]
@@ -323,6 +328,10 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
     if (namespaceOf(chainId) === "near" && method === "near_getAccounts") {
       return { result: sessionAccounts(session, chainId).map((accountId) => ({ accountId })) };
     }
+    if (namespaceOf(chainId) === "bch" && method === BCH_WC.getAddresses) {
+      // wc2-bch-bcr: full CashAddrs ("bchtest:qq…"); the session account is "bch:bchtest:qq…".
+      return { result: sessionAccounts(session, chainId).map((payload) => `${chainId.slice("bch:".length)}:${payload}`) };
+    }
     return undefined;
   };
 
@@ -389,7 +398,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       if (!session) throw { code: RpcErrorCode.Unauthorized, message: "Unknown session." };
       const nsKey = namespaceOf(chainId);
       const ns = session.namespaces[nsKey];
-      if (!ns || !ns.chains.includes(chainId) || !registry.has(chainId)) {
+      if (!ns || !ns.chains.includes(chainId) || !registry.has(networkIdForWcChain(chainId))) {
         throw { code: RpcErrorCode.ChainDisconnected, message: `Clip Wallet is not connected to ${chainId}.` };
       }
       if (!ns.methods.includes(request.method)) {
@@ -415,7 +424,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       const verify = assessVerify(ev.verifyContext, peer.url, opts.isKnownScam);
       let method = request.method;
       let reqParams = request.params;
-      let networkId = chainId;
+      let networkId = networkIdForWcChain(chainId);
       if (opts.calls && nsKey === "eip155" && isCallsMethod(method)) {
         const answered = await answerCalls(session, chainId, verify.origin, method, request.params);
         if ("result" in answered) return void (await respond(topic, id, answered));
@@ -518,15 +527,17 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       for (const s of Object.values(kit.getActiveSessions())) {
         const namespaces: Record<string, SessionNamespace> = {};
         for (const [key, ns] of Object.entries(s.namespaces)) {
-          const accounts = ns.chains.flatMap((c) => opts.addressesFor(c, familyFor(c)).map((a) => `${c}:${a}`));
+          const accounts = ns.chains.flatMap((c) => opts.addressesFor(networkIdForWcChain(c), familyFor(networkIdForWcChain(c))).map((a) => wcAccount(c, a)));
           namespaces[key] = { ...ns, accounts };
         }
         await kit.updateSession({ topic: s.topic, namespaces });
         for (const [key, ns] of Object.entries(namespaces)) {
-          const event = key === "bip122" ? "bip122_addressesChanged" : "accountsChanged";
+          const event = key === "bip122" ? "bip122_addressesChanged" : key === "bch" ? "addressesChanged" : "accountsChanged";
           if (!ns.events.includes(event)) continue;
           for (const c of ns.chains) {
-            const data = ns.accounts.filter((a) => a.startsWith(`${c}:`)).map((a) => (key === "eip155" ? a.slice(c.length + 1) : a));
+            const data = ns.accounts
+              .filter((a) => a.startsWith(`${c}:`))
+              .map((a) => (key === "eip155" ? a.slice(c.length + 1) : key === "bch" ? `${c.slice("bch:".length)}:${a.slice(c.length + 1)}` : a));
             await kit.emitSessionEvent({ topic: s.topic, event: { name: event, data }, chainId: c });
           }
         }
