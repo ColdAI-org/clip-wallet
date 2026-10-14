@@ -42,13 +42,13 @@ jobs:
       # Chromium extension ids allowed to use Clip Desktop over native messaging (store ids, comma-separated).
       CLIP_EXTENSION_IDS: ${{ vars.CLIP_EXTENSION_IDS }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 12.6.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -115,7 +115,7 @@ jobs:
           esac
           if [ "$RUNNER_OS" = "Linux" ]; then xvfb-run --auto-servernum -- node scripts/smoke-packaged.mjs "$APP"; else node scripts/smoke-packaged.mjs "$APP"; fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: clip-wallet-desktop-${{ runner.os }}
           if-no-files-found: error
@@ -128,7 +128,7 @@ jobs:
             apps/desktop/release/*.tar.gz
           retention-days: 14
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: clip-wallet-desktop-screenshots-${{ runner.os }}
