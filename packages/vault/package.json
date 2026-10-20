@@ -106,7 +106,7 @@
     "@wharfkit/antelope": "^4.0.2",
     "algosdk": "^3.8.0",
     "ed25519-hd-key": "2.0.0",
-    "ethers": "^6.16.0",
+    "ethers": "^6.17.0",
     "fuels": "^0.103.0",
     "micro-key-producer": "^0.10.2",
     "near-seed-phrase": "^0.2.1",

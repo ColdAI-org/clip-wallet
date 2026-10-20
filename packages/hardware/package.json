@@ -94,7 +94,7 @@
     "viem": "^2.57.2"
   },
   "devDependencies": {
-    "@keystonehq/bc-ur-registry": "0.8.0",
+    "@keystonehq/bc-ur-registry": "0.8.1",
     "@keystonehq/bc-ur-registry-eth": "0.22.1",
     "@keystonehq/bc-ur-registry-sol": "0.9.5",
     "@ledgerhq/hw-transport-mocker": "6.35.0",

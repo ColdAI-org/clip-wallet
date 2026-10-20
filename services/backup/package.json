@@ -23,10 +23,10 @@
     "@clip-wallet/link": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "0.22.0",
-    "@cloudflare/workers-types": "5.20260925.1",
+    "@cloudflare/vitest-pool-workers": "0.23.0",
+    "@cloudflare/workers-types": "5.20261016.1",
     "typescript": "^5.6.0",
     "vitest": "~4.1.0",
-    "wrangler": "4.124.0"
+    "wrangler": "4.151.1"
   }
 }
