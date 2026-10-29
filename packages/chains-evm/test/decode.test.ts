@@ -134,6 +134,54 @@ describe("decode eth_sendTransaction", () => {
     expect(clear.title).not.toMatch(/0x0000/);
   });
 
+  describe("a contract that answers decimals() but is also an NFT collection", () => {
+    const APES = "0x0000000000000000000000000000000000000721"; // ERC-721 (ERC-165 says so) that also answers decimals()
+    const HYBRID = "0x0000000000000000000000000000000000000404"; // ERC-404 style: decimals() and ownerOf, no ERC-165
+    const SUPPORTS = toFunctionSelector("supportsInterface(bytes4)");
+    const OWNER_OF = toFunctionSelector("ownerOf(uint256)");
+    const reverted = () => new RpcErr(3, "execution reverted");
+    function calls(params: unknown[]) {
+      const { to, data } = params[0] as { to: string; data: string };
+      const t = to.toLowerCase();
+      if (t !== APES && t !== HYBRID) return tokenCalls(params);
+      const s = data.slice(0, 10);
+      if (s === "0x95d89b41") return abiString(t === APES ? "APE" : "HYB");
+      if (s === "0x06fdde03") return abiString(t === APES ? "Cool Apes" : "Hybrid");
+      if (s === "0x313ce567") return abiUint(t === APES ? 0 : 18);
+      if (s === SUPPORTS) return t === APES ? abiUint(data.slice(10, 18) === "80ac58cd" ? 1 : 0) : reverted();
+      // NFT #7 exists in both; no other id does.
+      if (s === OWNER_OF) return BigInt(`0x${data.slice(10)}`) === 7n ? encodeAbiParameters([{ type: "address" }], [h(ME)]) : reverted();
+      return "0x";
+    }
+    const run = (to: string, data: string) => decode(tx({ to, data }), spec({ eth_call: calls }));
+    const approve = (spender: string, n: bigint) => encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [h(spender), n] });
+
+    it("NFT wording for an NFT it holds, with a caution", async () => {
+      const a = await run(APES, approve(BOB, 7n));
+      expect(a.title).toBe("Allow 0x1234…5678 to move your NFT #7 from Cool Apes");
+      expect(a.warnings).toContainEqual(expect.objectContaining({ level: "caution", code: "unknown-call", msg: expect.objectContaining({ id: "bg.warn.tokenOrNft", values: { name: "Cool Apes" } }) }));
+      const send = await run(APES, encodeFunctionData({ abi: erc20Abi, functionName: "transferFrom", args: [h(ME), h(BOB), 7n] }));
+      expect(send.title).toBe("Send NFT #7 from Cool Apes to 0x1234…5678");
+      expect(send.balanceChanges.some((c) => c.delta === "-7")).toBe(false);
+      expect(codes(send)).toContain("unknown-call");
+      const hybrid = await run(HYBRID, approve(BOB, 7n));
+      expect(hybrid.title).toBe("Allow 0x1234…5678 to move your NFT #7 from Hybrid");
+      expect(codes(hybrid)).toContain("unknown-call");
+    });
+
+    it("token wording for an amount; a caution only when the contract also claims ERC-721", async () => {
+      const claims = await run(APES, approve(BOB, 9n));
+      expect(claims.title).toBe("Allow 0x1234…5678 to spend up to 9 APE");
+      expect(codes(claims)).toContain("unknown-call");
+      const amount = await run(HYBRID, approve(BOB, 10n ** 18n));
+      expect(amount.title).toBe("Allow 0x1234…5678 to spend up to 1 HYB");
+      expect(codes(amount)).not.toContain("unknown-call");
+      const plain = await run(UNKNOWN_TOKEN, approve(BOB, 7n));
+      expect(plain.title).toMatch(/to spend up to .* PEPE$/);
+      expect(codes(plain)).not.toContain("unknown-call");
+    });
+  });
+
   it("ERC-721 safeTransferFrom", async () => {
     const abi = parseAbi(["function safeTransferFrom(address from, address to, uint256 tokenId)"]);
     const d = await decode(tx({ to: NFT, data: encodeFunctionData({ abi, functionName: "safeTransferFrom", args: [ME, BOB, 7n] }) }));

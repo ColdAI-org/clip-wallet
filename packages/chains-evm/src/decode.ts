@@ -2,7 +2,7 @@
  * decode(): DappRequest → DecodedRequest in plain words.
  * Titles never contain raw method names; fees are an amount of the network's native asset.
  */
-import { ClipError, labelled, msg, titled, warning, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
+import { ClipError, labelled, msg, titled, warning, type AssetRef, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
 import {
   type AbiFunction,
   type Hex,
@@ -14,7 +14,7 @@ import {
   toFunctionSelector,
   zeroAddress,
 } from "viem";
-import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
+import { chainIdOf, quoteFees, tokenMeta, tokenOrNft, type FeeQuote } from "./chain.js";
 import { specFor } from "./networks.js";
 import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
@@ -251,6 +251,12 @@ async function describeApprovals(ctx: ChainContext, d: DecodedRequest, approvals
   }
 }
 
+/** The contract answered both as a token and as an NFT collection: the wording above may be the wrong one. */
+function tokenOrNftCaution(asset: AssetRef, contract: string): Warning {
+  const name = asset.name && asset.name !== "token" ? asset.name : shortAddress(contract);
+  return warning("caution", "unknown-call", msg("bg.warn.tokenOrNft", { name }));
+}
+
 /** A call (or a batch holding one) the wallet can't read: blind, so refused unless blind signing is on. */
 function markUnreadable(d: DecodedRequest, host: string): void {
   d.blind = true;
@@ -278,8 +284,9 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
   if (decoded && (selector === SEL.transfer || selector === SEL.transferFrom)) {
     const [from, recipient, amount] =
       selector === SEL.transfer ? [me, decoded.args[0] as string, decoded.args[1] as bigint] : (decoded.args as unknown as [string, string, bigint]);
-    const { asset, isToken } = await tokenMeta(ctx, to);
-    if (!isToken) {
+    const { asset, nft, unsure } = await tokenOrNft(ctx, to, amount);
+    if (unsure) d.warnings.push(tokenOrNftCaution(asset, to));
+    if (nft) {
       // ERC-721 transferFrom shares the ERC-20 selector.
       Object.assign(d, titled(msg("bg.req.sendNftTo", { id: String(amount), collection: asset.name, to: shortAddress(recipient) })));
       d.lines.push({ label: "To", value: safeChecksum(recipient) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
@@ -298,9 +305,10 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
 
   if (decoded && (selector === SEL.approve || selector === SEL.increaseAllowance)) {
     const [spender, amount] = decoded.args as unknown as [string, bigint];
-    const { asset, isToken } = await tokenMeta(ctx, to);
+    const { asset, nft, unsure } = await tokenOrNft(ctx, to, amount);
     const name = who(spender);
-    if (!isToken) {
+    if (unsure) d.warnings.push(tokenOrNftCaution(asset, to));
+    if (nft) {
       // ERC-721 approve(to, tokenId); approve(0x0, tokenId) takes it back.
       if (isAddressEqual(spender as `0x${string}`, zeroAddress)) {
         Object.assign(d, titled(msg("bg.req.removeNftPermissions")));

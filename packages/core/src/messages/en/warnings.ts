@@ -79,6 +79,7 @@ export default {
   "bg.warn.letsTakeEveryNft": "This lets {spender} take every NFT you hold in {collection}, including ones you get later. Scams often ask for this.",
   "bg.warn.couldTakeAllTokens": "{spender} could take all of these tokens at any time.",
   "bg.warn.spamToken": "{symbol} looks like a spam token. It may be worthless or a trap.",
+  "bg.warn.tokenOrNft": "{name} acts as both a token and an NFT collection, so this could be an amount or one NFT. Check with the app before you continue.",
   "bg.warn.expectedToFail": "This is expected to fail and would still cost a fee.",
   "bg.warn.expectedToFailReason": "This is expected to fail and would still cost a fee. Reason: {reason}",
 } as const;

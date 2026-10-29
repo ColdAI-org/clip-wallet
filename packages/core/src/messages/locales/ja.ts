@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "これにより、{spender}は{collection}であなたが保有するすべての NFT を、あとから手に入れるものも含めて持ち出せます。詐欺はよくこれを求めます。",
   "bg.warn.couldTakeAllTokens": "{spender}はいつでもこれらのトークンをすべて持ち出せます。",
   "bg.warn.spamToken": "{symbol}はスパムトークンのようです。価値がないか、罠の可能性があります。",
+  "bg.warn.tokenOrNft": "{name}はトークンとしても NFT コレクションとしても動作するため、これが数量なのか 1 つの NFT なのか判断できません。続ける前にアプリで確認してください。",
   "bg.warn.expectedToFail": "これは失敗すると予想されますが、それでも手数料がかかります。",
   "bg.warn.expectedToFailReason": "これは失敗すると予想されますが、それでも手数料がかかります。理由：{reason}",
   "bg.err.cat.locked": "ウォレットがロックされています。ロックを解除してから、もう一度お試しください。",

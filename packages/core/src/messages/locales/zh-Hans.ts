@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "这会让 {spender} 拿走你在 {collection} 中持有的每一个 NFT，包括你以后获得的。诈骗经常要求这种权限。",
   "bg.warn.couldTakeAllTokens": "{spender} 可以随时拿走这些代币的全部。",
   "bg.warn.spamToken": "{symbol} 看起来是垃圾代币。它可能毫无价值，也可能是陷阱。",
+  "bg.warn.tokenOrNft": "{name} 既是代币又是 NFT 合集，因此这可能是一个数量，也可能是一个 NFT。继续之前请向该应用确认。",
   "bg.warn.expectedToFail": "此操作预计会失败，但仍会扣除手续费。",
   "bg.warn.expectedToFailReason": "此操作预计会失败，但仍会扣除手续费。原因：{reason}",
   "bg.err.cat.locked": "你的钱包已锁定。请解锁后重试。",

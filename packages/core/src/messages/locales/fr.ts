@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "Ceci permet à {spender} de prendre chaque NFT que vous détenez dans {collection}, y compris ceux que vous recevrez plus tard. Les arnaques demandent souvent cela.",
   "bg.warn.couldTakeAllTokens": "{spender} pourrait prendre la totalité de ces jetons à tout moment.",
   "bg.warn.spamToken": "{symbol} ressemble à un jeton de spam. Il peut ne rien valoir ou être un piège.",
+  "bg.warn.tokenOrNft": "{name} fonctionne à la fois comme un jeton et comme une collection de NFT, il peut donc s'agir d'un montant ou d'un seul NFT. Vérifiez auprès de l'application avant de continuer.",
   "bg.warn.expectedToFail": "Cette opération devrait échouer et coûterait quand même des frais.",
   "bg.warn.expectedToFailReason": "Cette opération devrait échouer et coûterait quand même des frais. Raison : {reason}",
   "bg.err.cat.locked": "Votre portefeuille est verrouillé. Déverrouillez-le, puis réessayez.",

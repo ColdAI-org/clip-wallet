@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "Esto permite que {spender} se lleve todos los NFT que tienes en {collection}, incluidos los que recibas más adelante. Las estafas suelen pedir esto.",
   "bg.warn.couldTakeAllTokens": "{spender} podría llevarse todos estos tokens en cualquier momento.",
   "bg.warn.spamToken": "{symbol} parece un token de spam. Puede no valer nada o ser una trampa.",
+  "bg.warn.tokenOrNft": "{name} funciona a la vez como token y como colección de NFT, así que esto puede ser una cantidad o un solo NFT. Compruébalo con la app antes de continuar.",
   "bg.warn.expectedToFail": "Se espera que esto falle y aun así costaría una comisión.",
   "bg.warn.expectedToFailReason": "Se espera que esto falle y aun así costaría una comisión. Motivo: {reason}",
   "bg.err.cat.locked": "Tu billetera está bloqueada. Desbloquéala e inténtalo de nuevo.",

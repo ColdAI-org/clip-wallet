@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "Questo consente a {spender} di prendere ogni NFT che possiedi in {collection}, compresi quelli che riceverai in futuro. Le truffe lo chiedono spesso.",
   "bg.warn.couldTakeAllTokens": "{spender} potrebbe prendere tutti questi token in qualsiasi momento.",
   "bg.warn.spamToken": "{symbol} sembra un token spam. Potrebbe non valere nulla o essere una trappola.",
+  "bg.warn.tokenOrNft": "{name} funziona sia come token sia come collezione di NFT, quindi può trattarsi di un importo o di un singolo NFT. Verifica con l'app prima di continuare.",
   "bg.warn.expectedToFail": "Probabilmente questa operazione non riuscirà e costerebbe comunque una commissione.",
   "bg.warn.expectedToFailReason": "Probabilmente questa operazione non riuscirà e costerebbe comunque una commissione. Motivo: {reason}",
   "bg.err.cat.locked": "Il tuo wallet è bloccato. Sbloccalo, poi riprova.",

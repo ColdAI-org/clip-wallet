@@ -303,6 +303,7 @@ const messages: BgTranslation = {
   "bg.warn.letsTakeEveryNft": "{spender}이(가) {collection}에 있는 내 NFT를 모두 가져갈 수 있게 돼요. 나중에 받는 NFT도 포함돼요. 사기에서 자주 요구하는 권한이에요.",
   "bg.warn.couldTakeAllTokens": "{spender}은(는) 언제든 이 토큰을 전부 가져갈 수 있어요.",
   "bg.warn.spamToken": "{symbol}은(는) 스팸 토큰으로 보여요. 가치가 없거나 함정일 수 있어요.",
+  "bg.warn.tokenOrNft": "{name}은(는) 토큰이면서 NFT 컬렉션이기도 해서, 이것이 수량인지 NFT 하나인지 확실하지 않아요. 계속하기 전에 앱에서 확인하세요.",
   "bg.warn.expectedToFail": "실패할 것으로 예상되며, 실패해도 수수료가 들어요.",
   "bg.warn.expectedToFailReason": "실패할 것으로 예상되며, 실패해도 수수료가 들어요. 이유: {reason}",
   "bg.err.cat.locked": "지갑이 잠겨 있어요. 잠금 해제한 뒤 다시 시도하세요.",
