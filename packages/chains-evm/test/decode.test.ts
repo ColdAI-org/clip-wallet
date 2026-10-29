@@ -1,5 +1,5 @@
 import type { DappRequest, DecodedRequest } from "@clip-wallet/core";
-import { encodeAbiParameters, getAddress, encodeFunctionData, erc20Abi, maxUint256, numberToHex, parseAbi, stringToHex, toFunctionSelector } from "viem";
+import { encodeAbiParameters, getAddress, encodeFunctionData, erc20Abi, maxUint256, numberToHex, parseAbi, parseAbiParameters, stringToHex, toEventSelector, toFunctionSelector } from "viem";
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";
 import { NATIVE_PSEUDO_TOKEN, TRANSFER_TOPIC, addressTopic } from "../src/simulate.js";
@@ -137,8 +137,9 @@ describe("decode eth_sendTransaction", () => {
     const d = await decode(tx({ to: BOB, data }, "https://swap.example.org"));
     expect(d.title).toBe("Swap tokens on swap.example.org");
     expect(d.blind).toBe(false);
-    const viaUni = await decode(tx({ to: UNI, data: toFunctionSelector("function execute(bytes,bytes[],uint256)") + encodeAbiParameters([{ type: "bytes" }, { type: "bytes[]" }, { type: "uint256" }], ["0x00", [], 1n]).slice(2) }));
+    const viaUni = await decode(tx({ to: UNI, data: toFunctionSelector("function execute(bytes,bytes[],uint256)") + encodeAbiParameters([{ type: "bytes" }, { type: "bytes[]" }, { type: "uint256" }], ["0x", [], 1n]).slice(2) }));
     expect(viaUni.title).toBe("Swap tokens on Uniswap");
+    expect(viaUni.blind).toBe(false);
   });
 
   it("unknown calldata → blind with danger warning", async () => {
@@ -222,6 +223,123 @@ describe("decode: EIP-5792 batch calls (DappRequest.batch)", () => {
     );
     const w = d.warnings.find((x) => x.code === "simulation-failed")!;
     expect(w.level).toBe("caution");
+  });
+});
+
+describe("decode: calls that carry other calls", () => {
+  const batchAbi = parseAbi([
+    "function multicall(bytes[] data)",
+    "function multicall(uint256 deadline, bytes[] data)",
+    "function aggregate3((address target, bool allowFailure, bytes callData)[] calls)",
+    "function execute(bytes commands, bytes[] inputs, uint256 deadline)",
+  ]);
+  const approveAll = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [BOB, maxUint256] });
+  const multicall = (calls: `0x${string}`[]) => encodeFunctionData({ abi: batchAbi, functionName: "multicall", args: [calls] });
+  const UNREADABLE = h(`0xdeadbeef${"00".repeat(32)}`);
+  const steps = (d: DecodedRequest) => d.lines.filter((l) => /^Action \d+$/.test(l.label)).map((l) => l.value);
+
+  it("an approve inside multicall shows the spender, the token and the unlimited-approval danger", async () => {
+    const d = await decode(tx({ to: UNKNOWN_TOKEN, data: multicall([approveAll]) }));
+    expect(d.blind).toBe(false);
+    expect(d.title).toBe("Allow 0x1234…5678 to spend all your PEPE");
+    expect(d.warnings.find((w) => w.code === "unlimited-approval")?.level).toBe("danger");
+    expect(d.lines).toContainEqual({ label: "Allowed app", value: BOB });
+    expect(steps(d)).toEqual(["Allow 0x1234…5678 to spend all your PEPE"]);
+  });
+
+  it("multicall with a deadline lists every step and carries the worst warning up", async () => {
+    const send = encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [BOB, 10n ** 18n] });
+    const d = await decode(tx({ to: UNKNOWN_TOKEN, data: encodeFunctionData({ abi: batchAbi, functionName: "multicall", args: [123n, [send, approveAll]] }) }));
+    expect(d.title).toBe("Run several actions on app.example.com");
+    expect(steps(d)).toEqual(["Send 1 PEPE to 0x1234…5678", "Allow 0x1234…5678 to spend all your PEPE"]);
+    expect(d.warnings.find((w) => w.code === "unlimited-approval")?.level).toBe("danger");
+    expect(d.blind).toBe(false);
+  });
+
+  it("aggregate3 decodes each call against its own contract", async () => {
+    const data = encodeFunctionData({ abi: batchAbi, functionName: "aggregate3", args: [[{ target: UNKNOWN_TOKEN, allowFailure: false, callData: approveAll }]] });
+    const d = await decode(tx({ to: BOB, data }));
+    expect(d.blind).toBe(false);
+    expect(d.warnings.find((w) => w.code === "unlimited-approval")?.level).toBe("danger");
+    expect(d.lines).toContainEqual({ label: "Allowed app", value: BOB });
+    expect(d.lines).toContainEqual({ label: "Token", value: expect.stringContaining("Pepe") });
+  });
+
+  it("one call it can't read makes the whole batch unreadable", async () => {
+    const d = await decode(tx({ to: UNKNOWN_TOKEN, data: multicall([approveAll, UNREADABLE]) }));
+    expect(d.blind).toBe(true);
+    expect(d.warnings.find((w) => w.code === "blind-signing")?.level).toBe("danger");
+    expect(codes(d)).toContain("unlimited-approval");
+  });
+
+  it("reads batches three levels deep; anything deeper is unreadable", async () => {
+    let data = approveAll;
+    for (let i = 0; i < 3; i++) data = multicall([data]);
+    const three = await decode(tx({ to: UNKNOWN_TOKEN, data }));
+    expect(three.blind).toBe(false);
+    expect(codes(three)).toContain("unlimited-approval");
+    expect((await decode(tx({ to: UNKNOWN_TOKEN, data: multicall([data]) }))).blind).toBe(true);
+  });
+
+  describe("Uniswap Universal Router commands", () => {
+    const MSG_SENDER = "0x0000000000000000000000000000000000000001";
+    const ADDRESS_THIS = "0x0000000000000000000000000000000000000002";
+    const commands = (...c: number[]) => h(`0x${c.map((x) => x.toString(16).padStart(2, "0")).join("")}`);
+    const execute = (c: `0x${string}`, inputs: `0x${string}`[]) => encodeFunctionData({ abi: batchAbi, functionName: "execute", args: [c, inputs, 1_900_000_000n] });
+    const v2SwapIn = (recipient: string, amountIn: bigint, minOut: bigint, path: `0x${string}`[]) =>
+      encodeAbiParameters(parseAbiParameters("address, uint256, uint256, address[], bool"), [recipient as `0x${string}`, amountIn, minOut, path, true]);
+    const sweep = (token: string, recipient: string, min: bigint) => encodeAbiParameters(parseAbiParameters("address, address, uint256"), [token as `0x${string}`, recipient as `0x${string}`, min]);
+    const permit2TransferFrom = (token: string, recipient: string, amount: bigint) =>
+      encodeAbiParameters(parseAbiParameters("address, address, uint160"), [token as `0x${string}`, recipient as `0x${string}`, amount]);
+
+    it("a swap that pays you lists its steps and stays readable", async () => {
+      const d = await decode(tx({ to: UNI, data: execute(commands(0x08, 0x04), [v2SwapIn(ADDRESS_THIS, 5_000_000n, 10n ** 18n, [SEPOLIA_USDC, UNKNOWN_TOKEN]), sweep(UNKNOWN_TOKEN, MSG_SENDER, 10n ** 18n)]) }));
+      expect(d.blind).toBe(false);
+      expect(d.title).toBe("Swap tokens on Uniswap");
+      expect(steps(d)).toEqual(["Swap 5 USDC for at least 1 PEPE", "Send the PEPE left in the swap to you"]);
+      expect(codes(d)).not.toContain("new-recipient");
+    });
+
+    it("moving your tokens to someone else reads as a send to them, with a caution", async () => {
+      const d = await decode(tx({ to: UNI, data: execute(commands(0x02), [permit2TransferFrom(SEPOLIA_USDC, BOB, 5_000_000n)]) }));
+      expect(d.blind).toBe(false);
+      expect(d.title).toBe("Send 5 USDC to 0x1234…5678");
+      expect(d.warnings.find((w) => w.code === "new-recipient")?.level).toBe("caution");
+    });
+
+    it("a command it can't read makes the whole plan unreadable", async () => {
+      const d = await decode(tx({ to: UNI, data: execute(commands(0x08, 0x21), [v2SwapIn(MSG_SENDER, 5_000_000n, 1n, [SEPOLIA_USDC, UNKNOWN_TOKEN]), "0x"]) }));
+      expect(d.blind).toBe(true);
+      expect(codes(d)).toContain("blind-signing");
+    });
+  });
+
+  it("simulated Approval / ApprovalForAll logs from your account are shown and warned about", async () => {
+    const APPROVAL = toEventSelector("event Approval(address indexed owner, address indexed spender, uint256 value)");
+    const FOR_ALL = toEventSelector("event ApprovalForAll(address indexed owner, address indexed operator, bool approved)");
+    const logs = [
+      { address: UNKNOWN_TOKEN, topics: [APPROVAL, addressTopic(ME), addressTopic(BOB)], data: numberToHex(maxUint256, { size: 32 }) },
+      { address: NFT, topics: [FOR_ALL, addressTopic(ME), addressTopic(BOB)], data: numberToHex(1n, { size: 32 }) },
+      { address: NFT, topics: [APPROVAL, addressTopic(ME), addressTopic(BOB), numberToHex(9n, { size: 32 })], data: "0x" },
+    ];
+    const d = await decode(tx({ to: BOB, data: toFunctionSelector("function deposit()") }), spec({ eth_simulateV1: [{ calls: [{ status: "0x1", gasUsed: "0x30d40", logs }] }] }));
+    expect(d.title).toBe("Deposit on app.example.com");
+    expect(d.warnings.find((w) => w.code === "unlimited-approval")?.level).toBe("danger");
+    expect(d.warnings.find((w) => w.code === "approval-for-all")?.level).toBe("danger");
+    expect(d.lines.filter((l) => l.label === "Permission").map((l) => l.value)).toEqual([
+      "Allow 0x1234…5678 to spend all your PEPE",
+      "Allow 0x1234…5678 to move all your Cool Apes NFTs",
+      "Allow 0x1234…5678 to move your NFT #9 from Cool Apes",
+    ]);
+  });
+
+  it("a simulated Approval that only lowers an allowance (a spend) is not shown as a new permission", async () => {
+    const APPROVAL = toEventSelector("event Approval(address indexed owner, address indexed spender, uint256 value)");
+    const logs = [{ address: UNKNOWN_TOKEN, topics: [APPROVAL, addressTopic(ME), addressTopic(BOB)], data: numberToHex(maxUint256 - 5n, { size: 32 }) }];
+    const allowance = (params: unknown[]) => ((params[0] as { data: string }).data.startsWith("0xdd62ed3e") ? abiUint(maxUint256) : tokenCalls(params));
+    const d = await decode(tx({ to: BOB, data: toFunctionSelector("function deposit()") }), spec({ eth_call: allowance, eth_simulateV1: [{ calls: [{ status: "0x1", gasUsed: "0x30d40", logs }] }] }));
+    expect(codes(d)).not.toContain("unlimited-approval");
+    expect(d.lines.some((l) => l.label === "Permission")).toBe(false);
   });
 });
 
