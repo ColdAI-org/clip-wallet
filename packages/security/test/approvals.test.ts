@@ -1,4 +1,5 @@
 import { AccountAllowanceApproveTransaction, Transaction } from "@hiero-ledger/sdk";
+import { FAMILIES, type Family, type Network } from "@clip-wallet/core";
 import { refineDecoded } from "@clip-wallet/features";
 import { getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
 import { decodeFunctionData, encodeFunctionResult, erc20Abi, pad, parseAbi, toFunctionSelector, zeroAddress, type Hex } from "viem";
@@ -334,6 +335,20 @@ describe("ApprovalsService", () => {
     await flush();
     expect(host.enqueued).toHaveLength(2);
     expect(host.enqueued.every((e) => e.appName === "Clip Wallet")).toBe(true);
+  });
+
+  it("every network family is checked or explained: no family is left out of the permissions screen in silence", async () => {
+    const scanned = new Set<Family>(["evm", "solana", "hedera"]);
+    const others = FAMILIES.filter((f) => !scanned.has(f));
+    const networks = others.map((family): Network => ({ ...APTOS, id: `${family}:testnet`, family, name: `${family} test` }));
+    const view = await new ApprovalsService(fakeHost({ networks, fetch: mockFetch([]).fetch, now: () => NOW })).scan();
+    expect(view.noteCodes!.map((c) => c.slice(c.indexOf(":") + 1)).sort()).toEqual([...others].sort());
+    expect(view.notes.every((n) => !n.includes("Clip Wallet"))).toBe(true);
+    // "Nothing to remove" only where nothing can be granted: UTXO coins and objects only their owner can move. Every
+    // family with allowances, delegated keys, grants or account permissions says it isn't listed yet.
+    expect(view.noteCodes!.filter((c) => c.startsWith("no-permissions:")).sort()).toEqual(
+      ["no-permissions:aptos", "no-permissions:bitcoin", "no-permissions:bitcoincash", "no-permissions:cardano", "no-permissions:fuel", "no-permissions:sui"],
+    );
   });
 
   it("a network that can't be reached is reported plainly, others still show", async () => {

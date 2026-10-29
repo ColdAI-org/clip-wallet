@@ -2,7 +2,9 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { APPROVAL_NOTE_CODES } from "@clip-wallet/security";
 import type { CleanupOverviewView, GrantView, SecurityClient, ThreatProviderStatusView } from "../src/security/client";
+import { noteText } from "../src/security/text";
 import { SecurityProvider } from "../src/security/context";
 import { securityRoute } from "../src/security/routes";
 import { Cleanup, Permissions, Protection, SecurityHome } from "../src/security/Security";
@@ -150,6 +152,11 @@ describe("security screens", () => {
       { state: state({}, { locale: "de" }) },
     );
     expect(await screen.findByText("Eine unbekannte App kann dein NFT #7 aus Pudgy Pals bewegen")).toBeInTheDocument();
+  });
+
+  it("permissions: every note a scan can give has its own words in the user's language", () => {
+    const t = (id: string) => `t:${id}`;
+    expect(APPROVAL_NOTE_CODES.filter((code) => !noteText(code, "", t).startsWith("t:"))).toEqual([]);
   });
 
   it("cleanup: bulk selection with a live summary, 'Get back ~… SOL', then queues", async () => {
