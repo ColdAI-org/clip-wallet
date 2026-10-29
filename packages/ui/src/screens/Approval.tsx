@@ -195,7 +195,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
             {t("approval.batch.sequential")}
           </p>
         )}
-        <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
+        {/* The blocked notice stands in for "can't read" warnings; a readable request shows them as written. */}
+        <Warnings warnings={d.blind ? d.warnings.filter((w) => w.code !== "blind-signing") : d.warnings} />
         <PluginInsights insights={(d as { pluginInsights?: PluginInsightView[] }).pluginInsights} />
         {d.blind && advanced && (
           <Toggle
