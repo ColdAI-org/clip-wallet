@@ -95,6 +95,8 @@ interface Pending {
   request?: DappRequest;
   /** Transactions: the account the request was decoded for (audit APPR-02). Approve signs with it or not at all. */
   accountId?: string;
+  /** Transactions from a connected site: the permission they came with. Approve goes ahead only while it stands. */
+  site?: { origin: string; family: Family };
   /** Transactions: an Approve is running (audit APPR-01). One approval prepares, signs and broadcasts once. */
   busy?: boolean;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
@@ -126,6 +128,9 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 }
 const APPROVAL_TTL_MS = 2 * 60_000;
 const FAMILIES: readonly Family[] = CORE_FAMILIES;
+
+/** A site's request whose permission went: disconnected in the wallet, or by the site itself. */
+const appDisconnected = () => new ClipError("This app isn't connected any more, so its request was cancelled.", "approval/cancelled");
 
 function parseUnits(value: string, decimals: number): bigint {
   const [w = "0", f = ""] = value.split(".");
@@ -794,6 +799,8 @@ export class WalletService implements DappHost {
     extra: { recipient?: string; warnings?: Warning[] } = {},
   ): Promise<{ id: string; promise: Promise<unknown> }> {
     const network = this.network(request.networkId);
+    // A connected site's request keeps the permission it came with; Approve checks it is still there.
+    const site = request.via === "injected" && !isWalletOrigin(request.origin) && (await this.permissions.has(request.origin, request.family)) ? { origin: request.origin, family: request.family } : undefined;
     const ctx = await this.ctx(network.id, request.origin);
     let decoded: DecodedRequest;
     let batch: Pending["batch"];
@@ -853,7 +860,7 @@ export class WalletService implements DappHost {
       resolve = res;
       reject = rej;
     });
-    this.approvals.set(id, { view, request, accountId: ctx.account.id, resolve, reject, ...(batch ? { batch } : {}) });
+    this.approvals.set(id, { view, request, accountId: ctx.account.id, ...(site ? { site } : {}), resolve, reject, ...(batch ? { batch } : {}) });
     // Real sends feed the look-alike check (security's RecipientLog), once they go through.
     if (extra.recipient && this.recipients) {
       const out = decoded.balanceChanges.find((c) => c.delta.startsWith("-"));
@@ -936,6 +943,13 @@ export class WalletService implements DappHost {
   private async approveTransaction(id: string, p: Pending, allowBlind: boolean): Promise<void> {
     const req = p.request!;
     const decoded = p.view.decoded!;
+    // Nothing is signed for a site that was disconnected after its request arrived. A Connector payment under way, or
+    // one that already knows the app is gone, carries on: it only waits, claims or closes, never signs for the app.
+    const connector = p.settle && (p.settle.inFlight || p.view.plan?.funding?.appGone);
+    if (p.site && !connector && !(await this.permissions.has(p.site.origin, p.site.family))) {
+      this.endApprovals((x) => x === id, appDisconnected);
+      throw appDisconnected();
+    }
     // Money from a bonded Connector: the first Approve pays it, a late order's Approve claims the cover.
     if (p.view.plan?.funding && this.deps.settleFunding) {
       const next = await (p.settle ??= await this.settleRun(p)).approve();
@@ -1167,10 +1181,16 @@ export class WalletService implements DappHost {
       await this.deps.dapps.disconnected(hit.origin, hit.family);
       const left = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
       await this.kv.set(K.permissions, left.filter((p) => p.id !== id));
+      this.endSiteRequests(hit.origin, hit.family);
     } else {
       await this.deps.walletConnect.disconnect(id);
     }
     this.env.broadcast();
+  }
+
+  /** A site lost its permission (Disconnect here, or the site's own): the requests it sent while connected end too. */
+  private endSiteRequests(origin: string, family: Family) {
+    this.endApprovals((_, p) => p.site?.origin === origin && p.site.family === family, appDisconnected);
   }
 
   /* ------------------------------------------------------------------ DappHost (1Mask, WalletConnect) */
@@ -1188,6 +1208,7 @@ export class WalletService implements DappHost {
     revoke: async (origin, family) => {
       const perms = (await this.kv.get<Permission[]>(K.permissions)) ?? [];
       await this.kv.set(K.permissions, perms.filter((p) => !(p.origin === origin && p.family === family)));
+      this.endSiteRequests(origin, family);
       this.env.broadcast();
     },
     origins: async () => [...new Set(((await this.kv.get<Permission[]>(K.permissions)) ?? []).map((p) => p.origin))],
@@ -1238,18 +1259,23 @@ export class WalletService implements DappHost {
   }
 
   cancel(requestId: string) {
+    this.endApprovals((id, p) => id === requestId || p.request?.id === requestId, () => new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
+  }
+
+  /** Ends the requests `match` picks: the app gets `err` and the request leaves the queue. */
+  private endApprovals(match: (id: string, p: Pending) => boolean, err: () => ClipError) {
     for (const [id, p] of this.approvals) {
-      if (id === requestId || p.request?.id === requestId) {
-        // A Connector order under way stays on screen (arrival or claim); only the app's request ends.
-        if (p.settle?.inFlight) {
-          p.settle.appGone();
-          p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
-          continue;
-        }
-        this.approvals.delete(id);
-        p.reject(new ClipError("This request timed out. Ask the app to try again.", "approval/timeout"));
-        this.env.broadcast();
+      if (!match(id, p)) continue;
+      // A Connector order under way stays on screen (arrival or claim); only the app's request ends.
+      if (p.settle?.inFlight) {
+        p.settle.appGone();
+        p.reject(err());
+        continue;
       }
+      p.settle?.stop();
+      this.approvals.delete(id);
+      p.reject(err());
+      this.env.broadcast();
     }
   }
 

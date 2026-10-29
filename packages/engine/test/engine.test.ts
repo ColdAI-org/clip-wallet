@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WalletEngine } from "../src/engine.js";
+import { KV_KEYS, WalletEngine } from "../src/engine.js";
 import { MemoryKV, JsonKV } from "../src/kv.js";
 import { createEngineClient } from "../src/client.js";
 import { createFeatureHost } from "../src/features.js";
@@ -241,6 +241,55 @@ describe("WalletEngine: dapps over the 1Mask port (WebView bridge / content scri
     const [s] = await engine.handle({ type: "listSessions" });
     await engine.handle({ type: "disconnect", id: s!.id });
     expect(await engine.permissions.has(ORIGIN, "evm")).toBe(false);
+  });
+
+  it("disconnecting a site ends its requests still waiting; another site's stays", async () => {
+    const OTHER = "https://other.test";
+    const opened: string[] = [];
+    const { engine, vault } = await unlocked((id) => opened.push(id));
+    await engine.permissions.grant(ORIGIN, "evm");
+    await engine.permissions.grant(OTHER, "evm");
+    const a = fakePort();
+    const b = fakePort();
+    engine.attachDappPort(a.port, ORIGIN);
+    engine.attachDappPort(b.port, OTHER);
+    const signing = a.send(ORIGIN, "personal_sign", ["0x68656c6c6f", EVM_ADDRESS]);
+    void b.send(OTHER, "personal_sign", ["0x68656c6c6f", EVM_ADDRESS]);
+    for (let i = 0; i < 10 && opened.length < 2; i++) await tick();
+    const sessions = await engine.handle({ type: "listSessions" });
+    await engine.handle({ type: "disconnect", id: sessions.find((s) => s.dapp.origin === ORIGIN)!.id });
+    expect((await signing).error?.code).toBe(4001);
+    expect((await engine.handle({ type: "listApprovals" })).map((v) => v.dapp.origin)).toEqual([OTHER]);
+    expect(vault.signed).toHaveLength(0);
+  });
+
+  it("a site that disconnects itself ends its requests still waiting", async () => {
+    const opened: string[] = [];
+    const { engine } = await unlocked((id) => opened.push(id));
+    await engine.permissions.grant(ORIGIN, "evm");
+    const { port, send } = fakePort();
+    engine.attachDappPort(port, ORIGIN);
+    const signing = send(ORIGIN, "personal_sign", ["0x68656c6c6f", EVM_ADDRESS]);
+    for (let i = 0; i < 5 && !opened.length; i++) await tick();
+    await send(ORIGIN, "wallet_revokePermissions", [{ eth_accounts: {} }]);
+    expect((await signing).error?.code).toBe(4001);
+    expect(await engine.handle({ type: "listApprovals" })).toHaveLength(0);
+  });
+
+  it("Approve refuses a site's request once the site is no longer connected", async () => {
+    const opened: string[] = [];
+    const { engine, vault, kv } = await unlocked((id) => opened.push(id));
+    await engine.permissions.grant(ORIGIN, "evm");
+    const { port, send } = fakePort();
+    engine.attachDappPort(port, ORIGIN);
+    const signing = send(ORIGIN, "personal_sign", ["0x68656c6c6f", EVM_ADDRESS]);
+    for (let i = 0; i < 5 && !opened.length; i++) await tick();
+    // The permission went without passing the queue: Approve checks it again.
+    await kv.set(KV_KEYS.permissions, []);
+    await expect(engine.handle({ type: "approve", id: opened[0]! })).rejects.toMatchObject({ code: "approval/cancelled" });
+    expect((await signing).error?.code).toBe(4001);
+    expect(vault.signed).toHaveLength(0);
+    expect(await engine.handle({ type: "listApprovals" })).toHaveLength(0);
   });
 });
 

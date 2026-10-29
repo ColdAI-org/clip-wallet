@@ -11,10 +11,11 @@ type T = (id: UiMessageId, vars?: Record<string, string | number>) => string;
 
 const shortAddr = (a: string) => (a.length > 14 ? `${a.slice(0, a.startsWith("0x") ? 6 : 4)}…${a.slice(-4)}` : a);
 
-/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins". */
+/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins", "… your NFT #7 from …". */
 export function grantTitle(g: GrantView, t: T): string {
   const app = g.spender.name ?? (g.spender.known ? shortAddr(g.spender.address) : t("security.grant.unknownApp"));
   if (g.kind === "nft-all" || g.kind === "hts-nft-all") return t("security.grant.nftAll", { app, collection: g.asset.name });
+  if (g.kind === "nft-token" && g.tokenId) return t("security.grant.nftOne", { app, id: g.tokenId, collection: g.asset.name });
   const permit2 = g.kind === "permit2";
   // A limited permission from a background without `limit` can't be re-worded: keep its own title.
   if (!g.unlimited && !g.limit && g.kind !== "spl-delegate") return g.title;
@@ -41,10 +42,26 @@ export function noteText(code: string | undefined, fallback: string, t: T): stri
     "no-permissions:aptos": "security.note.noPermissions.aptos",
     "no-permissions:sui": "security.note.noPermissions.sui",
     "no-permissions:bitcoin": "security.note.noPermissions.bitcoin",
+    "no-permissions:cardano": "security.note.noPermissions.cardano",
+    "no-permissions:fuel": "security.note.noPermissions.fuel",
+    "no-permissions:bitcoincash": "security.note.noPermissions.bitcoincash",
     "not-yet:starknet": "security.note.notYet.starknet",
     "not-yet:tezos": "security.note.notYet.tezos",
     "not-yet:substrate": "security.note.notYet.substrate",
     "not-yet:stellar": "security.note.notYet.stellar",
+    "not-yet:tron": "security.note.notYet.tron",
+    "not-yet:ton": "security.note.notYet.ton",
+    "not-yet:near": "security.note.notYet.near",
+    "not-yet:icp": "security.note.notYet.icp",
+    "not-yet:cosmos": "security.note.notYet.cosmos",
+    "not-yet:provenance": "security.note.notYet.provenance",
+    "not-yet:initia": "security.note.notYet.initia",
+    "not-yet:thorchain": "security.note.notYet.thorchain",
+    "not-yet:xrpl": "security.note.notYet.xrpl",
+    "not-yet:antelope": "security.note.notYet.antelope",
+    "not-yet:algorand": "security.note.notYet.algorand",
+    "not-yet:stacks": "security.note.notYet.stacks",
+    "not-yet:multiversx": "security.note.notYet.multiversx",
     "hide-only:evm": "security.note.hideOnly.evm",
     "hide-only:other": "security.note.hideOnly.other",
   };

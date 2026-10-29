@@ -3,8 +3,8 @@ import { longZeroToAccountId } from "./address.js";
 import { accountEvm, accountIdString, entityIdString, timestampDate } from "./ids.js";
 import type { Mirror, MirrorToken } from "./mirror.js";
 import { hbarAsset, ledgerOf, tokenAssetKey } from "./networks.js";
-import { type SaucerSwapIntent, decodeSaucerSwap } from "./saucerswap.js";
-import { abiAddress, abiUint, lookupSelector } from "./selectors.js";
+import { type SaucerSwapIntent, decodeSaucerSwap, multicallCalls } from "./saucerswap.js";
+import { type SelectorEntry, abiAddress, abiUint, lookupSelector } from "./selectors.js";
 import {
   type AccountIdP,
   BODY,
@@ -29,6 +29,7 @@ import { msg, titled, warning, withFallback, titleMsgOf, finalMsg, type Msg, say
 export interface Line {
   label: string;
   value: string;
+  valueMsg?: Msg;
 }
 
 export interface Described {
@@ -401,18 +402,33 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
     if (payable > 0n) return { ...titled(msg("bg.req.sendToContract", { amount: `${formatUnits(payable, 8)} HBAR`, contract })), lines, balanceChanges, warnings: [], blind: false };
     return blindResult(msg("bg.hedera.useContract", { contract }), "This contract call has no readable function.", lines);
   }
-  const swap = tx.contractId ? decodeSaucerSwap(contract, data, payable, ledgerOf(dc.networkId)) : null;
+  return describeCall(contract, !!tx.contractId, data, payable, lines, balanceChanges, dc, { depth: 0, budget: { calls: MAX_MULTICALL_CALLS } });
+}
+
+/** Calls inside a multicall are read this many levels deep, and this many in all; past that it can't be read. */
+const MAX_MULTICALL_DEPTH = 3;
+const MAX_MULTICALL_CALLS = 32;
+
+interface Walk {
+  depth: number;
+  /** Calls left to read, shared by every level. */
+  budget: { calls: number };
+}
+
+async function describeCall(contract: string, hasId: boolean, data: Uint8Array, payable: bigint, lines: Line[], balanceChanges: BalanceChange[], dc: DescribeContext, walk: Walk): Promise<Described> {
+  const swap = hasId ? decodeSaucerSwap(contract, data, payable, ledgerOf(dc.networkId)) : null;
   if (swap) return describeSaucerSwap(swap, contract, payable, lines, dc);
 
   const entry = lookupSelector(data);
   if (!entry) {
-    lines.push({ label: "Function", value: `0x${hex(data.subarray(0, 4))} (unknown)` });
+    lines.push({ label: "Function", value: data.length < 4 ? "(none)" : `0x${hex(data.subarray(0, 4))} (unknown)` });
     return { ...blindResult(msg("bg.hedera.useContract", { contract }), "Clip Wallet can't read what this contract call does.", lines), balanceChanges };
   }
   lines.push({ label: "Function", value: entry.signature });
+  if (entry.name === "multicall") return describeMulticall(contract, hasId, data, entry, payable, lines, balanceChanges, dc, walk);
 
   // HTS tokens are also ERC-20/721 contracts at their own id (HIP-218 / HIP-376).
-  const token = tx.contractId ? await dc.mirror.token(contract).catch(() => null) : null;
+  const token = hasId ? await dc.mirror.token(contract).catch(() => null) : null;
   const asset = token ? await tokenAsset(dc, contract) : null;
   const warnings: Warning[] = [];
   let title = say("bg.req.fnWithContract", { fn: entry.plain, contract });
@@ -488,6 +504,64 @@ async function describeContract(body: Uint8Array, dc: DescribeContext): Promise<
       if (payable > 0n) title += ` and send ${formatUnits(payable, 8)} HBAR`;
   }
   return { title, ...(titleMsg ? { titleMsg } : {}), lines, balanceChanges, warnings, blind: false };
+}
+
+/**
+ * multicall(bytes[]) / multicall(uint256,bytes[]): the contract runs each call on itself, as you, so each is read
+ * like a call of its own and listed as a step. Warnings carry up; one step that can't be read makes the whole call
+ * unreadable.
+ */
+async function describeMulticall(
+  contract: string,
+  hasId: boolean,
+  data: Uint8Array,
+  entry: SelectorEntry,
+  payable: bigint,
+  lines: Line[],
+  balanceChanges: BalanceChange[],
+  dc: DescribeContext,
+  walk: Walk,
+): Promise<Described> {
+  const warnings: Warning[] = [];
+  const unreadable = (): Described => ({
+    ...titled(msg("bg.hedera.useContract", { contract })),
+    lines,
+    balanceChanges,
+    warnings: warnings.some((w) => w.code === "blind-signing") ? warnings : withWarning(warnings, warning("danger", "blind-signing", msg("bg.warn.evmUnreadable"))),
+    blind: true,
+  });
+  let calls: Uint8Array[] = [];
+  try {
+    if (walk.depth < MAX_MULTICALL_DEPTH) calls = multicallCalls(data, entry.signature === "multicall(uint256,bytes[])", walk.budget.calls);
+  } catch {
+    // malformed, or more calls than are left to read
+  }
+  if (calls.length === 0) return unreadable();
+  walk.budget.calls -= calls.length;
+
+  const hbar = hbarAsset(dc.networkId).key;
+  const parts: Described[] = [];
+  for (const [i, call] of calls.entries()) {
+    // Only the outer call sends HBAR (the "Also sends" amount); a step can't spend more of yours than that.
+    const part = await describeCall(contract, hasId, call, 0n, [], [], dc, { depth: walk.depth + 1, budget: walk.budget });
+    parts.push(part);
+    lines.push({ label: say("bg.label.actionN", { n: i + 1 }), value: part.title, ...(part.titleMsg ? { valueMsg: part.titleMsg } : {}) });
+    lines.push(...part.lines);
+    balanceChanges.push(...part.balanceChanges.filter((c) => !(c.asset.key === hbar && BigInt(c.delta) < 0n)));
+    for (const w of part.warnings) withWarning(warnings, w);
+  }
+  if (parts.some((p) => p.blind)) return unreadable();
+  const only = parts.length === 1 && payable === 0n ? parts[0]! : null;
+  if (only) return { title: only.title, ...(only.titleMsg ? { titleMsg: only.titleMsg } : {}), lines, balanceChanges, warnings, blind: false };
+  let title = say("bg.req.fnWithContract", { fn: entry.plain, contract });
+  if (payable > 0n) title += ` and send ${formatUnits(payable, 8)} HBAR`;
+  return { title, lines, balanceChanges, warnings, blind: false };
+}
+
+/** Adds a warning unless the same one is already there. */
+function withWarning(warnings: Warning[], w: Warning): Warning[] {
+  if (!warnings.some((x) => x.code === w.code && x.message === w.message)) warnings.push(w);
+  return warnings;
 }
 
 async function describeSaucerSwap(sw: SaucerSwapIntent, router: string, payable: bigint, lines: Line[], dc: DescribeContext): Promise<Described> {

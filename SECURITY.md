@@ -45,3 +45,9 @@ the backup service decrypt a backup.
 Fixes ship as a new signed tag and release (`.github/workflows/release.yml`) with SHA256SUMS and build
 provenance, then a store update. Hosted-service fixes deploy to the Workers directly
 (`docs/phase25/deploy.md`). We will publish an advisory once users have had time to update.
+
+## Acknowledgements
+
+Thank you to the people who reported issues privately:
+
+- **Ibnu**: approval decoding and the permissions review (October 2026).

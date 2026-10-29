@@ -15,20 +15,50 @@ import type { ApprovalScanner, Grant } from "./types.js";
  *  - Sui: objects are moved only by their owner's transaction (docs.sui.io/concepts/object-ownership); there
  *    is no allowance to revoke.
  *  - Bitcoin: UTXOs have no allowances.
+ * Checked 2026-10-30:
+ *  - Cardano: native tokens sit in UTXOs only the owner's key can spend; the ledger has no approve or allowance.
+ *    Stake-pool and DRep delegation lend stake and votes, never the funds.
+ *  - Fuel: native assets are UTXO coins spent only with the owner's signature; no allowance standard.
+ *  - Bitcoin Cash: UTXOs (CashTokens included) have no allowances.
  */
 const NO_PERMISSIONS: Partial<Record<Family, string>> = {
   aptos: "Aptos tokens can't be spent by an app unless you sign each time, so there's nothing to remove there.",
   sui: "Sui coins and objects can only be moved by you, so there's nothing to remove there.",
   bitcoin: "Bitcoin has no spending permissions to remove.",
+  cardano: "Cardano tokens can only be moved with your signature each time, so there's nothing to remove there.",
+  fuel: "Fuel coins can only be moved with your signature each time, so there's nothing to remove there.",
+  bitcoincash: "Bitcoin Cash has no spending permissions to remove.",
 };
 
-/** Families that do have permissions this build can't list yet (gaps, said plainly). */
+/**
+ * Families that do have permissions this build can't list yet (gaps, said plainly). Every family without a scanner
+ * is here or above, so none is left out of the screen in silence.
+ */
 const NOT_YET: Partial<Record<Family, string>> = {
-  starknet: "Starknet tokens can have spending permissions too. Clip Wallet can't list them yet.",
-  tezos: "Tezos tokens can have operators (apps allowed to move them). Clip Wallet can't list them yet.",
-  substrate: "Polkadot Asset Hub tokens can have spending permissions and proxies. Clip Wallet can't list them yet.",
-  stellar: "Stellar smart-contract tokens can have spending permissions. Clip Wallet can't list them yet.",
+  starknet: "Starknet tokens can have spending permissions too. This wallet can't list them yet.",
+  tezos: "Tezos tokens can have operators (apps allowed to move them). This wallet can't list them yet.",
+  substrate: "Polkadot Asset Hub tokens can have spending permissions and proxies. This wallet can't list them yet.",
+  stellar: "Stellar smart-contract tokens can have spending permissions. This wallet can't list them yet.",
+  tron: "TRON tokens can have spending permissions, as on Ethereum, and an account can give other keys control of it. This wallet can't list them yet.",
+  ton: "TON wallets can have extensions or plugins (apps allowed to send from your wallet). This wallet can't list them yet.",
+  near: "NEAR apps can hold access keys to your account. This wallet can't list them yet.",
+  icp: "Internet Computer tokens can have spending permissions (ICRC-2). This wallet can't list them yet.",
+  cosmos: "Cosmos accounts can let another account act for them or pay fees from their balance (authz and fee grants). This wallet can't list them yet.",
+  provenance: "Provenance accounts can let another account act for them or pay fees from their balance (authz and fee grants). This wallet can't list them yet.",
+  initia: "Initia accounts can let another account act for them or pay fees from their balance (authz and fee grants). This wallet can't list them yet.",
+  thorchain: "This wallet doesn't check THORChain for permissions yet.",
+  xrpl: "XRP Ledger accounts can have a regular key, other signers, or checks someone else can cash. This wallet can't list them yet.",
+  antelope: "Antelope accounts (Vaulta, Telos, XPR Network and others) can give other keys and contracts permission to act for them. This wallet can't list them yet.",
+  algorand: "Algorand app tokens (ARC-200) can have spending permissions, and an account can be handed to another key (rekeyed). This wallet can't list them yet.",
+  stacks: "Stacks accounts can let a stacking pool lock their STX. This wallet can't list those delegations yet.",
+  multiversx: "MultiversX accounts can have a guardian that must co-sign their transactions. This wallet can't list it yet.",
 };
+
+/** Every note code a scan can give, for screens that say the notes in the user's language. */
+export const APPROVAL_NOTE_CODES: readonly string[] = [
+  ...Object.keys(NO_PERMISSIONS).map((f) => `no-permissions:${f}`),
+  ...Object.keys(NOT_YET).map((f) => `not-yet:${f}`),
+];
 
 const DEFAULTS = { lookbackBlocks: 200_000, maxBlockRange: 10_000, oldAfterDays: 180 };
 

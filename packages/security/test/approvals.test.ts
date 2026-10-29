@@ -1,7 +1,8 @@
 import { AccountAllowanceApproveTransaction, Transaction } from "@hiero-ledger/sdk";
+import { FAMILIES, type Family, type Network } from "@clip-wallet/core";
 import { refineDecoded } from "@clip-wallet/features";
 import { getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
-import { decodeFunctionData, encodeFunctionResult, erc20Abi, pad, parseAbi, type Hex } from "viem";
+import { decodeFunctionData, encodeFunctionResult, erc20Abi, pad, parseAbi, toFunctionSelector, zeroAddress, type Hex } from "viem";
 import { describe, expect, it } from "vitest";
 import { EvmApprovals, PERMIT2, PERMIT2_ABI, TOPIC, pairsFromLogs, verifyLockdown, type RawLog } from "../src/approvals/evm.js";
 import { HederaApprovals } from "../src/approvals/hedera.js";
@@ -38,7 +39,7 @@ const LOGS: RawLog[] = [
   log(NFT, [TOPIC.approvalForAll, t(ME_EVM), t(CONDUIT)], w(1n), 70, NOW - 20 * DAY),
   log(NFT, [TOPIC.approvalForAll, t(ME_EVM), t(STRANGER)], w(1n), 71, NOW - 20 * DAY),
   log(NFT, [TOPIC.approvalForAll, t(ME_EVM), t(STRANGER)], w(0n), 72, NOW - 19 * DAY),
-  // ERC-721 single-token Approval (4 topics) is skipped.
+  // ERC-721 single-token Approval (4 topics): listed only while getApproved / ownerOf say it is live.
   log(NFT, [TOPIC.approval, t(ME_EVM), t(STRANGER), pad("0x7")], "0x", 73, NOW - 19 * DAY),
   log(PERMIT2, [TOPIC.permit2Approval, t(ME_EVM), t(USDC), t(UNISWAP)], w(2n ** 160n - 1n) + w(BigInt(sec(NOW + 30 * DAY))), 80, NOW - 5 * DAY),
   log(PERMIT2, [TOPIC.permit2Permit, t(ME_EVM), t(DAI), t(UNISWAP)], w(5n) + w(BigInt(sec(NOW - DAY))) + w(0n), 81, NOW - 5 * DAY),
@@ -74,13 +75,14 @@ function ethCall(params: unknown[]): Hex {
   throw { code: 3, message: "execution reverted" };
 }
 
-function blockscout(url: string) {
+const blockscoutOf = (logs: RawLog[]) => (url: string) => {
   const q = new URL(url).searchParams;
   expect(q.get("topic1")).toBe(t(ME_EVM));
   expect(q.get("topic0_1_opr")).toBe("and");
   const addr = q.get("address");
-  return { message: "OK", status: "1", result: LOGS.filter((l) => l.topics[0] === q.get("topic0") && (!addr || l.address === addr.toLowerCase())) };
-}
+  return { message: "OK", status: "1", result: logs.filter((l) => l.topics[0] === q.get("topic0") && (!addr || l.address === addr.toLowerCase())) };
+};
+const blockscout = blockscoutOf(LOGS);
 
 const scanOpts = { now: NOW, oldAfterDays: 180, isFlagged: (a: string) => a.toLowerCase() === STRANGER.toLowerCase(), evm: { lookbackBlocks: 200_000, maxBlockRange: 10_000 } };
 
@@ -88,7 +90,7 @@ describe("EVM permissions", () => {
   it("folds grant logs per (token, spender), only for you", () => {
     const pairs = pairsFromLogs(LOGS, ME_EVM);
     expect(pairs.map((p) => `${p.kind}:${p.token.slice(0, 6)}:${p.spender.slice(0, 6)}`.toLowerCase()).sort()).toEqual(
-      ["erc20:0xaaaa:0x5555", "erc20:0xaaaa:0x3fc9", "erc20:0xdddd:0x3fc9", "nft-all:0xbbbb:0x1e00", "nft-all:0xbbbb:0x5555", "permit2:0xaaaa:0x3fc9", "permit2:0xdddd:0x3fc9"].sort(),
+      ["erc20:0xaaaa:0x5555", "erc20:0xaaaa:0x3fc9", "erc20:0xdddd:0x3fc9", "nft-all:0xbbbb:0x1e00", "nft-all:0xbbbb:0x5555", "nft-token:0xbbbb:0x5555", "permit2:0xaaaa:0x3fc9", "permit2:0xdddd:0x3fc9"].sort(),
     );
     expect(pairs.find((p) => p.kind === "nft-all" && p.spender === STRANGER)!.values).toEqual([1n, 0n]);
   });
@@ -169,6 +171,42 @@ describe("EVM permissions", () => {
         expect(step.verify!(step.request as never)).toBe(true);
       }
     }
+  });
+
+  it("a single-NFT approval (4-topic Approval) is listed while it is still current and revoked with approve(0x0, tokenId)", async () => {
+    const ERC721 = parseAbi(["function getApproved(uint256 tokenId) view returns (address)", "function ownerOf(uint256 tokenId) view returns (address)"]);
+    const logs = [
+      ...LOGS, // Approval(you, STRANGER, #7): still current
+      log(NFT, [TOPIC.approval, t(ME_EVM), t(CONDUIT), pad("0x9")], "0x", 74, NOW - 18 * DAY), // replaced since
+      log(NFT, [TOPIC.approval, t(ME_EVM), t(STRANGER), pad("0xa")], "0x", 75, NOW - 18 * DAY), // #10 is no longer yours
+      log(NFT, [TOPIC.approval, t(ME_EVM), t(zeroAddress), pad("0x8")], "0x", 76, NOW - 18 * DAY), // a clear, not a grant
+    ];
+    const pairs = pairsFromLogs(logs, ME_EVM).filter((p) => p.kind === "nft-token");
+    expect(pairs.map((p) => [p.spender, p.tokenId])).toEqual([[STRANGER, 7n], [CONDUIT, 9n], [STRANGER, 10n]]);
+
+    const chain = (params: unknown[]): Hex => {
+      const { to, data } = params[0] as { to: string; data: Hex };
+      if (to.toLowerCase() === NFT.toLowerCase() && (data.startsWith(toFunctionSelector(ERC721[0])) || data.startsWith(toFunctionSelector(ERC721[1])))) {
+        const d = decodeFunctionData({ abi: ERC721, data });
+        const id = d.args[0];
+        if (d.functionName === "getApproved") return encodeFunctionResult({ abi: ERC721, functionName: "getApproved", result: id === 7n || id === 10n ? STRANGER : zeroAddress });
+        return encodeFunctionResult({ abi: ERC721, functionName: "ownerOf", result: id === 10n ? OTHER_OWNER : ME_EVM });
+      }
+      return ethCall(params);
+    };
+    const { fetch } = mockFetch([[/blockscout\.test\/api\?/, blockscoutOf(logs)]], { eth_call: chain });
+    const ctx = { network: SEPOLIA, account: accountFor(SEPOLIA), fetch };
+    const s = new EvmApprovals();
+    const { grants } = await s.scan(ctx, scanOpts);
+    const one = grants.filter((g) => g.view.kind === "nft-token");
+    expect(one).toHaveLength(1);
+    expect(one[0]!.view).toMatchObject({ title: "An unknown app can move your NFT #7 from Pudgy Pals", spender: { address: STRANGER, known: false }, unlimited: false, riskLevel: "high" });
+
+    const [step] = await s.revoke(one, ctx);
+    const req = step!.request as { params: { to: string; data: Hex; value: string }[] };
+    expect(step!.title).toBe("Remove 0x5555…5555's access to your Pudgy Pals NFTs");
+    expect(req.params[0]!.to).toBe(NFT);
+    expect(decodeFunctionData({ abi: parseAbi(["function approve(address to, uint256 tokenId)"]), data: req.params[0]!.data }).args).toEqual([zeroAddress, 7n]);
   });
 
   it("the Permit2 step is checked against its bytes before its blind decode is lifted", async () => {
@@ -297,6 +335,20 @@ describe("ApprovalsService", () => {
     await flush();
     expect(host.enqueued).toHaveLength(2);
     expect(host.enqueued.every((e) => e.appName === "Clip Wallet")).toBe(true);
+  });
+
+  it("every network family is checked or explained: no family is left out of the permissions screen in silence", async () => {
+    const scanned = new Set<Family>(["evm", "solana", "hedera"]);
+    const others = FAMILIES.filter((f) => !scanned.has(f));
+    const networks = others.map((family): Network => ({ ...APTOS, id: `${family}:testnet`, family, name: `${family} test` }));
+    const view = await new ApprovalsService(fakeHost({ networks, fetch: mockFetch([]).fetch, now: () => NOW })).scan();
+    expect(view.noteCodes!.map((c) => c.slice(c.indexOf(":") + 1)).sort()).toEqual([...others].sort());
+    expect(view.notes.every((n) => !n.includes("Clip Wallet"))).toBe(true);
+    // "Nothing to remove" only where nothing can be granted: UTXO coins and objects only their owner can move. Every
+    // family with allowances, delegated keys, grants or account permissions says it isn't listed yet.
+    expect(view.noteCodes!.filter((c) => c.startsWith("no-permissions:")).sort()).toEqual(
+      ["no-permissions:aptos", "no-permissions:bitcoin", "no-permissions:bitcoincash", "no-permissions:cardano", "no-permissions:fuel", "no-permissions:sui"],
+    );
   });
 
   it("a network that can't be reached is reported plainly, others still show", async () => {

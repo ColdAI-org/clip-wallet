@@ -2,7 +2,7 @@
  * decode(): DappRequest → DecodedRequest in plain words.
  * Titles never contain raw method names; fees are an amount of the network's native asset.
  */
-import { ClipError, msg, titled, warning, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
+import { ClipError, labelled, msg, titled, warning, type AssetRef, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
 import {
   type AbiFunction,
   type Hex,
@@ -12,15 +12,17 @@ import {
   isHex,
   parseAbi,
   toFunctionSelector,
+  zeroAddress,
 } from "viem";
-import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
+import { chainIdOf, quoteFees, tokenMeta, tokenOrNft, type FeeQuote } from "./chain.js";
 import { specFor } from "./networks.js";
 import { isOpStack, l1DataFee } from "./l1fee.js";
 import { formatAmount, hostOf, isUnlimited, safeChecksum, shortAddress } from "./format.js";
 import { type TxParams, type TypedData, parsePersonalSign, parseTx, parseTypedData } from "./params.js";
 import { lookupSelector } from "./selectors.js";
-import { simulate } from "./simulate.js";
+import { type SimulatedApproval, simulate } from "./simulate.js";
 import { appName } from "./tokens.js";
+import { routerSteps } from "./universal-router.js";
 
 /**
  * Injected (1Mask EIP-1193) and WalletConnect eip155 requests use the same method names and params.
@@ -73,11 +75,38 @@ const ACTION_IDS: Record<string, BgMessageId | undefined> = {
   "Register a name": "bg.evm.on.registerAName",
 };
 
+/**
+ * Calls that carry other calls. multicall runs each call on the same contract, as you (delegatecall); aggregate3
+ * names each call's contract; the Universal Router's execute carries commands instead (universal-router.ts).
+ */
+const batchAbi = parseAbi([
+  "function multicall(bytes[] data)",
+  "function multicall(uint256 deadline, bytes[] data)",
+  "function aggregate3((address target, bool allowFailure, bytes callData)[] calls)",
+  "function execute(bytes commands, bytes[] inputs)",
+  "function execute(bytes commands, bytes[] inputs, uint256 deadline)",
+]);
+const BATCH_SELECTORS = new Set<string>(batchAbi.map((f) => toFunctionSelector(f)));
+
+/** Batches inside batches are read this many levels deep, and at most this many calls in all; past that, unreadable. */
+const MAX_BATCH_DEPTH = 3;
+const MAX_BATCH_CALLS = 32;
+
+interface Walk {
+  depth: number;
+  /** Calls left to read, shared by the whole request. */
+  budget: { calls: number };
+}
+
 /** Name for a contract or account in plain words: a known app, otherwise the short address. */
 const who = (address: string): string => appName(address) ?? shortAddress(address);
 
-function base(req: DappRequest): DecodedRequest {
+function base(req: Pick<DappRequest, "id" | "networkId">): DecodedRequest {
   return { requestId: req.id, title: "", lines: [], balanceChanges: [], simulated: false, blind: false, warnings: [], networkId: req.networkId };
+}
+
+function addWarning(d: Pick<DecodedRequest, "warnings">, w: Warning): void {
+  if (!d.warnings.some((x) => x.code === w.code && x.message === w.message)) d.warnings.push(w);
 }
 
 /**
@@ -150,6 +179,7 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
     for (const m of sim.nftMoves) {
       d.lines.push({ label: m.direction === "in" ? "You receive" : "You send", value: `NFT #${m.tokenId} from ${who(m.contract)}` });
     }
+    await describeApprovals(ctx, d, sim.approvals);
   } else {
     d.balanceChanges = staticChanges;
   }
@@ -199,7 +229,46 @@ async function decodeTransaction(req: DappRequest, ctx: ChainContext, onFee?: (s
   return d;
 }
 
-async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, staticChanges: BalanceChange[], host: string): Promise<void> {
+/** Permissions the simulation shows this would give, said once: the request's own wording may already say so. */
+async function describeApprovals(ctx: ChainContext, d: DecodedRequest, approvals: SimulatedApproval[]): Promise<void> {
+  for (const a of approvals) {
+    const spender = who(a.spender);
+    const { asset } = await tokenMeta(ctx, a.contract);
+    const collection = asset.name && asset.name !== "token" ? asset.name : shortAddress(a.contract);
+    let text: string;
+    if (a.all) {
+      text = say("bg.req.allowMoveAllNfts", { spender, collection });
+      addWarning(d, warning("danger", "approval-for-all", msg("bg.warn.letsTakeEveryNft", { spender, collection })));
+    } else if (a.tokenId !== undefined) {
+      text = say("bg.req.allowMoveNft", { spender, id: a.tokenId, collection });
+    } else if (isUnlimited(a.amount!)) {
+      text = say("bg.req.allowSpendAll", { spender, symbol: asset.symbol });
+      addWarning(d, warning("danger", "unlimited-approval", msg("bg.warn.letsTakeAll", { spender, symbol: asset.symbol })));
+    } else {
+      text = say("bg.req.allowSpendUpTo", { spender, amount: `${formatAmount(a.amount!, asset.decimals)} ${asset.symbol}` });
+    }
+    if (d.title !== text && !d.lines.some((l) => l.value === text)) d.lines.push({ label: "Permission", value: text });
+  }
+}
+
+/** The contract answered both as a token and as an NFT collection: the wording above may be the wrong one. */
+function tokenOrNftCaution(asset: AssetRef, contract: string): Warning {
+  const name = asset.name && asset.name !== "token" ? asset.name : shortAddress(contract);
+  return warning("caution", "unknown-call", msg("bg.warn.tokenOrNft", { name }));
+}
+
+/** A call (or a batch holding one) the wallet can't read: blind, so refused unless blind signing is on. */
+function markUnreadable(d: DecodedRequest, host: string): void {
+  d.blind = true;
+  Object.assign(d, titled(msg("bg.req.unreadableFrom", { host })));
+  addWarning(d, {
+    level: "danger",
+    code: "blind-signing",
+    message: "We can't read what this does. It could move any of your assets. Only continue if you fully trust this app.",
+  });
+}
+
+async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, staticChanges: BalanceChange[], host: string, walk: Walk = { depth: 0, budget: { calls: MAX_BATCH_CALLS } }): Promise<void> {
   const to = tx.to!;
   const selector = tx.data.slice(0, 10).toLowerCase();
   const me = ctx.account.address as `0x${string}`;
@@ -215,8 +284,9 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
   if (decoded && (selector === SEL.transfer || selector === SEL.transferFrom)) {
     const [from, recipient, amount] =
       selector === SEL.transfer ? [me, decoded.args[0] as string, decoded.args[1] as bigint] : (decoded.args as unknown as [string, string, bigint]);
-    const { asset, isToken } = await tokenMeta(ctx, to);
-    if (!isToken) {
+    const { asset, nft, unsure } = await tokenOrNft(ctx, to, amount);
+    if (unsure) d.warnings.push(tokenOrNftCaution(asset, to));
+    if (nft) {
       // ERC-721 transferFrom shares the ERC-20 selector.
       Object.assign(d, titled(msg("bg.req.sendNftTo", { id: String(amount), collection: asset.name, to: shortAddress(recipient) })));
       d.lines.push({ label: "To", value: safeChecksum(recipient) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
@@ -235,10 +305,16 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
 
   if (decoded && (selector === SEL.approve || selector === SEL.increaseAllowance)) {
     const [spender, amount] = decoded.args as unknown as [string, bigint];
-    const { asset, isToken } = await tokenMeta(ctx, to);
+    const { asset, nft, unsure } = await tokenOrNft(ctx, to, amount);
     const name = who(spender);
-    if (!isToken) {
-      // ERC-721 approve(to, tokenId)
+    if (unsure) d.warnings.push(tokenOrNftCaution(asset, to));
+    if (nft) {
+      // ERC-721 approve(to, tokenId); approve(0x0, tokenId) takes it back.
+      if (isAddressEqual(spender as `0x${string}`, zeroAddress)) {
+        Object.assign(d, titled(msg("bg.req.removeNftPermissions")));
+        d.lines.push({ label: "NFT", value: `#${amount}` }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
+        return;
+      }
       Object.assign(d, titled(msg("bg.req.allowMoveNft", { spender: name, id: String(amount), collection: asset.name })));
       d.lines.push({ label: "Allowed app", value: safeChecksum(spender) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
       return;
@@ -288,6 +364,7 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
   if (known) {
     Object.assign(d, titled(ACTION_IDS[known.action] ? msg(ACTION_IDS[known.action]!, { app }) : { id: "", fallback: say("bg.req.actionOnApp", { action: known.action, app }) }));
     d.lines.push({ label: "App contract", value: safeChecksum(to) });
+    if (BATCH_SELECTORS.has(selector)) return decodeBatch(ctx, tx, d, staticChanges, host, walk);
     try {
       const { args } = decodeFunctionData({ abi: [known.abi], data: tx.data });
       describeArgs(known.abi, (args ?? []) as readonly unknown[]).forEach((l) => d.lines.push(l));
@@ -297,14 +374,57 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     return;
   }
 
-  d.blind = true;
-  Object.assign(d, titled(msg("bg.req.unreadableFrom", { host })));
+  markUnreadable(d, host);
   d.lines.push({ label: "App contract", value: safeChecksum(to) }, { label: "Data", value: `${tx.data.slice(0, 74)}${tx.data.length > 74 ? "…" : ""}` });
-  d.warnings.push({
-    level: "danger",
-    code: "blind-signing",
-    message: "We can't read what this does. It could move any of your assets. Only continue if you fully trust this app.",
+}
+
+/**
+ * A batch reads as its steps: each call (or Universal Router command) is decoded like a request of its own and listed
+ * as "Action n", and its warnings come up to the batch. One step that can't be read makes the whole batch unreadable;
+ * a batch of one step takes that step's title.
+ */
+async function decodeBatch(ctx: ChainContext, tx: TxParams, d: DecodedRequest, staticChanges: BalanceChange[], host: string, walk: Walk): Promise<void> {
+  const to = tx.to!;
+  let steps: Pick<DecodedRequest, "title" | "titleMsg" | "lines" | "warnings" | "blind">[] | undefined;
+  try {
+    const call = decodeFunctionData({ abi: batchAbi, data: tx.data });
+    if (call.functionName === "execute") {
+      const count = (call.args[0].length - 2) / 2;
+      if (count <= walk.budget.calls) {
+        walk.budget.calls -= count;
+        steps = await routerSteps(ctx, to, call.args[0], call.args[1]);
+      }
+    } else if (walk.depth < MAX_BATCH_DEPTH) {
+      const aggregate = call.functionName === "aggregate3";
+      const calls = aggregate ? call.args[0].map((c) => ({ to: c.target, data: c.callData })) : (call.args.length === 1 ? call.args[0] : call.args[1]).map((data) => ({ to, data }));
+      if (calls.length <= walk.budget.calls) {
+        walk.budget.calls -= calls.length;
+        steps = [];
+        for (const c of calls) {
+          const s = base({ id: d.requestId, networkId: d.networkId });
+          // aggregate3 makes its calls from the Multicall contract: their token moves aren't the account's.
+          await decodeCall(ctx, { ...tx, to: c.to, data: c.data, value: 0n }, s, aggregate ? [] : staticChanges, host, { depth: walk.depth + 1, budget: walk.budget });
+          steps.push(s);
+        }
+      }
+    }
+  } catch {
+    steps = undefined;
+  }
+  if (!steps) return markUnreadable(d, host);
+  steps.forEach((s, i) => {
+    d.lines.push(
+      { ...labelled(msg("bg.label.actionN", { n: i + 1 }), s.title), ...(s.titleMsg ? { valueMsg: s.titleMsg } : {}) },
+      ...s.lines.filter((l) => !(l.label === "App contract" && l.value === safeChecksum(to))),
+    );
+    for (const w of s.warnings) addWarning(d, w);
   });
+  if (steps.some((s) => s.blind)) markUnreadable(d, host);
+  else if (steps.length === 1) {
+    d.title = steps[0]!.title;
+    if (steps[0]!.titleMsg) d.titleMsg = steps[0]!.titleMsg;
+    else delete d.titleMsg;
+  }
 }
 
 function describeArgs(abi: AbiFunction, args: readonly unknown[]): { label: string; value: string }[] {

@@ -179,6 +179,33 @@ describe("Approval recipient check", () => {
   });
 });
 
+describe("Approval warnings", () => {
+  const redirect = "This signature doesn't lock where the money goes. Anyone could redirect these coins.";
+  async function withWarning(blind: boolean) {
+    const wallet = testWallet();
+    await wallet.client.createWallet(PW);
+    const p = await wallet.client.getPortfolio();
+    const eth = p.balances.find((b) => b.asset.symbol === "ETH" && BigInt(b.amount) > 0n)!;
+    const id = await wallet.client.send({ assetKey: eth.asset.key, networkId: eth.asset.networkId, to: "0x000000000000000000000000000000000000dEaD", amount: "0.01" });
+    const view = (await wallet.client.getApproval(id))!;
+    view.decoded = { ...view.decoded!, blind, warnings: [{ level: "danger", code: "blind-signing", message: redirect }] };
+    return { wallet, view };
+  }
+
+  it("a readable request shows its blind-signing warnings", async () => {
+    const { wallet, view } = await withWarning(false);
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText(redirect)).toBeTruthy();
+  });
+
+  it("a blocked request swaps them for the blocked notice", async () => {
+    const { wallet, view } = await withWarning(true);
+    renderWith(wallet, <ApprovalScreen approval={view} onDone={() => undefined} />);
+    expect(await screen.findByText(/blocked/)).toBeTruthy();
+    expect(screen.queryByText(redirect)).toBeNull();
+  });
+});
+
 describe("Settings language", () => {
   it("saves the chosen language and formats numbers for it", async () => {
     const wallet = testWallet();

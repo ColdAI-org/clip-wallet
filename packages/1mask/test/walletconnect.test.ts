@@ -390,6 +390,21 @@ describe("WalletConnect wallet (fake WalletKit)", () => {
     await w.disconnect("t1");
     expect(f.calls.at(-1)).toMatchObject({ name: "disconnectSession", args: { topic: "t1", reason: { code: 6000 } } });
   });
+
+  it("a session that ends, from either side, ends its requests still waiting", async () => {
+    const cancel = vi.fn();
+    const waiting: DappRequest[] = [];
+    const { w, f } = await wallet({ cancel, handle: (req) => (waiting.push(req), new Promise(() => {})) });
+    withSession(f);
+    f.sessions.t2 = { ...f.sessions.t1!, topic: "t2" };
+    await f.fire("session_request", reqEv(61, "eip155:84532", "personal_sign", ["0x68", EVM_ADDR]));
+    await f.fire("session_request", { ...reqEv(62, "eip155:84532", "personal_sign", ["0x68", EVM_ADDR]), topic: "t2" });
+    await w.disconnect("t1");
+    expect(cancel.mock.calls).toEqual([[waiting[0]!.id]]);
+    // The app ends its own session.
+    await f.fire("session_delete", { id: 1, topic: "t2" });
+    expect(cancel.mock.calls).toEqual([[waiting[0]!.id], [waiting[1]!.id]]);
+  });
 });
 
 describe("real SDK surface (import only, no network)", () => {

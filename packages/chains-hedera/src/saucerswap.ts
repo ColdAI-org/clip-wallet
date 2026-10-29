@@ -100,11 +100,17 @@ class Abi {
     if (at + 32 + n > this.b.length) throw new Error("abi: bytes out of range");
     return this.b.subarray(at + 32, at + 32 + n);
   }
-  bytesArray(at: number): Uint8Array[] {
+  bytesArray(at: number, max = 8): Uint8Array[] {
     const n = this.int(at);
-    if (n > 8) throw new Error("abi: too many calls");
+    if (n > max) throw new Error("abi: too many calls");
     return Array.from({ length: n }, (_, i) => this.bytes(at + 32 + this.int(at + 32 + i * 32)));
   }
+}
+
+/** The calls inside multicall(bytes[]) or multicall(uint256 deadline, bytes[]), at most `max`; throws when they can't be read. */
+export function multicallCalls(data: Uint8Array, withDeadline: boolean, max: number): Uint8Array[] {
+  const a = new Abi(data.subarray(4));
+  return a.bytesArray(a.int(withDeadline ? 32 : 0), max);
 }
 
 /** Long-zero EVM address → "0.0.x"; WHBAR → "HBAR"; anything else stays an EVM address. */

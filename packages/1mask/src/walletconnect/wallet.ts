@@ -228,7 +228,8 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
   const familyFor = (chain: string): Family => (bchWcChainFor(chain) ? "bitcoincash" : baseFamilyFor(chain));
   const newId = opts.newId ?? randomId;
   const registry = new Set(opts.networks.map((n) => n.id));
-  const inflight = new Map<number, string>();
+  /** WalletConnect request id → the DappRequest waiting on the host, and the session it came through. */
+  const inflight = new Map<number, { reqId: string; topic: string }>();
 
   const extraMethods = opts.calls ? { eip155: CALLS_METHODS } : undefined;
   const mapProposal: WalletConnectWallet["mapProposal"] = (p) =>
@@ -439,7 +440,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
         method,
         params: reqParams,
       };
-      inflight.set(id, req.id);
+      inflight.set(id, { reqId: req.id, topic });
       try {
         const result = await opts.handle(req, { warnings: verify.warnings, verification: verify.verification, peer, topic });
         await respond(topic, id, { result: result === undefined ? null : result });
@@ -452,9 +453,15 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
   };
 
   const onRequestExpire = (ev: { id: number }) => {
-    const reqId = inflight.get(ev.id);
-    if (reqId) opts.cancel?.(reqId);
+    const r = inflight.get(ev.id);
+    if (r) opts.cancel?.(r.reqId);
   };
+
+  /** A session that ends, from either side, takes its waiting requests with it: nothing is signed for it afterwards. */
+  const endSession = (topic: string) => {
+    for (const r of inflight.values()) if (r.topic === topic) opts.cancel?.(r.reqId);
+  };
+  const onSessionDelete = (ev: { topic: string }) => endSession(ev.topic);
 
   /* -------------------------------------------------------------- session_authenticate (one-click auth, CAIP-122 / SIWE) */
   let authUtils: AuthUtils | undefined = opts.authUtils;
@@ -507,6 +514,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
   kit.on("session_proposal", onProposal);
   kit.on("session_request", onRequest);
   kit.on("session_request_expire", onRequestExpire);
+  kit.on("session_delete", onSessionDelete);
   kit.on("session_authenticate", onAuthenticate);
 
   return {
@@ -522,7 +530,10 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
         expiry: s.expiry,
         chains: Object.values(s.namespaces).flatMap((n) => n.chains ?? []),
       })),
-    disconnect: (topic) => kit.disconnectSession({ topic, reason: WC_ERRORS.USER_DISCONNECTED }),
+    disconnect: async (topic) => {
+      endSession(topic);
+      await kit.disconnectSession({ topic, reason: WC_ERRORS.USER_DISCONNECTED });
+    },
     async notifyAccountsChanged() {
       for (const s of Object.values(kit.getActiveSessions())) {
         const namespaces: Record<string, SessionNamespace> = {};
@@ -548,6 +559,7 @@ export async function createWalletConnectWallet(opts: WalletConnectWalletOptions
       kit.off("session_proposal", onProposal);
       kit.off("session_request", onRequest);
       kit.off("session_request_expire", onRequestExpire);
+      kit.off("session_delete", onSessionDelete);
       kit.off("session_authenticate", onAuthenticate);
     },
   };

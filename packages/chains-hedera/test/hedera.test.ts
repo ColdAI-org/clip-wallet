@@ -20,6 +20,7 @@ import {
   TransferTransaction,
 } from "@hiero-ledger/sdk";
 import { keccak_256 } from "@noble/hashes/sha3.js";
+import { encodeFunctionData, maxUint256, parseAbi } from "viem";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   HEDERA_MAINNET,
@@ -233,6 +234,36 @@ describe("decode", () => {
     expect(u.title).toBe("Use contract 0.0.5555");
     expect(u.balanceChanges).toEqual([{ asset: hbarAsset("hedera:testnet"), delta: "-300000000" }]);
     expect(u.warnings[0]!.code).toBe("blind-signing");
+  });
+
+  it("contract multicall: each step decoded with its warnings carried up; a step it can't read makes it blind", async () => {
+    const { m, ctx } = setup();
+    const abi = parseAbi(["function multicall(bytes[] data)", "function multicall(uint256 deadline, bytes[] data)", "function approve(address spender, uint256 amount)"]);
+    const approveAll = encodeFunctionData({ abi, functionName: "approve", args: ["0x00000000000000000000000000000000000004d2", maxUint256] });
+    const call = (data: `0x${string}`) => new ContractExecuteTransaction().setContractId(ContractId.fromString("0.0.731861")).setGas(100_000).setFunctionParameters(hexBytes(data.slice(2)));
+    const d = await m.decode(signAndExec(call(encodeFunctionData({ abi, functionName: "multicall", args: [[approveAll]] }))), ctx);
+    expect(d.title).toBe("Allow 0.0.1234 to spend unlimited SAUCE");
+    expect(d.blind).toBe(false);
+    expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "unlimited-approval" }));
+    expect(d.lines).toContainEqual(expect.objectContaining({ label: "Action 1", value: "Allow 0.0.1234 to spend unlimited SAUCE" }));
+
+    const withDeadline = await m.decode(signAndExec(call(encodeFunctionData({ abi, functionName: "multicall", args: [1_900_000_000n, [approveAll, approveAll]] }))), ctx);
+    expect(withDeadline.title).toBe("Run several steps with contract 0.0.731861");
+    expect(withDeadline.warnings.filter((w) => w.code === "unlimited-approval")).toHaveLength(1);
+
+    const mixed = await m.decode(signAndExec(call(encodeFunctionData({ abi, functionName: "multicall", args: [[approveAll, "0x01020304"]] }))), ctx);
+    expect(mixed.blind).toBe(true);
+    expect(mixed.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "unlimited-approval" }));
+    expect(mixed.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "blind-signing" }));
+
+    const wrap = (inner: `0x${string}`, times: number): `0x${string}` => (times === 0 ? inner : wrap(encodeFunctionData({ abi, functionName: "multicall", args: [[inner]] }), times - 1));
+    const three = await m.decode(signAndExec(call(wrap(approveAll, 3))), ctx);
+    expect(three.blind).toBe(false);
+    expect(three.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "unlimited-approval" }));
+    expect((await m.decode(signAndExec(call(wrap(approveAll, 4))), ctx)).blind).toBe(true);
+
+    const many = await m.decode(signAndExec(call(encodeFunctionData({ abi, functionName: "multicall", args: [Array(33).fill(approveAll)] }))), ctx);
+    expect(many.blind).toBe(true);
   });
 
   it("staking update → 'Stake HBAR with node 3'; key change → blind", async () => {

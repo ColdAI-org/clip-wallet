@@ -145,6 +145,17 @@ describe("Blind requests", () => {
     await user.click(approve);
     expect(client.approve).toHaveBeenCalledWith("appr-1", { allowBlind: true });
   });
+
+  it("a readable request shows its blind-signing warnings; only a blocked one swaps them for the notice", () => {
+    const redirect = "This signature doesn't lock where the money goes. Anyone could redirect these coins.";
+    const { unmount } = renderUi(<TransactionApproval approval={payApproval({}, { warnings: [{ level: "danger", code: "blind-signing", message: redirect }] })} />);
+    expect(screen.getByText(redirect)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Approve" })).toBeEnabled();
+    unmount();
+    renderUi(<TransactionApproval approval={blind()} />);
+    expect(screen.queryByText("Unreadable")).not.toBeInTheDocument();
+    expect(screen.getByText(/so it's blocked/)).toBeInTheDocument();
+  });
 });
 
 describe("Connect approval", () => {

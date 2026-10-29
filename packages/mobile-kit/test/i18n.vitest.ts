@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { LOCALE_CODES, checkTranslation, parseMessage } from "@clip-wallet/i18n";
+import { APPROVAL_NOTE_CODES } from "@clip-wallet/security";
 import { en } from "../src/i18n/en";
 import { MOBILE_CATALOGS } from "../src/i18n";
+import { noteText } from "../src/lib/security-text";
 
 const PROTECTED = ["Clip Wallet", "WalletConnect", "Face ID", "Touch ID", "USDC", "HBAR", "ETH", "SOL"];
 
@@ -22,6 +24,13 @@ describe("mobile catalogs", () => {
       expect(same.length, same.map(([id]) => id).join(", ")).toBeLessThanOrEqual(3);
     });
   }
+});
+
+describe("security notes", () => {
+  it("every note a permissions scan can give has its own words in the user's language", () => {
+    const t = (id: string) => `t:${id}`;
+    expect(APPROVAL_NOTE_CODES.filter((code) => !noteText(code, "", t).startsWith("t:"))).toEqual([]);
+  });
 });
 
 describe("no hard-coded English in mobile screens", () => {

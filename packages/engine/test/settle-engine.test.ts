@@ -85,4 +85,21 @@ describe("WalletEngine: settle on Hedera", () => {
     const [entry] = await t.engine.handle({ type: "getActivity" });
     expect(entry!.title).toBe("Paid back 1 HBAR on Hedera");
   });
+
+  it("an app disconnected while its money is on its way: the order stays until it arrives, then closes without signing", async () => {
+    const t = setup(false);
+    await t.engine.handle({ type: "createWallet", password: "a long test password" });
+    await t.engine.permissions.grant("https://dapp.test", "evm");
+    const paying = t.engine.request({ id: "r3", origin: "https://dapp.test", via: "injected", family: "evm", networkId: SEPOLIA.id, method: "eth_sendTransaction", params: [{ to: EVM_ADDRESS, value: "0x1" }] });
+    paying.catch(() => undefined);
+    for (let i = 0; i < 5 && !t.opened.length; i++) await tick();
+    const id = t.opened[0]!;
+    await t.engine.handle({ type: "approve", id });
+    await t.engine.permissions.revoke("https://dapp.test", "evm");
+    await expect(paying).rejects.toMatchObject({ code: "approval/cancelled" });
+    await waitFor(t.engine, id, (f) => !!f.arrived && !!f.appGone);
+    await t.engine.handle({ type: "approve", id });
+    expect(t.vault.signed.map((s) => s.approvalId)).toEqual([`${id}:settle:0`, `${id}:settle:1`]);
+    expect(await t.engine.handle({ type: "getApproval", id })).toBeNull();
+  });
 });

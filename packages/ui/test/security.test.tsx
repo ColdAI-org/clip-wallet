@@ -2,13 +2,15 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { APPROVAL_NOTE_CODES } from "@clip-wallet/security";
 import type { CleanupOverviewView, GrantView, SecurityClient, ThreatProviderStatusView } from "../src/security/client";
+import { noteText } from "../src/security/text";
 import { SecurityProvider } from "../src/security/context";
 import { securityRoute } from "../src/security/routes";
 import { Cleanup, Permissions, Protection, SecurityHome } from "../src/security/Security";
 import { renderUi } from "./render";
 import { ConnectApproval } from "../src/screens/Approval";
-import { payApproval } from "./fake-client";
+import { payApproval, state } from "./fake-client";
 
 const NOW = Date.now();
 const GRANTS: GrantView[] = [
@@ -125,6 +127,36 @@ describe("security screens", () => {
     renderSecurity(<Permissions />, security({ approvalsScan: vi.fn(async () => ({ grants: [], notes: [], partial: [{ code: "x", message: "Couldn't check Base right now." }], scannedAt: NOW })) }));
     expect(await screen.findByText("No apps can spend your tokens")).toBeInTheDocument();
     expect(screen.getByText("Couldn't check Base right now.")).toBeInTheDocument();
+  });
+
+  it("permissions: a single-NFT permission names the NFT, in the user's language", async () => {
+    const one: GrantView = {
+      id: "g4",
+      kind: "nft-token",
+      family: "evm",
+      title: "An unknown app can move your NFT #7 from Pudgy Pals",
+      asset: { symbol: "Pudgy Pals", name: "Pudgy Pals", address: "0xb" },
+      spender: { address: "0x5555555555555555555555555555555555555555", known: false },
+      amount: "NFT #7 in Pudgy Pals",
+      tokenId: "7",
+      unlimited: false,
+      risks: [{ code: "unknown-spender", label: "Unknown app", level: "caution" }],
+      riskLevel: "medium",
+      networkId: "eip155:11155111",
+    };
+    const s = security({ approvalsScan: vi.fn(async () => ({ grants: [one], notes: [], partial: [], scannedAt: NOW })) });
+    renderUi(
+      <SecurityProvider client={s}>
+        <Permissions />
+      </SecurityProvider>,
+      { state: state({}, { locale: "de" }) },
+    );
+    expect(await screen.findByText("Eine unbekannte App kann dein NFT #7 aus Pudgy Pals bewegen")).toBeInTheDocument();
+  });
+
+  it("permissions: every note a scan can give has its own words in the user's language", () => {
+    const t = (id: string) => `t:${id}`;
+    expect(APPROVAL_NOTE_CODES.filter((code) => !noteText(code, "", t).startsWith("t:"))).toEqual([]);
   });
 
   it("cleanup: bulk selection with a live summary, 'Get back ~… SOL', then queues", async () => {

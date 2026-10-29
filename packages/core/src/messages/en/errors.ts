@@ -32,6 +32,7 @@ export default {
   "bg.err.unlockThenConnect": "Unlock your wallet, then try connecting again.",
   "bg.err.unlockThenRetry": "Unlock your wallet, then try again.",
   "bg.err.timedOut": "This request timed out. Ask the app to try again.",
+  "bg.err.appDisconnected": "This app isn't connected any more, so its request was cancelled.",
   "bg.err.wakingUp": "The wallet is waking up. Try again in a moment.",
   "bg.err.starting": "Clip Wallet is starting. Try again.",
   "bg.err.familyLoading": "This kind of account is still loading. Try again in a moment.",

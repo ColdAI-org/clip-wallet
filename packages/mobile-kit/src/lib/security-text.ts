@@ -11,10 +11,11 @@ type T = (id: UiMessageId, vars?: Record<string, string | number>) => string;
 
 const shortAddr = (a: string) => (a.length > 14 ? `${a.slice(0, a.startsWith("0x") ? 6 : 4)}…${a.slice(-4)}` : a);
 
-/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins". */
+/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins", "… your NFT #7 from …". */
 export function grantTitle(g: GrantView, t: T): string {
   const app = g.spender.name ?? (g.spender.known ? shortAddr(g.spender.address) : t("m.security.grant.unknownApp"));
   if (g.kind === "nft-all" || g.kind === "hts-nft-all") return t("m.security.grant.nftAll", { app, collection: g.asset.name });
+  if (g.kind === "nft-token" && g.tokenId) return t("m.security.grant.nftOne", { app, id: g.tokenId, collection: g.asset.name });
   const permit2 = g.kind === "permit2";
   // A limited permission from a background without `limit` can't be re-worded: keep its own title.
   if (!g.unlimited && !g.limit && g.kind !== "spl-delegate") return g.title;
@@ -41,10 +42,26 @@ export function noteText(code: string | undefined, fallback: string, t: T): stri
     "no-permissions:aptos": "m.security.note.noPermissions.aptos",
     "no-permissions:sui": "m.security.note.noPermissions.sui",
     "no-permissions:bitcoin": "m.security.note.noPermissions.bitcoin",
+    "no-permissions:cardano": "m.security.note.noPermissions.cardano",
+    "no-permissions:fuel": "m.security.note.noPermissions.fuel",
+    "no-permissions:bitcoincash": "m.security.note.noPermissions.bitcoincash",
     "not-yet:starknet": "m.security.note.notYet.starknet",
     "not-yet:tezos": "m.security.note.notYet.tezos",
     "not-yet:substrate": "m.security.note.notYet.substrate",
     "not-yet:stellar": "m.security.note.notYet.stellar",
+    "not-yet:tron": "m.security.note.notYet.tron",
+    "not-yet:ton": "m.security.note.notYet.ton",
+    "not-yet:near": "m.security.note.notYet.near",
+    "not-yet:icp": "m.security.note.notYet.icp",
+    "not-yet:cosmos": "m.security.note.notYet.cosmos",
+    "not-yet:provenance": "m.security.note.notYet.provenance",
+    "not-yet:initia": "m.security.note.notYet.initia",
+    "not-yet:thorchain": "m.security.note.notYet.thorchain",
+    "not-yet:xrpl": "m.security.note.notYet.xrpl",
+    "not-yet:antelope": "m.security.note.notYet.antelope",
+    "not-yet:algorand": "m.security.note.notYet.algorand",
+    "not-yet:stacks": "m.security.note.notYet.stacks",
+    "not-yet:multiversx": "m.security.note.notYet.multiversx",
     "hide-only:evm": "m.security.note.hideOnly.evm",
     "hide-only:other": "m.security.note.hideOnly.other",
   };

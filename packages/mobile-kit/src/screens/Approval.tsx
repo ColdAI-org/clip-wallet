@@ -172,7 +172,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone: (ap
             </Notice>
           )}
           {problem && <Notice level="caution">{problem}</Notice>}
-          <Warnings warnings={d.warnings.filter((w) => w.code !== "blind-signing")} />
+          {/* The blocked notice stands in for "can't read" warnings; a readable request shows them as written. */}
+          <Warnings warnings={d.blind ? d.warnings.filter((w) => w.code !== "blind-signing") : d.warnings} />
           {d.blind && advanced && <Toggle label={t("m.approval.blindToggle")} description={t("m.approval.blindToggleHint")} checked={blindOk} onChange={setBlindOk} />}
           <ErrorNote message={err} />
           {funding && (funding.arrived || funding.stage !== "offer") && <SettleProgress funding={funding} app={a.dapp.name} busy={busy} act={() => void act(true)} />}

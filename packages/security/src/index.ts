@@ -9,7 +9,7 @@ export * from "./views.js";
 export * from "./host.js";
 export * from "./messages.js";
 export { SecurityService } from "./background.js";
-export { ApprovalsService } from "./approvals/service.js";
+export { APPROVAL_NOTE_CODES, ApprovalsService } from "./approvals/service.js";
 export { EvmApprovals, PERMIT2, PERMIT2_ABI, TOPIC, pairsFromLogs, verifyLockdown, type RawLog } from "./approvals/evm.js";
 export { SolanaApprovals } from "./approvals/solana.js";
 export { HederaApprovals } from "./approvals/hedera.js";
