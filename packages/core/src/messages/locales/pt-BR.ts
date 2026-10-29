@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "Desbloqueie sua carteira e tente conectar de novo.",
   "bg.err.unlockThenRetry": "Desbloqueie sua carteira e tente de novo.",
   "bg.err.timedOut": "O tempo desta solicitação esgotou. Peça ao app para tentar de novo.",
+  "bg.err.appDisconnected": "Este app não está mais conectado, então a solicitação dele foi cancelada.",
   "bg.err.wakingUp": "A carteira está iniciando. Tente de novo em instantes.",
   "bg.err.starting": "A Clip Wallet está iniciando. Tente de novo.",
   "bg.err.familyLoading": "Este tipo de conta ainda está carregando. Tente de novo em instantes.",

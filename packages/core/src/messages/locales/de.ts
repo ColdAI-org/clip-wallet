@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "Entsperre dein Wallet und versuch dann erneut, dich zu verbinden.",
   "bg.err.unlockThenRetry": "Entsperre dein Wallet und versuch es dann noch einmal.",
   "bg.err.timedOut": "Bei dieser Anfrage gab es eine Zeitüberschreitung. Bitte die App, es noch einmal zu versuchen.",
+  "bg.err.appDisconnected": "Diese App ist nicht mehr verbunden, daher wurde ihre Anfrage abgebrochen.",
   "bg.err.wakingUp": "Das Wallet startet gerade. Versuch es gleich noch einmal.",
   "bg.err.starting": "Clip Wallet startet. Versuch es noch einmal.",
   "bg.err.familyLoading": "Diese Art von Konto lädt noch. Versuch es gleich noch einmal.",

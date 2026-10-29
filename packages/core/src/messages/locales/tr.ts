@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "Cüzdanınızın kilidini açın, sonra tekrar bağlanmayı deneyin.",
   "bg.err.unlockThenRetry": "Cüzdanınızın kilidini açın, sonra tekrar deneyin.",
   "bg.err.timedOut": "Bu istek zaman aşımına uğradı. Uygulamadan tekrar denemesini isteyin.",
+  "bg.err.appDisconnected": "Bu uygulama artık bağlı değil, bu yüzden isteği iptal edildi.",
   "bg.err.wakingUp": "Cüzdan uyanıyor. Birazdan tekrar deneyin.",
   "bg.err.starting": "Clip Wallet başlatılıyor. Tekrar deneyin.",
   "bg.err.familyLoading": "Bu tür hesap hâlâ yükleniyor. Birazdan tekrar deneyin.",

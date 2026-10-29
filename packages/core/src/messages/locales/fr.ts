@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "Déverrouillez votre portefeuille, puis réessayez de vous connecter.",
   "bg.err.unlockThenRetry": "Déverrouillez votre portefeuille, puis réessayez.",
   "bg.err.timedOut": "Cette demande a expiré. Demandez à l'application de réessayer.",
+  "bg.err.appDisconnected": "Cette application n'est plus connectée, sa demande a donc été annulée.",
   "bg.err.wakingUp": "Le portefeuille se réveille. Réessayez dans un instant.",
   "bg.err.starting": "Clip Wallet démarre. Réessayez.",
   "bg.err.familyLoading": "Ce type de compte est encore en cours de chargement. Réessayez dans un instant.",

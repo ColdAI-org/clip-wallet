@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "افتح قفل محفظتك، ثم حاول الاتصال مرة أخرى.",
   "bg.err.unlockThenRetry": "افتح قفل محفظتك، ثم حاول مرة أخرى.",
   "bg.err.timedOut": "انتهت مهلة هذا الطلب. اطلب من التطبيق المحاولة مرة أخرى.",
+  "bg.err.appDisconnected": "لم يعد هذا التطبيق متصلًا، لذا أُلغي طلبه.",
   "bg.err.wakingUp": "المحفظة قيد التشغيل. حاول مرة أخرى بعد لحظة.",
   "bg.err.starting": "Clip Wallet قيد البدء. حاول مرة أخرى.",
   "bg.err.familyLoading": "هذا النوع من الحسابات لا يزال قيد التحميل. حاول مرة أخرى بعد لحظة.",

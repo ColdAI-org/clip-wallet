@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "请先解锁你的钱包，然后重新连接。",
   "bg.err.unlockThenRetry": "请先解锁你的钱包，然后重试。",
   "bg.err.timedOut": "此请求已超时。请让应用重试。",
+  "bg.err.appDisconnected": "此应用已不再连接，因此它的请求已取消。",
   "bg.err.wakingUp": "钱包正在唤醒。请稍后重试。",
   "bg.err.starting": "Clip Wallet 正在启动。请重试。",
   "bg.err.familyLoading": "这类账户仍在加载。请稍后重试。",

@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "지갑을 잠금 해제한 뒤 다시 연결해 보세요.",
   "bg.err.unlockThenRetry": "지갑을 잠금 해제한 뒤 다시 시도하세요.",
   "bg.err.timedOut": "요청 시간이 초과됐어요. 앱에서 다시 시도하세요.",
+  "bg.err.appDisconnected": "이 앱은 더 이상 연결되어 있지 않아서 요청이 취소됐어요.",
   "bg.err.wakingUp": "지갑을 준비하는 중이에요. 잠시 후 다시 시도하세요.",
   "bg.err.starting": "Clip Wallet을 시작하는 중이에요. 다시 시도하세요.",
   "bg.err.familyLoading": "이 종류의 계정을 아직 불러오는 중이에요. 잠시 후 다시 시도하세요.",

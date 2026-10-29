@@ -331,6 +331,7 @@ const messages: BgTranslation = {
   "bg.err.unlockThenConnect": "ウォレットのロックを解除してから、もう一度接続してください。",
   "bg.err.unlockThenRetry": "ウォレットのロックを解除してから、もう一度お試しください。",
   "bg.err.timedOut": "このリクエストはタイムアウトしました。アプリでもう一度お試しください。",
+  "bg.err.appDisconnected": "このアプリは接続されていないため、リクエストはキャンセルされました。",
   "bg.err.wakingUp": "ウォレットを起動しています。少ししてからもう一度お試しください。",
   "bg.err.starting": "Clip Wallet を起動しています。もう一度お試しください。",
   "bg.err.familyLoading": "この種類のアカウントはまだ読み込み中です。少ししてからもう一度お試しください。",

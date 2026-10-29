@@ -121,6 +121,39 @@ describe("WalletService (fixture deps, real vault)", () => {
     await expect(p).rejects.toMatchObject({ code: "user-rejected" });
   });
 
+  const signIn = { id: "r1", origin: "https://magiceden.io", via: "injected", family: "evm", networkId: "eip155:84532", method: "personal_sign", params: ["0x00"] } as const;
+
+  it("disconnecting an app ends its requests still waiting", async () => {
+    const { service } = await ready();
+    await service.permissions.grant("https://magiceden.io", "evm");
+    const answer = service.request({ ...signIn }).catch((e: unknown) => e);
+    await waitForApproval(service);
+    const mine = (await service.handle({ type: "listSessions" })).find((s) => s.dapp.domain === "magiceden.io")!;
+    await service.handle({ type: "disconnect", id: mine.id });
+    expect(await answer).toMatchObject({ code: "approval/cancelled" });
+    expect(await service.handle({ type: "listApprovals" })).toHaveLength(0);
+  });
+
+  it("Approve refuses an app's request once the app is no longer connected", async () => {
+    const { service, kv } = await ready();
+    await service.permissions.grant("https://magiceden.io", "evm");
+    const answer = service.request({ ...signIn }).catch((e: unknown) => e);
+    const [view] = await waitForApproval(service);
+    // The permission went without passing the queue: Approve checks it again.
+    await kv.set("clip/permissions", []);
+    await expect(service.handle({ type: "approve", id: view!.id })).rejects.toMatchObject({ code: "approval/cancelled" });
+    expect(await answer).toMatchObject({ code: "approval/cancelled" });
+    expect(await service.handle({ type: "listApprovals" })).toHaveLength(0);
+  });
+
+  it("a request from an app that was never connected still goes through", async () => {
+    const { service } = await ready();
+    const answer = service.request({ ...signIn });
+    const [view] = await waitForApproval(service);
+    await service.handle({ type: "approve", id: view!.id });
+    await expect(answer).resolves.toBeDefined();
+  });
+
   it("enrols and unlocks with a passkey through the PRF proxy (vault-chosen prfInput round-trips)", async () => {
     const { service } = await ready();
     const prfFor = (input: string) => b64url(new Uint8Array(32).map((_, i) => fromB64url(input)[i]! ^ 0x5a));
