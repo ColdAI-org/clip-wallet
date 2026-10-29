@@ -28,6 +28,7 @@ export default {
   "m.security.grant.allPermit2": "يمكن لـ ⁨{app}⁩ إنفاق كل ما تملكه من ⁨{symbol}⁩ عبر Permit2",
   "m.security.grant.upToPermit2": "يمكن لـ ⁨{app}⁩ إنفاق ما يصل إلى ⁨{amount}⁩ ⁨{symbol}⁩ عبر Permit2",
   "m.security.grant.nftAll": "يمكن لـ ⁨{app}⁩ نقل كل رموز NFT التي تملكها في ⁨{collection}⁩",
+  "m.security.grant.nftOne": "يمكن لـ ⁨{app}⁩ نقل NFT ⁨#{id}⁩ الخاص بك من ⁨{collection}⁩",
   "m.security.risk.unlimited": "يمكنه أخذ كل شيء",
   "m.security.risk.unknownSpender": "تطبيق غير معروف",
   "m.security.risk.old": "مُنح ⁨{when}⁩",

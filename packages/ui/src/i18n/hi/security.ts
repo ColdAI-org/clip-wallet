@@ -28,6 +28,7 @@ export default {
   "security.grant.allPermit2": "{app} Permit2 के ज़रिए आपके सारे {symbol} खर्च कर सकता है",
   "security.grant.upToPermit2": "{app} Permit2 के ज़रिए ज़्यादा से ज़्यादा {amount} {symbol} खर्च कर सकता है",
   "security.grant.nftAll": "{app} {collection} में आपका हर NFT ट्रांसफ़र कर सकता है",
+  "security.grant.nftOne": "{app} {collection} में आपका NFT #{id} ट्रांसफ़र कर सकता है",
   "security.risk.unlimited": "सब कुछ ले सकता है",
   "security.risk.unknownSpender": "अनजान ऐप",
   "security.risk.old": "{when} दी गई",

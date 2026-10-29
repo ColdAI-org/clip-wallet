@@ -28,6 +28,7 @@ export default {
   "m.security.grant.allPermit2": "{app}, Permit2 üzerinden tüm {symbol} bakiyenizi harcayabilir",
   "m.security.grant.upToPermit2": "{app}, Permit2 üzerinden en fazla {amount} {symbol} harcayabilir",
   "m.security.grant.nftAll": "{app}, {collection} koleksiyonundaki tüm NFT'lerinizi taşıyabilir",
+  "m.security.grant.nftOne": "{app}, {collection} koleksiyonundaki #{id} numaralı NFT'nizi taşıyabilir",
   "m.security.risk.unlimited": "Tamamını alabilir",
   "m.security.risk.unknownSpender": "Bilinmeyen uygulama",
   "m.security.risk.old": "Ayarlanma: {when}",

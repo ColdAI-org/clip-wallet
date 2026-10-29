@@ -28,6 +28,7 @@ export default {
   "m.security.grant.allPermit2": "{app} 可以通过 Permit2 花费你的全部 {symbol}",
   "m.security.grant.upToPermit2": "{app} 最多可以通过 Permit2 花费 {amount} {symbol}",
   "m.security.grant.nftAll": "{app} 可以转移你在 {collection} 中持有的所有 NFT",
+  "m.security.grant.nftOne": "{app} 可以转移你在 {collection} 中的 NFT #{id}",
   "m.security.risk.unlimited": "可拿走全部",
   "m.security.risk.unknownSpender": "未知应用",
   "m.security.risk.old": "设置于 {when}",

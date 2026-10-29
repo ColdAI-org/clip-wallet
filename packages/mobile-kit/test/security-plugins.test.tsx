@@ -7,8 +7,10 @@ import { Settings } from "../src/screens/Settings";
 import { Cleanup, Permissions, Protection, SecurityHome } from "../src/screens/Security";
 import { PluginSettings } from "../src/screens/Plugins";
 import { ApprovalScreen } from "../src/screens/Approval";
+import type { GrantView } from "@clip-wallet/ui";
 import { eventually, renderWith, testWallet, type TestWalletOptions } from "./helpers";
 import { fakeRegistry, pluginTarball } from "./plugin-fixtures";
+import { PERMISSIONS } from "./security-fixtures";
 
 const PW = "a long test password 42!";
 const NOTE: PluginInsight = {
@@ -116,6 +118,27 @@ describe("Settings → Security", () => {
     renderWith(wallet, <SecurityHome />, { name: "security" });
     expect(await eventually(() => screen.getByText("App-Berechtigungen"))).toBeTruthy();
     expect(screen.getByText("Betrugsschutz")).toBeTruthy();
+  });
+
+  it("App permissions: a single-NFT permission names the NFT, in the user's language", async () => {
+    const one: GrantView = {
+      id: "evm:base-sepolia:pals:7",
+      kind: "nft-token",
+      family: "evm",
+      title: "An unknown app can move your NFT #7 from Pudgy Pals",
+      asset: { symbol: "Pudgy Pals", name: "Pudgy Pals" },
+      spender: { address: "0xdEAD000000000000000000000000000000000000", known: false },
+      amount: "NFT #7 in Pudgy Pals",
+      tokenId: "7",
+      unlimited: false,
+      risks: [{ code: "unknown-spender", label: "Unknown app", level: "caution" }],
+      riskLevel: "medium",
+      networkId: "evm:84532",
+    };
+    const wallet = await ready({ security: { secApprovalsScan: () => ({ ...PERMISSIONS, grants: [one] }) } });
+    await wallet.client.setPrefs({ locale: "de" });
+    renderWith(wallet, <Permissions />, { name: "security-permissions" });
+    expect(await eventually(() => screen.getByText("Eine unbekannte App kann dein NFT #7 aus Pudgy Pals bewegen"))).toBeTruthy();
   });
 });
 

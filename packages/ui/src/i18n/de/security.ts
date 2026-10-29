@@ -28,6 +28,7 @@ export default {
   "security.grant.allPermit2": "{app} kann über Permit2 all deine {symbol} ausgeben",
   "security.grant.upToPermit2": "{app} kann über Permit2 bis zu {amount} {symbol} ausgeben",
   "security.grant.nftAll": "{app} kann jedes NFT bewegen, das du in {collection} hältst",
+  "security.grant.nftOne": "{app} kann dein NFT #{id} aus {collection} bewegen",
   "security.risk.unlimited": "Kann alles nehmen",
   "security.risk.unknownSpender": "Unbekannte App",
   "security.risk.old": "Erteilt {when}",

@@ -28,6 +28,7 @@ export default {
   "m.security.grant.allPermit2": "{app}は Permit2 を通じてあなたの{symbol}をすべて使えます",
   "m.security.grant.upToPermit2": "{app}は Permit2 を通じて最大{amount} {symbol}まで使えます",
   "m.security.grant.nftAll": "{app}は、あなたが{collection}で保有するすべての NFT を動かせます",
+  "m.security.grant.nftOne": "{app}は、{collection}のあなたの NFT #{id} を動かせます",
   "m.security.risk.unlimited": "すべてを持ち出せます",
   "m.security.risk.unknownSpender": "不明なアプリ",
   "m.security.risk.old": "{when}に設定",

@@ -12,6 +12,7 @@ import {
   isHex,
   parseAbi,
   toFunctionSelector,
+  zeroAddress,
 } from "viem";
 import { chainIdOf, quoteFees, tokenMeta, type FeeQuote } from "./chain.js";
 import { specFor } from "./networks.js";
@@ -300,7 +301,12 @@ async function decodeCall(ctx: ChainContext, tx: TxParams, d: DecodedRequest, st
     const { asset, isToken } = await tokenMeta(ctx, to);
     const name = who(spender);
     if (!isToken) {
-      // ERC-721 approve(to, tokenId)
+      // ERC-721 approve(to, tokenId); approve(0x0, tokenId) takes it back.
+      if (isAddressEqual(spender as `0x${string}`, zeroAddress)) {
+        Object.assign(d, titled(msg("bg.req.removeNftPermissions")));
+        d.lines.push({ label: "NFT", value: `#${amount}` }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
+        return;
+      }
       Object.assign(d, titled(msg("bg.req.allowMoveNft", { spender: name, id: String(amount), collection: asset.name })));
       d.lines.push({ label: "Allowed app", value: safeChecksum(spender) }, { label: "Collection", value: `${asset.name} (${safeChecksum(to)})` });
       return;

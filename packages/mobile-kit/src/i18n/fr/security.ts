@@ -28,6 +28,7 @@ export default {
   "m.security.grant.allPermit2": "{app} peut dépenser tous vos {symbol} via Permit2",
   "m.security.grant.upToPermit2": "{app} peut dépenser jusqu'à {amount} {symbol} via Permit2",
   "m.security.grant.nftAll": "{app} peut déplacer tous vos NFT de {collection}",
+  "m.security.grant.nftOne": "{app} peut déplacer votre NFT #{id} de {collection}",
   "m.security.risk.unlimited": "Peut tout prendre",
   "m.security.risk.unknownSpender": "Application inconnue",
   "m.security.risk.old": "Accordée {when}",

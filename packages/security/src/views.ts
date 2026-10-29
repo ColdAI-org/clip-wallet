@@ -21,6 +21,8 @@ export type GrantKind =
   | "token-allowance"
   /** ERC-721 / ERC-1155 setApprovalForAll(operator, true). */
   | "nft-all"
+  /** ERC-721 approve(spender, tokenId): one NFT. */
+  | "nft-token"
   /** Uniswap Permit2 AllowanceTransfer allowance. */
   | "permit2"
   /** SPL Token / Token-2022 Approve (a delegate on one token account). */
@@ -54,6 +56,8 @@ export interface GrantView {
   amount: string;
   /** The limit as a number ("100"), when not unlimited and not an NFT permission (for translated titles). */
   limit?: string;
+  /** nft-token: the one NFT the spender may move (for translated titles). */
+  tokenId?: string;
   unlimited: boolean;
   grantedAt?: number;
   /** Permit2 allowances expire on their own. */

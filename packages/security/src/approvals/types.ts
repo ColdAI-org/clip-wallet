@@ -6,6 +6,7 @@ import type { GrantRisk, GrantView, Unavailable } from "../views.js";
 export type RevokeSpec =
   | { kind: "erc20"; token: string; spender: string }
   | { kind: "nft-all"; collection: string; operator: string }
+  | { kind: "nft-token"; collection: string; tokenId: string; spender: string }
   | { kind: "permit2"; token: string; spender: string }
   | { kind: "spl"; tokenAccount: string; programId: string }
   | { kind: "hedera-hbar"; spender: string }

@@ -11,10 +11,11 @@ type T = (id: UiMessageId, vars?: Record<string, string | number>) => string;
 
 const shortAddr = (a: string) => (a.length > 14 ? `${a.slice(0, a.startsWith("0x") ? 6 : 4)}…${a.slice(-4)}` : a);
 
-/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins". */
+/** "Uniswap can spend all your USDC", "… up to 100 USDC", "… every NFT you hold in Pudgy Penguins", "… your NFT #7 from …". */
 export function grantTitle(g: GrantView, t: T): string {
   const app = g.spender.name ?? (g.spender.known ? shortAddr(g.spender.address) : t("security.grant.unknownApp"));
   if (g.kind === "nft-all" || g.kind === "hts-nft-all") return t("security.grant.nftAll", { app, collection: g.asset.name });
+  if (g.kind === "nft-token" && g.tokenId) return t("security.grant.nftOne", { app, id: g.tokenId, collection: g.asset.name });
   const permit2 = g.kind === "permit2";
   // A limited permission from a background without `limit` can't be re-worded: keep its own title.
   if (!g.unlimited && !g.limit && g.kind !== "spl-delegate") return g.title;

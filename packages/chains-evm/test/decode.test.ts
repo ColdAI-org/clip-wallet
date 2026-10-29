@@ -1,5 +1,5 @@
 import type { DappRequest, DecodedRequest } from "@clip-wallet/core";
-import { encodeAbiParameters, getAddress, encodeFunctionData, erc20Abi, maxUint256, numberToHex, parseAbi, parseAbiParameters, stringToHex, toEventSelector, toFunctionSelector } from "viem";
+import { encodeAbiParameters, getAddress, encodeFunctionData, erc20Abi, maxUint256, numberToHex, parseAbi, parseAbiParameters, stringToHex, toEventSelector, toFunctionSelector, zeroAddress } from "viem";
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";
 import { NATIVE_PSEUDO_TOKEN, TRANSFER_TOPIC, addressTopic } from "../src/simulate.js";
@@ -123,6 +123,15 @@ describe("decode eth_sendTransaction", () => {
     const off = await decode(tx({ to: NFT, data: encodeFunctionData({ abi, functionName: "setApprovalForAll", args: [BOB, false] }) }));
     expect(off.title).toBe("Stop 0x1234…5678 from moving your Cool Apes NFTs");
     expect(codes(off)).not.toContain("approval-for-all");
+  });
+
+  it("ERC-721 approve for one NFT, and approve(0x0, id) reads as taking it back", async () => {
+    const grant = await decode(tx({ to: NFT, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [BOB, 7n] }) }));
+    expect(grant.title).toBe("Allow 0x1234…5678 to move your NFT #7 from Cool Apes");
+    const clear = await decode(tx({ to: NFT, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [zeroAddress, 7n] }) }));
+    expect(clear.title).toBe("Remove permissions to move your NFTs");
+    expect(clear.lines).toContainEqual({ label: "NFT", value: "#7" });
+    expect(clear.title).not.toMatch(/0x0000/);
   });
 
   it("ERC-721 safeTransferFrom", async () => {

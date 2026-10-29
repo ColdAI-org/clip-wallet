@@ -10,6 +10,7 @@ import {
   pad,
   parseAbi,
   toEventSelector,
+  zeroAddress,
   type Hex,
 } from "viem";
 import { spenderName } from "../labels.js";
@@ -22,8 +23,8 @@ import { msg, titled, say } from "@clip-wallet/core";
  *
  * Discovery: the logs that GRANT a permission, filtered by owner = you:
  *  - ERC-20 `Approval(address indexed owner, address indexed spender, uint256 value)` (EIP-20). ERC-721's
- *    `Approval` has the same signature but a 4th indexed topic (tokenId); single-token NFT approvals are
- *    cleared when the NFT moves and are skipped here.
+ *    `Approval` has the same signature but a 4th indexed topic (tokenId): one NFT the spender may move until
+ *    the NFT moves or the approval is replaced. Approvals to the zero address clear one and are skipped.
  *  - `ApprovalForAll(address indexed owner, address indexed operator, bool approved)` (EIP-721 / EIP-1155).
  *  - Permit2 `Approval(owner, token, spender, uint160 amount, uint48 expiration)` and
  *    `Permit(owner, token, spender, uint160 amount, uint48 expiration, uint48 nonce)`
@@ -32,12 +33,13 @@ import { msg, titled, say } from "@clip-wallet/core";
  * topic0_1_opr=and; at most 1000 per page) when the network has Blockscout, else `eth_getLogs` over the last
  * `lookbackBlocks` in `maxBlockRange` chunks (halving on "range too large").
  *
- * Then the CURRENT state is read on-chain: `allowance(owner, spender)`, `isApprovedForAll(owner, operator)`
- * and Permit2 `allowance(user, token, spender) → (amount, expiration, nonce)`. Only live grants are listed.
+ * Then the CURRENT state is read on-chain: `allowance(owner, spender)`, `isApprovedForAll(owner, operator)`,
+ * `getApproved(tokenId)` with `ownerOf(tokenId)`, and Permit2 `allowance(user, token, spender) → (amount,
+ * expiration, nonce)`. Only live grants are listed.
  *
- * Revoke: `approve(spender, 0)`, `setApprovalForAll(operator, false)` (both decoded in plain words by
- * chains-evm), and one Permit2 `lockdown(TokenSpenderPair[])` per network (verified against the bytes, then
- * lifted from blind only with a successful simulation, like the 0x swap step).
+ * Revoke: `approve(spender, 0)`, `setApprovalForAll(operator, false)`, `approve(0x0, tokenId)` (all decoded in
+ * plain words by chains-evm), and one Permit2 `lockdown(TokenSpenderPair[])` per network (verified against the
+ * bytes, then lifted from blind only with a successful simulation, like the 0x swap step).
  *
  * Privacy: these reads go to the same RPC and Blockscout the wallet already uses for balances.
  */
@@ -53,6 +55,9 @@ export const TOPIC = {
 const NFT_ABI = parseAbi([
   "function isApprovedForAll(address owner, address operator) view returns (bool)",
   "function setApprovalForAll(address operator, bool approved)",
+  "function getApproved(uint256 tokenId) view returns (address)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
+  "function approve(address to, uint256 tokenId)",
   "function name() view returns (string)",
 ]);
 export const PERMIT2_ABI = parseAbi([
@@ -75,13 +80,15 @@ export interface RawLog {
   transactionHash?: string;
 }
 
-type PairKind = "erc20" | "nft-all" | "permit2";
+type PairKind = "erc20" | "nft-all" | "nft-token" | "permit2";
 
 interface Pair {
   kind: PairKind;
   contract: string;
   token: string;
   spender: string;
+  /** nft-token: the one NFT the spender may move. */
+  tokenId?: bigint;
   /** Values seen in grant logs, oldest first. */
   values: bigint[];
   lastAt?: number;
@@ -118,6 +125,11 @@ export function pairsFromLogs(logs: RawLog[], owner: string): Pair[] {
     if (t0 === TOPIC.approval && l.topics.length === 3) {
       p = { kind: "erc20", contract: getAddress(l.address), token: getAddress(l.address), spender: topicAddr(l.topics[2])! };
       value = word(l.data, 0);
+    } else if (t0 === TOPIC.approval && l.topics.length === 4) {
+      const spender = topicAddr(l.topics[2]);
+      // Approval to the zero address clears it; whether an older one still stands is read from the chain later.
+      if (!spender || spender === zeroAddress) continue;
+      p = { kind: "nft-token", contract: getAddress(l.address), token: getAddress(l.address), spender, tokenId: BigInt(l.topics[3]!) };
     } else if (t0 === TOPIC.approvalForAll && l.topics.length === 3) {
       p = { kind: "nft-all", contract: getAddress(l.address), token: getAddress(l.address), spender: topicAddr(l.topics[2])! };
       value = word(l.data, 0);
@@ -126,7 +138,7 @@ export function pairsFromLogs(logs: RawLog[], owner: string): Pair[] {
       value = word(l.data, 0);
     }
     if (!p) continue;
-    const key = `${p.kind}|${p.token}|${p.spender}`;
+    const key = `${p.kind}|${p.token}|${p.spender}${p.tokenId !== undefined ? `|${p.tokenId}` : ""}`;
     const prev = pairs.get(key);
     const at = logTime(l);
     if (prev) {
@@ -327,6 +339,41 @@ export class EvmApprovals implements ApprovalScanner {
       };
     }
 
+    if (p.kind === "nft-token") {
+      // Live only while it is still this spender's approval and the NFT is still yours.
+      const id = p.tokenId!;
+      const [approvedRaw, ownerRaw] = await Promise.all([
+        call(ctx, p.contract, encodeFunctionData({ abi: NFT_ABI, functionName: "getApproved", args: [id] })),
+        call(ctx, p.contract, encodeFunctionData({ abi: NFT_ABI, functionName: "ownerOf", args: [id] })),
+      ]);
+      if (!approvedRaw || approvedRaw === "0x" || !ownerRaw || ownerRaw === "0x") return null;
+      try {
+        if (!isAddressEqual(decodeFunctionResult({ abi: NFT_ABI, functionName: "getApproved", data: approvedRaw }), p.spender as Hex)) return null;
+        if (!isAddressEqual(decodeFunctionResult({ abi: NFT_ABI, functionName: "ownerOf", data: ownerRaw }), owner as Hex)) return null;
+      } catch {
+        return null;
+      }
+      const coll = await collectionName(ctx, p.contract);
+      const spec: RevokeSpec = { kind: "nft-token", collection: p.contract, tokenId: id.toString(), spender: p.spender };
+      return {
+        revoke: spec,
+        view: {
+          id: grantId(ctx.network.id, spec),
+          kind: "nft-token",
+          family: "evm",
+          title: `${who} can move your NFT #${id} from ${coll}`,
+          asset: { symbol: coll, name: coll, address: p.contract },
+          spender,
+          amount: `NFT #${id} in ${coll}`,
+          tokenId: id.toString(),
+          unlimited: false,
+          grantedAt: p.lastAt,
+          ...risksFor({ ...base, unlimited: false }),
+          networkId: ctx.network.id,
+        },
+      };
+    }
+
     const raw = await call(ctx, PERMIT2, encodeFunctionData({ abi: PERMIT2_ABI, functionName: "allowance", args: [owner as Hex, p.token as Hex, p.spender as Hex] }));
     if (!raw || raw === "0x") return null;
     const [amount, expiration] = decodeFunctionResult({ abi: PERMIT2_ABI, functionName: "allowance", data: raw });
@@ -374,6 +421,8 @@ export class EvmApprovals implements ApprovalScanner {
         steps.push({ ...titled(msg("bg.req.stopSpending", { spender: who, symbol: g.view.asset.symbol })), request: mk(s.token, encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [getAddress(s.spender), 0n] })) });
       } else if (s.kind === "nft-all") {
         steps.push({ ...titled(msg("bg.req.stopMovingNfts", { spender: who, collection: g.view.asset.symbol })), request: mk(s.collection, encodeFunctionData({ abi: NFT_ABI, functionName: "setApprovalForAll", args: [getAddress(s.operator), false] })) });
+      } else if (s.kind === "nft-token") {
+        steps.push({ ...titled(msg("bg.req.removeNftAccess", { spender: who, collection: g.view.asset.symbol })), request: mk(s.collection, encodeFunctionData({ abi: NFT_ABI, functionName: "approve", args: [zeroAddress, BigInt(s.tokenId)] })) });
       } else if (s.kind === "permit2") {
         permit2.push({ token: getAddress(s.token), spender: getAddress(s.spender) });
       }

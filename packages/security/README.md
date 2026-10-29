@@ -6,7 +6,7 @@ is a `DappRequest` on the normal approval path (decode, approve, vault signs). S
 
 | Area | Module | What it does |
 |---|---|---|
-| App permissions | `approvals/` | Lists every standing permission and revokes the chosen ones in one tap: EVM ERC-20 allowances, ERC-721/1155 `setApprovalForAll`, Permit2 allowances; Solana SPL / Token-2022 delegates; Hedera HBAR, token and NFT allowances. Risk flags: unlimited, unknown app, old, never used, on a scam list. |
+| App permissions | `approvals/` | Lists every standing permission and revokes the chosen ones in one tap: EVM ERC-20 allowances, ERC-721/1155 `setApprovalForAll`, single-NFT ERC-721 `approve` (while `getApproved` still names the app), Permit2 allowances; Solana SPL / Token-2022 delegates; Hedera HBAR, token and NFT allowances. Risk flags: unlimited, unknown app, old, never used, on a scam list. |
 | Scam detection | `threat/` | `ThreatIntelProvider` interface, consulted on connect and after decode. Open lists (MetaMask, ScamSniffer, Phantom, PolkadotJS), local heuristics (look-alike recipients, zero-value poisoning, new contracts), and optional Blockaid scanning. WalletConnect Verify stays in 1Mask; our lists feed its `isKnownScam`. |
 | Spam cleanup | `cleanup/` | Solana: close empty token accounts and burn + close spam (rent comes back). Hedera: dissociate unused and deleted-spam tokens. Everything else: hide on this device. |
 | Bus | `messages.ts`, `background.ts` | zod-validated `sec*` messages and `SecurityService.handle()`. |
@@ -53,7 +53,8 @@ Warning codes added to `@clip-wallet/core` (additive): `phishing-site`, `address
 
 **EVM permissions**
 - ERC-20 `Approval(address indexed owner, address indexed spender, uint256 value)`, `allowance`, `approve`: EIP-20.
-  ERC-721 `Approval` shares the signature but has 4 topics (tokenId indexed): EIP-721.
+  ERC-721 `Approval` shares the signature but has 4 topics (tokenId indexed), `getApproved`, `ownerOf`,
+  `approve(address(0), tokenId)` clears it: EIP-721.
 - `ApprovalForAll(address indexed owner, address indexed operator, bool approved)`, `isApprovedForAll`,
   `setApprovalForAll`: EIP-721 and EIP-1155.
 - Permit2 (`0x000000000022D473030F116dDEE9F6B43aC78BA3`, same address on every chain): `Approval(owner, token,
