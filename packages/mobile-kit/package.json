@@ -118,7 +118,7 @@
     "@noble/hashes": "2.4.0",
     "pako": "3.0.2",
     "qrcode": "^1.5.4",
-    "readable-stream": "^3.6.2",
+    "readable-stream": "^4.8.0",
     "ses": "2.3.0"
   },
   "peerDependencies": {
