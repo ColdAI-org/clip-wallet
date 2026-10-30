@@ -2357,8 +2357,8 @@ importers:
         specifier: 2.4.0
         version: 2.4.0
       pako:
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 3.0.2
+        version: 3.0.2
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
