@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { runInNewContext } from "node:vm";
 import { deflateSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -21,6 +22,7 @@ import {
   readIcns,
   readIco,
   templateDir,
+  writeListings,
 } from "../src/index.mjs";
 import { restoreDotfiles } from "../src/template.mjs";
 
@@ -316,6 +318,14 @@ describe("in a project", () => {
     expect(await main(["listings", "--root", target], { ...quiet, log: (s) => out.push(s) })).toBe(0);
     expect(existsSync(join(target, "docs/listings/near.md"))).toBe(true);
     expect(read(join(target, "docs/listings/near.md"))).toContain('setupClipWallet({ globalKey: "acmewallet" })');
+  });
+
+  it("the Beacon draft's entry keeps any wallet name as one string", () => {
+    const root = tmp();
+    const name = `O'Brien's \\' Wallet\\`;
+    writeListings(root, { name, description: "d", rdns: "com.acme.wallet", extensionId: "a".repeat(32), key: "acme", slug: "acme", networks: ["tezos"], version: "1.0.0" });
+    const entry = /```ts\n(\{[\s\S]*?\})\n```/.exec(read(join(root, "docs/listings/beacon.md")))?.[1];
+    expect(runInNewContext(`(${entry})`)).toMatchObject({ key: "acme_chrome", name, shortName: "O'Brien's", link: "https://acme.com" });
   });
 
   it("mainnet-check lists everything between the wallet and mainnet", async () => {
