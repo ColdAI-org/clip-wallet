@@ -194,7 +194,7 @@
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
     "react-test-renderer": "19.2.3",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vitest": "~4.1.11"
   }
 }
