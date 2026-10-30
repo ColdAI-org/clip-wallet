@@ -142,6 +142,13 @@ describe("install from npm", () => {
     expect(reg.urls).toEqual([]);
   });
 
+  it("asks npm for a scoped package with the slash in its name encoded", async () => {
+    const scoped = "@clip-plugins/address-label";
+    const reg = fakeRegistry(scoped, "1.0.0", examplePackage({ pkg: { name: scoped, version: "1.0.0" } }));
+    await expect(prepareInstallFromNpm(scoped, { fetch: reg.f })).resolves.toMatchObject({ id: scoped });
+    expect(reg.urls[0]).toBe("https://registry.npmjs.org/@clip-plugins%2faddress-label");
+  });
+
   it("not found on npm", async () => {
     const reg = fakeRegistry(NAME, "1.0.0", examplePackage());
     await expect(prepareInstallFromNpm("clip-plugin-nope", { fetch: reg.f })).rejects.toMatchObject({ code: "not-found" });

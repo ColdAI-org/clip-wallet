@@ -179,7 +179,7 @@ export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { v
   let meta: { "dist-tags"?: Record<string, string>; versions?: Record<string, { dist?: { tarball?: string; integrity?: string } }> };
   try {
     const ctl = new AbortController();
-    const res = await f(`${registry}/${pkg.replace("/", "%2f")}`, { headers: { accept: "application/vnd.npm.install-v1+json" }, credentials: "omit", signal: ctl.signal });
+    const res = await f(`${registry}/${pkg.replaceAll("/", "%2f")}`, { headers: { accept: "application/vnd.npm.install-v1+json" }, credentials: "omit", signal: ctl.signal });
     if (res.status === 404) throw new InstallError("not-found", "No plugin with that name on npm.");
     if (!res.ok) throw new InstallError("unreachable", "We couldn't reach npm. Try again.");
     meta = JSON.parse(await readTextCapped(res, MAX_METADATA_BYTES, () => ctl.abort())) as typeof meta;
