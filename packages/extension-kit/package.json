@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/extension-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build a branded Clip Wallet browser extension with WXT: background, pages, 1Mask wiring and the security floor, configured by clip.config.ts",
   "keywords": [
     "clip-wallet",

@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/kit-modules",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet",
   "keywords": [
     "clip-wallet",

@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/connect",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Connect: wallet-agnostic dapp SDK. One connect() for Clip Wallet and any EIP-6963, Wallet Standard or WalletConnect wallet; CAIP-10 accounts, pay() with EIP-5792 + ERC-7682 auxiliary funds, React, wagmi and Solana adapters",
   "keywords": [
     "clip-wallet",

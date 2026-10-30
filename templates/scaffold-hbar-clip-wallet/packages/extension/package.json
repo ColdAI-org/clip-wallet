@@ -25,8 +25,8 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
-    "@clip-wallet/config": "0.1.0",
-    "@clip-wallet/extension-kit": "0.1.0",
+    "@clip-wallet/config": "0.2.0",
+    "@clip-wallet/extension-kit": "0.2.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

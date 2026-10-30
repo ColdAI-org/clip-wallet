@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/social",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet social layer: contacts, Clip handles on Hedera, notifications and Discover",
   "keywords": [
     "clip-wallet",

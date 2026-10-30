@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/security",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet security services: phishing lists, transaction checks, approvals review, address poisoning and hidden-token cleanup",
   "keywords": [
     "clip-wallet",

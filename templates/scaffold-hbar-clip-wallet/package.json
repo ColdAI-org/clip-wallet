@@ -51,8 +51,8 @@
     "wallet:mainnet-check": "create-clip-wallet mainnet-check"
   },
   "devDependencies": {
-    "@clip-wallet/config": "0.1.0",
-    "create-clip-wallet": "0.1.0"
+    "@clip-wallet/config": "0.2.0",
+    "create-clip-wallet": "0.2.0"
   },
   "engines": {
     "node": ">=22.18",

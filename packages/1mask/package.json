@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/1mask",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "1Mask: one wallet for every dapp. EIP-1193/6963, Wallet Standard, CIP-30, TON Connect, NEAR, Stellar, Algorand, Beacon and WalletConnect connectors",
   "keywords": [
     "clip-wallet",

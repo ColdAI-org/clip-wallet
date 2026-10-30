@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/backup-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Client for the Clip Wallet passkey backup service; moves opaque encrypted blobs, never keys",
   "keywords": [
     "clip-wallet",

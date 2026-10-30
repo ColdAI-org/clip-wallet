@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/route",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Route and fund on CLPRouter: shortfalls, quotes, pay-on-Hedera and settle-on-Hedera planning",
   "keywords": [
     "clip-wallet",

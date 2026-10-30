@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/names",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Name resolution for Clip Wallet: ENS, SNS, HNS and Clip handles to an address and the network it implies",
   "keywords": [
     "clip-wallet",

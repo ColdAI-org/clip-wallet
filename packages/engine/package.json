@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Clip Wallet's environment-free orchestration: approvals, permissions, portfolio, send/receive, 1Mask and WalletConnect hosting",
   "keywords": [
     "clip-wallet",

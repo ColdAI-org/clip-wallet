@@ -1,6 +1,6 @@
 {
   "name": "@clip-wallet/desktop-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build a branded Clip Wallet desktop app (Electron: macOS, Windows, Linux): main process, preloads, pages, built-in dapp browser with 1Mask, configured by clip.config.ts",
   "keywords": [
     "clip-wallet",
