@@ -131,7 +131,7 @@
     "@near-wallet-selector/core": "^10.1.4",
     "@txnlab/use-wallet": "^5.0.1",
     "algosdk": "^3.8.0",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.4",
     "@clip-wallet/1mask": "workspace:*",
     "@clip-wallet/core": "workspace:*"
   }
