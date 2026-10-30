@@ -1,7 +1,7 @@
 import { env, exports as workerExports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { mediaProxyUrl } from "@clip-wallet/media-client";
-import { createProxy, type Env } from "../src/index";
+import { mediaProxyUrl, normaliseMediaSource } from "@clip-wallet/media-client";
+import { createProxy, upstreamUrl, type Env } from "../src/index";
 
 const E = env as unknown as Env;
 const worker = (workerExports as unknown as { default: { fetch(req: Request): Promise<Response> } }).default;
@@ -61,6 +61,15 @@ describe("media proxy", () => {
     expect(res.status).toBe(200);
     expect(seen[0]!.url).toBe(`https://gw.example/ipfs/${CID}/1.png`);
     expect(res.headers.get("cache-control")).toContain("immutable");
+  });
+
+  it("gateway settings may end in any number of slashes", () => {
+    const ipfs = normaliseMediaSource(`ipfs://${CID}/1.png`)!;
+    const ar = normaliseMediaSource("ar://bNbA3TEQVL60xlgCcqdz4ZPHFZ711cZ3hmkpGttDt_U")!;
+    expect(upstreamUrl(ipfs, { ...E, IPFS_GATEWAY: "https://gw.example///" })).toBe(`https://gw.example/ipfs/${CID}/1.png`);
+    expect(upstreamUrl(ar, { ...E, ARWEAVE_GATEWAY: "https://ar.example//" })).toBe("https://ar.example/bNbA3TEQVL60xlgCcqdz4ZPHFZ711cZ3hmkpGttDt_U");
+    const odd = `${"/".repeat(100_000)}x`;
+    expect(upstreamUrl(ar, { ...E, ARWEAVE_GATEWAY: odd })).toBe(`${odd}/bNbA3TEQVL60xlgCcqdz4ZPHFZ711cZ3hmkpGttDt_U`);
   });
 
   it("ar:// goes through the Arweave gateway", async () => {

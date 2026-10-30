@@ -1,3 +1,4 @@
+import { withoutTrailing } from "@clip-wallet/core";
 import { sha384 } from "@noble/hashes/sha2.js";
 import { accountIdString, transactionIdString } from "./ids.js";
 import { GRPC_WEB_NODES, type HederaLedger } from "./networks.js";
@@ -181,7 +182,7 @@ export async function submitTransaction(signedList: Uint8Array, ledger: HederaLe
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), timeoutMs);
     try {
-      const res = await doFetch(`${base.replace(/\/+$/, "")}/proto.${rpc}`, {
+      const res = await doFetch(`${withoutTrailing(base, "/")}/proto.${rpc}`, {
         method: "POST",
         headers: { "content-type": "application/grpc-web+proto", "x-grpc-web": "1" },
         body: grpcWebFrame(encodeTransaction(signedTransactionBytes)),

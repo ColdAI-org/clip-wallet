@@ -12,6 +12,7 @@ import {
   b58cEncode,
   beaconNetworkType,
   createTezosModule,
+  describeText,
   encodePublicKey,
   fromBeaconNetwork,
   fromChainId,
@@ -98,6 +99,7 @@ describe("networks and addresses", () => {
     expect(beaconNetworkType(TEZOS_SHADOWNET.id)).toBe("shadownet");
     expect(fromBeaconNetwork({ type: "mainnet" })).toBe(TEZOS_MAINNET.id);
     expect(fromBeaconNetwork({ type: "custom", rpcUrl: "https://rpc.shadownet.teztnets.com/" })).toBe(TEZOS_SHADOWNET.id);
+    expect(fromBeaconNetwork({ type: "custom", rpcUrl: "https://rpc.shadownet.teztnets.com///" })).toBe(TEZOS_SHADOWNET.id);
     expect(fromBeaconNetwork({ type: "ghostnet" })).toBeUndefined();
     expect(xtzAsset(TEZOS_MAINNET.id)).toMatchObject({ key: "xtz", decimals: 6 });
     expect(tokenAssetKey(TEZOS_MAINNET.id, "KT1XnTn74bUtxHfDtBmm2bGZAQfhPbvKWR8o", "0")).toBe("usdt");
@@ -401,6 +403,17 @@ describe("tezos_sign", () => {
     const d = await createTezosModule().decode(req(TEZOS_METHODS.sign, { payload: michelineString(SIGN_IN_TEXT) }, "https://evil.example"), ctxFor(fetch));
     expect(d.title).toBe("Sign in to app.example");
     expect(d.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "domain-mismatch" }));
+  });
+
+  it("a bare sign-in domain is read up to its first slash", () => {
+    const own = describeText("Tezos Signed Message: app.example/login 2026-10-03T00:00:00Z Sign in", "https://app.example");
+    expect(own.title).toBe("Sign in to app.example");
+    expect(own.warnings).toEqual([]);
+    const other = describeText("Tezos Signed Message: other.example/app.example 2026-10-03T00:00:00Z Sign in", "https://app.example");
+    expect(other.warnings).toContainEqual(expect.objectContaining({ level: "danger", code: "domain-mismatch" }));
+    const t0 = performance.now();
+    expect(describeText(`Tezos Signed Message: app.example${"/".repeat(100_000)}`, "https://app.example").warnings).toEqual([]);
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it("packed data that isn't a string is blind (could be a permit)", async () => {

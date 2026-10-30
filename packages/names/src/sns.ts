@@ -9,7 +9,7 @@
  * SNS is a mainnet registry. The resolved key is an ed25519 public key, which is the same address on every
  * Solana cluster, so networkIds is left empty (the Send screen uses the wallet's Solana network).
  */
-import type { Family, NetworkId } from "@clip-wallet/core";
+import { type Family, type NetworkId, withoutTrailing } from "@clip-wallet/core";
 import { getJson } from "./http.js";
 import type { Backend, ResolvedName } from "./types.js";
 
@@ -34,7 +34,7 @@ export class SnsBackend implements Backend {
     return this.opts.fetch ?? globalThis.fetch.bind(globalThis);
   }
   private get base(): string {
-    return (this.opts.baseUrl ?? SNS_PROXY).replace(/\/+$/, "");
+    return withoutTrailing(this.opts.baseUrl ?? SNS_PROXY, "/");
   }
 
   handles(name: string): boolean {

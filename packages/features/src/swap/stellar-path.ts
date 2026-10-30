@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, say } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, say, withoutTrailing } from "@clip-wallet/core";
 import { type ClassicAsset, MAX_PATH_LENGTH, STELLAR_HORIZON, buildPathSwap, checkPathSwap, netOf, swapAsset } from "@clip-wallet/chains-stellar";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -58,7 +58,7 @@ export class StellarPathSwap implements SwapProvider {
     const n = netOf(ctx.network.id);
     const url = this.opts.horizonUrl ?? ctx.network.rpcUrls[0] ?? (n ? STELLAR_HORIZON[n] : undefined);
     if (!url) throw new ClipError("Swapping isn't set up for this network.", "swap/stellar-no-horizon");
-    return url.replace(/\/+$/, "");
+    return withoutTrailing(url, "/");
   }
 
   async quote(req: SwapQuoteRequest, ctx: ChainContext): Promise<SwapQuote> {

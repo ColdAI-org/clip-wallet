@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, includesInOrder } from "@clip-wallet/core";
 
 export class RpcError extends Error {
   constructor(
@@ -65,7 +65,11 @@ export function plainStarknetError(e: unknown): string {
   if (/u256_sub Overflow|transfer amount exceeds balance|insufficient balance|ERC20: amount exceeds/i.test(text)) {
     return "You don't have enough of a token this needs.";
   }
-  if (/INSUFFICIENT_ACCOUNT_BALANCE|insufficient account balance|resources? bounds.*exceed.*balance|^53 /i.test(text)) {
+  if (
+    /INSUFFICIENT_ACCOUNT_BALANCE|insufficient account balance|^53 /i.test(text) ||
+    includesInOrder(text, "resource bounds", "exceed", "balance") ||
+    includesInOrder(text, "resources bounds", "exceed", "balance")
+  ) {
     return "You don't have enough STRK to pay the network fee.";
   }
   if (/nonce/i.test(text)) return "Another transaction from this account went through first. Try again.";

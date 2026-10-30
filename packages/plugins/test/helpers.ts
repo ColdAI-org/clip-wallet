@@ -67,7 +67,7 @@ export const exampleManifest = () => JSON.parse(readFileSync(new URL("clip.plugi
 
 /* ------------------------------------------------------------------ npm tarball fixtures (no keys involved) */
 
-function tarHeader(path: string, size: number): Uint8Array {
+function tarHeader(path: string, size: number, type = "0"): Uint8Array {
   const h = new Uint8Array(512);
   const enc = new TextEncoder();
   const put = (s: string, off: number) => h.set(enc.encode(s), off);
@@ -78,7 +78,7 @@ function tarHeader(path: string, size: number): Uint8Array {
   put(size.toString(8).padStart(11, "0") + "\0", 124);
   put("00000000000\0", 136);
   put("        ", 148);
-  h[156] = "0".charCodeAt(0);
+  h[156] = type.charCodeAt(0);
   put("ustar\0", 257);
   put("00", 263);
   let sum = 0;
@@ -87,11 +87,12 @@ function tarHeader(path: string, size: number): Uint8Array {
   return h;
 }
 
-export function tgz(files: Record<string, string | Uint8Array>): Uint8Array {
+/** An uncompressed tar of [path, body, type flag] entries ("0" a file, "x" a pax header for the next entry). */
+export function tarOf(entries: [string, string | Uint8Array, string?][]): Uint8Array {
   const parts: Uint8Array[] = [];
-  for (const [path, content] of Object.entries(files)) {
+  for (const [path, content, type] of entries) {
     const body = typeof content === "string" ? new TextEncoder().encode(content) : content;
-    parts.push(tarHeader(path, body.length), body, new Uint8Array((512 - (body.length % 512)) % 512));
+    parts.push(tarHeader(path, body.length, type), body, new Uint8Array((512 - (body.length % 512)) % 512));
   }
   parts.push(new Uint8Array(1024));
   const total = parts.reduce((n, p) => n + p.length, 0);
@@ -101,7 +102,11 @@ export function tgz(files: Record<string, string | Uint8Array>): Uint8Array {
     tar.set(p, o);
     o += p.length;
   }
-  return new Uint8Array(gzipSync(tar));
+  return tar;
+}
+
+export function tgz(files: Record<string, string | Uint8Array>): Uint8Array {
+  return new Uint8Array(gzipSync(tarOf(Object.entries(files))));
 }
 
 export const sri = (b: Uint8Array) => `sha512-${createHash("sha512").update(b).digest("base64")}`;

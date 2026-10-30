@@ -21,6 +21,18 @@ describe("open list parsing and matching", () => {
     expect(() => source("metamask").parse("<html>rate limited</html>")).toThrow();
   });
 
+  it("reads Phantom entries line by line, whatever the line endings", () => {
+    const phantom = (body: string) => source("phantom").parse(body).deny;
+    const ls = String.fromCharCode(0x2028);
+    expect(phantom("- url: a.example\r\n  - url: 'b.example'\r- url: \"c.example\"  \n")).toEqual(["a.example", "b.example", "c.example"]);
+    expect(phantom(`- url: a.example${ls}- url: b.example`)).toEqual(["a.example", "b.example"]);
+    expect(phantom(`${"\n".repeat(1000)}- url: a.example # note\n- url: b.example`)).toEqual(["b.example"]);
+    const t0 = performance.now();
+    expect(phantom(`- url: a.example\n${" ".repeat(100_000)}x`)).toEqual(["a.example"]);
+    expect(phantom(`- url: a.example\n${"\n".repeat(100_000)}x`)).toEqual(["a.example"]);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
   it("blocks a listed domain and its subdomains, not its parents", () => {
     const m = matcher("metamask");
     expect(m.site("claim-airdrop.example")).toEqual({ kind: "deny", entry: "claim-airdrop.example" });

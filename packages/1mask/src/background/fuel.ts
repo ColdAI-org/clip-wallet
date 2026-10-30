@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network, NetworkId } from "@clip-wallet/core";
+import { type DappRequest, type Family, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
 import { rpcError } from "../shared/errors.js";
 import { FUEL_INJECTED, fuelChainId, fuelConnectorNetwork } from "../shared/fuel.js";
 import type { ExposedAccount, OneMaskEvent } from "../shared/protocol.js";
@@ -42,7 +42,7 @@ const sameUrl = (a: string, b: string) => {
   try {
     const x = new URL(a);
     const y = new URL(b);
-    return x.host === y.host && x.pathname.replace(/\/+$/, "") === y.pathname.replace(/\/+$/, "");
+    return x.host === y.host && withoutTrailing(x.pathname, "/") === withoutTrailing(y.pathname, "/");
   } catch {
     return false;
   }

@@ -225,6 +225,16 @@ describe("finalize", () => {
     expect(await mod.finalize(send(TRANSFER_TX), [sig(SIG.transfer)], ctxFor(node.fetch))).toBe(TRANSFER_ID);
     expect(polls).toBe(2);
   });
+
+  it("reads the status from each event's last line, skipping events without data", async () => {
+    const ev = (s: unknown) => JSON.stringify({ data: { submitAndAwaitStatus: s } });
+    const body = `: hello\n\nevent: next\nid: 1\n\nevent: next\ndata:${ev({ type: "SubmittedStatus" })}\n\nevent: next\ndata: ${ev({ type: "SuccessStatus", transactionId: TRANSFER_ID })}\n\n`;
+    const stream = (text: string) => ctxFor((async () => new Response(text, { status: 200, headers: { "content-type": "text/event-stream" } })) as typeof fetch);
+    expect(await gqlFor(stream(body)).submitAndAwait("0x00")).toEqual({ type: "SuccessStatus", id: TRANSFER_ID });
+    const t0 = performance.now();
+    await expect(gqlFor(stream(`${"data:".repeat(20_000)}\n`)).submitAndAwait("0x00")).rejects.toThrow("the status stream ended before the node answered");
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });
 
 describe("buildTransfer", () => {

@@ -2,7 +2,7 @@
  * Koios REST client (https://api.koios.rest, OpenAPI koiosapi.yaml). Public tier: no API key.
  * Only the endpoints the module needs; responses are validated loosely and turned into plain errors.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, includesInOrder } from "@clip-wallet/core";
 import { hex } from "./util.js";
 
 export interface KoiosAsset {
@@ -188,7 +188,7 @@ export class Koios {
 
 /** Ledger rejection text → plain words. */
 export function plainSubmitError(text: string): string {
-  if (/BadInputsUTxO|ValueNotConservedUTxO.*BadInputs/i.test(text)) return "Some of the coins this transaction spends were already spent. Refresh and try again.";
+  if (/BadInputsUTxO/i.test(text) || includesInOrder(text, "ValueNotConservedUTxO", "BadInputs")) return "Some of the coins this transaction spends were already spent. Refresh and try again.";
   if (/OutsideValidityIntervalUTxO|ExpiredUTxO/i.test(text)) return "This transaction expired before it was sent. Try again.";
   if (/FeeTooSmallUTxO/i.test(text)) return "The network fee was too low. Try again.";
   if (/OutputTooSmallUTxO|BabbageOutputTooSmallUTxO/i.test(text)) return "One of the amounts is below Cardano's minimum. Send a little more ADA.";

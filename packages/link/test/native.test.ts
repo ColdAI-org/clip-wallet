@@ -65,6 +65,15 @@ describe("host manifests", () => {
     expect(desktopSocketPath("win32", { home: "C:\\Users\\a", user: "a" })).toMatch(/^\\\\\.\\pipe\\clip-wallet-link-[0-9a-f]{16}$/);
     expect(desktopSocketPath("win32", { home: "", user: "a" })).not.toBe(desktopSocketPath("win32", { home: "", user: "b" }));
   });
+  it("very long home directories fall back to the temp dir, without its trailing slashes", () => {
+    const home = `/Users/${"a".repeat(80)}`;
+    expect(desktopSocketPath("darwin", { home, user: "a", tmpDir: "/var/folders/xy/T///" })).toBe("/var/folders/xy/T/clip-wallet-link.sock");
+    expect(desktopSocketPath("darwin", { home, user: "a" })).toBe(`${home}/Library/Application Support/Clip Wallet/link/desktop.sock`);
+    const t0 = performance.now();
+    const odd = `${"/".repeat(100_000)}x`;
+    expect(desktopSocketPath("linux", { home, user: "a", tmpDir: odd })).toBe(`${odd}/clip-wallet-link.sock`);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });
 
 describe("native host program (mock browser on stdio ⇄ desktop socket)", () => {

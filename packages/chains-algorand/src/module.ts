@@ -283,7 +283,7 @@ export function createAlgorandModule(options: AlgorandModuleOptions = {}): Chain
       const resolved = resolveArc19Url(info.url, info.reserve);
       if (resolved) {
         base = resolved;
-        if (isArc3(info) || /\.json$/i.test(resolved.replace(/#.*$/, ""))) md = await fetchJson(httpUrl(resolved, gateway), ctx.fetch);
+        if (isArc3(info) || /\.json$/i.test(resolved.split("#")[0]!)) md = await fetchJson(httpUrl(resolved, gateway), ctx.fetch);
         else nft.mediaUrl = httpUrl(resolved, gateway);
       }
     } else if (isArc3(info)) {

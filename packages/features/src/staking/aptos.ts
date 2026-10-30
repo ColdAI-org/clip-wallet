@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say, withoutTrailing } from "@clip-wallet/core";
 import { MIN_DELEGATION_OCTAS, delegationPayload } from "@clip-wallet/chains-aptos";
 import { fetchJson } from "../http.js";
 import { formatUnits, percent, randomId, shortAddress } from "../util.js";
@@ -42,7 +42,7 @@ interface RewardsInfo {
 function rest(ctx: ChainContext): string {
   const url = ctx.network.rpcUrls[0];
   if (!url) throw new ClipError("Staking isn't available right now.", "staking/no-rpc");
-  return url.replace(/\/+$/, "");
+  return withoutTrailing(url, "/");
 }
 
 function indexer(ctx: ChainContext): string {

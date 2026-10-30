@@ -62,7 +62,7 @@ export function describeText(text: string, origin: string): MessageView {
   if (text.startsWith(SIGNED_MESSAGE_PREFIX)) {
     const rest = text.slice(SIGNED_MESSAGE_PREFIX.length).trim();
     const [first = "", second = "", ...statement] = rest.split(/\s+/);
-    const claimed = /^https?:\/\//i.test(first) ? hostOf(first) : first.replace(/\/.*$/, "");
+    const claimed = /^https?:\/\//i.test(first) ? hostOf(first) : first.split("/")[0]!;
     title = say("bg.req.signIn", { domain: claimed || host });
     if (claimed && !sameSite(claimed, host)) {
       warnings.push({ level: "danger", code: "domain-mismatch", message: say("bg.warn.signInPhishing", { domain: claimed, host }) });

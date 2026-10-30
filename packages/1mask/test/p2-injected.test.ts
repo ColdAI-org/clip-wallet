@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createMemoryPermissionStore } from "../src/background/index.js";
 import { P2_FAMILIES, createP2Dispatcher, p2InjectedAllowlist, tezosEdpk, type BeaconRelay } from "../src/background/p2-families.js";
 import { installAlgorandProvider } from "../src/inpage/algorand.js";
-import { base58Encode } from "../src/inpage/injected-base.js";
+import { base58Encode, base64UrlNoPad } from "../src/inpage/injected-base.js";
 import { installNearProvider } from "../src/inpage/near.js";
 import { installStellarProvider } from "../src/inpage/stellar.js";
 import { installTezosBeaconRelay } from "../src/inpage/tezos.js";
@@ -221,6 +221,17 @@ describe("Algorand injected provider", () => {
   it("derives CAIP-2 references from genesis hashes (base64url, 32 chars)", () => {
     expect(algorandChainFromGenesisHash("wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=")).toBe("algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k");
     expect(algorandChainFromGenesisHash("SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=")).toBe("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe");
+    expect(algorandChainFromGenesisHash("a+b/YQ==")).toBe("algorand:a-b_YQ");
+  });
+
+  it("drops base64 padding with a linear scan, also on odd input", () => {
+    expect(base64UrlNoPad("a+b/YQ==")).toBe("a-b_YQ");
+    expect(base64UrlNoPad("YWJj")).toBe("YWJj");
+    const t0 = performance.now();
+    const odd = `${"=".repeat(100_000)}x`;
+    expect(base64UrlNoPad(odd)).toBe(odd);
+    expect(algorandChainFromGenesisHash(odd)).toBe(`algorand:${"=".repeat(32)}`);
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 });
 

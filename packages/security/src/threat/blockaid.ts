@@ -1,3 +1,4 @@
+import { withoutTrailing } from "@clip-wallet/core";
 import { normalize } from "@clip-wallet/chains-solana";
 import { clusterOf } from "@clip-wallet/chains-solana";
 import { fetchJson } from "../util.js";
@@ -87,7 +88,7 @@ export class BlockaidProvider implements ThreatIntelProvider {
   private async post<T>(path: string, body: unknown): Promise<T | null> {
     if (!this.enabled) return null;
     try {
-      const r = await fetchJson<T>(this.fetchImpl, `${(this.opts!.baseUrl ?? "https://api.blockaid.io").replace(/\/+$/, "")}${path}`, "Blockaid", {
+      const r = await fetchJson<T>(this.fetchImpl, `${withoutTrailing(this.opts!.baseUrl ?? "https://api.blockaid.io", "/")}${path}`, "Blockaid", {
         body,
         headers: { "X-API-Key": this.opts!.apiKey },
         timeoutMs: 5000,

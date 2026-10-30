@@ -5,7 +5,7 @@ import { parseFromSandbox, parseFromHost } from "../src/messages.js";
 import { PluginRegistry, PLUGIN_KEYS } from "../src/registry.js";
 import { PluginsService } from "../src/service.js";
 import { SANDBOX_CSP, SANDBOX_MANIFEST } from "../src/sandbox.js";
-import { exampleManifest, exampleSource, fakeRegistry, manifestFor, sha256, sri, tgz } from "./helpers.js";
+import { exampleManifest, exampleSource, fakeRegistry, manifestFor, sha256, sri, tarOf, tgz } from "./helpers.js";
 import { gunzipSync } from "node:zlib";
 
 const NAME = "clip-plugin-address-label";
@@ -99,6 +99,28 @@ describe("install from npm", () => {
   it("untar reads what our fixture writer (ustar, like npm pack) produces", () => {
     const files = untar(new Uint8Array(gunzipSync(examplePackage())));
     expect([...files.keys()]).toEqual(["package/package.json", "package/clip.plugin.json", "package/dist/bundle.js"]);
+  });
+
+  it("untar takes a pax path only from a record of its own", () => {
+    // "<length> <key>=<value>\n", where the length counts the whole record.
+    const rec = (kv: string) => {
+      let n = kv.length + 3;
+      while (`${n} ${kv}\n`.length !== n) n++;
+      return `${n} ${kv}\n`;
+    };
+    const names = (pax: string) => [...untar(tarOf([["PaxHeader", pax, "x"], ["package/short.js", "1"]])).keys()];
+    expect(names(rec("path=package/long-name.js"))).toEqual(["package/long-name.js"]);
+    expect(names(rec("comment=see 12 path=other.js") + rec("path=package/long-name.js"))).toEqual(["package/long-name.js"]);
+    expect(names(rec("comment=see 12 path=other.js"))).toEqual(["package/short.js"]);
+    const t0 = performance.now();
+    expect(names("1".repeat(100_000))).toEqual(["package/short.js"]);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
+  it("accepts a registry URL with trailing slashes", async () => {
+    const reg = fakeRegistry(NAME, "1.0.0", examplePackage());
+    await prepareInstallFromNpm(NAME, { fetch: reg.f, registry: "https://registry.npmjs.org///" });
+    expect(reg.urls[0]).toBe(`https://registry.npmjs.org/${NAME}`);
   });
 
   const cases: [string, () => ReturnType<typeof fakeRegistry>, InstallError["code"]][] = [

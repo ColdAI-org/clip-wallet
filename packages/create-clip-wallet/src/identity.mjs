@@ -36,12 +36,13 @@ export function titleFromDir(dir) {
 
 /** npm-safe package name from a name or folder. @param {string} s */
 export function slugOf(s) {
-  return (
-    basename(s)
-      .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "my-wallet"
-  );
+  const slug = basename(s).toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+  // Dashes trimmed from both ends by a scan, not /^-+|-+$/: linear on any input.
+  let start = 0;
+  let end = slug.length;
+  while (start < end && slug[start] === "-") start++;
+  while (end > start && slug[end - 1] === "-") end--;
+  return slug.slice(start, end) || "my-wallet";
 }
 
 /** Placeholder reverse domain until you set one you own. @param {string} slug */

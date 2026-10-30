@@ -2,6 +2,7 @@
  * Minimal NEAR JSON-RPC client (docs.near.org/api/rpc): `query` (view_account, view_access_key, call_function),
  * `block`, `gas_price`, `send_tx`.
  */
+import { includesInOrder } from "@clip-wallet/core";
 import { b64encode } from "./util.js";
 
 export class RpcError extends Error {
@@ -57,7 +58,7 @@ export class NearRpc {
     // Older nodes report query failures inside `result.error`.
     if (body.result && typeof body.result === "object" && typeof body.result.error === "string") {
       const msg = body.result.error;
-      throw new RpcError(msg, /access key .* does not exist/i.test(msg) ? "UNKNOWN_ACCESS_KEY" : /does not exist/i.test(msg) ? "UNKNOWN_ACCOUNT" : "QUERY_ERROR", msg);
+      throw new RpcError(msg, includesInOrder(msg, "access key ", " does not exist") ? "UNKNOWN_ACCESS_KEY" : /does not exist/i.test(msg) ? "UNKNOWN_ACCOUNT" : "QUERY_ERROR", msg);
     }
     if (body.result === undefined) throw new RpcError("empty RPC response", "BAD_RESPONSE");
     return body.result as T;

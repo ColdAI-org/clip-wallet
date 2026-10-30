@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@clip-wallet/core";
 
 /** Base units → "1,234.5" (no grouping beyond what toLocaleString gives, max `maxFraction` decimals). */
 export function formatUnits(amount: string | bigint, decimals: number, maxFraction = 6): string {
@@ -39,7 +39,7 @@ export function b64urlEncode(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return withoutTrailing(btoa(bin).replace(/\+/g, "-").replace(/\//g, "_"), "=");
 }
 
 export function b64urlDecode(s: string): string {

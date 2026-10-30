@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@clip-wallet/core";
 import { aptosNetworkOf } from "@clip-wallet/chains-aptos";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
@@ -61,7 +61,7 @@ export class HyperionSwap implements SwapProvider {
   private rest(ctx: ChainContext): string {
     const url = ctx.network.rpcUrls[0];
     if (!url) throw new ClipError("Swapping isn't available right now.", "swap/no-rpc");
-    return url.replace(/\/+$/, "");
+    return withoutTrailing(url, "/");
   }
 
   /** The fungible-asset metadata address for an asset, plus its coin type when it is a legacy coin. */

@@ -2,7 +2,7 @@ import type { HistoryEntry, SecurityHost } from "../host.js";
 import { fetchJson, shortAddress } from "../util.js";
 import { normAddr } from "./lists.js";
 import type { ProviderStatus, ThreatFinding, ThreatIntelProvider, TxCheckInput } from "./types.js";
-import { say } from "@clip-wallet/core";
+import { say, withoutTrailing } from "@clip-wallet/core";
 
 /**
  * Local heuristics. Everything runs on the device from data the wallet already has; the only network read
@@ -122,7 +122,7 @@ export class LocalHeuristics implements ThreatIntelProvider {
     if (!p) {
       p = (async () => {
         try {
-          const root = base.replace(/\/+$/, "");
+          const root = withoutTrailing(base, "/");
           const a = await fetchJson<{ is_contract?: boolean; creation_transaction_hash?: string | null; creation_tx_hash?: string | null }>(
             this.host.fetch,
             `${root}/addresses/${contract}`,

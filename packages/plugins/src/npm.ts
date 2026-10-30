@@ -11,6 +11,7 @@
  *
  * Nothing from the package runs here. The result is a PendingInstall the UI shows as a permission prompt.
  */
+import { withoutTrailing } from "@clip-wallet/core";
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from "@noble/hashes/sha2.js";
 import { BodyTooLargeError, readBodyCapped, readTextCapped } from "./body.js";
 import { MANIFEST_FILE, MAX_BUNDLE_BYTES, ManifestError, describePermissions, parseManifest, type PluginManifest } from "./manifest.js";
@@ -141,7 +142,8 @@ export function untar(tar: Uint8Array): Map<string, Uint8Array> {
     if (!Number.isFinite(size) || size < 0) throw new InstallError("bad-package", "That plugin package is damaged.");
     const body = tar.subarray(off + 512, off + 512 + size);
     if (type === "x") {
-      const m = /\d+ path=([^\n]*)\n/.exec(dec.decode(body));
+      // Pax records are "<length> <key>=<value>\n": the path record starts the body or follows a newline.
+      const m = /(?:^|\n)\d+ path=([^\n]*)\n/.exec(dec.decode(body));
       paxPath = m ? m[1]! : null;
     } else if (type === "0" || type === "\0") {
       const path = paxPath ?? (prefix ? `${prefix}/${name}` : name);
@@ -170,7 +172,7 @@ export { MAX_UNPACKED_BYTES };
 /** Downloads and verifies a plugin. Throws InstallError (plain message) on any problem. */
 export async function prepareInstallFromNpm(name: string, opts: NpmOptions & { version?: string } = {}): Promise<PendingInstall> {
   const f = opts.fetch ?? globalThis.fetch.bind(globalThis);
-  const registry = (opts.registry ?? NPM_REGISTRY).replace(/\/+$/, "");
+  const registry = withoutTrailing(opts.registry ?? NPM_REGISTRY, "/");
   const pkg = name.trim();
   if (!isValidPackageName(pkg)) throw new InstallError("bad-name", "That isn't a valid npm package name.");
 

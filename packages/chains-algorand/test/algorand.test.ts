@@ -30,6 +30,7 @@ import {
   plainAlgorandError,
   resolveArc19Url,
 } from "../src/index.js";
+import { resolveRelative } from "../src/assets.js";
 import { b64decode, b64encode, fromHex, hex } from "../src/util.js";
 import {
   NOT_OPTED_IN,
@@ -422,6 +423,26 @@ describe("algo_signAndPostTxn", () => {
     expect(plainAlgorandError("txn dead: round 5 outside of 1--4")).toMatch(/expired/);
     expect(plainAlgorandError("logic eval error: assert failed pc=12")).toBe("The app rejected this transaction.");
     expect(plainAlgorandError("something weird")).toBe("The Algorand network refused this transaction. Nothing was sent.");
+  });
+
+  it("matches two-part node errors on one line, in linear time", () => {
+    expect(plainAlgorandError("asset 10458941 is insufficient for this transfer")).toBe("You don't have enough of that token.");
+    expect(plainAlgorandError("fee 1000 is less than the minimum 2000")).toBe("The network fee was too low. Try again.");
+    expect(plainAlgorandError("transaction group size mismatch")).toBe("Part of this group of transactions is missing, so nothing was sent.");
+    expect(plainAlgorandError("TransactionPool.Remember: transaction AAA: bad group")).toBe("Part of this group of transactions is missing, so nothing was sent.");
+    expect(plainAlgorandError("fee 1000\nless than the minimum")).toBe("The Algorand network refused this transaction. Nothing was sent.");
+    const t0 = performance.now();
+    expect(plainAlgorandError("asset fee group ".repeat(10_000))).toBe("The Algorand network refused this transaction. Nothing was sent.");
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
+  it("resolves ARC-3 relative URIs against the metadata URL without its fragment", () => {
+    expect(resolveRelative("image.png", "https://x.example/meta/1.json#arc3")).toBe("https://x.example/meta/image.png");
+    expect(resolveRelative("image.png", "https://x.example/a#b/c")).toBe("https://x.example/image.png");
+    expect(resolveRelative("ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG", "https://x.example/a")).toBe("ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG");
+    const t0 = performance.now();
+    expect(resolveRelative("i.png", `https://x.example/a/${"#".repeat(100_000)}\nx`)).toBe("https://x.example/a/i.png");
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it("won't post a group with a transaction nobody signed", async () => {

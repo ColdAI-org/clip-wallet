@@ -466,6 +466,33 @@ export function isWalletOrigin(origin: string | undefined): boolean {
   return origin === WALLET_ORIGIN || origin === "wallet";
 }
 
+/** `s` without the run of `chars` characters at its end (`withoutTrailing(url, "/")`). A scan, not a regex like /\/+$/: linear on any input. */
+export function withoutTrailing(s: string, chars: string): string {
+  let end = s.length;
+  while (end > 0 && chars.includes(s.charAt(end - 1))) end--;
+  return s.slice(0, end);
+}
+
+/**
+ * True when one line of `text` holds `parts` in this order, ignoring case: `includesInOrder(msg, "access key ", " does not exist")`
+ * is /access key .* does not exist/i done with indexOf scans, linear on any input.
+ */
+export function includesInOrder(text: string, ...parts: string[]): boolean {
+  return text
+    .toLowerCase()
+    .split(/[\n\r\p{Zl}\p{Zp}]/u)
+    .some((line) => {
+      let at = 0;
+      for (const part of parts) {
+        const p = part.toLowerCase();
+        const i = line.indexOf(p, at);
+        if (i < 0) return false;
+        at = i + p.length;
+      }
+      return true;
+    });
+}
+
 export class ClipError extends Error {
   /** Shown to the user. Plain words and a next step, never a raw RPC error. */
   public readonly userMessage: string;

@@ -15,6 +15,7 @@
  *  - Older browsers can use the web-bridge page on a configured origin.
  */
 
+import { withoutTrailing } from "@clip-wallet/core";
 import type { UiMessageId } from "../i18n/en";
 
 export interface PasskeyPrf {
@@ -45,7 +46,7 @@ export function b64urlEncode(bytes: Uint8Array | ArrayBuffer): string {
   const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   let s = "";
   for (const b of u8) s += String.fromCharCode(b);
-  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return withoutTrailing(btoa(s).replace(/\+/g, "-").replace(/\//g, "_"), "=");
 }
 
 export function b64urlDecode(s: string): Uint8Array<ArrayBuffer> {

@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError } from "@clip-wallet/core";
+import { type ChainContext, ClipError, withoutTrailing } from "@clip-wallet/core";
 
 /** An error answered by an octez node: the JSON error list ([{ kind, id, ... }]). */
 export class RpcError extends Error {
@@ -28,7 +28,7 @@ export class TezosRpc {
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     let res: Response;
     try {
-      res = await this.f(`${this.url.replace(/\/+$/, "")}${path}`, init);
+      res = await this.f(`${withoutTrailing(this.url, "/")}${path}`, init);
     } catch (cause) {
       throw new ClipError("Couldn't reach the Tezos network. Check your connection and try again.", "tezos/network-unreachable", cause);
     }
@@ -112,7 +112,7 @@ export class Tzkt {
   async get<T>(path: string): Promise<T> {
     let res: Response;
     try {
-      res = await this.f(`${this.url.replace(/\/+$/, "")}${path}`);
+      res = await this.f(`${withoutTrailing(this.url, "/")}${path}`);
     } catch (cause) {
       throw new ClipError("Couldn't load your Tezos account. Check your connection and try again.", "tezos/indexer-unreachable", cause);
     }

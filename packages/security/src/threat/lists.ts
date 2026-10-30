@@ -89,7 +89,11 @@ export const LIST_SOURCES: ListSource[] = [
     url: "https://raw.githubusercontent.com/phantom/blocklist/master/blocklist.yaml",
     kind: "domains",
     parse(body) {
-      const deny = [...body.matchAll(/^\s*-\s*url:\s*["']?([^"'\s#]+)["']?\s*$/gm)].map((m) => domain(m[1]!));
+      // One "- url: <domain>" entry per line, matched line by line (split at every JavaScript line terminator).
+      const deny = body.split(/[\n\r\p{Zl}\p{Zp}]/u).flatMap((line) => {
+        const m = /^\s*-\s*url:\s*["']?([^"'\s#]+)["']?\s*$/.exec(line);
+        return m ? [domain(m[1]!)] : [];
+      });
       if (!deny.length) throw new Error("empty");
       return { ...empty(), deny };
     },

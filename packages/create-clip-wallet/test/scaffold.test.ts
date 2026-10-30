@@ -21,6 +21,7 @@ import {
   processTemplateManifest,
   readIcns,
   readIco,
+  slugOf,
   templateDir,
   writeListings,
 } from "../src/index.mjs";
@@ -364,6 +365,17 @@ describe("pieces", () => {
     });
     expect(parseArgs(["w", "--icon", "l.svg"]).logo).toBe("l.svg");
     expect(() => parseArgs(["--colour", "x"])).toThrow(/Unknown option --colour/);
+  });
+
+  it("slugs a name: lower case, dashes between words, none at either end", () => {
+    expect(slugOf("My Wallet")).toBe("my-wallet");
+    expect(slugOf("--Acme  Pay!--")).toBe("acme-pay");
+    expect(slugOf("./wallets/Zed")).toBe("zed");
+    expect(slugOf("---")).toBe("my-wallet");
+    const t0 = performance.now();
+    expect(slugOf(`a${"-".repeat(100_000)}!b`)).toBe(`a${"-".repeat(100_001)}b`);
+    expect(slugOf(`${"-".repeat(100_000)}!`)).toBe("my-wallet");
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it("restores dotfiles npm won't pack", () => {

@@ -188,6 +188,21 @@ describe("settings sync", () => {
     await expect(req("POST", "/v1/sync/push", many, now, b64url(new Uint8Array(16).fill(6)))).rejects.toMatchObject({ code: "bad-request" });
   });
 
+  it("the server ignores trailing slashes on its paths, however many", async () => {
+    const now = 1_800_000_000_000;
+    const store = new MemorySyncStore(() => now);
+    const keys = fakeSyncKeys();
+    const req = async (path: string, n: number) => {
+      const nonce = b64url(new Uint8Array(16).fill(n));
+      const sig = await keys.sign(signedMessage("GET", path, now, nonce, ""));
+      return handleSync({ method: "GET", pathAndQuery: path, body: "", authorization: formatAuth({ pub: b64url(keys.publicKey), ts: now, nonce, sig: b64url(sig) }) }, { store, verify: fakeVerify, now: () => now });
+    };
+    await expect(req("/v1/sync/changes///?since=0", 1)).resolves.toMatchObject({ status: 200 });
+    const t0 = performance.now();
+    await expect(req(`/v1/sync/changes${"/".repeat(100_000)}x`, 2)).rejects.toMatchObject({ status: 404 });
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
   it("wallet sources: a new device takes the server's settings first, then later edits flow both ways", async () => {
     const clock = { t: 1_800_000_000_000 };
     const s = server(() => clock.t);

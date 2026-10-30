@@ -8,7 +8,7 @@
  *  - Token metadata from the contract itself: ft_metadata (NEP-148), nft_metadata (NEP-177),
  *    nft_tokens_for_owner (NEP-181).
  */
-import type { AssetRef, Network, NetworkId, Nft } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, type Nft, withoutTrailing } from "@clip-wallet/core";
 import type { NearRpc } from "./rpc.js";
 import { USDC_CONTRACTS, WRAP_CONTRACTS, networkName, tokenAssetKey } from "./networks.js";
 
@@ -111,7 +111,7 @@ export function resolveMedia(media: string | null | undefined, baseUri: string |
   if (!media) return undefined;
   let url = media.trim();
   if (!/^[a-z][a-z0-9+.-]*:/i.test(url)) {
-    if (baseUri) url = `${baseUri.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;
+    if (baseUri) url = `${withoutTrailing(baseUri, "/")}/${url.replace(/^\/+/, "")}`;
     else if (CID.test(url)) url = `${gateway}${url}`;
     else return undefined;
   }
