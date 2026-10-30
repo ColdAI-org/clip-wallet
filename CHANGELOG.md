@@ -6,13 +6,7 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
 
 ## [Unreleased]
 
-### Changed
-
-- **Licence:** Clip Wallet is now licensed under the Apache License 2.0 (was MIT). Every package ships `LICENSE` and
-  `NOTICE`; vendored MIT code (the CLPRouter SDK planner, the Scaffold-HBAR / Scaffold-ETH 2 dapp in the template) keeps
-  its notice. "Clip Wallet", "1Mask" and the logo are ColdAI trademarks and aren't covered by the licence.
-
-## [0.1.0] - not yet tagged (testnet preview)
+## [0.1.0] - 2026-10-31 (testnet preview)
 
 First public preview. **Test networks only.** No external audit.
 
@@ -45,12 +39,26 @@ First public preview. **Test networks only.** No external audit.
 
 ### Changed
 
+- **Licence:** Clip Wallet is now licensed under the Apache License 2.0 (was MIT). Every package ships `LICENSE` and
+  `NOTICE`; vendored MIT code (the CLPRouter SDK planner, the Scaffold-HBAR / Scaffold-ETH 2 dapp in the template) keeps
+  its notice. "Clip Wallet", "1Mask" and the logo are ColdAI trademarks and aren't covered by the licence.
 - Accent-coloured small text uses a derived AA shade (`--clip-accent-ink`, #C22E00 in light mode for ColdAI
   orange); buttons and the brand keep #FF3C00.
 - The extension's inpage message channel is derived from the version and `SOURCE_DATE_EPOCH` instead of a random
   value per build, so builds are reproducible.
 - Firefox: the background is an ES-module event page; the manifest declares `data_collection_permissions` and
   needs Firefox 140 or later.
+
+### Security
+
+- Approval review now matches what is signed (advisory GHSA-qhgf-27p7-4hqf). EVM and Hedera batch calls are decoded
+  call by call, and a call that can't be read makes the whole request unreadable. Warnings that were hidden on
+  readable requests are shown. A transfer or `approve` that could mean one NFT rather than a token amount says so.
+  App permissions lists single-NFT approvals, which can be revoked, and no longer leaves out the network families it
+  can't scan. Disconnecting an app cancels its waiting requests, and Approve rechecks the connection before signing.
+  Reported privately by Ibnu.
+- Dependency updates for all open Dependabot alerts: electron 44.9.1 (desktop-kit's `electron` peer range is now
+  `>=44.9.1`), happy-dom 21, pako 3, mermaid 12, dev tooling and GitHub Actions.
 
 ### Known gaps
 
