@@ -1,9 +1,9 @@
 /** Native messaging: framing, host manifests per OS, and the host program between a mock browser and the desktop app. */
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
-import { connect } from "node:net";
+import { connect, createServer } from "node:net";
 import { describe, expect, it } from "vitest";
 import { FrameDecoder, encodeFrame, MAX_TO_BROWSER } from "../src/native/framing.js";
 import { hostManifest, installPlan, installTarget, nativeHostName, registryCommand } from "../src/native/manifests.js";
@@ -117,6 +117,31 @@ describe("native host program (mock browser on stdio ⇄ desktop socket)", () =>
     const r = runNativeHost({ stdin: new PassThrough(), stdout: stdout2, origin: "chrome-extension://pppppppppppppppppppppppppppppppp/", connectDesktop: () => connect(path) });
     expect(await r).toBe(0);
     expect(connections).toBe(0);
+    await srv.close();
+  });
+
+  it("takes over a socket nothing answers on, but not the socket of a server that is running", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "clip-link-"));
+    const path = join(dir, "d3.sock");
+    // A socket file with nobody behind it (what a run that crashed leaves): bound elsewhere, moved into place, closed.
+    const old = createServer();
+    await new Promise<void>((r) => old.listen(join(dir, "old.sock"), () => r()));
+    renameSync(join(dir, "old.sock"), path);
+    await new Promise<void>((r) => old.close(() => r()));
+
+    const srv = await startDesktopLinkServer({ path, allowedOrigins: [ORIGIN], onConnection: () => undefined });
+    await expect(startDesktopLinkServer({ path, allowedOrigins: [ORIGIN], onConnection: () => undefined })).rejects.toMatchObject({ code: "EADDRINUSE" });
+
+    const stdin = new PassThrough();
+    const stdout = new PassThrough();
+    const out: unknown[] = [];
+    const dec = new FrameDecoder();
+    stdout.on("data", (c) => out.push(...dec.push(c)));
+    const done = runNativeHost({ stdin, stdout, origin: ORIGIN, connectDesktop: () => connect(path) });
+    await until(() => out.length > 0);
+    expect(out[0]).toEqual({ host: "status", status: "connected" });
+    stdin.end();
+    expect(await done).toBe(0);
     await srv.close();
   });
 });

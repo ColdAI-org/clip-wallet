@@ -535,7 +535,7 @@ export function renderIcons(root, o) {
   mkdirSync(root, { recursive: true });
   // The logo itself, next to clip.config.ts (the other icon file name is removed so only one is in use).
   const other = join(root, logoExt === ".svg" ? "icon.png" : "icon.svg");
-  if (existsSync(other)) rmSync(other);
+  rmSync(other, { force: true });
   if (o.logo) {
     if (resolve(o.logo) !== resolve(root, `icon${logoExt}`)) copyFileSync(resolve(o.logo), join(root, `icon${logoExt}`));
     written.push(`icon${logoExt}`);

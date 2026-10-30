@@ -15,6 +15,7 @@ import { basename, extname, join } from "node:path";
 import { CLIP_WALLET_RDNS, WALLETCONNECT_ENV, validateConfig, walletKey } from "@clip-wallet/config";
 import { renderIcons } from "./icons.mjs";
 import { writeListings } from "./listings.mjs";
+import { readIfThere } from "./template.mjs";
 
 export const CONFIG_FILE = "clip.config.ts";
 export const IDENTITY_FILE = "wallet.identity.json";
@@ -126,15 +127,15 @@ function setArray(text, key, items) {
 
 /** @param {string} file @param {(text: string) => string} fn */
 function edit(file, fn) {
-  if (!existsSync(file)) return;
-  const before = readFileSync(file, "utf8");
+  const before = readIfThere(file);
+  if (before === undefined) return;
   const after = fn(before);
   if (after !== before) writeFileSync(file, after);
 }
 
 /** Set KEY=value in a dotenv file, creating it; other lines are kept. @param {string} file @param {string} key @param {string} value */
 function setEnv(file, key, value) {
-  const lines = existsSync(file) ? readFileSync(file, "utf8").split(/\r?\n/) : [];
+  const lines = readIfThere(file)?.split(/\r?\n/) ?? [];
   const i = lines.findIndex((l) => l.startsWith(`${key}=`));
   if (i >= 0) lines[i] = `${key}=${value}`;
   else lines.splice(lines.length && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length, 0, `${key}=${value}`);
