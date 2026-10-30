@@ -25,7 +25,7 @@ const OMIT_EXPORTS = new Set(["@clip-wallet/config#TRUST_TIERS", "@clip-wallet/r
 const REWORD = [
   [/`"attested"` \\\| `"committee"` \\\| `"light-client"` \\\| `"validity-proof"`/g, "`TrustTier`"],
   [/"attested" \| "committee" \| "light-client" \| "validity-proof"/g, "TrustTier"],
-  [/ZodEnum<\{\s*attested: \.\.\.;\s*committee: \.\.\.;\s*light-client: \.\.\.;\s*validity-proof: \.\.\.;\s*\}>/g, "ZodEnum<TrustTier>"],
+  [/ZodEnum<\{\s*"?attested"?: \.\.\.;\s*"?committee"?: \.\.\.;\s*"?light-client"?: \.\.\.;\s*"?validity-proof"?: \.\.\.;\s*\}>/g, "ZodEnum<TrustTier>"],
   [/Verify-attested/g, "Verify-confirmed"],
 ];
 
