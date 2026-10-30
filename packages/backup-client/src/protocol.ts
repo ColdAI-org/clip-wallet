@@ -48,7 +48,10 @@ export function normaliseEmail(raw: string): string | null {
 export function b64url(bytes: Uint8Array): string {
   let s = "";
   for (const x of bytes) s += String.fromCharCode(x);
-  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64 = btoa(s).replace(/\+/g, "-").replace(/\//g, "_");
+  let end = b64.length;
+  while (end > 0 && b64[end - 1] === "=") end--; // a scan, not /=+$/: linear on any input
+  return b64.slice(0, end);
 }
 
 export function fromB64url(s: string): Uint8Array | null {

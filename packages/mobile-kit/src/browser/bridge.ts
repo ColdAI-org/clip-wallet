@@ -24,6 +24,27 @@ import type { RouterPort } from "@clip-wallet/1mask/background";
 
 export const MAX_BRIDGE_MESSAGE_BYTES = 4 * 1024 * 1024;
 
+/** Characters escaped where JSON goes into an injected script, each as an escape for the same character. */
+const UNSAFE_CHARS: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "\t": "\\t",
+  "\0": "\\0",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+// Total over the class below: every character it matches is a key of UNSAFE_CHARS.
+const escapeUnsafeChar = (c: string) => UNSAFE_CHARS[c];
+
+/** `value` as a literal in a script for the page: its JSON, with nothing in it that can end a string or the script early. */
+export function scriptLiteral(value: unknown): string {
+  return String(JSON.stringify(value)).replace(/[<>\b\f\n\r\t\0\u2028\u2029]/g, escapeUnsafeChar as (c: string) => string);
+}
+
 export interface BridgeOptions {
   /** engine.attachDappPort */
   attach(port: RouterPort, origin: string): void;
@@ -82,7 +103,7 @@ export function createWebViewBridge(o: BridgeOptions): WebViewBridge {
   let current: OriginPort | null = null;
   let mainOrigin: string | null = null;
 
-  const boot = JSON.stringify({ channel: o.channel, networks: o.networks, identity: o.identity });
+  const boot = scriptLiteral({ channel: o.channel, networks: o.networks, identity: o.identity });
   const injectedBeforeLoad = `(function(){try{if(window.top!==window)return;window.__clip1maskBoot=${boot};${o.inpageJs}}catch(e){}})();true;`;
 
   const close = (p: OriginPort | null) => {
@@ -105,7 +126,7 @@ export function createWebViewBridge(o: BridgeOptions): WebViewBridge {
       postMessage(message: unknown) {
         if (entry.closed) return;
         // Delivered only if the page is still on the origin this port belongs to.
-        const js = `(function(){if(location.origin===${JSON.stringify(origin)}&&window.__clip1maskReceive){window.__clip1maskReceive(${JSON.stringify(message)});}})();true;`;
+        const js = `(function(){if(location.origin===${scriptLiteral(origin)}&&window.__clip1maskReceive){window.__clip1maskReceive(${scriptLiteral(message)});}})();true;`;
         o.inject(js);
       },
       onMessage: { addListener: (cb) => void entry.listeners.push(cb) },

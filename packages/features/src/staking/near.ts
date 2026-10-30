@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, msg, titled, say } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled, say, withoutTrailing } from "@clip-wallet/core";
 import { NEAR_CHAINS, NearRpc, createNearModule, isPool, networkName, poolName, type NearModule } from "@clip-wallet/chains-near";
 import { fetchJson } from "../http.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
@@ -213,7 +213,7 @@ export class NearStaking implements StakingProvider {
   private async poolsFor(ctx: ChainContext): Promise<string[]> {
     const pools = new Set(this.pools[ctx.network.id] ?? []);
     const name = networkName(ctx.network.id);
-    const api = (ctx.network.indexerUrl ?? (name ? NEAR_CHAINS[name].fastnear : "")).replace(/\/+$/, "");
+    const api = withoutTrailing(ctx.network.indexerUrl ?? (name ? NEAR_CHAINS[name].fastnear : ""), "/");
     try {
       const r = await fetchJson<{ pools?: { pool_id?: unknown }[] }>(ctx.fetch, `${api}/v1/account/${encodeURIComponent(ctx.account.address)}/staking`, "FastNEAR", { timeoutMs: 6000 });
       for (const p of r.pools ?? []) if (typeof p.pool_id === "string") pools.add(p.pool_id);

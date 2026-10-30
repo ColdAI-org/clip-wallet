@@ -110,5 +110,8 @@ export function base58Encode(bytes: Uint8Array): string {
 }
 
 export function base64UrlNoPad(b64: string): string {
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const s = b64.replace(/\+/g, "-").replace(/\//g, "_");
+  let end = s.length;
+  while (end > 0 && s[end - 1] === "=") end--; // a scan, not /=+$/: linear on any input
+  return s.slice(0, end);
 }

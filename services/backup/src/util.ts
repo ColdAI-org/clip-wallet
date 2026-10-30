@@ -15,6 +15,13 @@ export async function hmacHex(secret: string, text: string): Promise<string> {
   return [...sig].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+/** `s` without trailing slashes (a scan, not a regex: linear on any input). */
+export function withoutTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === "/") end--;
+  return s.slice(0, end);
+}
+
 /** Constant-time string compare (both sides are hashes of the same length in practice). */
 export function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;

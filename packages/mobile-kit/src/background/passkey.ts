@@ -12,12 +12,12 @@
  */
 import { Passkey } from "react-native-passkey";
 import { getRandomBytes } from "expo-crypto";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@clip-wallet/core";
 import { b64url, fromB64url, type PrfProvider } from "@clip-wallet/engine";
 
 /** react-native-passkey returns PRF results as base64 or base64url depending on platform. */
 export function decodeB64Any(s: string): Uint8Array {
-  return fromB64url(s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+  return fromB64url(withoutTrailing(s.replace(/\+/g, "-").replace(/\//g, "_"), "="));
 }
 
 export function passkeysConfigured(rpId: string | undefined): rpId is string {

@@ -3,7 +3,7 @@
  * pull → merge → push with compare-and-set, and adapters ("sources") that map wallet state onto records.
  */
 import { ClipError } from "@clip-wallet/core";
-import { b64url, openJson, randomBytes, sealJson } from "../bytes.js";
+import { b64url, openJson, randomBytes, sealJson, withoutTrailingSlashes } from "../bytes.js";
 import type { SyncKeyHandle } from "../keys.js";
 import { COLLECTIONS, localWrite, mergeRecords, sameValue, stableJson, type Collection, type SyncRecord } from "./records.js";
 import {
@@ -259,7 +259,7 @@ export class SyncEngine {
     const nonce = b64url(randomBytes(16));
     const sig = await keys.sign(signedMessage(method, path, ts, nonce, body));
     try {
-      return await this.o.fetch(`${this.o.baseUrl.replace(/\/+$/, "")}${path}`, {
+      return await this.o.fetch(`${withoutTrailingSlashes(this.o.baseUrl)}${path}`, {
         method,
         headers: { authorization: formatAuth({ pub: b64url(keys.publicKey), ts, nonce, sig: b64url(sig) }), ...(body ? { "content-type": "application/json" } : {}) },
         ...(body ? { body } : {}),

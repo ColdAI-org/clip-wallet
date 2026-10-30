@@ -8,11 +8,13 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 import { Window as HappyWindow } from "happy-dom";
+import type { RouterPort } from "@clip-wallet/1mask/background";
 import { WalletEngine, MemoryKV } from "@clip-wallet/engine";
 import { INPAGE_JS } from "../src/browser/inpage.generated";
-import { createWebViewBridge, webOrigin } from "../src/browser/bridge";
+import { createWebViewBridge, scriptLiteral, webOrigin } from "../src/browser/bridge";
 import { BASE_SEPOLIA, EVM_ADDRESS, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../engine/test/fixtures";
 
 const ICON = "data:image/svg+xml;base64,PHN2Zy8+";
@@ -126,6 +128,41 @@ describe("in-app browser: 1Mask in a WebView, origin from the native side", () =
     expect(webOrigin("about:blank")).toBeNull();
     expect(webOrigin("data:text/html,hi")).toBeNull();
     expect(webOrigin("javascript:alert(1)")).toBeNull();
+  });
+});
+
+describe("scripts the bridge injects", () => {
+  const value = { text: "line\u2028para\u2029 </script><!-- -->", list: ["<", ">", "\\"] };
+
+  it("carry any JSON value unchanged, without characters that could end a string or the script", () => {
+    const lit = scriptLiteral(value);
+    expect(lit).not.toMatch(/[<>\u2028\u2029]/);
+    expect(JSON.parse(lit)).toEqual(value);
+    expect(scriptLiteral("https://dapp.test")).toBe('"https://dapp.test"');
+  });
+
+  it("deliver such a value to the page on the port's origin", () => {
+    let port: RouterPort | undefined;
+    const injected: string[] = [];
+    const bridge = createWebViewBridge({
+      attach: (p) => void (port = p),
+      inject: (js) => void injected.push(js),
+      inpageJs: "",
+      channel: "clip-test-channel",
+      networks: [],
+      identity: { name: "Wallet </script>\u2028", icon: ICON, rdns: "com.example.wallet" },
+    });
+    bridge.onMessage(JSON.stringify({ clip1mask: { type: "request", id: "s1", family: "evm", method: "eth_chainId" } }), "https://dapp.test/app", true);
+    port!.postMessage(value);
+    const got: unknown[] = [];
+    const page = (origin: string) => ({ location: { origin }, window: { __clip1maskReceive: (m: unknown) => void got.push(m) } });
+    runInNewContext(injected[0]!, page("https://dapp.test"));
+    runInNewContext(injected[0]!, page("https://other.test"));
+    expect(JSON.parse(JSON.stringify(got))).toEqual([value]);
+    const top: { top?: unknown; __clip1maskBoot?: { identity: { name: string } } } = {};
+    top.top = top;
+    runInNewContext(bridge.injectedBeforeLoad, { window: top });
+    expect(top.__clip1maskBoot?.identity.name).toBe("Wallet </script>\u2028");
   });
 });
 

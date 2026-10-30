@@ -14,14 +14,14 @@
  */
 import type { PasskeyCeremony } from "@clip-wallet/ui";
 import type { PasskeyPrf } from "@clip-wallet/vault";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@clip-wallet/core";
 
 const TIMEOUT_MS = 3 * 60 * 1000;
 
 export function b64url(bytes: Uint8Array): string {
   let s = "";
   for (const b of bytes) s += String.fromCharCode(b);
-  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return withoutTrailing(btoa(s).replace(/\+/g, "-").replace(/\//g, "_"), "=");
 }
 
 export function fromB64url(s: string): Uint8Array {

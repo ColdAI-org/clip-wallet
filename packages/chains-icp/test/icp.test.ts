@@ -263,6 +263,27 @@ describe("send (buildTransfer → decode → prepare → finalize)", () => {
     });
   });
 
+  it("a refused signature or key comes back in plain words", async () => {
+    const said = async (message: string) => {
+      const ctx = ctxFor(mockIc({ query: queries, call: () => ({ status: "rejected", reject_code: 4n, reject_message: message }) }).fetch);
+      const r = await module.buildTransfer({ asset: ICP_TEST.nativeAsset, to: FIX.bob, amount: "150000000" }, ctx);
+      const sigs = (await module.prepare(r, ctx, "ap")).map((p) => signer.sign(p));
+      const e = await module.finalize(r, sigs, ctx).then(() => null, (x: unknown) => x);
+      expect(e).toMatchObject({ code: "icp/send-failed" });
+      return (e as { userMessage: string }).userMessage;
+    };
+    const sig = "The network didn't accept the signature. Nothing was sent.";
+    const rejected = "The Internet Computer rejected this transfer. Nothing was sent.";
+    expect(await said("Invalid basic sig: bad length")).toBe(sig);
+    expect(await said("Invalid public key: not DER")).toBe(sig);
+    expect(await said("Signature verification failed")).toBe(sig);
+    expect(await said("key is invalid")).toBe(rejected);
+    expect(await said("invalid\nkey")).toBe(rejected);
+    const t0 = performance.now();
+    expect(await said("invalid ".repeat(10_000))).toBe(rejected);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
   it("refuses what it can't or shouldn't send", async () => {
     const ctx = ctxFor(mockIc({ query: queries }).fetch);
     const asset = ICP_TEST.nativeAsset;

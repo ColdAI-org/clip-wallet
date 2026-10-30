@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
 
 /**
  * Fuel networks (Fuel Ignition mainnet and the public Sepolia-anchored testnet).
@@ -124,7 +124,7 @@ function sameUrl(a: string, b: string): boolean {
   try {
     const x = new URL(a);
     const y = new URL(b);
-    return x.host === y.host && x.pathname.replace(/\/+$/, "") === y.pathname.replace(/\/+$/, "");
+    return x.host === y.host && withoutTrailing(x.pathname, "/") === withoutTrailing(y.pathname, "/");
   } catch {
     return false;
   }

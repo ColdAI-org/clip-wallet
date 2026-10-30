@@ -226,7 +226,9 @@ function netError(e: unknown): ClipError {
 
 /** NEP-413 recipients are usually the app's host; account ids are allowed too. */
 function recipientMatches(recipient: string, host: string): boolean {
-  const r = recipient.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  // A recipient with a line break names no host.
+  if (/[\n\r\p{Zl}\p{Zp}]/u.test(recipient)) return false;
+  const r = recipient.toLowerCase().replace(/^https?:\/\//, "").split("/")[0]!;
   const h = host.toLowerCase();
   const strip = (x: string) => x.replace(/:\d+$/, "").replace(/^www\./, "");
   return strip(r) === strip(h) || strip(h).endsWith(`.${strip(r)}`);

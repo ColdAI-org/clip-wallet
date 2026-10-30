@@ -69,6 +69,16 @@ function filesUnder(dir) {
   return out;
 }
 
+/** A file's text, or undefined when there's no such file (one read, no separate existence check). @param {string} file */
+export function readIfThere(file) {
+  try {
+    return readFileSync(file, "utf8");
+  } catch (e) {
+    if (/** @type {NodeJS.ErrnoException} */ (e).code === "ENOENT") return undefined;
+    throw e;
+  }
+}
+
 /**
  * create-scaffold-hbar rewrites the root package.json after the copy (filterRootPackageJson: workspaces and scripts
  * for the chosen frameworks, written as JSON.stringify(pkg, null, 2) without a trailing newline). With this template's
@@ -77,7 +87,8 @@ function filesUnder(dir) {
  */
 export function normalizeRootPackageJson(projectDir) {
   const file = join(projectDir, "package.json");
-  if (existsSync(file)) writeFileSync(file, JSON.stringify(JSON.parse(readFileSync(file, "utf8")), null, 2));
+  const text = readIfThere(file);
+  if (text !== undefined) writeFileSync(file, JSON.stringify(JSON.parse(text), null, 2));
 }
 
 /**
@@ -87,8 +98,9 @@ export function normalizeRootPackageJson(projectDir) {
  */
 export function processTemplateManifest(projectDir, projectName) {
   const manifestPath = join(projectDir, "template.json");
-  if (!existsSync(manifestPath)) return undefined;
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const text = readIfThere(manifestPath);
+  if (text === undefined) return undefined;
+  const manifest = JSON.parse(text);
   const block = manifest["create-scaffold-hbar"] ?? manifest["create-hbar"] ?? {};
   for (const [placeholder, entry] of Object.entries(block.rename ?? {})) {
     const to = String(entry.to).replaceAll("{{projectName}}", projectName);

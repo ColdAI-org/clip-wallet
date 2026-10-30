@@ -5,7 +5,7 @@ import { parseFromSandbox, parseFromHost } from "../src/messages.js";
 import { PluginRegistry, PLUGIN_KEYS } from "../src/registry.js";
 import { PluginsService } from "../src/service.js";
 import { SANDBOX_CSP, SANDBOX_MANIFEST } from "../src/sandbox.js";
-import { exampleManifest, exampleSource, fakeRegistry, manifestFor, sha256, sri, tgz } from "./helpers.js";
+import { exampleManifest, exampleSource, fakeRegistry, manifestFor, sha256, sri, tarOf, tgz } from "./helpers.js";
 import { gunzipSync } from "node:zlib";
 
 const NAME = "clip-plugin-address-label";
@@ -101,6 +101,28 @@ describe("install from npm", () => {
     expect([...files.keys()]).toEqual(["package/package.json", "package/clip.plugin.json", "package/dist/bundle.js"]);
   });
 
+  it("untar takes a pax path only from a record of its own", () => {
+    // "<length> <key>=<value>\n", where the length counts the whole record.
+    const rec = (kv: string) => {
+      let n = kv.length + 3;
+      while (`${n} ${kv}\n`.length !== n) n++;
+      return `${n} ${kv}\n`;
+    };
+    const names = (pax: string) => [...untar(tarOf([["PaxHeader", pax, "x"], ["package/short.js", "1"]])).keys()];
+    expect(names(rec("path=package/long-name.js"))).toEqual(["package/long-name.js"]);
+    expect(names(rec("comment=see 12 path=other.js") + rec("path=package/long-name.js"))).toEqual(["package/long-name.js"]);
+    expect(names(rec("comment=see 12 path=other.js"))).toEqual(["package/short.js"]);
+    const t0 = performance.now();
+    expect(names("1".repeat(100_000))).toEqual(["package/short.js"]);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
+  it("accepts a registry URL with trailing slashes", async () => {
+    const reg = fakeRegistry(NAME, "1.0.0", examplePackage());
+    await prepareInstallFromNpm(NAME, { fetch: reg.f, registry: "https://registry.npmjs.org///" });
+    expect(reg.urls[0]).toBe(`https://registry.npmjs.org/${NAME}`);
+  });
+
   const cases: [string, () => ReturnType<typeof fakeRegistry>, InstallError["code"]][] = [
     ["a tarball that doesn't match npm's integrity", () => fakeRegistry(NAME, "1.0.0", examplePackage(), { integrity: sri(examplePackage({ bundle: "x" })) }), "integrity"],
     ["a non-sha512 integrity", () => fakeRegistry(NAME, "1.0.0", examplePackage(), { integrity: "sha1-abc" }), "integrity"],
@@ -118,6 +140,13 @@ describe("install from npm", () => {
     await expect(prepareInstallFromNpm("../../etc/passwd", { fetch: reg.f })).rejects.toMatchObject({ code: "bad-name" });
     await expect(prepareInstallFromNpm("Capital", { fetch: reg.f })).rejects.toMatchObject({ code: "bad-name" });
     expect(reg.urls).toEqual([]);
+  });
+
+  it("asks npm for a scoped package with the slash in its name encoded", async () => {
+    const scoped = "@clip-plugins/address-label";
+    const reg = fakeRegistry(scoped, "1.0.0", examplePackage({ pkg: { name: scoped, version: "1.0.0" } }));
+    await expect(prepareInstallFromNpm(scoped, { fetch: reg.f })).resolves.toMatchObject({ id: scoped });
+    expect(reg.urls[0]).toBe("https://registry.npmjs.org/@clip-plugins%2faddress-label");
   });
 
   it("not found on npm", async () => {

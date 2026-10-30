@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { fromB64url, toHex, sha256 } from "../bytes.js";
+import { fromB64url, toHex, sha256, withoutTrailingSlashes } from "../bytes.js";
 import type { VerifyFn } from "../keys.js";
 import {
   CT,
@@ -76,7 +76,7 @@ export async function handleSync(req: SyncRequest, deps: SyncServerDeps): Promis
   await deps.onAuthenticated?.(space);
 
   const url = new URL(req.pathAndQuery, "https://sync.invalid");
-  const p = url.pathname.replace(/\/+$/, "");
+  const p = withoutTrailingSlashes(url.pathname);
   const m = req.method.toUpperCase();
   if (m === "GET" && p === "/v1/sync/changes") {
     const since = Number(url.searchParams.get("since") ?? "0");

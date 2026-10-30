@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { runInNewContext } from "node:vm";
 import { deflateSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -20,7 +21,9 @@ import {
   processTemplateManifest,
   readIcns,
   readIco,
+  slugOf,
   templateDir,
+  writeListings,
 } from "../src/index.mjs";
 import { restoreDotfiles } from "../src/template.mjs";
 
@@ -318,6 +321,14 @@ describe("in a project", () => {
     expect(read(join(target, "docs/listings/near.md"))).toContain('setupClipWallet({ globalKey: "acmewallet" })');
   });
 
+  it("the Beacon draft's entry keeps any wallet name as one string", () => {
+    const root = tmp();
+    const name = `O'Brien's \\' Wallet\\`;
+    writeListings(root, { name, description: "d", rdns: "com.acme.wallet", extensionId: "a".repeat(32), key: "acme", slug: "acme", networks: ["tezos"], version: "1.0.0" });
+    const entry = /```ts\n(\{[\s\S]*?\})\n```/.exec(read(join(root, "docs/listings/beacon.md")))?.[1];
+    expect(runInNewContext(`(${entry})`)).toMatchObject({ key: "acme_chrome", name, shortName: "O'Brien's", link: "https://acme.com" });
+  });
+
   it("mainnet-check lists everything between the wallet and mainnet", async () => {
     const target = join(tmp(), "w");
     await main([target, "--name", "Acme", "--yes", "--no-git"], quiet);
@@ -354,6 +365,17 @@ describe("pieces", () => {
     });
     expect(parseArgs(["w", "--icon", "l.svg"]).logo).toBe("l.svg");
     expect(() => parseArgs(["--colour", "x"])).toThrow(/Unknown option --colour/);
+  });
+
+  it("slugs a name: lower case, dashes between words, none at either end", () => {
+    expect(slugOf("My Wallet")).toBe("my-wallet");
+    expect(slugOf("--Acme  Pay!--")).toBe("acme-pay");
+    expect(slugOf("./wallets/Zed")).toBe("zed");
+    expect(slugOf("---")).toBe("my-wallet");
+    const t0 = performance.now();
+    expect(slugOf(`a${"-".repeat(100_000)}!b`)).toBe(`a${"-".repeat(100_001)}b`);
+    expect(slugOf(`${"-".repeat(100_000)}!`)).toBe("my-wallet");
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it("restores dotfiles npm won't pack", () => {

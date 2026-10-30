@@ -12,6 +12,7 @@ import {
   type TokenBalance,
   type Warning,
   WALLET_ORIGIN,
+  includesInOrder,
   isWalletOrigin,
   msg,
   titled,
@@ -406,7 +407,7 @@ function isFinal(s: { status: string } | null): boolean {
 function plainRejection(e: unknown): string {
   const m = e instanceof Error ? e.message.toLowerCase() : "";
   if (/expir/.test(m)) return "This transfer expired before it reached the network. Nothing was sent. Try again.";
-  if (/signature|invalid.*(sig|key)/.test(m)) return "The network didn't accept the signature. Nothing was sent.";
+  if (m.includes("signature") || includesInOrder(m, "invalid", "sig") || includesInOrder(m, "invalid", "key")) return "The network didn't accept the signature. Nothing was sent.";
   if (/429|rate/.test(m)) return "The Internet Computer is busy right now. Nothing was sent. Try again in a minute.";
   if (e instanceof IcRejectError && e.rejectCode) return "The Internet Computer rejected this transfer. Nothing was sent.";
   return "The Internet Computer didn't accept this transfer. Nothing was sent.";

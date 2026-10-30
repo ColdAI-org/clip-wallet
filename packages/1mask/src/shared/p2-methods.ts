@@ -77,7 +77,10 @@ export function stellarNetworkName(networkId: NetworkId): string {
  * hash (algod `genesis-hash` is standard base64).
  */
 export function algorandChainFromGenesisHash(genesisHash: string): NetworkId {
-  return `algorand:${genesisHash.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "").slice(0, 32)}`;
+  const b64url = genesisHash.replace(/\+/g, "-").replace(/\//g, "_");
+  let end = b64url.length;
+  while (end > 0 && b64url[end - 1] === "=") end--; // a scan, not /=+$/: linear on any input
+  return `algorand:${b64url.slice(0, end).slice(0, 32)}`;
 }
 
 /** Algorand genesis ids/hashes (ARC-6 table; algod /genesis). */

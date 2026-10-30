@@ -11,7 +11,7 @@
  *
  * @module
  */
-import { chmodSync, mkdirSync, rmSync, statSync } from "node:fs";
+import { chmodSync, mkdirSync, rmSync } from "node:fs";
 import { connect, createServer, type Server, type Socket } from "node:net";
 import { homedir, tmpdir, userInfo } from "node:os";
 import { dirname } from "node:path";
@@ -114,21 +114,41 @@ export interface DesktopConnection {
   origin: string;
 }
 
+/** server.listen(path), settled by this attempt alone (a failed attempt leaves no listener behind). */
+function listenOn(server: Server, path: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const listening = () => resolve();
+    server.once("listening", listening);
+    server.once("error", (e) => {
+      server.off("listening", listening);
+      reject(e);
+    });
+    server.listen(path);
+  });
+}
+
+/** Is the socket at `path` one nothing answers on (left by a run that ended without closing it)? */
+function staleSocket(path: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const probe = connect(path);
+    probe.once("connect", () => {
+      probe.destroy();
+      resolve(false);
+    });
+    probe.once("error", (e: NodeJS.ErrnoException) => resolve(e.code === "ECONNREFUSED" || e.code === "ENOENT"));
+  });
+}
+
 /**
  * The desktop app's listener. Creates the socket in a 0700 directory and chmods it 0600 (Unix); on Windows the
  * pipe name is per-user (ipc.ts). `allowedOrigins` = the extension ids the desktop build trusts.
  */
-export function startDesktopLinkServer(o: { path?: string; allowedOrigins: string[]; onConnection(c: DesktopConnection): void }): Promise<{ server: Server; path: string; close(): Promise<void> }> {
+export async function startDesktopLinkServer(o: { path?: string; allowedOrigins: string[]; onConnection(c: DesktopConnection): void }): Promise<{ server: Server; path: string; close(): Promise<void> }> {
   const path = o.path ?? defaultSocketPath();
   const unix = !path.startsWith("\\\\.\\pipe\\");
   if (unix) {
     mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
     chmodSync(dirname(path), 0o700);
-    try {
-      if (statSync(path).isSocket()) rmSync(path);
-    } catch {
-      /* no stale socket */
-    }
   }
   const server = createServer((sock) => {
     const dec = new FrameDecoder();
@@ -162,11 +182,15 @@ export function startDesktopLinkServer(o: { path?: string; allowedOrigins: strin
     sock.on("close", () => ch?.ended("closed"));
     sock.on("error", () => ch?.ended("error"));
   });
-  return new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(path, () => {
-      if (unix) chmodSync(path, 0o600);
-      resolve({ server, path, close: () => new Promise<void>((r) => server.close(() => r())) });
-    });
-  });
+  // Listen first. A socket left by a run that ended without closing it makes that fail with EADDRINUSE; it is removed
+  // and the listen tried again only when nothing answers on it, so a copy of the app that is running keeps its socket.
+  try {
+    await listenOn(server, path);
+  } catch (e) {
+    if (!unix || (e as NodeJS.ErrnoException).code !== "EADDRINUSE" || !(await staleSocket(path))) throw e;
+    rmSync(path, { force: true });
+    await listenOn(server, path);
+  }
+  if (unix) chmodSync(path, 0o600);
+  return { server, path, close: () => new Promise<void>((r) => server.close(() => r())) };
 }

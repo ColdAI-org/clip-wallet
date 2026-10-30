@@ -302,6 +302,13 @@ describe("HTTP surface", () => {
     expect(await (await app.fetch(new Request("https://b/v1/health"), E)).json()).toEqual({ ok: true, emailSignIn: true, sync: true });
   });
 
+  it("routes ignore trailing slashes, however many", async () => {
+    const app = createApp({ email: new MemoryEmailSender() });
+    expect(await (await app.fetch(new Request("https://b/v1/health///"), E)).json()).toEqual({ ok: true, emailSignIn: true, sync: true });
+    // Workers' clocks don't move while code runs, so this one relies on the test timeout rather than a timer.
+    expect((await app.fetch(new Request(`https://b/v1/health${"/".repeat(100_000)}x`), E)).status).toBe(404);
+  });
+
   it("Resend sender posts the documented request and reports failures without the provider's body", async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     let status = 200;

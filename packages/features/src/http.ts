@@ -1,4 +1,4 @@
-import { ClipError, msg } from "@clip-wallet/core";
+import { ClipError, msg, withoutTrailing } from "@clip-wallet/core";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -55,7 +55,7 @@ export async function ethCall(fetchImpl: typeof fetch, rpcUrl: string, to: strin
 
 /** Hedera mirror node contract call (read-only simulation, free). Docs: POST /api/v1/contracts/call. */
 export async function mirrorCall(fetchImpl: typeof fetch, mirrorBase: string, to: string, data: string, what = "Hedera"): Promise<`0x${string}`> {
-  const body = await fetchJson<{ result?: string }>(fetchImpl, `${mirrorBase.replace(/\/+$/, "")}/api/v1/contracts/call`, what, {
+  const body = await fetchJson<{ result?: string }>(fetchImpl, `${withoutTrailing(mirrorBase, "/")}/api/v1/contracts/call`, what, {
     body: { block: "latest", data, to, estimate: false },
   });
   if (typeof body.result !== "string") throw new ClipError(`${what} couldn't read that right now.`, "features/contract-call-failed");

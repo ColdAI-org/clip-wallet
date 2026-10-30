@@ -38,6 +38,14 @@ describe("protocol helpers", () => {
     expect(fromB64url(b64url(b))).toEqual(b);
     expect(fromB64url("not base64!")).toBeNull();
   });
+  it("b64url is unpadded and URL-safe", () => {
+    const enc = new TextEncoder();
+    expect(b64url(new Uint8Array())).toBe("");
+    expect(b64url(enc.encode("a"))).toBe("YQ");
+    expect(b64url(enc.encode("ab"))).toBe("YWI");
+    expect(b64url(enc.encode("abc"))).toBe("YWJj");
+    expect(b64url(new Uint8Array([0xfb, 0xff]))).toBe("-_8");
+  });
   it("extracts the token from a pasted link", () => {
     const t = "A".repeat(43);
     expect(tokenFromLink(`https://wallet.example/#/backup/sign-in?token=${t}`)).toBe(t);

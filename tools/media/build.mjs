@@ -17,7 +17,7 @@
  * six or more BIP-39 words in a row, or four or more words of the dapp matrix phrase.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createRequire } from "node:module";
@@ -31,10 +31,10 @@ const arg = (name, fallback) => {
 const RUN = resolve(arg("--run", join(root, "apps/extension/.media")));
 const DESKTOP_DARK = arg("--desktop-dark");
 const OUT = join(root, "docs/media");
-const TMP = join(tmpdir(), `clip-media-${process.pid}`);
 const FPS = 15;
 mkdirSync(OUT, { recursive: true });
-mkdirSync(TMP, { recursive: true });
+// A new directory only this run uses (mkdtemp picks the name and creates it), for the lists, frames and OCR tool.
+const TMP = mkdtempSync(join(tmpdir(), "clip-media-"));
 
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 1 << 28 }).toString();
 const webp = (src, dst, width, q = 84) => run("cwebp", ["-quiet", "-q", String(q), "-m", "6", ...(width ? ["-resize", String(width), "0"] : []), src, "-o", dst]);

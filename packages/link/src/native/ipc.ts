@@ -3,7 +3,7 @@
  * directory (macOS, Linux) or a per-user named pipe (Windows). Only processes of the same OS user can reach it,
  * and even they can't do anything without pairing (the desktop app shows a code the person must confirm).
  */
-import { sha256, toHex, utf8 } from "../bytes.js";
+import { sha256, toHex, utf8, withoutTrailingSlashes } from "../bytes.js";
 import type { HostOS } from "./manifests.js";
 
 /** macOS sockaddr_un.sun_path is 104 bytes; leave room. */
@@ -20,7 +20,7 @@ export function desktopSocketPath(os: HostOS, env: { home: string; user: string;
   const p = `${dir}/desktop.sock`;
   if (p.length <= MAX_UNIX_PATH || !env.tmpDir) return p;
   // Very long home directories: the per-user temp dir (macOS $TMPDIR is per user and 0700).
-  return `${env.tmpDir.replace(/\/+$/, "")}/clip-wallet-link.sock`;
+  return `${withoutTrailingSlashes(env.tmpDir)}/clip-wallet-link.sock`;
 }
 
 /** First frame the host sends the desktop app on every connection. */

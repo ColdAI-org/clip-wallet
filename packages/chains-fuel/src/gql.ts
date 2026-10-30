@@ -192,12 +192,16 @@ export function gqlFor(ctx: ChainContext, opts: { timeoutMs?: number } = {}) {
       let text = "";
       let submitted = false;
       for (;;) {
-        const m = /data:(.*)\n\n/.exec(text);
-        if (m) {
-          text = text.slice(m.index + m[0].length);
+        // Events end with "\n\n"; the status is after "data:" on an event's last line. Found with scans, not a regex.
+        const end = text.indexOf("\n\n");
+        if (end >= 0) {
+          const last = text.slice(0, end).split(/[\n\r\p{Zl}\p{Zp}]/u).pop()!;
+          text = text.slice(end + 2);
+          const at = last.indexOf("data:");
+          if (at < 0) continue;
           let ev: { data?: { submitAndAwaitStatus?: { type: string; reason?: string; transactionId?: string } }; errors?: { message?: string }[] };
           try {
-            ev = JSON.parse(m[1]!);
+            ev = JSON.parse(last.slice(at + "data:".length));
           } catch {
             throw new GqlError("unreadable status stream", "http");
           }

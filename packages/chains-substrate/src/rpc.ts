@@ -1,5 +1,5 @@
 /** Substrate JSON-RPC over HTTP POST (the legacy RPC spec every public node still serves), with endpoint fallback. */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, includesInOrder } from "@clip-wallet/core";
 
 export class RpcError extends Error {
   constructor(
@@ -49,7 +49,7 @@ export class SubstrateRpc {
 /** Node / runtime error text → plain words. */
 export function plainSubstrateError(text: string): string {
   if (/Inability to pay some fees|Payment|balance too low|InsufficientBalance|FundsUnavailable/i.test(text)) return "You don't have enough to cover this and the network fee.";
-  if (/Stale|Outdated|AncientBirthBlock|BadProof.*era|Transaction is outdated/i.test(text)) return "This transaction expired before it was sent. Try again.";
+  if (/Stale|Outdated|AncientBirthBlock|Transaction is outdated/i.test(text) || includesInOrder(text, "BadProof", "era")) return "This transaction expired before it was sent. Try again.";
   if (/Future/i.test(text)) return "A previous transaction is still pending. Wait a moment and try again.";
   if (/BadProof|Invalid signature/i.test(text)) return "The signature didn't match. Nothing was sent.";
   if (/ExistentialDeposit|KeepAlive|Expendability/i.test(text)) return "That would leave the account below the minimum balance. Send a little less.";

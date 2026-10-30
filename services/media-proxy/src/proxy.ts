@@ -62,10 +62,17 @@ function errorResponse(status: number, code: string, extra: Record<string, strin
   });
 }
 
+/** `s` without trailing slashes (a scan, not a regex: linear on any input). */
+function withoutTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === "/") end--;
+  return s.slice(0, end);
+}
+
 /** ipfs:// / ar:// → a gateway URL; http(s) unchanged. */
 export function upstreamUrl(src: MediaSource, env: Env): string {
-  const ipfs = (env.IPFS_GATEWAY ?? "https://ipfs.filebase.io").replace(/\/+$/, "");
-  const ar = (env.ARWEAVE_GATEWAY ?? "https://arweave.net").replace(/\/+$/, "");
+  const ipfs = withoutTrailingSlashes(env.IPFS_GATEWAY ?? "https://ipfs.filebase.io");
+  const ar = withoutTrailingSlashes(env.ARWEAVE_GATEWAY ?? "https://arweave.net");
   if (src.scheme === "ipfs") return `${ipfs}/ipfs/${src.url.slice("ipfs://".length)}`;
   if (src.scheme === "ar") return `${ar}/${src.url.slice("ar://".length)}`;
   return src.url;

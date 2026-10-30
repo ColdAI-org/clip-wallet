@@ -1,4 +1,4 @@
-import { ClipError, type ChainContext } from "@clip-wallet/core";
+import { ClipError, type ChainContext, includesInOrder } from "@clip-wallet/core";
 import { IntDecoding, parseJSON } from "algosdk";
 import { specFor } from "./networks.js";
 
@@ -113,9 +113,10 @@ export interface PlainErrorHints {
   tokenName?: (assetId: string) => string | undefined;
 }
 
-type Mapper = (m: RegExpMatchArray, h: PlainErrorHints) => string;
+type Mapper = (m: readonly string[], h: PlainErrorHints) => string;
 
-const PLAIN_ERRORS: [RegExp, Mapper][] = [
+/** First match wins. "a … b" on one line is includesInOrder (indexOf scans) rather than a regex like /a .* b/i. */
+const PLAIN_ERRORS: [RegExp | ((raw: string) => boolean), Mapper][] = [
   [
     /asset (\d+) missing from ([A-Z2-7]{58})/,
     (m, h) => {
@@ -127,20 +128,25 @@ const PLAIN_ERRORS: [RegExp, Mapper][] = [
   ],
   [/overspend/i, () => "You don't have enough ALGO for this, including the network fee."],
   [/below min|balance \d+ below min/i, () => "This would leave your account below its minimum balance. Keep at least the locked ALGO in it."],
-  [/underflow on subtracting|insufficient (asset )?balance|asset .* insufficient/i, () => "You don't have enough of that token."],
+  [/underflow on subtracting|insufficient (asset )?balance/i, () => "You don't have enough of that token."],
+  [(raw) => includesInOrder(raw, "asset ", " insufficient"), () => "You don't have enough of that token."],
   [/txn dead|round \d+ outside of \d+--\d+/i, () => "This transaction expired before it was sent. Try again."],
-  [/fee too small|below threshold|fee .* less than/i, () => "The network fee was too low. Try again."],
+  [/fee too small|below threshold/i, () => "The network fee was too low. Try again."],
+  [(raw) => includesInOrder(raw, "fee ", " less than"), () => "The network fee was too low. Try again."],
   [/should have been authorized by|authorized by/i, () => "This account is controlled by another key, so Clip Wallet can't sign for it."],
   [/already in ledger/i, () => "This transaction was already sent."],
   [/frozen/i, () => "This token is frozen for this account, so it can't move right now."],
   [/logic eval error|rejected by logic|err opcode|assert failed/i, () => "The app rejected this transaction."],
-  [/incomplete group|group .* mismatch|transactionPool.Remember: .*group/i, () => "Part of this group of transactions is missing, so nothing was sent."],
+  [
+    (raw) => /incomplete group/i.test(raw) || includesInOrder(raw, "group ", " mismatch") || includesInOrder(raw, "transactionPool.Remember: ", "group"),
+    () => "Part of this group of transactions is missing, so nothing was sent.",
+  ],
 ];
 
 /** Maps a raw algod error message to plain words. */
 export function plainAlgorandError(raw: string, hints: PlainErrorHints = {}): string {
-  for (const [re, f] of PLAIN_ERRORS) {
-    const m = raw.match(re);
+  for (const [test, f] of PLAIN_ERRORS) {
+    const m = test instanceof RegExp ? raw.match(test) : test(raw) ? [raw] : null;
     if (m) return f(m, hints);
   }
   return "The Algorand network refused this transaction. Nothing was sent.";

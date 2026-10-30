@@ -8,6 +8,8 @@ import {
   NEAR_METHODS,
   NEAR_NETWORKS,
   NEAR_TESTNET,
+  NearRpc,
+  RpcError,
   USDC_CONTRACTS,
   addressFromPublicKey,
   clearTokenCache,
@@ -501,6 +503,22 @@ describe("prepare / finalize", () => {
     expect(plainNearError('{"LackBalanceForState":{}}')).toMatch(/storage/);
     expect(plainNearError("weird")).toBe("NEAR didn't accept this transaction. Try again in a moment.");
   });
+
+  it("names query errors that older nodes report inside the result", async () => {
+    const named = async (error: string) => {
+      const f = (async () => new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { error } }))) as typeof fetch;
+      const e = await new NearRpc("https://rpc.test", f).call("query", {}).then(() => null, (x: unknown) => x);
+      expect(e).toBeInstanceOf(RpcError);
+      return (e as RpcError).name;
+    };
+    expect(await named("access key ed25519:DmnRVNb89cLKZY1cH1Zcr3rxMVD9r1cVfnDac7RFwM94 does not exist while viewing")).toBe("UNKNOWN_ACCESS_KEY");
+    expect(await named("account nobody.testnet does not exist while viewing")).toBe("UNKNOWN_ACCOUNT");
+    expect(await named("access key x\ndoes not exist")).toBe("UNKNOWN_ACCOUNT");
+    expect(await named("wasm execution failed")).toBe("QUERY_ERROR");
+    const t0 = performance.now();
+    expect(await named("access key ".repeat(10_000))).toBe("QUERY_ERROR");
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });
 
 describe("NEP-413 signMessage", () => {
@@ -537,6 +555,18 @@ describe("NEP-413 signMessage", () => {
     expect(sub.warnings).toEqual([]);
     const contract = await near.decode(msg({ recipient: "social.near" }), ctx);
     expect(contract.warnings.map((w) => [w.level, w.code])).toEqual([["caution", "domain-mismatch"]]);
+  });
+
+  it("reads the recipient's host up to the first slash, and never across a line break", async () => {
+    const { ctx } = chain();
+    expect((await near.decode(msg({ recipient: "https://app.example/login" }), ctx)).warnings).toEqual([]);
+    expect((await near.decode(msg({ recipient: "app.example/a/b" }), ctx)).warnings).toEqual([]);
+    const broken = await near.decode(msg({ recipient: "app.example\n/x" }), ctx);
+    expect(broken.warnings.map((w) => [w.level, w.code])).toEqual([["danger", "domain-mismatch"]]);
+    const t0 = performance.now();
+    const long = await near.decode(msg({ recipient: `app.example${"/".repeat(100_000)}` }), ctx);
+    expect(long.warnings).toEqual([]);
+    expect(performance.now() - t0).toBeLessThan(1000);
   });
 
   it("needs a 32-byte nonce and a full-access key for named accounts", async () => {

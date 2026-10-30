@@ -23,6 +23,7 @@ import {
   type UploadBody,
   type VerifyBody,
   LIMITS,
+  b64url,
   fromB64url,
   isPasskeyBackupBlob,
   normaliseEmail,
@@ -31,7 +32,7 @@ import {
 import { EmailUnavailableError, UnconfiguredEmailSender, signInEmail, type EmailSender } from "./email.js";
 import { PROVIDERS, oidcCallback, oidcFinish, oidcStart, providerEnabled, type OidcEnv } from "./oidc.js";
 import { RULES, cleanupWindows, enforce } from "./ratelimit.js";
-import { HttpError, hmacHex, randomToken, readJson, readTextCapped, safeEqual, sha256Hex } from "./util.js";
+import { HttpError, hmacHex, randomToken, readJson, readTextCapped, safeEqual, sha256Hex, withoutTrailingSlashes } from "./util.js";
 import { cleanupSync, syncRoute } from "./sync.js";
 
 export interface Env extends OidcEnv {
@@ -126,7 +127,7 @@ export function createApp(deps: AppDeps = {}) {
     await env.DB.prepare("INSERT INTO magic_links (token_hash, account, challenge, expires_at) VALUES (?1, ?2, ?3, ?4)")
       .bind(await sha256Hex(token), account, body.challenge, now() + LIMITS.linkTtlMs)
       .run();
-    const link = `${env.APP_URL.replace(/#.*$/, "")}#/backup/sign-in?token=${token}`;
+    const link = `${env.APP_URL.split("#")[0]!}#/backup/sign-in?token=${token}`;
     try {
       await email.send(signInEmail(addr, link, deps.walletName));
     } catch (e) {
@@ -251,10 +252,7 @@ export function createApp(deps: AppDeps = {}) {
     if (!row) throw new HttpError(404, "not-found", "No such backup.");
     const obj = await env.BLOBS.get(`b/${id}`);
     if (!obj) throw new HttpError(404, "not-found", "No such backup.");
-    const bytes = new Uint8Array(await obj.arrayBuffer());
-    let s = "";
-    for (const b of bytes) s += String.fromCharCode(b);
-    const blob = btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const blob = b64url(new Uint8Array(await obj.arrayBuffer()));
     return json(200, { id: row.id, createdAt: row.created_at, credentialId: row.credential_id, rpId: row.rp_id, blob });
   }
 
@@ -280,7 +278,7 @@ export function createApp(deps: AppDeps = {}) {
 
   async function route(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
-    const p = url.pathname.replace(/\/+$/, "");
+    const p = withoutTrailingSlashes(url.pathname);
     const m = req.method;
     if (m === "GET" && p === "/v1/health") return json(200, { ok: true, emailSignIn: emailEnabled(env), sync: true });
     if (p === "/v1/sync" || p.startsWith("/v1/sync/")) {

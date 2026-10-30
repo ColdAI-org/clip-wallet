@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
 
 /**
  * Tezos networks. CAIP-2 (ChainAgnostic namespaces, tezos/caip2.md): "tezos:" + the full base58 chain id
@@ -74,7 +74,7 @@ export function beaconNetworkType(networkId: NetworkId): string | undefined {
 export function fromBeaconNetwork(n: { type: string; rpcUrl?: string }): NetworkId | undefined {
   if (n.type === "mainnet" || n.type === "shadownet") return BY_NAME[n.type].id;
   if (n.type === "custom" && n.rpcUrl) {
-    const url = n.rpcUrl.replace(/\/+$/, "");
+    const url = withoutTrailing(n.rpcUrl, "/");
     return TEZOS_NETWORKS.find((net) => net.rpcUrls.some((r) => r === url))?.id;
   }
   return undefined;

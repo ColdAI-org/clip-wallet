@@ -11,6 +11,13 @@ import { randomBytes as nobleRandom } from "@noble/hashes/utils.js";
 export const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
 export const fromUtf8 = (b: Uint8Array): string => new TextDecoder().decode(b);
 
+/** `s` without trailing slashes (a scan, not a regex: linear on any input). */
+export function withoutTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === "/") end--;
+  return s.slice(0, end);
+}
+
 const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export function b64url(bytes: Uint8Array): string {

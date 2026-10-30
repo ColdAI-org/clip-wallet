@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@clip-wallet/core";
 import { b64urlDecode, b64urlEncode } from "../util.js";
 
 /** One side of a trade, as carried in a share link. Amounts in base units. */
@@ -33,7 +33,7 @@ export interface OfferPayload {
 const MAX_LINK = 16_000;
 
 export function encodeOffer(base: string, p: OfferPayload): string {
-  return `${base.replace(/[#?]+$/, "")}#offer=${b64urlEncode(JSON.stringify(p))}`;
+  return `${withoutTrailing(base, "#?")}#offer=${b64urlEncode(JSON.stringify(p))}`;
 }
 
 function isLeg(x: unknown): x is LegSpec {

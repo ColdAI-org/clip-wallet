@@ -174,7 +174,7 @@ export function httpUrl(uri: string, gateway: string): string {
 /** ARC-3: a URI without ":" is relative to the metadata URL. */
 export function resolveRelative(uri: string, base: string): string {
   if (uri.includes(":")) return uri;
-  const b = base.replace(/#.*$/, "");
+  const b = base.split("#")[0]!;
   return `${b.slice(0, b.lastIndexOf("/") + 1)}${uri}`;
 }
 

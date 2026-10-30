@@ -1,4 +1,4 @@
-import type { AssetRef, NetworkId, Nft } from "@clip-wallet/core";
+import { type AssetRef, type NetworkId, type Nft, withoutTrailing } from "@clip-wallet/core";
 import { address, getAddressDecoder, getAddressEncoder, getProgramDerivedAddress } from "@solana/kit";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import { clusterOf, tokenAssetKey, USDC_MINTS } from "./networks.js";
@@ -55,7 +55,7 @@ export function parseMetaplexMetadata(data: Uint8Array): { name: string; symbol:
       const len = view.getUint32(o, true);
       o += 4;
       if (len > 1000 || o + len > data.length) throw new Error("bad string");
-      const s = new TextDecoder().decode(data.subarray(o, o + len)).replace(/\0+$/g, "").trim();
+      const s = withoutTrailing(new TextDecoder().decode(data.subarray(o, o + len)), "\0").trim();
       o += len;
       return s;
     };

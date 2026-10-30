@@ -83,7 +83,11 @@ if (withSource) {
   const tmp = mkdtempSync(join(tmpdir(), "clip-source-"));
   const root = join(tmp, `clip-wallet-${version}`);
   mkdirSync(root);
-  execFileSync("sh", ["-c", `git archive --format=tar HEAD | tar -x -C "${root}"`], { cwd: REPO });
+  // git archive writes the tar to a file and tar reads it back: two plain commands, no shell between them.
+  const tar = join(tmp, "source.tar");
+  execFileSync("git", ["archive", "--format=tar", `--output=${tar}`, "HEAD"], { cwd: REPO });
+  execFileSync("tar", ["-x", "-f", tar, "-C", root]);
+  rmSync(tar);
   copyFileSync(join(APP, "store/README-AMO.md"), join(root, "README-AMO.md"));
   writeFileSync(join(OUT, source), zipDirectory(tmp));
   rmSync(tmp, { recursive: true, force: true });

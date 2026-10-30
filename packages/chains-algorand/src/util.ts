@@ -1,3 +1,5 @@
+import { withoutTrailing } from "@clip-wallet/core";
+
 export function b64encode(bytes: Uint8Array): string {
   let s = "";
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
@@ -13,7 +15,7 @@ export function b64decode(text: string): Uint8Array {
 
 /** base64url without padding (CAIP-2 references). */
 export function b64url(bytes: Uint8Array): string {
-  return b64encode(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return withoutTrailing(b64encode(bytes).replace(/\+/g, "-").replace(/\//g, "_"), "=");
 }
 
 export function hex(bytes: Uint8Array): string {

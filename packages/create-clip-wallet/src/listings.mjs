@@ -234,6 +234,8 @@ ${PREREQS(id)}
 
 /** @param {ListingIdentity} id */
 function beacon(id) {
+  // String values as JSON literals (TypeScript reads them the same way), so any name stays one valid string.
+  const str = (/** @type {string} */ s) => JSON.stringify(s);
   return `# Tezos Beacon wallet list: ${id.name}
 
 ${DRAFT(id.name)}
@@ -247,13 +249,13 @@ browser extension id, which ${id.name}'s page relay answers with.
 
 \`\`\`ts
 {
-  key: '${id.slug.replace(/-/g, "_")}_chrome',
-  id: '${id.extensionId}',
-  name: '${id.name.replace(/'/g, "\\'")}',
-  shortName: '${String(id.name.split(/\s+/)[0]).replace(/'/g, "\\'")}',
-  color: '',
-  logo: 'extension-${id.slug}.png',
-  link: '${site(id)}'
+  key: ${str(`${id.slug.replace(/-/g, "_")}_chrome`)},
+  id: ${str(id.extensionId)},
+  name: ${str(id.name)},
+  shortName: ${str(String(id.name.split(/\s+/)[0]))},
+  color: "",
+  logo: ${str(`extension-${id.slug}.png`)},
+  link: ${str(site(id))}
 }
 \`\`\`
 

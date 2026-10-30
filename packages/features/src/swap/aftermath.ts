@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@clip-wallet/core";
 import {
   SuiGraphQL,
   type TransactionData,
@@ -224,7 +224,7 @@ export class AftermathSwap implements SwapProvider {
   }
 
   private base(): string {
-    return (this.opts.base ?? AFTERMATH_BASE).replace(/\/+$/, "");
+    return withoutTrailing(this.opts.base ?? AFTERMATH_BASE, "/");
   }
 
   /** Allow-listed, or published by Aftermath's deployer and linked to the router (checked over the network's GraphQL). */

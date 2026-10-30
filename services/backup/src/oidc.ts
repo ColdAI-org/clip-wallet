@@ -22,7 +22,7 @@
  * https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens.
  */
 import { sha256b64url } from "@clip-wallet/backup-client/protocol";
-import { HttpError, hmacHex, randomToken, safeEqual, sha256Hex } from "./util.js";
+import { HttpError, hmacHex, randomToken, safeEqual, sha256Hex, withoutTrailingSlashes } from "./util.js";
 
 export type Provider = "google" | "apple";
 export const PROVIDERS: readonly Provider[] = ["google", "apple"];
@@ -95,7 +95,7 @@ export function providerEnabled(env: OidcEnv, p: Provider): boolean {
   return !!credentials(env, p) && (env.EMAIL_PEPPER?.length ?? 0) >= 32 && /^https:\/\//.test(env.PUBLIC_URL ?? "") && returnUrls(env).length > 0;
 }
 
-const callbackUrl = (env: OidcEnv) => `${env.PUBLIC_URL!.replace(/\/+$/, "")}/v1/auth/oidc/callback`;
+const callbackUrl = (env: OidcEnv) => `${withoutTrailingSlashes(env.PUBLIC_URL!)}/v1/auth/oidc/callback`;
 
 /* ------------------------------------------------------------------ JWT / JWKS */
 
