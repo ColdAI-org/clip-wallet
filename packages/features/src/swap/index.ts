@@ -17,6 +17,7 @@ export { SodaxSwap, sodaxTokens, type SodaxSwapOptions, type SodaxToken } from "
 export {
   SODAX_SPOKES,
   SODAX_INTENTS,
+  SONIC_RPC_URL,
   checkSodaxSwap,
   decodeSodaxSwap,
   sodaxFeeData,

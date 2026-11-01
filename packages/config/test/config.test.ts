@@ -3,6 +3,8 @@ import {
   ConfigError,
   MAINNET_ACKNOWLEDGEMENT,
   NETWORK_FAMILIES,
+  SODAX_FEE_RECEIVER_ENV,
+  SODAX_SERVER_ENV,
   WALLETCONNECT_ENV,
   contrastRatio,
   defaults,
@@ -199,6 +201,22 @@ describe("mainnet checklist", () => {
       "rdns: org.coldai.clipwallet is Clip Wallet's; announce your own reverse domain",
     ]);
     expect(mainnetProblems(defineConfig({ name: "Acme", rdns: "com.acme.wallet", homepage: "https://acme.example", extension: { key: "A".repeat(392) }, walletConnect: { projectId: "0".repeat(32) }, mainnet: ack }))).toEqual([]);
+  });
+
+  it("asks for both SODAX settings once a build sets either", () => {
+    const ready = defineConfig({ name: "Acme", rdns: "com.acme.wallet", homepage: "https://acme.example", extension: { key: "A".repeat(392) }, walletConnect: { projectId: "0".repeat(32) }, mainnet: ack });
+    // Clearly fake: nobody holds this address.
+    const receiver = "0x00000000000000000000000000000000000fee01";
+    expect(mainnetProblems(ready, {})).toEqual([]);
+    expect(mainnetProblems(ready, { [SODAX_SERVER_ENV]: "", [SODAX_FEE_RECEIVER_ENV]: "" })).toEqual([]);
+    expect(mainnetProblems(ready, { [SODAX_SERVER_ENV]: "https://exclip.example", [SODAX_FEE_RECEIVER_ENV]: receiver })).toEqual([]);
+    expect(mainnetProblems(ready, { [SODAX_FEE_RECEIVER_ENV]: receiver })).toEqual([
+      "CLIP_SODAX_SERVER_URL: set the https base URL of the ExClip server that quotes SODAX swaps, or unset CLIP_SODAX_FEE_RECEIVER too",
+    ]);
+    expect(mainnetProblems(ready, { [SODAX_SERVER_ENV]: "http://exclip.example", [SODAX_FEE_RECEIVER_ENV]: "ColdAI" })).toEqual([
+      "CLIP_SODAX_SERVER_URL: set the https base URL of the ExClip server that quotes SODAX swaps, or unset CLIP_SODAX_FEE_RECEIVER too",
+      "CLIP_SODAX_FEE_RECEIVER: set the 0x address the 0.875% Clip fee on SODAX swaps goes to, or unset CLIP_SODAX_SERVER_URL too",
+    ]);
   });
 });
 
