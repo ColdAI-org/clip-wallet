@@ -236,7 +236,7 @@ export class SodaxSwap implements SwapProvider {
       slippageBps: req.slippageBps,
       route: [this.name],
       expiresAt: this.now() + 30_000,
-      clipFee: { pct: CLIP_FEE.percent, amount: fee.toString(), receiver: plan.feeReceiver, receivedBy: CLIP_FEE.receivedBy },
+      clipFee: { pct: CLIP_FEE.percent, amount: fee.toString(), receiver: plan.feeReceiver, name: CLIP_FEE.name, receivedBy: CLIP_FEE.receivedBy },
       data: { plan, arrivesOn: there.network.name } satisfies SodaxQuoteData,
     };
     if (req.sell.address && (await this.allowance(ctx, req.sell.address, src.assetManager)) < gross) {

@@ -7,7 +7,7 @@ import { Swap } from "../src/screens/Swap";
 import { Buy } from "../src/screens/Buy";
 import { TradeCreate, TradeDetail, TradeHome, TradeReview } from "../src/screens/Trade";
 import { eventually, renderWith, testWallet } from "./helpers";
-import { OFFER_LINK, REVIEW } from "./feature-fixtures";
+import { OFFER_LINK, QUOTE, REVIEW } from "./feature-fixtures";
 
 const PW = "a long test password 42!";
 
@@ -92,6 +92,29 @@ describe("Swap", () => {
     fireEvent.changeText(screen.getByTestId("swap-amount"), "1,5");
     await act(async () => fireEvent.press(screen.getByTestId("swap-quote")));
     await eventually(() => expect(wallet.featureCalls.some((c) => c.type === "featSwapQuote" && c.amount === "1.5")).toBe(true));
+  });
+
+  it("a SODAX quote shows the Clip fee in what you sell and who gets it, the network fee apart", async () => {
+    const sodax = {
+      ...QUOTE,
+      provider: "SODAX",
+      route: "Via SODAX",
+      clipFee: { pct: 0.875, amount: "875000000000000", display: "0.000875 ETH", name: "Clip", receivedBy: "ColdAI LLC" },
+      arrivesOn: { networkId: "eip155:42161", name: "Arbitrum One" },
+      networkId: "eip155:8453",
+    };
+    const wallet = await ready({ featSwapQuote: () => sodax });
+    renderWith(wallet, <Swap buy="usdc" />, { name: "swap" });
+    fireEvent.changeText(await eventually(() => screen.getByTestId("swap-amount")), "0.1");
+    await act(async () => fireEvent.press(screen.getByTestId("swap-quote")));
+    expect(screen.getByText("Clip fee")).toBeTruthy();
+    expect(screen.getByText("0.875% · 0.000875 ETH")).toBeTruthy();
+    expect(screen.getByText("Part of the 0.1 ETH you pay. It goes to ColdAI LLC.")).toBeTruthy();
+    expect(screen.getByText("Network fee")).toBeTruthy();
+    expect(screen.getByText("Paid on top, shown before you approve")).toBeTruthy();
+    // Where it arrives is Advanced mode only: it lands in your own account either way.
+    expect(screen.queryByText("Arrives on")).toBeNull();
+    expect(screen.queryByText("Arbitrum One")).toBeNull();
   });
 });
 

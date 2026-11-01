@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "价格影响",
   "m.swap.network": "网络",
   "m.swap.whatYouApprove": "你需要批准的内容",
+  "m.swap.fee": "{name} 手续费",
+  "m.swap.feeHint": "包含在你支付的 {amount} 中，付给 {receiver}。",
+  "m.swap.networkFee": "网络手续费",
+  "m.swap.networkFeeLater": "另行支付，批准前会显示",
+  "m.swap.arrivesOn": "到账网络",
 } satisfies Record<keyof typeof en, string>;

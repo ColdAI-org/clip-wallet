@@ -281,7 +281,7 @@ describe("SODAX quote and review", () => {
       sellAmount: "100000000",
       buyAmount: "2500000000000000",
       minBuyAmount: "2487500000000000",
-      clipFee: { pct: 0.875, amount: "875000", receiver: getAddress(FAKE_RECEIVER), receivedBy: "ColdAI LLC" },
+      clipFee: { pct: 0.875, amount: "875000", receiver: getAddress(FAKE_RECEIVER), name: "Clip", receivedBy: "ColdAI LLC" },
       approval: { spender: SODAX_SPOKES[8453]!.assetManager, spenderName: "SODAX", amount: "100000000" },
     });
     // Nothing went anywhere but the server and the two networks' RPCs.
@@ -436,7 +436,7 @@ describe("SODAX through SwapService", () => {
       youGet: "You get ~0.0025 ETH",
       atLeast: "At least 0.002487 ETH, or the order isn't filled",
       sell: { display: "100 USDC", amount: "100000000" },
-      clipFee: { pct: 0.875, amount: "875000", display: "0.875 USDC", receivedBy: "ColdAI LLC" },
+      clipFee: { pct: 0.875, amount: "875000", display: "0.875 USDC", name: "Clip", receivedBy: "ColdAI LLC" },
       arrivesOn: { networkId: ARBITRUM.id, name: "Arbitrum One" },
       steps: ["Allow SODAX to use exactly 100 USDC", "Swap"],
       executable: true,

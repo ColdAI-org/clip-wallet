@@ -10,7 +10,7 @@ import { Swap } from "../src/features/Swap";
 import { Buy } from "../src/features/Buy";
 import { TradeCreate, TradeDetail, TradeReview } from "../src/features/Trade";
 import { Explore } from "../src/features/Explore";
-import { BALANCES, NETWORKS, fakeClient } from "./fake-client";
+import { BALANCES, NETWORKS, fakeClient, state } from "./fake-client";
 import { renderUi } from "./render";
 import { WalletApp } from "../src/App";
 
@@ -208,6 +208,43 @@ describe("feature screens", () => {
     await user.click(screen.getByRole("button", { name: "Review and swap" }));
     expect(f.swapExecute).toHaveBeenCalledWith({ quoteId: "q1" });
     expectNoNetworkNames(container);
+    expect(screen.queryByText("Clip fee")).toBeNull();
+  });
+
+  const SODAX_QUOTE: SwapQuoteView = {
+    ...QUOTE,
+    provider: "SODAX",
+    atLeast: "At least 0.0298 ETH, or the order isn't filled",
+    route: "Via SODAX",
+    steps: ["Allow SODAX to use exactly 100 USDC", "Swap"],
+    warnings: [],
+    clipFee: { pct: 0.875, amount: "875000", display: "0.875 USDC", name: "Clip", receivedBy: "ColdAI LLC" },
+    arrivesOn: { networkId: "eip155:42161", name: "Arbitrum One" },
+    networkId: "eip155:8453",
+  };
+
+  it("Swap through SODAX: the Clip fee in what you sell and who gets it, the network fee apart", async () => {
+    const user = userEvent.setup();
+    const { container } = renderFeature(<Swap sell="usdc" buy="eth" />, features({ swapQuote: vi.fn(async () => SODAX_QUOTE) }));
+    await user.type(await screen.findByLabelText("Amount"), "100");
+    await user.click(screen.getByRole("button", { name: "Get price" }));
+    const fee = (await screen.findByText("Clip fee")).closest(".clip-row") as HTMLElement;
+    expect(fee).toHaveTextContent("Clip fee0.875% · 0.875 USDCPart of the 100 USDC you pay. It goes to ColdAI LLC.");
+    const network = screen.getByText("Network fee").closest(".clip-row") as HTMLElement;
+    expect(network).toHaveTextContent("Paid on top, shown before you approve");
+    // Where it arrives is Advanced mode only: it lands in your own account either way.
+    expect(screen.queryByText("Arrives on")).toBeNull();
+    expect(container.textContent).not.toContain("Arbitrum One");
+    expectNoNetworkNames(container);
+  });
+
+  it("Swap through SODAX in Advanced mode also says where it arrives", async () => {
+    const user = userEvent.setup();
+    const f = features({ swapQuote: vi.fn(async () => SODAX_QUOTE) });
+    renderUi(<FeaturesProvider client={f}><Swap sell="usdc" buy="eth" /></FeaturesProvider>, { state: state({}, { advanced: true }) });
+    await user.type(await screen.findByLabelText("Amount"), "100");
+    await user.click(screen.getByRole("button", { name: "Get price" }));
+    expect((await screen.findByText("Arrives on")).closest(".clip-row")).toHaveTextContent("Arbitrum One");
   });
 
   it("Buy: what and how much, then hand off to the provider; unavailable ones say why", async () => {

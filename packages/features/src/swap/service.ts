@@ -186,7 +186,8 @@ export class SwapService {
     };
     if (q.priceImpactPct !== undefined) v.priceImpactPct = q.priceImpactPct;
     if (q.clipFee) {
-      v.clipFee = { pct: q.clipFee.pct, amount: q.clipFee.amount, display: `${formatUnits(q.clipFee.amount, q.sell.decimals)} ${q.sell.symbol}`, receivedBy: q.clipFee.receivedBy };
+      const { pct, amount, name, receivedBy } = q.clipFee;
+      v.clipFee = { pct, amount, display: `${formatUnits(amount, q.sell.decimals)} ${q.sell.symbol}`, name, receivedBy };
     }
     if (there) v.arrivesOn = { networkId: there.id, name: there.name };
     return v;

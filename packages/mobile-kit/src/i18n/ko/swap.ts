@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "가격 영향",
   "m.swap.network": "네트워크",
   "m.swap.whatYouApprove": "승인할 내용",
+  "m.swap.fee": "{name} 수수료",
+  "m.swap.feeHint": "지불하는 {amount}에 포함되며 {receiver}에 지급됩니다.",
+  "m.swap.networkFee": "네트워크 수수료",
+  "m.swap.networkFeeLater": "별도, 승인 전에 표시됩니다",
+  "m.swap.arrivesOn": "도착 네트워크",
 } satisfies Record<keyof typeof en, string>;

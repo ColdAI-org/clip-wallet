@@ -132,9 +132,19 @@ export function Swap(props: { sell?: string; buy?: string; /** Discover: symbol 
           <p className="clip-hint">{quote.atLeast}</p>
           <div className="clip-rows">
             <Row label={t("swap.youPay")} value={quote.sell.display} />
+            {/* The Clip fee (SODAX): its share of what you pay, in the asset you sell, and who gets it; the network fee apart. */}
+            {quote.clipFee && (
+              <Row
+                label={t("swap.fee", { name: quote.clipFee.name })}
+                value={`${f.percent(quote.clipFee.pct, { maxFraction: 3 })} · ${quote.clipFee.display}`}
+                hint={t("swap.feeHint", { amount: quote.sell.display, receiver: quote.clipFee.receivedBy })}
+              />
+            )}
+            {quote.clipFee && <Row label={t("swap.networkFee")} value={t("swap.networkFeeLater")} />}
             <Row label={t("swap.route")} value={quote.route} />
             {quote.priceImpactPct !== undefined && <Row label={t("swap.priceImpact")} value={f.number(quote.priceImpactPct / 100, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 })} />}
             {state?.prefs.advanced && <Row label={t("swap.network")} value={quote.networkId} />}
+            {state?.prefs.advanced && quote.arrivesOn && <Row label={t("swap.arrivesOn")} value={quote.arrivesOn.name} />}
           </div>
           {quote.steps.length > 1 && (
             <ol className="clip-steps" aria-label={t("swap.steps")}>

@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "価格への影響",
   "m.swap.network": "ネットワーク",
   "m.swap.whatYouApprove": "承認する内容",
+  "m.swap.fee": "{name}の手数料",
+  "m.swap.feeHint": "支払う {amount} に含まれ、{receiver} に支払われます。",
+  "m.swap.networkFee": "ネットワーク手数料",
+  "m.swap.networkFeeLater": "別途必要、承認前に表示されます",
+  "m.swap.arrivesOn": "受取ネットワーク",
 } satisfies Record<keyof typeof en, string>;

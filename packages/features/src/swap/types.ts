@@ -38,10 +38,10 @@ export interface SwapQuote {
   association?: { tokenId: string; symbol: string };
   /**
    * The Clip fee, when the provider charges it (SODAX, docs/features/sodax-swaps.md): percent of the amount sold,
-   * base units of `sell` (part of `sellAmount`), the address it goes to and who that is. Disclosed on the quote and
-   * the review.
+   * base units of `sell` (part of `sellAmount`), the address it goes to, the fee's name ("Clip": the fee is ColdAI's
+   * in every wallet built from the kit) and who receives it. Disclosed on the quote and the review.
    */
-  clipFee?: { pct: number; amount: string; receiver: string; receivedBy: string };
+  clipFee?: { pct: number; amount: string; receiver: string; name: string; receivedBy: string };
   expiresAt: number;
   data?: unknown;
 }

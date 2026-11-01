@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "Ver preço",
   "swap.amountBad": "Digite um valor como 25 ou 0,5.",
   "swap.expired": "Este preço expirou. Busque um novo.",
+  "swap.fee": "Taxa de {name}",
+  "swap.feeHint": "Faz parte dos {amount} que você paga e vai para {receiver}.",
+  "swap.networkFee": "Taxa de rede",
+  "swap.networkFeeLater": "À parte, mostrada antes de você aprovar",
+  "swap.arrivesOn": "Chega em",
 } satisfies Record<keyof typeof en, string>;

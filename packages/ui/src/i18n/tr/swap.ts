@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "Fiyat al",
   "swap.amountBad": "25 veya 0,5 gibi bir miktar girin.",
   "swap.expired": "Bu fiyatın süresi doldu. Yeni bir fiyat alın.",
+  "swap.fee": "{name} ücreti",
+  "swap.feeHint": "Ödediğiniz {amount} tutarına dahildir. Alıcı: {receiver}.",
+  "swap.networkFee": "Ağ ücreti",
+  "swap.networkFeeLater": "Ayrıca ödenir, onaylamadan önce gösterilir",
+  "swap.arrivesOn": "Varacağı ağ",
 } satisfies Record<keyof typeof en, string>;

@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "Impatto sul prezzo",
   "m.swap.network": "Rete",
   "m.swap.whatYouApprove": "Cosa approverai",
+  "m.swap.fee": "Commissione di {name}",
+  "m.swap.feeHint": "Fa parte dei {amount} che paghi e va a {receiver}.",
+  "m.swap.networkFee": "Commissione di rete",
+  "m.swap.networkFeeLater": "A parte, la vedi prima di approvare",
+  "m.swap.arrivesOn": "Arriva su",
 } satisfies Record<keyof typeof en, string>;

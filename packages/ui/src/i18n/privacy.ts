@@ -35,4 +35,4 @@ export const PRIVACY_CATALOGS: Catalogs<PrivacyMessages> = {
 };
 
 /** The disclosure's sections, in the order both apps show them. */
-export const PRIVACY_SECTIONS = ["device", "network", "scam", "partners", "backup", "media", "never"] as const;
+export const PRIVACY_SECTIONS = ["device", "network", "scam", "partners", "crossSwap", "backup", "media", "never"] as const;

@@ -20,4 +20,10 @@ export default {
   "swap.getPrice": "Get price",
   "swap.amountBad": "Enter an amount like 25 or 0.5.",
   "swap.expired": "This price expired. Get a new one.",
+  // SODAX swaps (docs/features/sodax-swaps.md). {name} is the fee's owner ("Clip fee"); {receiver} who gets it.
+  "swap.fee": "{name} fee",
+  "swap.feeHint": "Part of the {amount} you pay. It goes to {receiver}.",
+  "swap.networkFee": "Network fee",
+  "swap.networkFeeLater": "Paid on top, shown before you approve",
+  "swap.arrivesOn": "Arrives on",
 } satisfies Record<`swap.${string}`, string>;

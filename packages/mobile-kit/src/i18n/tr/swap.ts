@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "Fiyat etkisi",
   "m.swap.network": "Ağ",
   "m.swap.whatYouApprove": "Onaylayacaklarınız",
+  "m.swap.fee": "{name} ücreti",
+  "m.swap.feeHint": "Ödediğiniz {amount} tutarına dahildir. Alıcı: {receiver}.",
+  "m.swap.networkFee": "Ağ ücreti",
+  "m.swap.networkFeeLater": "Ayrıca ödenir, onaylamadan önce gösterilir",
+  "m.swap.arrivesOn": "Varacağı ağ",
 } satisfies Record<keyof typeof en, string>;

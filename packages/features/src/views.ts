@@ -109,11 +109,14 @@ export interface SwapQuoteView {
   networkId: NetworkId;
   /**
    * The Clip fee on this swap (SODAX, docs/features/sodax-swaps.md): percent of what you sell (0.875 = 0.875 %), in
-   * base units of the asset sold, "0.0875 USDC", and who receives it. Part of what you pay; shown on the quote apart
-   * from the network fee.
+   * base units of the asset sold, "0.0875 USDC", the fee's name ("Clip", shown as "Clip fee") and who receives it.
+   * Part of what you pay; shown on the quote apart from the network fee.
    */
-  clipFee?: { pct: number; amount: string; display: string; receivedBy: string };
-  /** Set when what you get arrives on another network than the one you pay on (shown: a mistake there loses money). */
+  clipFee?: { pct: number; amount: string; display: string; name: string; receivedBy: string };
+  /**
+   * Set when what you get arrives on another network than the one you pay on. The quote shows it in Advanced mode
+   * (it arrives in your own account either way); the review always shows it.
+   */
   arrivesOn?: { networkId: NetworkId; name: string };
 }
 
