@@ -6,6 +6,7 @@ export default {
   "approval.from": "من",
   "approval.yourBalance": "رصيدك",
   "approval.fee": "الرسوم",
+  "approval.networkFee": "رسوم الشبكة",
   "approval.feeCovered": "رسوم الشبكة مغطاة",
   "approval.ready": "جاهز",
   "approval.details": "التفاصيل",

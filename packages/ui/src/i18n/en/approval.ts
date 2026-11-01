@@ -6,6 +6,8 @@ export default {
   "approval.from": "From",
   "approval.yourBalance": "Your balance",
   "approval.fee": "Fee",
+  /** The same row when the request also carries a wallet's own fee ("Clip fee"), so the two can't be mixed up. */
+  "approval.networkFee": "Network fee",
   "approval.feeCovered": "network fee covered",
   "approval.ready": "Ready",
   "approval.details": "Details",

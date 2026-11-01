@@ -1,7 +1,7 @@
 import { HardwareApprovalGate } from "../hardware/HardwareApprovalGate";
 import { useHardwareOptional } from "../hardware/context";
 import { useId, useState } from "react";
-import { finalMsg, knownMsg, type BalanceChange } from "@clip-wallet/core";
+import { finalMsg, knownMsg, lineLabelMsg, type BalanceChange } from "@clip-wallet/core";
 import type { ApprovalView } from "../client";
 import { userMessageOf } from "../client";
 import { useUi } from "../context";
@@ -77,6 +77,8 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
   const funding = a.plan?.funding;
   // Messages and sign-ins move no money: no From/Fee/Ready rows for them.
   const movesMoney = d.balanceChanges.some((c) => c.delta.startsWith("-"));
+  // A swap with the wallet's own fee (SODAX's "Clip fee" line) calls the other one "Network fee", so the two can't be mixed up.
+  const walletFee = d.lines.some((l) => lineLabelMsg(l)?.id === "bg.label.walletFee");
   const blocked = (d.blind && !(advanced && blindOk)) || !!problem;
   const feeText =
     a.plan?.feeFiat !== undefined
@@ -122,7 +124,7 @@ export function TransactionApproval(props: { approval: ApprovalView; onDone?: (a
 
       <div className="clip-rows">
         {movesMoney && <Row label={t("approval.from")} value={funding ? t("settle.from", { provider: funding.provider }) : (a.plan?.source ?? t("approval.yourBalance"))} />}
-        {d.fee && <Row label={t("approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("approval.feeCovered") : undefined} />}
+        {d.fee && <Row label={t(walletFee ? "approval.networkFee" : "approval.fee")} value={feeText} hint={a.plan?.sponsored ? t("approval.feeCovered") : undefined} />}
         {(movesMoney || d.fee) && <Row label={t("approval.ready")} value={t(ready.id, ready)} />}
         {d.lines.map((l) => (
           <Row key={l.label} label={bg.label(l)} value={bg.value(l)} />

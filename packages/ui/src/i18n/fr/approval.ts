@@ -6,6 +6,7 @@ export default {
   "approval.from": "De",
   "approval.yourBalance": "Votre solde",
   "approval.fee": "Frais",
+  "approval.networkFee": "Frais de réseau",
   "approval.feeCovered": "frais de réseau pris en charge",
   "approval.ready": "Prêt",
   "approval.details": "Détails",

@@ -6,6 +6,7 @@ export default {
   "approval.from": "Kaynak",
   "approval.yourBalance": "Bakiyeniz",
   "approval.fee": "Ücret",
+  "approval.networkFee": "Ağ ücreti",
   "approval.feeCovered": "ağ ücreti karşılanıyor",
   "approval.ready": "Hazır",
   "approval.details": "Ayrıntılar",

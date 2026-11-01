@@ -6,6 +6,7 @@ export default {
   "approval.from": "किससे",
   "approval.yourBalance": "आपका बैलेंस",
   "approval.fee": "शुल्क",
+  "approval.networkFee": "नेटवर्क शुल्क",
   "approval.feeCovered": "नेटवर्क शुल्क कवर है",
   "approval.ready": "तैयार",
   "approval.details": "जानकारी",
