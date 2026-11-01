@@ -20,6 +20,11 @@ export default {
   "bg.swap.priceImpact": "This swap moves the price by {percent}. You'd get noticeably less than the market price. Try a smaller amount.",
   "bg.swap.valueLoss": "You'd get about {percent} less value than you put in.",
   "bg.swap.highSlippage": "You allow the price to move up to {percent} before the swap stops. That's high.",
+  // SODAX swaps: the wallet's own check before signing (docs/features/sodax-swaps.md). {name} is the wallet's name,
+  // except in feeTooHigh, where it is the fee's ("the 0.875% Clip fee")
+  "bg.swap.feeReceiverUnknown": "This swap would pay its fee to an address {name} hasn't reviewed, so it was stopped. Nothing was signed.",
+  "bg.swap.feeTooHigh": "This swap would charge more than the {percent} {name} fee, so it was stopped. Nothing was signed.",
+  "bg.swap.intentMismatch": "This swap doesn't match what you asked for, so {name} stopped it. Nothing was signed.",
   // route
   "bg.route.payOnWith": "Pay {amount} on {network} with {symbol} from {source}",
   "bg.route.getFor": "Get {receive} for {deposit}",

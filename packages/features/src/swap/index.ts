@@ -13,5 +13,26 @@ export { AvnuSwap, AVNU_API, checkAvnuRequest } from "./avnu.js";
 export { StonfiSwap, STONFI_API, checkStonfiRequest } from "./stonfi.js";
 export { StellarPathSwap } from "./stellar-path.js";
 export { TinymanSwap, TINYMAN_V2_VALIDATOR, tinymanPoolAddress, fixedInputSwap } from "./tinyman.js";
+export { SodaxSwap, sodaxTokens, type SodaxSwapOptions, type SodaxToken } from "./sodax.js";
+export {
+  SODAX_SPOKES,
+  SODAX_INTENTS,
+  checkSodaxSwap,
+  decodeSodaxSwap,
+  sodaxFeeData,
+  sodaxSwapTx,
+  type SodaxIntent,
+  type SodaxSpoke,
+  type SodaxSwapPlan,
+} from "./sodax-intent.js";
+export {
+  CLIP_FEE,
+  SODAX_FEE_RECEIVERS,
+  clipFeeOn,
+  isFeeReceiverAddress,
+  isReviewedFeeReceiver,
+  parseFeeReceivers,
+  withinClipFee,
+} from "./sodax-fee.js";
 export { crossNetworkQuote, type RouteQuoter } from "./cross.js";
 export { SwapService } from "./service.js";

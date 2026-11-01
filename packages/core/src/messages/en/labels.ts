@@ -129,4 +129,8 @@ export default {
   "bg.label.argumentN": "Argument {n}",
   "bg.label.youSend": "You send",
   "bg.label.appSaysNeeds": "The app says it needs",
+  // SODAX swaps (docs/features/sodax-swaps.md). walletFee is attached as labelMsg; {name} is the fee's owner ("Clip fee")
+  "bg.label.walletFee": "{name} fee",
+  "bg.label.feeGoesTo": "Fee goes to",
+  "bg.label.arrivesOn": "Arrives on",
 } as const;

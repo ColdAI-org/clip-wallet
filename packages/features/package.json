@@ -39,6 +39,12 @@
       "types": "./dist/messages.d.ts",
       "import": "./dist/messages.js",
       "default": "./dist/messages.js"
+    },
+    "./sodax-fee": {
+      "development": "./src/swap/sodax-fee.ts",
+      "types": "./dist/swap/sodax-fee.d.ts",
+      "import": "./dist/swap/sodax-fee.js",
+      "default": "./dist/swap/sodax-fee.js"
     }
   },
   "files": [
@@ -65,6 +71,11 @@
         "types": "./dist/messages.d.ts",
         "import": "./dist/messages.js",
         "default": "./dist/messages.js"
+      },
+      "./sodax-fee": {
+        "types": "./dist/swap/sodax-fee.d.ts",
+        "import": "./dist/swap/sodax-fee.js",
+        "default": "./dist/swap/sodax-fee.js"
       }
     }
   },

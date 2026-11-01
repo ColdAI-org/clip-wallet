@@ -100,13 +100,21 @@ export interface SwapQuoteView {
   /** Additive: `steps` as translatable Msgs (same order; undefined where a step has none). */
   stepMsgs?: (Msg | undefined)[];
   warnings: Warning[];
-  /** False for cross-network quotes in this build (quote only). */
+  /** False for CLPRouter cross-network quotes in this build (quote only). */
   executable: boolean;
   /** Plain reason when not executable. */
   note?: string;
   expiresAt: number;
   /** Advanced mode only. */
   networkId: NetworkId;
+  /**
+   * The Clip fee on this swap (SODAX, docs/features/sodax-swaps.md): percent of what you sell (0.875 = 0.875 %), in
+   * base units of the asset sold, "0.0875 USDC", and who receives it. Part of what you pay; shown on the quote apart
+   * from the network fee.
+   */
+  clipFee?: { pct: number; amount: string; display: string; receivedBy: string };
+  /** Set when what you get arrives on another network than the one you pay on (shown: a mistake there loses money). */
+  arrivesOn?: { networkId: NetworkId; name: string };
 }
 
 export interface SwapProviderStatus {

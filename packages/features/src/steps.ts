@@ -11,7 +11,8 @@ export interface Step {
   title: string;
   /** Additive: `title` as a translatable Msg. */
   titleMsg?: Msg;
-  lines?: { label: string; value: string }[];
+  /** labelMsg/valueMsg (additive): for labels with values ("{name} fee"), as on DecodedRequest lines. */
+  lines?: StepLine[];
   request: DappRequest | (() => Promise<DappRequest>);
   /**
    * Wallet-built transactions that touch a program/contract the chain module can't describe (Jupiter, 0x
@@ -23,10 +24,12 @@ export interface Step {
   finish?(result: unknown): Promise<unknown>;
 }
 
+export type StepLine = DecodedRequest["lines"][number];
+
 export interface Intent {
   title: string;
   titleMsg?: Msg;
-  lines: { label: string; value: string }[];
+  lines: StepLine[];
   verify?(request: DappRequest): boolean;
 }
 
