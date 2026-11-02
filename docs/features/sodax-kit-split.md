@@ -32,6 +32,10 @@ A SODAX swap can name one fee receiver:
 
 So the one receiver has to be a contract on Sonic that divides what it receives.
 
+A fee split on the ExClip server (`feeSplit`) is no substitute: the swap the wallet builds carries the Clip fee alone,
+and the wallet refuses a server that charges a fee of its own, plain or split
+([sodax-swaps.md](sodax-swaps.md#who-sees-what)).
+
 ## The contract
 
 A small, immutable splitter on Sonic:
@@ -106,6 +110,5 @@ Items the template's `MAINNET.md` would gain when this is built (not added now: 
 ## Open questions
 
 - The deal: a share of the 0.875 % or a fee on top, and the shares.
-- ColdAI LLC's address on Sonic, the same one the reviewed list will carry.
 - Who builds and audits the splitter and the factory, and whether SODAX has any limit on contracts as fee receivers.
 - Whether a kit wallet's review keeps the name "Clip fee" for ColdAI's part (this design assumes yes).
