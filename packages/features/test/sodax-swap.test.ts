@@ -37,6 +37,8 @@ const COLDAI = "0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313";
 const FAKE_RECEIVER = "0x00000000000000000000000000000000000fee01";
 const OTHER = "0x000000000000000000000000000000000000dead";
 const SERVER = "https://exclip.test";
+/** GET /api/exclip/config from a server set up for SODAX with no fee of its own (ExClip services/config.ts:108-133). */
+const FEE_FREE = { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 0, feeReceiver: null, feeSplit: null };
 const ARBITRUM: Network = {
   id: "eip155:42161",
   family: "evm",
@@ -93,7 +95,7 @@ function chains(over: { assetInfo?: Record<string, [bigint, string]> } = {}) {
 function server(over: { config?: unknown; quote?: unknown; submit?: (body: Record<string, unknown>) => unknown } = {}) {
   return mockFetch(
     [
-      [/^https:\/\/exclip\.test\/api\/exclip\/config$/, over.config ?? { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 0 }],
+      [/^https:\/\/exclip\.test\/api\/exclip\/config$/, over.config ?? FEE_FREE],
       [/^https:\/\/exclip\.test\/api\/exclip\/sodax\/swaps\/tokens$/, TOKENS],
       [/^https:\/\/exclip\.test\/api\/exclip\/sodax\/swaps\/quote$/, over.quote ?? { quotedAmount: "2500000000000000" }],
       [/^https:\/\/exclip\.test\/api\/exclip\/sodax\/swaps\/submit-tx$/, (_u: string, init?: RequestInit) => (over.submit ?? (() => ({ success: true, data: { status: "pending" } })))(JSON.parse(String(init?.body)))],
@@ -261,15 +263,40 @@ describe("SODAX availability (fails closed)", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("needs the server set up for it: SODAX on, trading on and no fee of its own", async () => {
-    for (const config of [
-      { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 10 },
-      { sodaxConfigured: true, tradingEnabled: false, partnerFeeBps: 0 },
-      { sodaxConfigured: false, tradingEnabled: true, partnerFeeBps: 0 },
-      {},
-    ]) {
+  it("needs the server set up for it: SODAX on and trading on", async () => {
+    for (const config of [{ ...FEE_FREE, tradingEnabled: false }, { ...FEE_FREE, sodaxConfigured: false }, {}]) {
       const { fetch } = server({ config });
-      await expect(sodax().quote(ask(), ctx(fetch))).rejects.toMatchObject({ code: "swap/server-not-ready" });
+      await expect(sodax().quote(ask(), ctx(fetch))).rejects.toMatchObject({ code: "swap/server-not-ready", userMessage: "Swapping isn't available right now." });
+    }
+  });
+
+  it("can't use a server that charges a fee of its own, plain or split", async () => {
+    // A split as ExClip publishes it (services/config.ts:108-133): partnerFeeBps 0 and feeReceiver null, the fee in feeSplit.
+    const split = { receiver: OTHER, totalRate: 975, platform: { name: "Platform", rate: 875 }, operator: { name: "Operator", rate: 100 }, stockFee: null };
+    for (const config of [
+      { ...FEE_FREE, partnerFeeBps: 25, feeReceiver: OTHER },
+      { ...FEE_FREE, partnerFeeBps: 25 },
+      { ...FEE_FREE, feeReceiver: OTHER },
+      { ...FEE_FREE, feeSplit: split },
+      { ...FEE_FREE, feeSplit: {} },
+      // A server that doesn't say it has no fee receiver.
+      { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 0 },
+      { sodaxConfigured: true, tradingEnabled: true, feeReceiver: null },
+    ]) {
+      const { fetch, calls } = server({ config });
+      await expect(sodax().quote(ask(), ctx(fetch)), JSON.stringify(config)).rejects.toMatchObject({
+        code: "swap/server-fee",
+        userMessage: "Swapping isn't available right now.",
+      });
+      // Refused before anything else is asked: no token list, no quote, nothing from Sonic.
+      expect(calls.map((c) => c.url)).toEqual([`${SERVER}/api/exclip/config`]);
+    }
+  });
+
+  it("uses a server with no fee of its own: partnerFeeBps 0, feeReceiver null and no feeSplit", async () => {
+    for (const config of [FEE_FREE, { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 0, feeReceiver: null }]) {
+      const { fetch } = server({ config });
+      await expect(sodax().quote(ask(), ctx(fetch)), JSON.stringify(config)).resolves.toMatchObject({ provider: "SODAX", buyAmount: "2500000000000000" });
     }
   });
 });
@@ -306,7 +333,7 @@ describe("SODAX quote and review", () => {
   it("stops when Sonic doesn't confirm a hub asset is the token you chose", async () => {
     const { fetch } = mockFetch(
       [
-        [/\/config$/, { sodaxConfigured: true, tradingEnabled: true, partnerFeeBps: 0 }],
+        [/\/config$/, FEE_FREE],
         [/\/swaps\/tokens$/, TOKENS],
       ],
       chains({ assetInfo: { [HUB_USDC]: [30n, OTHER] } }),
@@ -483,6 +510,20 @@ describe("SODAX through SwapService", () => {
     const { fetch } = server();
     const host = fakeHost({ networks: [BASE_MAINNET], assets: [usdc, ethOn(BASE_MAINNET)], balances: [{ asset: usdc, amount: "500000000" }], fetch });
     await expect(new SwapService(host, [sodax()]).quote({ sell: "usdc", buy: "eth", amount: "100" })).rejects.toMatchObject({ code: "swap/no-route" });
+  });
+
+  it("a server with a fee of its own stops the quote in the same words as one that isn't set up", async () => {
+    for (const [config, code] of [
+      [{ ...FEE_FREE, tradingEnabled: false }, "swap/server-not-ready"],
+      [{ ...FEE_FREE, partnerFeeBps: 25, feeReceiver: OTHER }, "swap/server-fee"],
+    ] as const) {
+      const { fetch } = server({ config });
+      const host = fakeHost({ networks: [BASE_MAINNET, ARBITRUM], assets: [usdc, eth], balances: [{ asset: usdc, amount: "500000000" }], fetch });
+      await expect(new SwapService(host, [sodax()]).quote({ sell: "usdc", buy: "eth", amount: "100" })).rejects.toMatchObject({
+        code,
+        userMessage: "Swapping isn't available right now.",
+      });
+    }
   });
 
   it("after the permission is in a block it queues the swap, then hands the sent swap to SODAX", async () => {
