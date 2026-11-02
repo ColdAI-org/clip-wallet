@@ -11,7 +11,8 @@ export interface Step {
   title: string;
   /** Additive: `title` as a translatable Msg. */
   titleMsg?: Msg;
-  lines?: { label: string; value: string }[];
+  /** labelMsg/valueMsg (additive): for labels with values ("{name} fee"), as on DecodedRequest lines. */
+  lines?: StepLine[];
   request: DappRequest | (() => Promise<DappRequest>);
   /**
    * Wallet-built transactions that touch a program/contract the chain module can't describe (Jupiter, 0x
@@ -19,15 +20,23 @@ export interface Step {
    * only then, and only with a successful simulation, does `refine` replace "unreadable" with the plain title.
    */
   verify?(request: DappRequest): boolean;
+  /**
+   * `verify` proves every line from the request's own bytes (SODAX checks them byte for byte against its plan), so
+   * the lines stay on a review that stays unreadable for want of a dry run: a fee shows wherever a person decides.
+   */
+  linesProven?: boolean;
   /** Runs after approval with the chain module's finalize() result (e.g. Jupiter /execute). */
   finish?(result: unknown): Promise<unknown>;
 }
 
+export type StepLine = DecodedRequest["lines"][number];
+
 export interface Intent {
   title: string;
   titleMsg?: Msg;
-  lines: { label: string; value: string }[];
+  lines: StepLine[];
   verify?(request: DappRequest): boolean;
+  linesProven?: boolean;
 }
 
 /** Wallet-built requests and what they mean. Keyed by object identity, so a dapp can't claim one. */
@@ -55,7 +64,8 @@ export function refineDecoded(request: DappRequest, decoded: DecodedRequest): De
   if (read.length && decoded.titleMsg) out.lines[intent.lines.length] = { ...read[0]!, valueMsg: decoded.titleMsg };
   if (decoded.blind) {
     const simulatedOk = decoded.simulated && !decoded.warnings.some((w) => w.code === "simulation-failed");
-    if (intent.verify?.(request) && simulatedOk) {
+    const verified = !!intent.verify?.(request);
+    if (verified && simulatedOk) {
       out.blind = false;
       out.warnings = decoded.warnings.filter((w) => w.code !== "blind-signing");
       const note: Warning = { level: "info", code: "blind-signing", message: "Clip Wallet built this and checked it with a dry run: the amounts shown are what the network says will move." };
@@ -64,7 +74,8 @@ export function refineDecoded(request: DappRequest, decoded: DecodedRequest): De
       out.title = decoded.title;
       if (decoded.titleMsg) out.titleMsg = decoded.titleMsg;
       else delete out.titleMsg;
-      out.lines = decoded.lines;
+      // Still unreadable: only lines `verify` proved from the bytes stay (SODAX's Clip fee), never mere claims.
+      out.lines = verified && intent.linesProven ? [...intent.lines, ...decoded.lines] : decoded.lines;
     }
   }
   return out;
@@ -80,7 +91,7 @@ export async function queueSteps(host: FeatureHost, steps: Step[], appName: stri
   const enqueue = async (i: number): Promise<string> => {
     const s = steps[i]!;
     const request = typeof s.request === "function" ? await s.request() : s.request;
-    registerIntent(request, { title: s.title, ...(s.titleMsg ? { titleMsg: s.titleMsg } : {}), lines: s.lines ?? [], verify: s.verify });
+    registerIntent(request, { title: s.title, ...(s.titleMsg ? { titleMsg: s.titleMsg } : {}), lines: s.lines ?? [], verify: s.verify, linesProven: s.linesProven });
     const { id, result } = await host.enqueue(request, { appName });
     result
       .then(async (r) => {

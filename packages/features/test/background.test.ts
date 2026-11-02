@@ -11,8 +11,9 @@ import { STELLAR_TESTNET } from "@clip-wallet/chains-stellar";
 import { ALGORAND_TESTNET } from "@clip-wallet/chains-algorand";
 import { describe, expect, it } from "vitest";
 import { FeaturesService } from "../src/background.js";
+import type { FeaturesConfig } from "../src/host.js";
 import { FeatureRequest } from "../src/messages.js";
-import { DEVNET, fakeHost, hbar, mockFetch, sol } from "./helpers.js";
+import { BASE_MAINNET, DEVNET, fakeHost, hbar, mockFetch, sol } from "./helpers.js";
 
 describe("FeaturesService (bus entry)", () => {
   const host = fakeHost({ networks: [HEDERA_TESTNET, DEVNET], assets: [hbar(), sol(DEVNET.id)], fetch: mockFetch([]).fetch });
@@ -44,6 +45,18 @@ describe("FeaturesService (bus entry)", () => {
     const overview = await svc2.handle({ type: "featStakingOverview" });
     expect(overview.map((a) => a.assetKey).sort()).toEqual(["ada", "apt", "gram", "near", "pas", "sui", "xtz"].sort());
     expect(overview.some((a) => a.unavailable?.code === "staking/coming-soon")).toBe(false);
+  });
+
+  it("offers SODAX only in a mainnet build that sets it up", async () => {
+    // Clearly fake: nobody holds this address.
+    const sodax = { serverUrl: "https://exclip.test", feeReceiver: "0x00000000000000000000000000000000000fee01", walletName: "Test Wallet" };
+    const main = fakeHost({ networks: [BASE_MAINNET], fetch: mockFetch([]).fetch });
+    const status = (config: FeaturesConfig) => new FeaturesService(main, config).handle({ type: "featSwapStatus" });
+    expect((await status({ testnet: false })).map((s) => s.id)).not.toContain("sodax");
+    expect((await status({ testnet: true, swap: { sodax } })).map((s) => s.id)).not.toContain("sodax");
+    // Set up in a mainnet build, it still stays off while its receiver isn't on the reviewed list (empty in the repo).
+    const on = (await status({ testnet: false, swap: { sodax } })).find((s) => s.id === "sodax");
+    expect(on?.unavailable?.code).toBe("swap/fee-receiver-not-allowed");
   });
 
   it("leaves dapp requests' decodes untouched", () => {

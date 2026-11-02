@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "कीमत देखें",
   "swap.amountBad": "25 या 0.5 जैसी राशि डालें।",
   "swap.expired": "इस कीमत की समय-सीमा खत्म हो गई। नई कीमत लें।",
+  "swap.fee": "{name} शुल्क",
+  "swap.feeHint": "यह आपके चुकाए जाने वाले {amount} का हिस्सा है और {receiver} को जाता है।",
+  "swap.networkFee": "नेटवर्क शुल्क",
+  "swap.networkFeeLater": "अलग से, मंज़ूर करने से पहले दिखाया जाता है",
+  "swap.arrivesOn": "पहुंचने का नेटवर्क",
 } satisfies Record<keyof typeof en, string>;

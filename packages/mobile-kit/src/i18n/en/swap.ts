@@ -18,4 +18,10 @@ export default {
   "m.swap.priceImpact": "Price impact",
   "m.swap.network": "Network",
   "m.swap.whatYouApprove": "What you'll approve",
+  // SODAX swaps (docs/features/sodax-swaps.md). {name} is the fee's owner ("Clip fee"); {receiver} who gets it.
+  "m.swap.fee": "{name} fee",
+  "m.swap.feeHint": "Part of the {amount} you pay. It goes to {receiver}.",
+  "m.swap.networkFee": "Network fee",
+  "m.swap.networkFeeLater": "Paid on top, shown before you approve",
+  "m.swap.arrivesOn": "Arrives on",
 } satisfies Record<`m.swap.${string}`, string>;

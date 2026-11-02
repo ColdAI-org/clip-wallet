@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "価格を取得",
   "swap.amountBad": "25 や 0.5 のように数量を入力してください。",
   "swap.expired": "この価格は期限切れです。新しい価格を取得してください。",
+  "swap.fee": "{name}の手数料",
+  "swap.feeHint": "支払う {amount} に含まれ、{receiver} に支払われます。",
+  "swap.networkFee": "ネットワーク手数料",
+  "swap.networkFeeLater": "別途必要、承認前に表示されます",
+  "swap.arrivesOn": "受取ネットワーク",
 } satisfies Record<keyof typeof en, string>;

@@ -6,6 +6,7 @@ export default {
   "approval.from": "リクエスト元",
   "approval.yourBalance": "あなたの残高",
   "approval.fee": "手数料",
+  "approval.networkFee": "ネットワーク手数料",
   "approval.feeCovered": "ネットワーク手数料は負担済み",
   "approval.ready": "準備完了",
   "approval.details": "詳細",

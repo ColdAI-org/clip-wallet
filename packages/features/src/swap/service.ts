@@ -10,8 +10,9 @@ const QUOTE_TTL_MS = 60_000;
 
 /**
  * Swaps in assets, not networks: "Swap 100 USDC for ETH". The service picks the network where you hold the
- * asset you sell and where a provider can swap it; if the two assets never share a network you hold on,
- * it asks CLPRouter for a cross-network quote (quote only for now).
+ * asset you sell and where a provider can swap it; if no shared network works, a cross-network provider (SODAX,
+ * docs/features/sodax-swaps.md) swaps it into another network, and failing that it asks CLPRouter for a
+ * cross-network quote (quote only for now).
  */
 export class SwapService {
   private quotes = new Map<string, { quote: SwapQuote; provider: SwapProvider; at: number }>();
@@ -45,21 +46,23 @@ export class SwapService {
     if (p.sell === p.buy) throw new ClipError("Pick two different assets.", "swap/same-asset");
     const slippageBps = clampSlippage(p.slippageBps, this.opts.defaultSlippageBps ?? DEFAULT_SLIPPAGE_BPS);
     const balances = await this.host.balances();
-    const held = (networkId: string) =>
-      balances.filter((b) => b.asset.key === p.sell && b.asset.networkId === networkId).reduce((t, b) => t + BigInt(b.amount), 0n);
+    const holding = (key: string) => (networkId: string) =>
+      balances.filter((b) => b.asset.key === key && b.asset.networkId === networkId).reduce((t, b) => t + BigInt(b.amount), 0n);
+    const held = holding(p.sell);
+    const most = (amount: (networkId: string) => bigint) => (a: Network, b: Network) => (amount(b.id) > amount(a.id) ? 1 : amount(b.id) < amount(a.id) ? -1 : 0);
 
     // Networks carrying both assets, most of the sell asset first.
     const shared = this.host
       .networks()
       .filter((n) => this.assetOn(p.sell, n.id) && this.assetOn(p.buy, n.id))
-      .sort((a, b) => (held(b.id) > held(a.id) ? 1 : held(b.id) < held(a.id) ? -1 : 0));
+      .sort(most(held));
 
     let lastUnavailable: string | undefined;
     let lastError: unknown;
     for (const n of shared) {
       const provider = this.providerFor(n);
       if (!provider) {
-        lastUnavailable = this.providers.filter((x) => x.family === n.family).map((x) => x.availability(n)?.message).find(Boolean) ?? lastUnavailable;
+        lastUnavailable = this.providers.filter((x) => !x.crossNetwork && x.family === n.family).map((x) => x.availability(n)?.message).find(Boolean) ?? lastUnavailable;
         continue;
       }
       const sell = this.assetOn(p.sell, n.id)!;
@@ -79,7 +82,30 @@ export class SwapService {
       }
     }
 
-    // No shared network that works: cross-network, quote only.
+    // No shared network that works: a provider that swaps between networks (SODAX), paying where you hold the most
+    // of what you sell, into the network where you hold the most of what you buy (else the first that carries it).
+    for (const from of this.host.networks().filter((n) => this.assetOn(p.sell, n.id) && held(n.id) > 0n).sort(most(held))) {
+      const provider = this.providers.find((x) => x.crossNetwork && x.family === from.family && x.availability(from) === null);
+      const to = provider && this.host.networks().filter((n) => n.id !== from.id && this.assetOn(p.buy, n.id) && provider.availability(n) === null).sort(most(holding(p.buy)))[0];
+      if (!provider || !to) continue;
+      const sell = this.assetOn(p.sell, from.id)!;
+      const amount = parseUnits(p.amount, sell.decimals);
+      if (amount <= 0n) throw new ClipError("Enter an amount above zero.", "swap/bad-amount");
+      if (held(from.id) < amount) {
+        lastError = new ClipError(msg("bg.err.notEnoughForSwap", { symbol: sell.symbol }), "swap/insufficient");
+        continue;
+      }
+      try {
+        const [ctx, there] = await Promise.all([this.host.ctx(from.id), this.host.ctx(to.id)]);
+        const destination = { network: to, address: there.account.address };
+        const quote = await provider.quote({ sell, buy: this.assetOn(p.buy, to.id)!, amount: amount.toString(), slippageBps, destination }, ctx);
+        return this.remember(quote, provider);
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    // Still nothing: CLPRouter, quote only.
     const route = this.opts.route;
     if (route) {
       const from = this.host.networks().filter((n) => this.assetOn(p.sell, n.id) && held(n.id) > 0n).sort((a, b) => (held(b.id) > held(a.id) ? 1 : -1))[0];
@@ -99,7 +125,7 @@ export class SwapService {
   }
 
   private providerFor(n: Network): SwapProvider | undefined {
-    return this.providers.find((p) => p.family === n.family && p.availability(n) === null);
+    return this.providers.find((p) => !p.crossNetwork && p.family === n.family && p.availability(n) === null);
   }
 
   private remember(quote: SwapQuote, provider: SwapProvider): SwapQuoteView {
@@ -139,13 +165,16 @@ export class SwapService {
     if (q.approval) stepMsgs.push(msg("bg.req.allowUseExactly", { spender: q.approval.spenderName, amount: `${formatUnits(q.approval.amount, q.sell.decimals)} ${q.sell.symbol}` }));
     stepMsgs.push(msg("bg.swap.swapStep"));
     const steps = stepMsgs.map((m) => m.fallback);
+    const min = `${formatUnits(q.minBuyAmount, q.buy.decimals)} ${q.buy.symbol}`;
+    const there = q.buy.networkId !== q.networkId ? this.host.networks().find((n) => n.id === q.buy.networkId) : undefined;
     const v: SwapQuoteView = {
       id,
       provider: q.provider,
       sell: { assetKey: q.sell.key, symbol: q.sell.symbol, amount: q.sellAmount, display: `${formatUnits(q.sellAmount, q.sell.decimals)} ${q.sell.symbol}` },
       buy: { assetKey: q.buy.key, symbol: q.buy.symbol, amount: q.buyAmount, display: got },
       youGet: `You get ~${got}`,
-      atLeast: `At least ${formatUnits(q.minBuyAmount, q.buy.decimals)} ${q.buy.symbol}, or nothing happens`,
+      // A cross-network order has left your account once it's sent: unfilled, it waits to be cancelled (docs/features/sodax-swaps.md).
+      atLeast: there ? `At least ${min}, or the order isn't filled` : `At least ${min}, or nothing happens`,
       slippageBps: q.slippageBps,
       route: `Via ${q.route.join(" → ")}`,
       steps,
@@ -156,6 +185,11 @@ export class SwapService {
       networkId: q.networkId,
     };
     if (q.priceImpactPct !== undefined) v.priceImpactPct = q.priceImpactPct;
+    if (q.clipFee) {
+      const { pct, amount, name, receivedBy } = q.clipFee;
+      v.clipFee = { pct, amount, display: `${formatUnits(amount, q.sell.decimals)} ${q.sell.symbol}`, name, receivedBy };
+    }
+    if (there) v.arrivesOn = { networkId: there.id, name: there.name };
     return v;
   }
 

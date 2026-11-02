@@ -30,6 +30,7 @@ import {
   RefFinanceSwap,
   SaucerSwap,
   SiriusSwap,
+  SodaxSwap,
   StellarPathSwap,
   StonfiSwap,
   SwapService,
@@ -65,6 +66,8 @@ export class FeaturesService {
       new AptosStaking(),
       new TonStaking(),
     ]);
+    // SODAX has no test networks, so it exists only in a mainnet build that sets it up (docs/features/sodax-swaps.md).
+    const sodax = config.swap?.sodax;
     // Order matters within a family: the first available provider quotes (Minswap before DexHunter).
     this.swaps = new SwapService(
       host,
@@ -83,6 +86,8 @@ export class FeaturesService {
         new StonfiSwap(),
         new StellarPathSwap(),
         new TinymanSwap(),
+        // Cross-network only: asked when no same-network provider can do the swap.
+        ...(sodax && !config.testnet ? [new SodaxSwap({ ...sodax, testnet: config.testnet, kv: host.kv })] : []),
       ],
       { route: deps.route, defaultSlippageBps: config.swap?.defaultSlippageBps },
     );

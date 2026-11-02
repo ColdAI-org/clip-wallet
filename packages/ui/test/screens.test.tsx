@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TransactionApproval, ConnectApproval } from "../src/screens/Approval";
 import { Home } from "../src/screens/Home";
@@ -333,6 +333,55 @@ describe("WalletApp onboarding", () => {
     await user.click(screen.getByRole("button", { name: "Create wallet" }));
     expect(await screen.findByRole("heading", { name: "Your recovery phrase" })).toBeInTheDocument();
   });
+
+  it("goes home as it finishes, so a tap made while the state refreshes isn't undone", async () => {
+    const user = userEvent.setup();
+    let status: "empty" | "unlocked" = "empty";
+    let notify: () => void = () => undefined;
+    // The refresh after "Open my wallet" waits until the test lets it through.
+    let hold: Promise<void> | undefined;
+    let refreshed = false;
+    const client = fakeClient({
+      getState: vi.fn(async () => {
+        const held = hold;
+        await held;
+        if (held) refreshed = true;
+        return state({ status });
+      }),
+      createWallet: vi.fn(async () => {
+        status = "unlocked";
+        notify();
+      }),
+      onChange: (cb) => {
+        notify = cb;
+        return () => undefined;
+      },
+    });
+    // On its own, as the extension renders it: one provider, which hears the vault unlock.
+    render(<WalletApp client={client} memoryRouter />);
+    await user.click(await screen.findByRole("button", { name: "Create a new wallet" }));
+    await user.type(screen.getByLabelText("Password"), "correct horse battery staple");
+    await user.type(screen.getByLabelText("Type it again"), "correct horse battery staple");
+    await user.click(screen.getByRole("button", { name: "Create wallet" }));
+    await user.click(await screen.findByRole("button", { name: "Show my phrase" }));
+    await user.click(screen.getByRole("checkbox", { name: "I wrote these words down" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    // The fake client's phrase; the check asks for three of its words at random.
+    for (const [i, word] of "alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo lima".split(" ").entries()) {
+      const field = screen.queryByLabelText(`Word #${i + 1}`);
+      if (field) await user.type(field, word);
+    }
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await user.click(await screen.findByRole("button", { name: "Not now" }));
+    let release: () => void = () => undefined;
+    hold = new Promise((r) => (release = r));
+    await user.click(await screen.findByRole("button", { name: "Open my wallet" }));
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    release();
+    await waitFor(() => expect(refreshed).toBe(true));
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+  });
 });
 
 describe("Approval plan problems", () => {
@@ -351,6 +400,35 @@ describe("Message signing", () => {
     expect(screen.queryByText("From")).not.toBeInTheDocument();
     expect(screen.queryByText("Fee")).not.toBeInTheDocument();
     expect(screen.queryByText("Ready")).not.toBeInTheDocument();
+  });
+});
+
+describe("Swap with the Clip fee (SODAX)", () => {
+  // The swap step's lines as the features background sends them (packages/features/src/swap/sodax.ts).
+  const lines = [
+    { label: "Clip fee", labelMsg: { id: "bg.label.walletFee", values: { name: "Clip" }, fallback: "Clip fee" }, value: "0.875% · 0.875 USDC" },
+    { label: "Fee goes to", value: "ColdAI LLC, 0x00000000000000000000000000000000000fEe01" },
+    { label: "You get at least", value: "0.002487 ETH" },
+    { label: "Arrives on", value: "Arbitrum One" },
+  ];
+
+  it("shows the Clip fee, who gets it and where it arrives, and calls the other fee the network fee", () => {
+    const base = payApproval({}, { title: "Swap 100 USDC for ~0.0025 ETH", lines });
+    renderUi(<TransactionApproval approval={{ ...base, plan: { ...base.plan!, sponsored: false, feeFiat: 0.12 } }} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Swap 100 USDC for ~0.0025 ETH" })).toBeInTheDocument();
+    const row = (label: string) => screen.getByText(label).closest(".clip-row") as HTMLElement;
+    expect(row("Clip fee")).toHaveTextContent("0.875% · 0.875 USDC");
+    expect(row("Fee goes to")).toHaveTextContent("ColdAI LLC, 0x00000000000000000000000000000000000fEe01");
+    expect(row("Arrives on")).toHaveTextContent("Arbitrum One");
+    expect(row("Network fee")).toHaveTextContent("$0.12");
+    // Two fees, two names: no bare "Fee" row to mix them up.
+    expect(screen.queryByText("Fee")).not.toBeInTheDocument();
+  });
+
+  it("keeps the plain Fee label when the request carries no wallet fee", () => {
+    renderUi(<TransactionApproval approval={payApproval({}, { lines: lines.slice(1) })} />);
+    expect(screen.getByText("Fee")).toBeInTheDocument();
+    expect(screen.queryByText("Network fee")).not.toBeInTheDocument();
   });
 });
 

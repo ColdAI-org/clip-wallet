@@ -9,8 +9,8 @@
  *
  * Identity (name, icon, rdns, extension key, WalletConnect project id) comes from clip.config.ts and the build
  * environment. What it does not take is a way to lower the security floor: the open phishing lists are always on
- * (Blockaid only when CLIP_BLOCKAID_API_KEY is set), and a mainnet build is refused until mainnetProblems() is empty and
- * every box in the project's MAINNET.md is ticked.
+ * (Blockaid only when CLIP_BLOCKAID_API_KEY is set), and a mainnet build is refused until mainnetProblems() is empty,
+ * a SODAX fee receiver it is given is on the reviewed list, and every box in the project's MAINNET.md is ticked.
  * Runs in Node (WXT loads it); nothing here reaches the browser except the values it defines.
  *
  * @module
@@ -20,6 +20,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import {
   ConfigError,
+  SODAX_FEE_RECEIVER_ENV,
+  SODAX_SERVER_ENV,
   WALLETCONNECT_ENV,
   defineConfig as defineClipConfig,
   isMainnetEnabled,
@@ -31,6 +33,7 @@ import {
 } from "@clip-wallet/config";
 import { createTonModule } from "@clip-wallet/chains-ton";
 import { walletNetworks } from "@clip-wallet/engine/catalog";
+import { isReviewedFeeReceiver } from "@clip-wallet/features/sodax-fee";
 import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
 import { SETTLE_DEPLOYMENTS } from "@clip-wallet/route";
 import { assertSecurityFloor, type SecurityConfig } from "@clip-wallet/security";
@@ -115,10 +118,41 @@ export function resolveConfig(config: ClipConfig, env: Record<string, string | u
   const projectId = config.walletConnect.projectId ?? (env[WALLETCONNECT_ENV] || undefined);
   const resolved = defineClipConfig({ ...(config as ClipConfigInput), walletConnect: projectId ? { projectId } : {} });
   if (isMainnetEnabled(resolved)) {
-    const problems = [...mainnetProblems(resolved, env), ...(root ? openChecklistItems(root) : [])];
+    const problems = [...mainnetProblems(resolved, env), ...sodaxProblems(env), ...(root ? openChecklistItems(root) : [])];
     if (problems.length) throw new ConfigError(problems.map((p) => `mainnet checklist: ${p}`));
   }
   return resolved;
+}
+
+/** SODAX swaps as the features background takes them (FeaturesConfig.swap.sodax). */
+export interface SodaxBuild {
+  serverUrl: string;
+  feeReceiver: string;
+  walletName: string;
+}
+
+/**
+ * SODAX swaps for this build (docs/features/sodax-swaps.md): the ExClip server that quotes them and the address the
+ * 0.875% Clip fee goes to, both from the build environment, with no defaults. Mainnet builds only (SODAX has no test
+ * networks). Without both, or in a testnet build, the wallet offers no SODAX swaps at all.
+ */
+export function sodaxFor(config: ClipConfig, env: Record<string, string | undefined>): SodaxBuild | undefined {
+  const serverUrl = env[SODAX_SERVER_ENV] || undefined;
+  const feeReceiver = env[SODAX_FEE_RECEIVER_ENV] || undefined;
+  if (!isMainnetEnabled(config) || !serverUrl || !feeReceiver) return undefined;
+  return { serverUrl, feeReceiver, walletName: config.name };
+}
+
+/**
+ * The mainnet checklist's SODAX item that needs @clip-wallet/features: the fee receiver is on the reviewed list
+ * (src/swap/sodax-fee-receivers.json). mainnetProblems() covers the rest (both set, the server over https, an address).
+ */
+export function sodaxProblems(env: Record<string, string | undefined>): string[] {
+  const receiver = env[SODAX_FEE_RECEIVER_ENV];
+  if (!receiver || !/^0x[0-9a-fA-F]{40}$/.test(receiver) || isReviewedFeeReceiver(receiver)) return [];
+  return [
+    `${SODAX_FEE_RECEIVER_ENV}: ${receiver} isn't on the reviewed list of fee receivers (@clip-wallet/features src/swap/sodax-fee-receivers.json); add it there in a reviewed commit, or unset both SODAX settings`,
+  ];
 }
 
 /**
@@ -158,10 +192,11 @@ export function clipWallet(options: ClipWalletOptions): UserConfig {
   const publicNetworks = walletNetworks(config).map((n) => ({ ...n, rpcUrls: n.rpcUrls.slice(0, 1) }));
   /** TON Connect JS bridge (window[key].tonconnect). key/appName must match the wallets-list entry (create-clip-wallet listings). */
   const tonConnect = { key, appName: key, appVersion: version, features: createTonModule().features };
+  const sodax = sodaxFor(config, env);
   /** Feature partner keys from the build environment. Absent = that provider shows as "not switched on". */
   const features = {
     testnet,
-    swap: { zeroExApiKey: env.CLIP_0X_API_KEY || undefined, jupiterApiKey: env.CLIP_JUPITER_API_KEY || undefined },
+    swap: { zeroExApiKey: env.CLIP_0X_API_KEY || undefined, jupiterApiKey: env.CLIP_JUPITER_API_KEY || undefined, ...(sodax ? { sodax } : {}) },
     onramp: {
       moonpay: env.CLIP_MOONPAY_API_KEY && env.CLIP_MOONPAY_SIGNER_URL ? { apiKey: env.CLIP_MOONPAY_API_KEY, signerUrl: env.CLIP_MOONPAY_SIGNER_URL } : undefined,
       banxa: env.CLIP_BANXA_PARTNER ? { partner: env.CLIP_BANXA_PARTNER } : undefined,
@@ -225,6 +260,9 @@ export function clipWallet(options: ClipWalletOptions): UserConfig {
           ...(plugins ? ["https://registry.npmjs.org/*"] : []),
           // Blockaid scanning, only in builds that set a key.
           ...(security.threat?.blockaid ? ["https://api.blockaid.io/*"] : []),
+          // SODAX swaps, only in mainnet builds that set them up: the ExClip server (it sends no CORS headers) and
+          // Sonic's RPC (SODAX's hub: your hub wallet and its assets are read there).
+          ...(sodax ? [`${new URL(sodax.serverUrl).origin}/*`, "https://rpc.soniclabs.com/*"] : []),
           // Settle on Hedera (testnet builds with route.settleOnHedera): the Connectors' quote APIs.
           ...(config.route.settleOnHedera && testnet
             ? SETTLE_DEPLOYMENTS.filter((d) => d.network === "testnet").flatMap((d) => d.connectors.map((c) => `${new URL(c.url).origin}/*`))

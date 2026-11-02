@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "Preiseinfluss",
   "m.swap.network": "Netzwerk",
   "m.swap.whatYouApprove": "Was du genehmigst",
+  "m.swap.fee": "Gebühr von {name}",
+  "m.swap.feeHint": "Ist in den {amount} enthalten, die du zahlst, und geht an {receiver}.",
+  "m.swap.networkFee": "Netzwerkgebühr",
+  "m.swap.networkFeeLater": "Kommt dazu, wird vor dem Genehmigen angezeigt",
+  "m.swap.arrivesOn": "Ankunft in",
 } satisfies Record<keyof typeof en, string>;

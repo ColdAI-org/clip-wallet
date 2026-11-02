@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "获取价格",
   "swap.amountBad": "请输入金额，例如 25 或 0.5。",
   "swap.expired": "此报价已过期。请重新获取。",
+  "swap.fee": "{name} 手续费",
+  "swap.feeHint": "包含在你支付的 {amount} 中，付给 {receiver}。",
+  "swap.networkFee": "网络手续费",
+  "swap.networkFeeLater": "另行支付，批准前会显示",
+  "swap.arrivesOn": "到账网络",
 } satisfies Record<keyof typeof en, string>;

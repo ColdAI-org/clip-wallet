@@ -155,13 +155,19 @@ export function Card(props: { children: ReactNode; style?: ViewStyle }) {
   return <View style={[{ backgroundColor: theme.c.surface, borderRadius: theme.r.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.c.border, padding: theme.s(4), gap: theme.s(3) }, props.style]}>{props.children}</View>;
 }
 
-export function Row(props: { label: ReactNode; value: ReactNode; hint?: ReactNode; testID?: string }) {
+/** `hintTone="strong"`: a hint someone decides on (who gets a fee), in AA text instead of the muted hint colour. */
+export function Row(props: { label: ReactNode; value: ReactNode; hint?: ReactNode; hintTone?: "strong"; testID?: string }) {
+  const { theme } = useWallet();
   return (
     <View testID={props.testID} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12, paddingVertical: 6 }}>
       {typeof props.label === "string" ? <T v="label">{props.label}</T> : props.label}
       <View style={{ alignItems: "flex-end", flexShrink: 1 }}>
         {typeof props.value === "string" ? <T style={{ textAlign: "right", fontSize: 15 }}>{props.value}</T> : props.value}
-        {props.hint ? <T v="hint">{props.hint}</T> : null}
+        {props.hint ? (
+          <T v="hint" color={props.hintTone === "strong" ? theme.c.text2 : undefined}>
+            {props.hint}
+          </T>
+        ) : null}
       </View>
     </View>
   );

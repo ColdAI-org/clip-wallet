@@ -78,6 +78,11 @@ mistake loses money. One example is an address that can receive on several netwo
   balances.
 - **Settle on Hedera.** When an app asks for money you hold on another network, a bonded Connector pays it for you.
   CLPR proves both sides to an order book on Hedera. If the payment doesn't arrive, the Connector's bond pays you back.
+- **Swaps between networks, fee in plain sight.** Mainnet builds that set it up (not this testnet preview) swap an
+  asset on one EVM network for an asset on another through SODAX. Each of these swaps carries the **Clip fee: 0.875 %
+  of the amount you sell, paid to ColdAI LLC**. The quote and the review show it before you sign, and the wallet won't
+  sign a swap that charges more or pays anyone else. Swaps within one network carry no Clip fee
+  ([how it works](docs/features/sodax-swaps.md)).
 - **Passkeys and hardware wallets.** Passkey unlock (WebAuthn PRF), an optional passkey backup the server can't open,
   Face ID and fingerprint unlock on mobile, Ledger and Keystone.
 - **An open kit for your own wallet.** `npx create-clip-wallet` or the Scaffold-HBAR template gives you a branded

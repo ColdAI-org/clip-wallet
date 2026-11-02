@@ -5,8 +5,9 @@
 
 # Clip Wallet privacy policy
 
-*Draft of 2026-10-05. Applies to the Clip Wallet browser extension, the Clip Wallet mobile app (iOS and
-Android), and the two optional ColdAI services they use: the passkey backup service and the media proxy.*
+*Draft of 2026-10-05; swaps between networks added 2026-11-02. Applies to the Clip Wallet browser extension, the
+Clip Wallet mobile app (iOS and Android), and the two optional ColdAI services they use: the passkey backup service
+and the media proxy.*
 
 ## The short version
 
@@ -56,13 +57,16 @@ endpoints is in the source (`packages/chains-*/src/networks.ts`, `packages/featu
 | Scam lists | GitHub (`raw.githubusercontent.com`): MetaMask phishing list, ScamSniffer, Phantom blocklist, polkadot-js phishing list | Nothing about you: the lists are downloaded and checked on your device | About once a day |
 | Advanced scam scanning (optional) | Blockaid | The site you are connecting to, the request, your address | Only in builds made with a Blockaid key (the testnet build has none), before you approve |
 | Swaps, staking, buying | The provider you pick: 0x, Jupiter, Minswap, Aftermath, Hyperion, AVNU, STON.fi, Ref Finance; MoonPay, Banxa, C14 for buying | Your address, the assets and amounts | Only when you ask for a quote or start a purchase. Buying opens the provider's own page, where their terms and identity checks apply. |
+| Swaps between networks (SODAX) | The swap server the build names (ExClip, run by [who runs it]), which passes requests on to SODAX; Sonic's public RPC (`rpc.soniclabs.com`, run by Sonic Labs) | Swap server and SODAX: the two assets, their networks and the amount, for a price; after you send a swap, your address on both networks and the transaction you sent. Sonic RPC: your address, to find your SODAX account there, and the assets being swapped | Only in builds that offer these swaps (mainnet builds that set them up; not the testnet build): when you ask for a price between networks, and when you send that swap |
 | Connecting to apps | The website or app you approve, and WalletConnect's relay (Reown) when you pair with a code | The address(es) you choose to share, and requests you approve | Only after you approve a connection |
 | Hardware wallets | Ledger (USB/Bluetooth) or Keystone (QR), locally | Transactions to sign | When you use one; nothing goes to the internet |
 | Clip Plugins (extension, Advanced mode, off by default) | The npm registry, then only the up-to-three https origins a plugin was granted | The plugin's name (download); whatever the plugin requests from its origins, via the wallet, GET only | Only if you install a plugin |
 | Firefox / Chrome / Edge stores, Apple App Store, Google Play | The store you installed from | What the store collects under its own policy | Installing and updating |
 
-We do not receive any of this traffic. Blockchains are public: anything you send on-chain, including your
-address and amounts, is visible to everyone, permanently.
+We do not receive any of this traffic. [If ColdAI runs the ExClip swap server, say here what it receives and
+keeps, and describe it under "ColdAI services".] Blockchains are public: anything you send on-chain, including
+your address and amounts, is visible to everyone, permanently. That includes the Clip fee on swaps between
+networks (terms of use, section 4), which is paid to ColdAI LLC's address on Sonic as part of the swap.
 
 ## ColdAI services
 
@@ -104,7 +108,7 @@ addresses) to operate and protect its network under its own terms: [link to Clou
 [To confirm with counsel.] Passkey backup: your consent and the performance of the service you asked for
 (Art. 6(1)(a)/(b)). Media proxy and rate limiting: our legitimate interest in protecting your privacy and the
 service from abuse (Art. 6(1)(f)). Third-party services in the table above are contacted by your device at your
-request; ColdAI does not receive that data.
+request; ColdAI does not receive that data. [Revisit if ColdAI runs the ExClip swap server.]
 
 ## Your choices and rights
 

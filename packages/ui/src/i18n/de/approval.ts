@@ -6,6 +6,7 @@ export default {
   "approval.from": "Von",
   "approval.yourBalance": "Dein Guthaben",
   "approval.fee": "Gebühr",
+  "approval.networkFee": "Netzwerkgebühr",
   "approval.feeCovered": "Netzwerkgebühr übernommen",
   "approval.ready": "Bereit",
   "approval.details": "Details",

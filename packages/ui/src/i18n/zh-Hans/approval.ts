@@ -6,6 +6,7 @@ export default {
   "approval.from": "来自",
   "approval.yourBalance": "你的余额",
   "approval.fee": "手续费",
+  "approval.networkFee": "网络手续费",
   "approval.feeCovered": "网络手续费已代付",
   "approval.ready": "完成时间",
   "approval.details": "详情",

@@ -20,4 +20,9 @@ export default {
   "swap.getPrice": "가격 확인",
   "swap.amountBad": "25 또는 0.5처럼 수량을 입력하세요.",
   "swap.expired": "가격이 만료됐어요. 새 가격을 받아 오세요.",
+  "swap.fee": "{name} 수수료",
+  "swap.feeHint": "지불하는 {amount}에 포함되며 {receiver}에 지급됩니다.",
+  "swap.networkFee": "네트워크 수수료",
+  "swap.networkFeeLater": "별도, 승인 전에 표시됩니다",
+  "swap.arrivesOn": "도착 네트워크",
 } satisfies Record<keyof typeof en, string>;

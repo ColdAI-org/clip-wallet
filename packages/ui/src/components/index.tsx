@@ -101,13 +101,14 @@ export function Card(props: { children: ReactNode; className?: string }) {
   return <section className={`clip-card ${props.className ?? ""}`}>{props.children}</section>;
 }
 
-export function Row(props: { label: ReactNode; value: ReactNode; hint?: ReactNode }) {
+/** `hintTone="strong"`: a hint someone decides on (who gets a fee), in AA text instead of the muted hint colour. */
+export function Row(props: { label: ReactNode; value: ReactNode; hint?: ReactNode; hintTone?: "strong" }) {
   return (
     <div className="clip-row">
       <span className="clip-row__label">{props.label}</span>
       <span className="clip-row__value">
         {props.value}
-        {props.hint && <span className="clip-row__hint">{props.hint}</span>}
+        {props.hint && <span className={props.hintTone ? `clip-row__hint clip-row__hint--${props.hintTone}` : "clip-row__hint"}>{props.hint}</span>}
       </span>
     </div>
   );

@@ -5,7 +5,8 @@
  *   export default defineConfig({ name: "My Wallet", rdns: "com.example.wallet", theme: { accent: "#4F46E5" } });
  *
  * Everything but `name` and `rdns` has a default. Testnet by default: mainnet needs an explicit checklist object, and
- * a mainnet build also needs everything `mainnetProblems` asks for (own rdns, homepage, extension key, WalletConnect id).
+ * a mainnet build also needs everything `mainnetProblems` asks for (own rdns, homepage, extension key, WalletConnect id,
+ * and both SODAX swap settings when a build turns SODAX swaps on).
  * Validation errors are plain sentences, one per problem, prefixed with the setting they are about.
  *
  * @module
@@ -17,6 +18,13 @@ export const MAINNET_ACKNOWLEDGEMENT =
   "I have completed the mainnet checklist: the vault and CLPRouter contracts are audited, pnpm harness passes, and real funds are at risk.";
 
 export const WALLETCONNECT_ENV = "CLIP_WALLETCONNECT_PROJECT_ID";
+
+/**
+ * SODAX swaps (docs/features/sodax-swaps.md), from the build environment only, with no defaults: the ExClip server that
+ * quotes them, and the address the 0.875% Clip fee goes to. A build without both offers no SODAX swaps.
+ */
+export const SODAX_SERVER_ENV = "CLIP_SODAX_SERVER_URL";
+export const SODAX_FEE_RECEIVER_ENV = "CLIP_SODAX_FEE_RECEIVER";
 
 /** Same order as @clip-wallet/core FAMILIES (config has no runtime dependency on core). */
 export const NETWORK_FAMILIES = [
@@ -281,7 +289,9 @@ export const clipConfigSchema = z
       .default({}),
     /**
      * Reserved for Clip Cloud's hosted mode. Accepted so a hosted config validates here too; the open-source kit never
-     * collects fees or reports usage, whatever these say. Default: off.
+     * acts on them: it collects no fee and reports no usage through them, whatever they say. Default: off. (The kit's
+     * one fee is the disclosed Clip fee on SODAX swaps, which only a build that sets SODAX_SERVER_ENV and
+     * SODAX_FEE_RECEIVER_ENV charges: docs/features/sodax-swaps.md.)
      */
     fees: hostedSwitch(),
     usage: hostedSwitch(),
@@ -386,7 +396,7 @@ export function isPlaceholderRdns(rdns: string): boolean {
 /**
  * What still stands between this config and a mainnet build, in plain words (empty = nothing). The extension build
  * refuses mainnet while any remain; `mainnet` itself must also carry MAINNET_ACKNOWLEDGEMENT (the schema checks it).
- * `env` is the build environment, for the WalletConnect project id.
+ * `env` is the build environment, for the WalletConnect project id and the SODAX swap settings.
  */
 export function mainnetProblems(config: ClipConfig, env: Record<string, string | undefined> = {}): string[] {
   const out: string[] = [];
@@ -396,6 +406,18 @@ export function mainnetProblems(config: ClipConfig, env: Record<string, string |
   if (!config.extension.key) out.push("extension.key: set the extension's public key so its id stays the same in every store (create-clip-wallet identity writes one)");
   if (!config.walletConnect.projectId && !env[WALLETCONNECT_ENV]) out.push(`walletConnect: set ${WALLETCONNECT_ENV} to your own WalletConnect Cloud project id`);
   if (/^https?:\/\//.test(config.icon)) out.push("icon: ship the icon inside the extension (./icon.svg or ./icon.png), not from a URL");
+  // SODAX swaps are optional; a build that turns them on sets both. The extension build also checks the receiver
+  // against the reviewed list (@clip-wallet/features/sodax-fee), which this package can't see.
+  const sodaxServer = env[SODAX_SERVER_ENV];
+  const sodaxReceiver = env[SODAX_FEE_RECEIVER_ENV];
+  if (sodaxServer || sodaxReceiver) {
+    if (!sodaxServer || !HTTPS_BASE.test(sodaxServer)) {
+      out.push(`${SODAX_SERVER_ENV}: set the https base URL of the ExClip server that quotes SODAX swaps, or unset ${SODAX_FEE_RECEIVER_ENV} too`);
+    }
+    if (!sodaxReceiver || !/^0x[0-9a-fA-F]{40}$/.test(sodaxReceiver)) {
+      out.push(`${SODAX_FEE_RECEIVER_ENV}: set the 0x address the 0.875% Clip fee on SODAX swaps goes to, or unset ${SODAX_SERVER_ENV} too`);
+    }
+  }
   return out;
 }
 

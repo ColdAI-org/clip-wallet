@@ -51,6 +51,12 @@ export interface FeaturesConfig {
     avnuSepolia?: boolean;
     /** Default slippage in basis points (default 50 = 0.5%). */
     defaultSlippageBps?: number;
+    /**
+     * Cross-network swaps through SODAX with the wallet's 0.875 % fee (docs/features/sodax-swaps.md). Mainnet builds
+     * only. `serverUrl`: an ExClip server whose public API quotes for SODAX. `feeReceiver`: where the fee goes; it
+     * must be on packages/features/src/swap/sodax-fee-receivers.json or SODAX stays off. `walletName`: config.name.
+     */
+    sodax?: { serverUrl: string; feeReceiver: string; walletName: string };
   };
   onramp?: {
     /**

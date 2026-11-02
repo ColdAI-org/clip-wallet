@@ -6,6 +6,7 @@ export default {
   "approval.from": "De",
   "approval.yourBalance": "Tu saldo",
   "approval.fee": "Comisión",
+  "approval.networkFee": "Comisión de red",
   "approval.feeCovered": "comisión de red cubierta",
   "approval.ready": "Listo",
   "approval.details": "Detalles",

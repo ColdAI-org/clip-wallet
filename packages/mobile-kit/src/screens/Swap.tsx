@@ -117,9 +117,21 @@ export function Swap(props: { sell?: string; buy?: string }) {
           </T>
           <T v="hint">{quote.atLeast}</T>
           <Row label={t("m.swap.youPay")} value={quote.sell.display} />
+          {/* The Clip fee (SODAX): its share of what you pay, in the asset you sell, and who gets it; the network fee apart. */}
+          {quote.clipFee && (
+            <Row
+              testID="swap-fee"
+              label={t("m.swap.fee", { name: quote.clipFee.name })}
+              value={`${f.percent(quote.clipFee.pct, { maxFraction: 3 })} · ${quote.clipFee.display}`}
+              hint={t("m.swap.feeHint", { amount: quote.sell.display, receiver: quote.clipFee.receivedBy })}
+              hintTone="strong"
+            />
+          )}
+          {quote.clipFee && <Row label={t("m.swap.networkFee")} value={t("m.swap.networkFeeLater")} />}
           <Row label={t("m.swap.route")} value={quote.route} />
           {quote.priceImpactPct !== undefined && <Row label={t("m.swap.priceImpact")} value={f.percent(quote.priceImpactPct, { maxFraction: 2 })} />}
           {state?.prefs.advanced && <Row label={t("m.swap.network")} value={quote.networkId} />}
+          {state?.prefs.advanced && quote.arrivesOn && <Row label={t("m.swap.arrivesOn")} value={quote.arrivesOn.name} />}
           {quote.steps.length > 1 && <Steps label={t("m.swap.whatYouApprove")} items={quote.steps} />}
           <Warnings warnings={quote.warnings} />
           {quote.note ? <Notice level="info">{quote.note}</Notice> : null}

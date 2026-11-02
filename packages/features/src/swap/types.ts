@@ -8,9 +8,14 @@ export interface SwapQuoteRequest {
   /** Base units of `sell`. */
   amount: string;
   slippageBps: number;
+  /** Cross-network providers only: where `buy` arrives (its network and your address there). */
+  destination?: { network: Network; address: string };
 }
 
-/** A same-network quote. `data` is provider-private (order ids, transactions) and never leaves the background. */
+/**
+ * A quote, on `networkId` (where you pay). `buy` is on another network for cross-network providers. `data` is
+ * provider-private (order ids, transactions) and never leaves the background.
+ */
 export interface SwapQuote {
   providerId: string;
   provider: string;
@@ -31,6 +36,12 @@ export interface SwapQuote {
   approval?: { spender: string; spenderName: string; amount: string };
   /** Hedera: the bought token must be added to the account first. */
   association?: { tokenId: string; symbol: string };
+  /**
+   * The Clip fee, when the provider charges it (SODAX, docs/features/sodax-swaps.md): percent of the amount sold,
+   * base units of `sell` (part of `sellAmount`), the address it goes to, the fee's name ("Clip": the fee is ColdAI's
+   * in every wallet built from the kit) and who receives it. Disclosed on the quote and the review.
+   */
+  clipFee?: { pct: number; amount: string; receiver: string; name: string; receivedBy: string };
   expiresAt: number;
   data?: unknown;
 }
@@ -39,6 +50,8 @@ export interface SwapProvider {
   id: string;
   name: string;
   family: Family;
+  /** Swaps from one network to another only (SODAX): asked with a `destination`, never for a same-network swap. */
+  crossNetwork?: boolean;
   /** Null when usable on this network; otherwise why not, in plain words. */
   availability(network: Network): Unavailable | null;
   quote(req: SwapQuoteRequest, ctx: ChainContext): Promise<SwapQuote>;

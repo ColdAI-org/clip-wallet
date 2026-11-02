@@ -18,4 +18,9 @@ export default {
   "m.swap.priceImpact": "कीमत पर असर",
   "m.swap.network": "नेटवर्क",
   "m.swap.whatYouApprove": "आप क्या मंज़ूर करेंगे",
+  "m.swap.fee": "{name} शुल्क",
+  "m.swap.feeHint": "यह आपके चुकाए जाने वाले {amount} का हिस्सा है और {receiver} को जाता है।",
+  "m.swap.networkFee": "नेटवर्क शुल्क",
+  "m.swap.networkFeeLater": "अलग से, मंज़ूर करने से पहले दिखाया जाता है",
+  "m.swap.arrivesOn": "पहुंचने का नेटवर्क",
 } satisfies Record<keyof typeof en, string>;

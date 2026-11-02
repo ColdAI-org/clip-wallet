@@ -6,6 +6,7 @@ export default {
   "approval.from": "요청한 곳",
   "approval.yourBalance": "내 잔액",
   "approval.fee": "수수료",
+  "approval.networkFee": "네트워크 수수료",
   "approval.feeCovered": "네트워크 수수료 지원됨",
   "approval.ready": "준비됨",
   "approval.details": "세부 정보",

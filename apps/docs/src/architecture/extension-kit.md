@@ -50,7 +50,9 @@ flowchart LR
 - **Build environment.** `CLIP_WALLETCONNECT_PROJECT_ID` and partner keys (`CLIP_0X_API_KEY`, `CLIP_JUPITER_API_KEY`,
   `CLIP_MOONPAY_*`, `CLIP_BANXA_PARTNER`, `CLIP_C14_*`, `CLIP_COINGECKO_DEMO_KEY`, `CLIP_BLOCKAID_API_KEY`) come from the
   environment or from `CLIP_*` lines in the project's `.env`. Nothing else in `.env` is read, and values are never
-  logged.
+  logged. SODAX swaps between networks need `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER` in a mainnet build;
+  only then does the manifest ask for the server's origin and `https://rpc.soniclabs.com/*`
+  ([Features](./features.md#sodax-swaps-and-the-clip-fee)).
 - **Security floor.** The open phishing lists are always on and refreshed daily; there is no option to switch them off.
   Blockaid scanning is added only when its key is set.
 - **Mainnet checklist.** A config with mainnet on is refused while `mainnetProblems()` lists anything or the project's
