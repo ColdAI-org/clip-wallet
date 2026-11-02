@@ -18,7 +18,7 @@ export default {
   // SODAX swaps (docs/features/sodax-swaps.md): only in builds that set them up.
   "privacy.crossSwap.title": "Swaps between networks",
   "privacy.crossSwap.body": "If this version offers them, its swap server (ExClip) gets prices from SODAX and sees the two assets and the amount. When you swap, it passes your sent swap to SODAX with your addresses. The wallet also looks up your address on Sonic, the network SODAX runs on.",
-  "privacy.backup.title":"Passkey backup, if you turn it on",
+  "privacy.backup.title": "Passkey backup, if you turn it on",
   "privacy.backup.body": "Our backup service stores a locked copy that only your passkey can open, and a keyed hash of your email or your Google or Apple account so you can find it again. Delete it at any time.",
   "privacy.media.title": "Pictures of your collectibles",
   "privacy.media.body": "Pictures load through our media proxy, so the sites that host them never see your device. We don't keep a record of who asked.",

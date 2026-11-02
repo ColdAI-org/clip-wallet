@@ -354,6 +354,35 @@ describe("Message signing", () => {
   });
 });
 
+describe("Swap with the Clip fee (SODAX)", () => {
+  // The swap step's lines as the features background sends them (packages/features/src/swap/sodax.ts).
+  const lines = [
+    { label: "Clip fee", labelMsg: { id: "bg.label.walletFee", values: { name: "Clip" }, fallback: "Clip fee" }, value: "0.875% · 0.875 USDC" },
+    { label: "Fee goes to", value: "ColdAI LLC, 0x00000000000000000000000000000000000fEe01" },
+    { label: "You get at least", value: "0.002487 ETH" },
+    { label: "Arrives on", value: "Arbitrum One" },
+  ];
+
+  it("shows the Clip fee, who gets it and where it arrives, and calls the other fee the network fee", () => {
+    const base = payApproval({}, { title: "Swap 100 USDC for ~0.0025 ETH", lines });
+    renderUi(<TransactionApproval approval={{ ...base, plan: { ...base.plan!, sponsored: false, feeFiat: 0.12 } }} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Swap 100 USDC for ~0.0025 ETH" })).toBeInTheDocument();
+    const row = (label: string) => screen.getByText(label).closest(".clip-row") as HTMLElement;
+    expect(row("Clip fee")).toHaveTextContent("0.875% · 0.875 USDC");
+    expect(row("Fee goes to")).toHaveTextContent("ColdAI LLC, 0x00000000000000000000000000000000000fEe01");
+    expect(row("Arrives on")).toHaveTextContent("Arbitrum One");
+    expect(row("Network fee")).toHaveTextContent("$0.12");
+    // Two fees, two names: no bare "Fee" row to mix them up.
+    expect(screen.queryByText("Fee")).not.toBeInTheDocument();
+  });
+
+  it("keeps the plain Fee label when the request carries no wallet fee", () => {
+    renderUi(<TransactionApproval approval={payApproval({}, { lines: lines.slice(1) })} />);
+    expect(screen.getByText("Fee")).toBeInTheDocument();
+    expect(screen.queryByText("Network fee")).not.toBeInTheDocument();
+  });
+});
+
 describe("Approval paid through a bonded Connector (settle on Hedera)", () => {
   const funding = (over: Partial<import("../src/client").SettleFundingView> = {}): import("../src/client").SettleFundingView => ({
     orderId: `0x${"0d".repeat(32)}`,

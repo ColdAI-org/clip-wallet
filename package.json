@@ -24,8 +24,7 @@
     "kit:e2e:scaffold-hbar": "node tools/kit/scaffold-hbar-e2e.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version && node tools/release/sync-template.mjs && pnpm install --lockfile-only",
-    "release": "pnpm pack-all && changeset publish",
-    "tmp:escape-isolates": "node /private/tmp/claude-501/-Users-shayansalehi-coldai--claude-worktrees-clipwallet-sodax/1167b5eb-c2ec-4009-b1bb-fedd529cc7b6/scratchpad/escape-isolates.mjs"
+    "release": "pnpm pack-all && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
