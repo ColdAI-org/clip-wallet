@@ -313,6 +313,9 @@ export class SodaxSwap implements SwapProvider {
           return false;
         }
       },
+      // The check matches the bytes to the plan these lines come from, so the fee stays in view even if the network
+      // can't dry-run the swap and the review stays unreadable (blocked unless blind signing is allowed).
+      linesProven: true,
       finish: async (r) => {
         if (plan && typeof r === "string" && TX_HASH.test(r)) await this.submit(ctx.fetch, plan, r);
         return r;

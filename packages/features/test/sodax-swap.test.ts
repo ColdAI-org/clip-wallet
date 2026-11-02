@@ -1,4 +1,4 @@
-import type { AssetRef, ClipError, DappRequest, Network } from "@clip-wallet/core";
+import type { AssetRef, ClipError, DappRequest, DecodedRequest, Network } from "@clip-wallet/core";
 import {
   decodeFunctionData,
   encodeAbiParameters,
@@ -28,6 +28,7 @@ import {
 } from "../src/swap/sodax-intent.js";
 import { SodaxSwap, type SodaxSwapOptions, sodaxTokens } from "../src/swap/sodax.js";
 import { SwapService } from "../src/swap/service.js";
+import { refineDecoded } from "../src/steps.js";
 import { BASE_MAINNET, DEVNET, ME_EVM, SEPOLIA, accountFor, ethOn, fakeHost, flush, mockFetch, usdcEvm } from "./helpers.js";
 
 /** Clearly fake: nobody holds it. Tests pass it as the reviewed list; the committed list stays empty. */
@@ -475,6 +476,39 @@ describe("SODAX through SwapService", () => {
       },
     ]);
     expect(host.store.get("features:sodax:pending-submits")).toEqual([]);
+  });
+
+  it("the review shows the Clip fee even when the network can't dry-run the swap; other bytes lose it", async () => {
+    const { svc, host } = setup();
+    const v = await svc.quote({ sell: "usdc", buy: "eth", amount: "100" });
+    await svc.execute(v.id);
+    host.enqueued[0]!.resolve(HASH("aa"));
+    await flush();
+    const swap = host.enqueued[1]!.request;
+    // What the EVM module reads from a call it doesn't know: unreadable, with its own lines.
+    const read: DecodedRequest = {
+      requestId: swap.id,
+      title: "Unreadable request from Test Wallet",
+      lines: [{ label: "Requested by", value: "Test Wallet" }],
+      balanceChanges: [],
+      simulated: true,
+      blind: true,
+      warnings: [{ level: "danger", code: "blind-signing", message: "We can't read what this does." }],
+      networkId: BASE_MAINNET.id,
+    };
+    // A clean dry run: the plain title, the fee first.
+    const lifted = refineDecoded(swap, read);
+    expect(lifted).toMatchObject({ blind: false, title: "Swap 100 USDC for ~0.0025 ETH" });
+    expect(lifted.lines[0]).toMatchObject({ label: "Clip fee", value: "0.875% · 0.875 USDC" });
+    // No dry run: still unreadable (blocked unless blind signing is allowed), and the fee still shows.
+    const unsimulated = refineDecoded(swap, { ...read, simulated: false });
+    expect(unsimulated).toMatchObject({ blind: true, title: read.title });
+    expect(unsimulated.lines.map((l) => l.label)).toEqual(["Clip fee", "Fee goes to", "You get at least", "Arrives on", "Requested by"]);
+    // Bytes that aren't the plan prove nothing: only what the module read.
+    const tx = (swap.params as { data: string }[])[0]!;
+    tx.data = `${tx.data}00`;
+    expect(refineDecoded(swap, { ...read, simulated: false }).lines).toEqual(read.lines);
+    expect(refineDecoded(swap, read)).toMatchObject({ blind: true, lines: read.lines });
   });
 
   it("a hand-over that doesn't go through is kept on the device and retried with the next quote", async () => {
