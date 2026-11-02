@@ -31,7 +31,9 @@ import { SwapService } from "../src/swap/service.js";
 import { refineDecoded } from "../src/steps.js";
 import { BASE_MAINNET, DEVNET, ME_EVM, SEPOLIA, accountFor, ethOn, fakeHost, flush, mockFetch, usdcEvm } from "./helpers.js";
 
-/** Clearly fake: nobody holds it. Tests pass it as the reviewed list; the committed list stays empty. */
+/** ColdAI LLC's address, the one on the committed list (sodax-fee-receivers.json). */
+const COLDAI = "0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313";
+/** Clearly fake: nobody holds it. Tests pass it as the reviewed list, so they don't depend on the committed one. */
 const FAKE_RECEIVER = "0x00000000000000000000000000000000000fee01";
 const OTHER = "0x000000000000000000000000000000000000dead";
 const SERVER = "https://exclip.test";
@@ -156,14 +158,24 @@ const check = (tx: { to?: string; data?: string; value?: string | bigint }, plan
 /* ------------------------------------------------------------------ the Clip fee */
 
 describe("Clip fee", () => {
-  it("pins the reviewed receiver list: empty in the repository, so no build offers SODAX until a reviewed commit adds one", () => {
-    // Changing sodax-fee-receivers.json means changing this line in the same reviewed commit.
-    expect(receiversFile.receivers).toEqual([]);
-    expect(SODAX_FEE_RECEIVERS).toEqual([]);
+  it("pins the reviewed receiver list: ColdAI LLC's address, and no other", () => {
+    // Changing sodax-fee-receivers.json means changing these two lines in the same reviewed commit.
+    expect(receiversFile.receivers).toEqual(["0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313"]);
+    expect(SODAX_FEE_RECEIVERS).toEqual(["0x90291104f2d1ef9ffe2bc1635a3a270a09c8f313"]);
     expect(Object.isFrozen(SODAX_FEE_RECEIVERS)).toBe(true);
+    // Committed with its EIP-55 checksum, so a mistyped character shows here.
+    expect(getAddress(COLDAI)).toBe(COLDAI);
+    expect(isReviewedFeeReceiver(COLDAI)).toBe(true);
+    expect(isReviewedFeeReceiver(COLDAI.toLowerCase())).toBe(true);
+    // Any other address isn't, one digit off included.
+    expect(isReviewedFeeReceiver("0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f314")).toBe(false);
     expect(isReviewedFeeReceiver(FAKE_RECEIVER)).toBe(false);
+    expect(isReviewedFeeReceiver(OTHER)).toBe(false);
+    expect(isReviewedFeeReceiver(undefined)).toBe(false);
+    // A list passed in replaces the committed one.
     expect(isReviewedFeeReceiver(FAKE_RECEIVER, [FAKE_RECEIVER])).toBe(true);
     expect(isReviewedFeeReceiver(FAKE_RECEIVER.toUpperCase().replace("0X", "0x"), [FAKE_RECEIVER])).toBe(true);
+    expect(isReviewedFeeReceiver(COLDAI, [FAKE_RECEIVER])).toBe(false);
   });
 
   it("is exactly 875 / 100 000 of the amount sold, rounded down, and paid to ColdAI LLC", () => {
@@ -229,7 +241,9 @@ describe("SODAX availability (fails closed)", () => {
     expect(sodax({ serverUrl: undefined }).availability(BASE_MAINNET)).toEqual({ code: "swap/not-configured", message: "Swapping these tokens isn't switched on in this build." });
     expect(sodax({ serverUrl: "http://exclip.test" }).availability(BASE_MAINNET)?.code).toBe("swap/not-configured");
     expect(sodax({ feeReceiver: undefined }).availability(BASE_MAINNET)?.code).toBe("swap/not-configured");
-    // The committed list is empty: a build that sets ColdAI's address before a reviewed commit lists it gets nothing.
+    // The committed list: a build that sets ColdAI LLC's address gets SODAX, one that sets any other address doesn't.
+    expect(sodax({ receivers: undefined, feeReceiver: COLDAI }).availability(BASE_MAINNET)).toBeNull();
+    expect(sodax({ receivers: undefined, feeReceiver: COLDAI.toLowerCase() }).availability(BASE_MAINNET)).toBeNull();
     expect(sodax({ receivers: undefined }).availability(BASE_MAINNET)?.code).toBe("swap/fee-receiver-not-allowed");
     expect(sodax({ feeReceiver: OTHER }).availability(BASE_MAINNET)?.code).toBe("swap/fee-receiver-not-allowed");
     expect(sodax({ testnet: true }).availability(BASE_MAINNET)?.code).toBe("swap/mainnet-only");
@@ -352,6 +366,18 @@ describe("SODAX quote and review", () => {
     const q = await sodax().quote(ask(), ctx(fetch));
     await expect(sodax({ receivers: [OTHER] }).build(q, ctx(fetch))).rejects.toMatchObject({ code: "swap/fee-receiver-unknown" });
   });
+
+  it("with the committed list, a build set to ColdAI LLC's address quotes and builds a swap that pays it", async () => {
+    const { fetch } = server();
+    const s = sodax({ receivers: undefined, feeReceiver: COLDAI });
+    const q = await s.quote(ask(), ctx(fetch));
+    expect(q.clipFee).toMatchObject({ amount: "875000", receiver: getAddress(COLDAI), receivedBy: "ColdAI LLC" });
+    const steps = await s.build(q, ctx(fetch));
+    expect(steps[1]!.lines).toContainEqual({ label: "Fee goes to", value: `ColdAI LLC, ${getAddress(COLDAI)}` });
+    const request = await (steps[1]!.request as () => Promise<DappRequest>)();
+    expect(decodeSodaxSwap((request.params as { data: string }[])[0]!.data)).toMatchObject({ fee: 875_000n, receiver: getAddress(COLDAI) });
+    expect(steps[1]!.verify!(request)).toBe(true);
+  });
 });
 
 /* ------------------------------------------------------------------ the check before signing */
@@ -369,6 +395,14 @@ describe("the wallet's own check of a SODAX swap", () => {
       code: "swap/fee-receiver-unknown",
       userMessage: "This swap would pay its fee to an address Test Wallet hasn't reviewed, so it was stopped. Nothing was signed.",
     });
+  });
+
+  it("with the committed list, passes a fee paid to ColdAI LLC's address and refuses any other", () => {
+    const committed = { name: "Test Wallet", nowSec: NOW_S };
+    const plan = { ...PLAN, feeReceiver: getAddress(COLDAI) };
+    const tx = sodaxSwapTx(plan).tx;
+    expect(checkSodaxSwap({ to: tx.to, data: tx.data, value: 0n }, plan, committed)).toMatchObject({ fee: 875_000n, receiver: getAddress(COLDAI) });
+    expect(refusal(() => checkSodaxSwap({ to: own.to, data: own.data, value: 0n }, PLAN, committed)).code).toBe("swap/fee-receiver-unknown");
   });
 
   it("refuses a fee above 0.875 %, naming the Clip fee", () => {

@@ -6,13 +6,16 @@ import { ConfigError, MAINNET_ACKNOWLEDGEMENT, defineConfig, type ClipConfigInpu
 import { SONIC_RPC_URL } from "@clip-wallet/features";
 import { clipWallet, sodaxFor } from "../src/wxt";
 
-// The committed list of reviewed fee receivers is empty (features' tests pin it). Here a test can put the fake
-// receiver on it; everything else about the list is the real code.
+// The committed list of reviewed fee receivers holds ColdAI LLC's address (features' tests pin it). Here a test can
+// add the fake receiver to it; everything else about the list is the real code.
 const reviewed = vi.hoisted(() => new Set<string>());
 vi.mock("@clip-wallet/features/sodax-fee", async (importOriginal) => {
   const real = await importOriginal<typeof import("@clip-wallet/features/sodax-fee")>();
-  return { ...real, isReviewedFeeReceiver: (address: string) => reviewed.has(address.toLowerCase()) };
+  return { ...real, isReviewedFeeReceiver: (address: string) => reviewed.has(address.toLowerCase()) || real.isReviewedFeeReceiver(address) };
 });
+
+/** ColdAI LLC's address, the one on the committed list. */
+const COLDAI = "0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313";
 
 /** Clearly fake: nobody holds this address. */
 const FAKE_RECEIVER = "0x00000000000000000000000000000000000fee01";
@@ -76,6 +79,7 @@ describe("SODAX swaps in the extension build", () => {
       "mainnet checklist: CLIP_SODAX_FEE_RECEIVER: set the 0x address the 0.875% Clip fee on SODAX swaps goes to, or unset CLIP_SODAX_SERVER_URL too",
     ]);
     expect(problems({ ...SODAX })).toHaveLength(1);
+    expect(problems({ ...SODAX, CLIP_SODAX_FEE_RECEIVER: COLDAI })).toEqual([]);
     reviewed.add(FAKE_RECEIVER);
     expect(problems({ ...SODAX })).toEqual([]);
   });
