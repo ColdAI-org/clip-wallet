@@ -35,7 +35,7 @@ Providers that need a partner key read it from the **build environment**, never 
 | `CLIP_C14_CLIENT_ID`, `CLIP_C14_ASSET_IDS` | C14 |
 | `CLIP_COINGECKO_DEMO_KEY` | CoinGecko prices (optional) |
 | `CLIP_BLOCKAID_API_KEY` | Blockaid scanning (see [Security services](./security.md)) |
-| `CLIP_SODAX_SERVER_URL`, `CLIP_SODAX_FEE_RECEIVER` | SODAX swaps between networks, mainnet builds only: the ExClip server (https) that holds SODAX's key, and ColdAI LLC's address for the Clip fee, which must be on the reviewed list. Both or neither. |
+| `CLIP_SODAX_SERVER_URL`, `CLIP_SODAX_FEE_RECEIVER` | SODAX swaps between networks, mainnet builds only: the ExClip server (https) that holds SODAX's key and charges no fee of its own, and ColdAI LLC's address for the Clip fee, which must be on the reviewed list. Both or neither. |
 
 Without its key, a feature says in plain words that it isn't switched on in this build. `clipWallet()` reads these
 from the environment or from `CLIP_*` lines in the project's `.env`, and never logs them.
@@ -46,8 +46,11 @@ Swaps between networks go through SODAX and carry the **Clip fee: 0.875 % of the
 in SODAX's exact-amount fee form. The quote shows it apart from the network fee, and the review shows the fee, who
 receives it and where the swap arrives. They are off unless a mainnet build sets both settings above, and the build
 is refused when only one is set or the receiver isn't on the reviewed list
-(`packages/features/src/swap/sodax-fee-receivers.json`, empty in the repository). The whole story, with the SDK
-sources: [SODAX swaps and the Clip fee](repo:docs/features/sodax-swaps.md). Kit wallets: the
+(`packages/features/src/swap/sodax-fee-receivers.json`, which holds ColdAI LLC's address and no other). The ExClip
+server must charge no fee of its own: the wallet quotes through it only while its `/api/exclip/config` reports
+`partnerFeeBps` 0, `feeReceiver` null and no `feeSplit`, since a server's fee would be pinned on the quote and lower
+the minimum on the review. The whole story, with the SDK sources:
+[SODAX swaps and the Clip fee](repo:docs/features/sodax-swaps.md). Kit wallets: the
 [split-contract design](repo:docs/features/sodax-kit-split.md).
 
 ## Safety model

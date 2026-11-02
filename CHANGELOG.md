@@ -9,16 +9,16 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
 ### Added
 
 - **Swaps between networks (SODAX)**, in mainnet builds that set them up: an asset on one of ten EVM mainnets for an
-  asset on another, quoted through an ExClip server that holds SODAX's API key. Off by default and fail-closed: a
-  build offers them only with `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER`, and a mainnet build with only one
-  of them, a server that isn't https or a receiver that isn't reviewed is refused. Tokenised stocks (`isRwa`) are
-  never offered.
+  asset on another, quoted through an ExClip server that holds SODAX's API key and charges no fee of its own (the
+  wallet refuses a server with a fee, plain or split). Off by default and fail-closed: a build offers them only with
+  `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER`, and a mainnet build with only one of them, a server that
+  isn't https or a receiver that isn't reviewed is refused. Tokenised stocks (`isRwa`) are never offered.
 - **The Clip fee:** 0.875 % of the amount sold on each SODAX swap, paid to ColdAI LLC (SODAX's exact-amount fee form,
   rounded down; its percentage form takes whole basis points only). The quote shows it apart from the network fee;
   the review shows the fee, who receives it, the least you get and where it arrives, and names its other fee row
   "Network fee". Before signing, the wallet checks the swap's bytes: the fee goes to an address on the reviewed list
-  (`packages/features/src/swap/sodax-fee-receivers.json`, empty in the repository and pinned by a test), it is at
-  most 0.875 %, and everything else is what the wallet planned. Swaps within one network carry no Clip fee.
+  (`packages/features/src/swap/sodax-fee-receivers.json`, which holds ColdAI LLC's address and is pinned by a test),
+  it is at most 0.875 %, and everything else is what the wallet planned. Swaps within one network carry no Clip fee.
 - **Docs:** SODAX swaps and the Clip fee (`docs/features/sodax-swaps.md`) and the split-contract design for kit
   wallets (`docs/features/sodax-kit-split.md`); a fee clause in the draft terms of use and the swap server in the
   draft privacy policy (both awaiting legal review); store listing text for a mainnet build with SODAX swaps.

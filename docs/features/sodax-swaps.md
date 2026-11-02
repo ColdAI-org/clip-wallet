@@ -6,9 +6,9 @@ you sell, paid to ColdAI LLC.** Swaps within one network (0x, Jupiter and the ot
 [Features](../../apps/docs/src/architecture/features.md)) carry no Clip fee.
 
 > **Status.** Only in mainnet builds that set SODAX up ([below](#build-with-it-or-without-it)). SODAX has no test
-> networks (every chain in @sodax/types 2.2.0 is a mainnet, `dist/chains/chain-keys.js:15-38`), so the testnet build
-> Clip Wallet ships today doesn't offer these swaps. No build can offer them until ColdAI's receiving address is on
-> the reviewed list, and mainnet itself waits for the external audit.
+> networks (every chain in @sodax/types 2.2.0 is a mainnet, `dist/chains/chain-keys.js:15-38`), so a testnet build
+> doesn't offer these swaps. ColdAI LLC's receiving address is on the reviewed list, and the external audit comes
+> before any mainnet build.
 
 ## What a swap costs
 
@@ -45,12 +45,13 @@ The constants are in [`sodax-fee.ts`](../../packages/features/src/swap/sodax-fee
 
 ColdAI LLC. The address is a build setting with no default (`CLIP_SODAX_FEE_RECEIVER`), and it must also be on the
 reviewed list committed with the code, [`sodax-fee-receivers.json`](../../packages/features/src/swap/sodax-fee-receivers.json).
-That list is **empty in the repository**, and a test pins it ("pins the reviewed receiver list" in
-[`sodax-swap.test.ts`](../../packages/features/test/sodax-swap.test.ts)). So no build offers SODAX swaps until one
-reviewed commit adds ColdAI's address to the list and to that test. The environment can choose among reviewed
-addresses, never add one.
+The list holds one address, ColdAI LLC's, **`0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313`**: an ordinary account (an
+EOA) on Sonic, where SODAX pays the fee, so it can hold and move SODAX's assets there. A test pins the list ("pins the
+reviewed receiver list" in [`sodax-swap.test.ts`](../../packages/features/test/sodax-swap.test.ts)), so changing it
+takes one reviewed commit that changes the test too. The environment can choose among reviewed addresses, never add
+one: a build that sets any other address offers no SODAX swaps, and a mainnet build with one is refused.
 
-Every review shows the receiver in full: "Fee goes to: ColdAI LLC, 0x…".
+Every review shows the receiver in full: "Fee goes to: ColdAI LLC, 0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313".
 
 ## How the wallet checks it before you sign
 
@@ -116,10 +117,15 @@ filled".
 
 The server holds SODAX's API key (SODAX's swap API takes it as `x-api-key`, @sodax/swaps-api 2.2.0
 `dist/index.mjs:81-84`), so the wallet never has one. ExClip's server adds the key, drops any fee a client sends and
-pins its own, and refuses tokenised stocks (ExClip `apps/server/src/services/sodaxProxy.ts:1-2`, `:97-101`,
-`:190-199`). The wallet uses a server only while `GET /api/exclip/config` reports SODAX configured, trading on and a
-partner fee of 0 (ExClip `apps/server/src/services/config.ts:57-62`). A server fee would be pinned into the quote,
-and the minimum on the review would no longer match what the swap can give.
+pins its own, and refuses tokenised stocks (ExClip `apps/server/src/services/sodaxProxy.ts:1-2`, `:108-126`,
+`:215-228`).
+
+**The ExClip server must charge no fee of its own.** The wallet uses a server only while `GET /api/exclip/config`
+reports SODAX configured, trading on, `partnerFeeBps` 0, `feeReceiver` null and no `feeSplit` (ExClip
+`apps/server/src/services/config.ts:108-133`; `ready()` in [`sodax.ts`](../../packages/features/src/swap/sodax.ts)).
+A server with a fee, plain or split, can't be used for Clip's swaps: the swap the wallet builds carries the Clip fee
+alone, but the server's fee would be pinned on the quote, so the minimum on the review would be set below what the
+swap can give.
 
 Settings → Your data says the same in every language ("Swaps between networks").
 
@@ -166,8 +172,8 @@ swaps, never contacts the server or Sonic, and asks for no host permission for t
 never in `clip.config.ts`:
 
 ```bash
-CLIP_SODAX_SERVER_URL=https://exclip.example   # the ExClip server (https) that quotes SODAX swaps
-CLIP_SODAX_FEE_RECEIVER=0x…                     # ColdAI LLC's address, already on the reviewed list
+CLIP_SODAX_SERVER_URL=https://exclip.example   # the ExClip server (https) for SODAX quotes, with no fee of its own
+CLIP_SODAX_FEE_RECEIVER=0x…                     # ColdAI LLC's address, the one on the reviewed list
 ```
 
 The extension build then:
@@ -180,23 +186,26 @@ The extension build then:
 
 The swap also stays off at run time ("Swapping these tokens isn't switched on in this build.") if the server isn't
 `https` or the receiver isn't reviewed, and it stops with "Swapping isn't available right now." while the server
-doesn't report SODAX configured, trading on and no fee of its own.
+doesn't report SODAX configured, trading on and no fee of its own ([above](#who-sees-what); the code is
+`swap/server-not-ready`, or `swap/server-fee` for the fee). The wallet keeps the server's answer for five minutes.
 
 The desktop and phone apps don't pass any swap partner settings yet (0x and Jupiter included), so they offer no SODAX
 swaps. Their quote screens already show the Clip fee when a quote carries it.
 
 ## Before a mainnet build offers it
 
-- [ ] ColdAI LLC's receiving address is decided. It receives the fee on Sonic, so it must be able to hold and move
-      SODAX's assets there.
-- [ ] One reviewed commit adds it to `sodax-fee-receivers.json` and to the pinning test.
+- [x] ColdAI LLC's receiving address is decided ([Who receives it](#who-receives-it)). It receives the fee on Sonic,
+      and it is an EOA there, so it can hold and move SODAX's assets.
+- [x] It is on `sodax-fee-receivers.json`, added in one reviewed commit with the pinning test.
 - [ ] `CLIP_SODAX_FEE_RECEIVER` is that address. `CLIP_SODAX_SERVER_URL` is an ExClip server that reports SODAX
-      configured, trading on and `partnerFeeBps: 0`.
+      configured, trading on and no fee of its own: `partnerFeeBps: 0`, `feeReceiver: null` and no `feeSplit`.
 - [ ] The fee clause in the [terms of use](../legal/terms-of-use.md) and the swap text in the
       [store listing](../../apps/extension/store/listing.md) have passed legal review.
 - [ ] The [privacy policy](../legal/privacy-policy.md) names whoever runs the ExClip server.
 
-The build enforces the second and third items. The others are for people.
+The code enforces the second and third items: the list can't change without the pinning test, a mainnet build whose
+receiver isn't on it is refused, and the wallet quotes through a server only while it reports that it is set up and
+charges no fee of its own. The others are for people.
 
 ## Kit wallets
 
@@ -207,18 +216,21 @@ through a split contract is a design, not code yet: [sodax-kit-split.md](sodax-k
 
 | Rule | Test |
 |---|---|
-| The receiver list ships empty, and a malformed list is an error | `packages/features/test/sodax-swap.test.ts`: "pins the reviewed receiver list: empty in the repository, …", "reads a malformed receiver list as an error, …" |
+| The receiver list is ColdAI LLC's address and no other, and a malformed list is an error | `packages/features/test/sodax-swap.test.ts`: "pins the reviewed receiver list: ColdAI LLC's address, and no other", "reads a malformed receiver list as an error, …", "with the committed list, a build set to ColdAI LLC's address quotes and builds a swap that pays it", "with the committed list, passes a fee paid to ColdAI LLC's address and refuses any other" |
 | The fee is 875/100 000, rounded down, in SODAX's fee entry | Same file: "is exactly 875 / 100 000 of the amount sold, rounded down, and paid to ColdAI LLC", "travels in the intent as SODAX's single fee entry: …" |
 | The check refuses another receiver, a higher fee, and anything off the plan | Same file: "refuses a fee paid to an address it hasn't reviewed, naming the wallet", "refuses a fee above 0.875 %, naming the Clip fee", "refuses anything else that isn't the plan: …" |
 | The quote and review show the fee, its receiver and where the swap arrives | Same file: "quotes what's left after the 0.875 % Clip fee …", "shows the Clip fee, who gets it and where you get paid before you sign; …", "the review shows the Clip fee even when the network can't dry-run the swap; …"; `packages/ui/test/features.test.tsx` and `packages/ui/test/screens.test.tsx` ("Swap with the Clip fee (SODAX)"); `packages/mobile-kit/test/features.test.tsx` |
 | Off unless set up; fails closed | Same file: "is off without the server, without a reviewed fee receiver, in test builds and off its networks", "needs the server set up for it: …"; `packages/extension-kit/test/wxt-sodax.test.ts` |
+| The ExClip server charges no fee of its own, plain or split | `packages/features/test/sodax-swap.test.ts`: "can't use a server that charges a fee of its own, plain or split", "uses a server with no fee of its own: …", "a server with a fee of its own stops the quote in the same words as one that isn't set up" |
 | A mainnet build needs both settings and a reviewed receiver | `packages/config/test/config.test.ts`: "asks for both SODAX settings once a build sets either"; `packages/extension-kit/test/wxt-sodax.test.ts`: "refuse a mainnet build whose settings are half set or whose receiver isn't reviewed" |
 | No tokenised stocks | `packages/features/test/sodax-swap.test.ts`: "never offers a tokenised stock (isRwa), …", "refuses to quote a tokenised stock even when the server lists it" |
 | Only networks the wallet carries | `packages/engine/test/sodax-networks.test.ts` |
 
-Tests use a clearly fake receiver (`0x00000000000000000000000000000000000fee01`) and fixtures only: no network calls.
+Tests use a clearly fake receiver (`0x00000000000000000000000000000000000fee01`) as the reviewed list, and fixtures
+only: no network calls. The tests of the committed list use ColdAI LLC's address.
 
 ## Sources
 
 Pinned to @sodax/sdk, @sodax/types and @sodax/swaps-api 2.2.0. Line numbers point into their `dist` files, as in the
-source comments of `sodax.ts`, `sodax-intent.ts` and `sodax-fee.ts`. ExClip references are to its repository.
+source comments of `sodax.ts`, `sodax-intent.ts` and `sodax-fee.ts`. ExClip references are to its repository at
+commit 7d67995.

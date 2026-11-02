@@ -53,7 +53,7 @@ export function parseFeeReceivers(doc: unknown): string[] {
   return out;
 }
 
-/** The committed list. Empty in the repository, so no build offers SODAX swaps until a reviewed commit adds one. */
+/** The committed list, lower case. A build whose fee receiver isn't on it offers no SODAX swaps. */
 export const SODAX_FEE_RECEIVERS: readonly string[] = Object.freeze(parseFeeReceivers(file));
 
 /** Is `address` on the reviewed list? */

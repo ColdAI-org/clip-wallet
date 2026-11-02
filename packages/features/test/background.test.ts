@@ -54,9 +54,13 @@ describe("FeaturesService (bus entry)", () => {
     const status = (config: FeaturesConfig) => new FeaturesService(main, config).handle({ type: "featSwapStatus" });
     expect((await status({ testnet: false })).map((s) => s.id)).not.toContain("sodax");
     expect((await status({ testnet: true, swap: { sodax } })).map((s) => s.id)).not.toContain("sodax");
-    // Set up in a mainnet build, it still stays off while its receiver isn't on the reviewed list (empty in the repo).
-    const on = (await status({ testnet: false, swap: { sodax } })).find((s) => s.id === "sodax");
-    expect(on?.unavailable?.code).toBe("swap/fee-receiver-not-allowed");
+    // Set up in a mainnet build, it still stays off while its receiver isn't on the reviewed list.
+    const off = (await status({ testnet: false, swap: { sodax } })).find((s) => s.id === "sodax");
+    expect(off?.unavailable?.code).toBe("swap/fee-receiver-not-allowed");
+    // ColdAI LLC's address is on it.
+    const on = (await status({ testnet: false, swap: { sodax: { ...sodax, feeReceiver: "0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313" } } })).find((s) => s.id === "sodax");
+    expect(on).toMatchObject({ id: "sodax", name: "SODAX" });
+    expect(on?.unavailable).toBeUndefined();
   });
 
   it("leaves dapp requests' decodes untouched", () => {

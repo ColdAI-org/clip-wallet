@@ -28,15 +28,17 @@ import { type SwapProvider, type SwapQuote, type SwapQuoteRequest, minOut } from
  * ColdAI LLC.
  *
  * SODAX's swap API needs a partner key, so the wallet talks to an ExClip server's public proxy, which holds it
- * (ExClip apps/server/src/services/sodaxProxy.ts:31-51, routes/exclip.ts:53-55 and :76-77). Paths and shapes are
+ * (ExClip apps/server/src/services/sodaxProxy.ts:35-55, routes/exclip.ts:53-55 and :76-77). Paths and shapes are
  * @sodax/swaps-api 2.2.0 dist/index.mjs (client and response schemas) and @sodax/types 2.2.0
  * dist/backend/backendApiV2.d.ts (request bodies):
- *   GET  {server}/api/exclip/config                → { sodaxConfigured, tradingEnabled, partnerFeeBps } (ExClip services/config.ts:57-67)
+ *   GET  {server}/api/exclip/config                → { sodaxConfigured, tradingEnabled, partnerFeeBps, feeReceiver, feeSplit } (ExClip services/config.ts:108-133)
  *   GET  {server}/api/exclip/sodax/swaps/tokens    → { [chainKey]: SwapToken[] }   (:5350-5358, :5516-5524)
  *   POST {server}/api/exclip/sodax/swaps/quote     → { quotedAmount }              (:5386-5389, :5534-5547; body d.ts:214-231)
  *   POST {server}/api/exclip/sodax/swaps/submit-tx → { success, data: { status } } (:5422-5429, :5708-5716; body d.ts:463-474)
- * The server must charge no fee of its own (partnerFeeBps 0): it would pin one into the quote (sodaxProxy.ts:97-101) and
- * the minimum you get would be set below what the swap can really give.
+ * The server must charge no fee of its own, plain or split (partnerFeeBps 0, feeReceiver null, no feeSplit), or it
+ * can't be used for Clip's swaps: it drops any fee a client sends and pins its own on the quote (sodaxProxy.ts:108-126),
+ * so the minimum you get would be set below what the swap can really give. ExClip's services/config.ts and
+ * services/sodaxProxy.ts are cited at commit 7d67995.
  *
  * The server only quotes. The wallet builds the transaction itself (./sodax-intent.ts) from what it checked on Sonic
  * (your hub wallet, and that each hub asset is the token you chose), and checks the exact bytes before they can be
@@ -66,7 +68,7 @@ export interface SodaxSwapOptions {
 /**
  * A token in SODAX's list (@sodax/swaps-api dist/index.mjs:5350-5358). `isRwa` isn't in that schema but is in the raw
  * list: SODAX flags its tokenised stocks with it (the bundled token configs, e.g. dist/index.mjs:512-521), and ExClip
- * refuses them by it (sodaxProxy.ts:153-168).
+ * refuses them by it (sodaxProxy.ts:178-193, :215-228).
  */
 export interface SodaxToken {
   symbol: string;
@@ -151,7 +153,7 @@ export class SodaxSwap implements SwapProvider {
   readonly crossNetwork = true as const;
 
   private readonly receivers: readonly string[];
-  private server?: { at: number; ok: boolean };
+  private server?: { at: number; refusal: "swap/server-not-ready" | "swap/server-fee" | null };
   private tokenList?: { at: number; list: Record<string, SodaxToken[]> };
   private readonly hubWallets = new Map<string, string>();
   private readonly hubAssets = new Set<string>();
@@ -203,7 +205,8 @@ export class SodaxSwap implements SwapProvider {
     const from = getAddress(ctx.account.address);
     const [hubWallet] = await Promise.all([this.hubWallet(f, src, from), this.checkHubAsset(f, sellToken, src), this.checkHubAsset(f, buyToken, dst)]);
     // The quote is for what is swapped after the fee. No partnerFee is sent: without one SODAX charges none
-    // (@sodax/types backendApiV2.d.ts:37-40), and the server pins its own anyway (sodaxProxy.ts:97-101).
+    // (@sodax/types backendApiV2.d.ts:37-40), and the server drops a client's anyway (sodaxProxy.ts:122-126). A server
+    // that pins a fee of its own was refused by ready().
     const q = await fetchJson<{ quotedAmount?: unknown }>(f, this.url("sodax/swaps/quote"), "SODAX", {
       body: { tokenSrc: sellToken.address, tokenSrcChainKey: src.key, tokenDst: buyToken.address, tokenDstChainKey: dst.key, amount: (gross - fee).toString(), quoteType: "exact_input" },
     });
@@ -324,13 +327,24 @@ export class SodaxSwap implements SwapProvider {
     return steps;
   }
 
-  /** The server is set up for this: SODAX configured, trading on, and no fee of its own. */
+  /**
+   * The server is set up for this (sodaxConfigured and tradingEnabled true) and charges no fee of its own
+   * (partnerFeeBps exactly 0, feeReceiver exactly null, feeSplit null or absent). A server with a fee, plain or split,
+   * or one that doesn't say it has none, can't be used for Clip's swaps: it is refused as "swap/server-fee", in the
+   * same words as one that isn't set up ("swap/server-not-ready").
+   */
   private async ready(f: typeof fetch): Promise<void> {
     if (!this.server || this.now() - this.server.at > CACHE_MS) {
-      const c = await fetchJson<{ sodaxConfigured?: unknown; tradingEnabled?: unknown; partnerFeeBps?: unknown }>(f, this.url("config"), "SODAX");
-      this.server = { at: this.now(), ok: c.sodaxConfigured === true && c.tradingEnabled === true && c.partnerFeeBps === 0 };
+      const c = await fetchJson<{ sodaxConfigured?: unknown; tradingEnabled?: unknown; partnerFeeBps?: unknown; feeReceiver?: unknown; feeSplit?: unknown }>(
+        f,
+        this.url("config"),
+        "SODAX",
+      );
+      const setUp = c.sodaxConfigured === true && c.tradingEnabled === true;
+      const feeFree = c.partnerFeeBps === 0 && c.feeReceiver === null && (c.feeSplit === undefined || c.feeSplit === null);
+      this.server = { at: this.now(), refusal: !setUp ? "swap/server-not-ready" : !feeFree ? "swap/server-fee" : null };
     }
-    if (!this.server.ok) throw new ClipError(msg("bg.err.swappingUnavailable"), "swap/server-not-ready");
+    if (this.server.refusal) throw new ClipError(msg("bg.err.swappingUnavailable"), this.server.refusal);
   }
 
   private async token(f: typeof fetch, spoke: SodaxSpoke, asset: AssetRef): Promise<SodaxToken> {

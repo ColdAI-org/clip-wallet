@@ -1,4 +1,4 @@
 {
-  "$comment": "Addresses the Clip fee on a SODAX swap may be paid to (docs/features/sodax-swaps.md). Committed with the code, never set by the environment: a build's CLIP_SODAX_FEE_RECEIVER must be one of these, or it offers no SODAX swaps (fails closed) and a mainnet build is refused. Empty in the repository. Change it only in a reviewed commit, and update the pinning test in packages/features/test/sodax-swap.test.ts in the same commit.",
-  "receivers": []
+  "$comment": "Addresses the Clip fee on a SODAX swap may be paid to (docs/features/sodax-swaps.md). Committed with the code, never set by the environment: a build's CLIP_SODAX_FEE_RECEIVER must be one of these, or it offers no SODAX swaps (fails closed) and a mainnet build is refused. It lists one address, ColdAI LLC's. Change it only in a reviewed commit, and update the pinning test in packages/features/test/sodax-swap.test.ts in the same commit.",
+  "receivers": ["0x90291104f2D1ef9Ffe2Bc1635A3a270A09C8f313"]
 }
