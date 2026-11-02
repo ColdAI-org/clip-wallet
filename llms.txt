@@ -46,7 +46,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - ui: React screens and theme tokens. i18n: English + 11 languages.
 - route: findShortfall, RouteClient.quote / planPayOnHedera / trackRoute; settleOnHedera (Phase 3, SETTLE_DEPLOYMENTS). Planner vendored from ColdAI-org/clprouter.
 - security: threat intel (open lists, heuristics, optional Blockaid), approvals review/revoke, spam cleanup, securityFloorProblems.
-- features: staking, swaps, on-ramps, Secure Trade (Hedera), prices, Explore, LP positions.
+- features: staking, swaps, on-ramps, Secure Trade (Hedera), prices, Explore, LP positions. SODAX swaps between networks carry the disclosed 0.875 % Clip fee to ColdAI LLC, checked before signing (docs/features/sodax-swaps.md; kit split design: docs/features/sodax-kit-split.md).
 - social: contacts, Clip handles (contracts/handles), notifications, Discover.
 - plugins: Clip Plugins (SES sandbox page, offscreen host, npm install with integrity checks).
 - hardware: Ledger (WebHID), Keystone (QR). names: ENS, SNS, HNS, Clip handles.

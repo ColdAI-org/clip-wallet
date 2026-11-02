@@ -52,7 +52,9 @@ export default defineBackground({ type: { firefox: "module" }, main: () => start
   gecko id from the rdns. The icon must ship with the extension.
 - **Build environment.** `CLIP_WALLETCONNECT_PROJECT_ID`, partner keys (`CLIP_0X_API_KEY`, `CLIP_JUPITER_API_KEY`,
   `CLIP_MOONPAY_*`, `CLIP_BANXA_PARTNER`, `CLIP_C14_*`, `CLIP_COINGECKO_DEMO_KEY`, `CLIP_BLOCKAID_API_KEY`) from the
-  environment or `CLIP_*` lines in `.env`. Nothing else in `.env` is read.
+  environment or `CLIP_*` lines in `.env`. Nothing else in `.env` is read. SODAX swaps between networks (with the
+  disclosed 0.875 % Clip fee to ColdAI LLC) need `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER` in a mainnet
+  build, and a mainnet build with only one, or with a receiver that isn't reviewed, is refused.
 - **Security floor.** The open phishing lists are always on and refreshed daily; there is no option to switch them
   off, and `@clip-wallet/security` refuses a mainnet config that tries. Blockaid scanning is added only with a key.
 - **Mainnet checklist.** A config with mainnet enabled is refused at build time while `mainnetProblems()` lists anything

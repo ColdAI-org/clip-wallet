@@ -13,7 +13,7 @@ place a provider works.
 | Area | Interface | Providers |
 | --- | --- | --- |
 | Staking | `StakingProvider` | Hedera (native), Solana (native delegation), Cardano (pools), Polkadot (nomination pools), NEAR (staking pools), Tezos, Sui, Aptos (delegation pools), TON (Tonstakers) |
-| Swaps | `SwapProvider` | 0x v2 (EVM), Jupiter (Solana), SaucerSwap V2 (Hedera), Minswap (Cardano), Asset Hub (Polkadot), Ref Finance (NEAR), Sirius (Tezos), Aftermath (Sui), Hyperion (Aptos), AVNU (Starknet), STON.fi (TON), Stellar DEX path payments, Tinyman v2 (Algorand) |
+| Swaps | `SwapProvider` | 0x v2 (EVM), Jupiter (Solana), SaucerSwap V2 (Hedera), Minswap (Cardano), Asset Hub (Polkadot), Ref Finance (NEAR), Sirius (Tezos), Aftermath (Sui), Hyperion (Aptos), AVNU (Starknet), STON.fi (TON), Stellar DEX path payments, Tinyman v2 (Algorand); between networks, SODAX (ten EVM mainnets, with the 0.875 % Clip fee; mainnet builds that set it up) |
 | On-ramps | `OnRampProvider` | MoonPay, Banxa, C14 hosted widgets |
 | Secure Trade | | Hedera peer-to-peer atomic swaps, direct or scheduled, shared as links |
 | Prices | `PriceFeed` | CoinGecko, cached and rate-limited, last-known fallback |
@@ -35,9 +35,20 @@ Providers that need a partner key read it from the **build environment**, never 
 | `CLIP_C14_CLIENT_ID`, `CLIP_C14_ASSET_IDS` | C14 |
 | `CLIP_COINGECKO_DEMO_KEY` | CoinGecko prices (optional) |
 | `CLIP_BLOCKAID_API_KEY` | Blockaid scanning (see [Security services](./security.md)) |
+| `CLIP_SODAX_SERVER_URL`, `CLIP_SODAX_FEE_RECEIVER` | SODAX swaps between networks, mainnet builds only: the ExClip server (https) that holds SODAX's key, and ColdAI LLC's address for the Clip fee, which must be on the reviewed list. Both or neither. |
 
 Without its key, a feature says in plain words that it isn't switched on in this build. `clipWallet()` reads these
 from the environment or from `CLIP_*` lines in the project's `.env`, and never logs them.
+
+## SODAX swaps and the Clip fee
+
+Swaps between networks go through SODAX and carry the **Clip fee: 0.875 % of the amount sold, paid to ColdAI LLC**,
+in SODAX's exact-amount fee form. The quote shows it apart from the network fee, and the review shows the fee, who
+receives it and where the swap arrives. They are off unless a mainnet build sets both settings above, and the build
+is refused when only one is set or the receiver isn't on the reviewed list
+(`packages/features/src/swap/sodax-fee-receivers.json`, empty in the repository). The whole story, with the SDK
+sources: [SODAX swaps and the Clip fee](repo:docs/features/sodax-swaps.md). Kit wallets: the
+[split-contract design](repo:docs/features/sodax-kit-split.md).
 
 ## Safety model
 
@@ -45,6 +56,8 @@ from the environment or from `CLIP_*` lines in the project's `.env`, and never l
   person's own address, so no keypair is ever made.
 - **Exact approvals.** Swaps ask for an allowance of exactly the amount sold, never unlimited.
 - **Quotes are checked.** A 0x quote whose target or spender isn't the expected contract is refused.
+- **The Clip fee is checked.** A SODAX swap is refused before signing unless its one fee entry pays a reviewed
+  receiver at most 0.875 % of the amount sold and every other byte is what the wallet planned (`checkSodaxSwap`).
 - **Wallet-built requests are re-checked, not trusted.** `refineDecoded()` replaces a blind decode of a wallet-built
   request only when its verifier passes on the actual bytes and the module simulated it without failure. Dapp requests
   are never touched, and requests are matched by object identity, so a dapp can't pose as one.
