@@ -309,6 +309,10 @@ code {
   font-size: 12px;
   font-weight: 400;
 }
+/* A hint someone decides on (who gets the Clip fee): AA 4.5:1 on every surface, which --clip-text-3 isn't. */
+.clip-row__hint--strong {
+  color: var(--clip-text-2);
+}
 
 .clip-chip {
   display: inline-flex;

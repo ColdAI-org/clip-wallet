@@ -138,6 +138,7 @@ export function Swap(props: { sell?: string; buy?: string; /** Discover: symbol 
                 label={t("swap.fee", { name: quote.clipFee.name })}
                 value={`${f.percent(quote.clipFee.pct, { maxFraction: 3 })} · ${quote.clipFee.display}`}
                 hint={t("swap.feeHint", { amount: quote.sell.display, receiver: quote.clipFee.receivedBy })}
+                hintTone="strong"
               />
             )}
             {quote.clipFee && <Row label={t("swap.networkFee")} value={t("swap.networkFeeLater")} />}

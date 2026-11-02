@@ -230,6 +230,8 @@ describe("feature screens", () => {
     await user.click(screen.getByRole("button", { name: "Get price" }));
     const fee = (await screen.findByText("Clip fee")).closest(".clip-row") as HTMLElement;
     expect(fee).toHaveTextContent("Clip fee0.875% · 0.875 USDCPart of the 100 USDC you pay. It goes to ColdAI LLC.");
+    // Who gets it is part of the decision: AA text, not the muted hint colour (theme.test.ts).
+    expect(within(fee).getByText("Part of the 100 USDC you pay. It goes to ColdAI LLC.")).toHaveClass("clip-row__hint--strong");
     const network = screen.getByText("Network fee").closest(".clip-row") as HTMLElement;
     expect(network).toHaveTextContent("Paid on top, shown before you approve");
     // Where it arrives is Advanced mode only: it lands in your own account either way.

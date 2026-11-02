@@ -1,6 +1,6 @@
 /** Stake, Swap, Buy and Secure Trade screens, plus how you reach them (Explore tab, Home, asset detail, deep link). */
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import { Share } from "react-native";
+import { Share, StyleSheet } from "react-native";
 import { App } from "../src/App";
 import { Stake } from "../src/screens/Stake";
 import { Swap } from "../src/screens/Swap";
@@ -110,6 +110,10 @@ describe("Swap", () => {
     expect(screen.getByText("Clip fee")).toBeTruthy();
     expect(screen.getByText("0.875% · 0.000875 ETH")).toBeTruthy();
     expect(screen.getByText("Part of the 0.1 ETH you pay. It goes to ColdAI LLC.")).toBeTruthy();
+    // Who gets it is part of the decision: the labels' AA colour (text-2), not the muted hint colour.
+    const colour = (text: string) => StyleSheet.flatten(screen.getByText(text).props.style).color;
+    expect(colour("Part of the 0.1 ETH you pay. It goes to ColdAI LLC.")).toBe(colour("Clip fee"));
+    expect(colour("Part of the 0.1 ETH you pay. It goes to ColdAI LLC.")).not.toBe(colour(QUOTE.atLeast));
     expect(screen.getByText("Network fee")).toBeTruthy();
     expect(screen.getByText("Paid on top, shown before you approve")).toBeTruthy();
     // Where it arrives is Advanced mode only: it lands in your own account either way.
