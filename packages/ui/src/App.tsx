@@ -93,8 +93,10 @@ function Routes() {
         <Onboarding
           onFinished={async () => {
             setOnboarding(false);
-            await refresh();
+            // Home before the refresh, so a tap made while it runs isn't undone. (Restore and link, above, refresh
+            // first: "/" while the state still says "empty" would flash the welcome screen.)
             navigate("/", { replace: true });
+            await refresh();
           }}
         />
       </div>

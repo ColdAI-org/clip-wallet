@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TransactionApproval, ConnectApproval } from "../src/screens/Approval";
 import { Home } from "../src/screens/Home";
@@ -332,6 +332,55 @@ describe("WalletApp onboarding", () => {
     await user.type(screen.getByLabelText("Type it again"), "correct horse battery staple");
     await user.click(screen.getByRole("button", { name: "Create wallet" }));
     expect(await screen.findByRole("heading", { name: "Your recovery phrase" })).toBeInTheDocument();
+  });
+
+  it("goes home as it finishes, so a tap made while the state refreshes isn't undone", async () => {
+    const user = userEvent.setup();
+    let status: "empty" | "unlocked" = "empty";
+    let notify: () => void = () => undefined;
+    // The refresh after "Open my wallet" waits until the test lets it through.
+    let hold: Promise<void> | undefined;
+    let refreshed = false;
+    const client = fakeClient({
+      getState: vi.fn(async () => {
+        const held = hold;
+        await held;
+        if (held) refreshed = true;
+        return state({ status });
+      }),
+      createWallet: vi.fn(async () => {
+        status = "unlocked";
+        notify();
+      }),
+      onChange: (cb) => {
+        notify = cb;
+        return () => undefined;
+      },
+    });
+    // On its own, as the extension renders it: one provider, which hears the vault unlock.
+    render(<WalletApp client={client} memoryRouter />);
+    await user.click(await screen.findByRole("button", { name: "Create a new wallet" }));
+    await user.type(screen.getByLabelText("Password"), "correct horse battery staple");
+    await user.type(screen.getByLabelText("Type it again"), "correct horse battery staple");
+    await user.click(screen.getByRole("button", { name: "Create wallet" }));
+    await user.click(await screen.findByRole("button", { name: "Show my phrase" }));
+    await user.click(screen.getByRole("checkbox", { name: "I wrote these words down" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    // The fake client's phrase; the check asks for three of its words at random.
+    for (const [i, word] of "alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo lima".split(" ").entries()) {
+      const field = screen.queryByLabelText(`Word #${i + 1}`);
+      if (field) await user.type(field, word);
+    }
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await user.click(await screen.findByRole("button", { name: "Not now" }));
+    let release: () => void = () => undefined;
+    hold = new Promise((r) => (release = r));
+    await user.click(await screen.findByRole("button", { name: "Open my wallet" }));
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    release();
+    await waitFor(() => expect(refreshed).toBe(true));
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
   });
 });
 
