@@ -196,10 +196,43 @@ purpose; not used or transferred to determine creditworthiness or for lending.
 > pages' CSP (`script-src 'self' 'wasm-unsafe-eval'`) blocks `eval` there regardless. Sources for every bundled
 > file: the source package and `README-AMO.md` inside it.
 
+## A mainnet build with SODAX swaps
+
+Not this package: the testnet build offers no SODAX swaps. A mainnet build made with `CLIP_SODAX_SERVER_URL` and
+`CLIP_SODAX_FEE_RECEIVER` (`docs/features/sodax-swaps.md`) changes the answers below. The fee wording needs the
+same legal review as the terms of use (section 4, "Fees").
+
+**Long description.** Replace the "Swap, stake and buy" paragraph with:
+
+> **Swap, stake and buy.** Built-in swaps, staking and buying, each ending in the same clear approval. Swaps from
+> one network to another go through SODAX and carry the **Clip fee: 0.875 % of the amount you sell, paid to ColdAI
+> LLC**. The quote and the approval show it, as a percentage and in the token you sell, apart from the network
+> fee. Swaps within one network carry no Clip fee.
+
+**Host permissions.** Two more rows, both only in such a build:
+
+| Host | Why |
+|---|---|
+| The ExClip server's origin (`CLIP_SODAX_SERVER_URL`) | Swaps between networks: SODAX's token list and quotes (the assets, their networks and the amount); after a swap is sent, the sent transaction and the user's addresses on both networks, which it passes to SODAX. The server holds SODAX's API key, so the extension has none. |
+| `https://rpc.soniclabs.com/*` | Sonic, the network SODAX runs on: looks up the user's SODAX account there and checks each token's SODAX asset before a swap is built. |
+
+**Data usage.** "Financial and payment information" adds: "and, for swaps between networks, the ExClip swap server
+and SODAX."
+
+**Reviewer notes.** Add:
+
+> Swaps between networks (SODAX) carry a disclosed fee, the Clip fee: 0.875 % of the amount sold, paid to ColdAI
+> LLC. The quote shows "Clip fee 0.875% · 0.875 USDC" (selling 100 USDC); the approval shows "Clip fee", "Fee goes
+> to: ColdAI LLC, 0x…" and, separately, "Network fee". The wallet refuses to sign a swap whose fee is higher or
+> paid to another address.
+
 ## Before submitting
 
 - [ ] Legal review of `docs/legal/privacy-policy.md` and `docs/legal/terms-of-use.md`; publish both and put the
       URLs above and in the store forms.
+- [ ] A mainnet build with SODAX swaps: use [A mainnet build with SODAX swaps](#a-mainnet-build-with-sodax-swaps)
+      for the description, host permissions, data usage and reviewer notes, once its fee wording has passed legal
+      review.
 - [ ] Replace the placeholder `externally_connectable` origin (`passkey.clipwallet.example`, from
       `packages/extension-kit/src/app-settings.ts`) or drop the entry.
 - [ ] Decide on Clip Plugins in the store build (see "Remote code").
