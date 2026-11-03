@@ -909,11 +909,11 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@txnlab/use-wallet@5.0.1(algosdk@3.8.0))(algosdk@3.8.0)
       '@txnlab/use-wallet-react':
-        specifier: 5.0.1
-        version: 5.0.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 5.1.1
+        version: 5.1.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@txnlab/use-wallet-ui-react':
         specifier: 1.2.1
-        version: 1.2.1(@txnlab/use-wallet-react@5.0.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.2.1(@txnlab/use-wallet-react@5.1.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       algosdk:
         specifier: ^3.8.0
         version: 3.8.0
@@ -6598,6 +6598,7 @@ packages:
 
   '@ledgerhq/react-native-hw-transport-ble@6.41.0':
     resolution: {integrity: sha512-MM3WsIXgCWXC85qfLIqUUPz6hvhl/VxSS1TZxZ7xALrtXhgnDpS2h/MuN/mYbbTwPg7/CHnLIeQhb+UI/Bc30w==}
+    deprecated: This package is no longer maintained. Use @ledgerhq/device-transport-kit-react-native-ble instead.
 
   '@ledgerhq/types-live@6.125.0':
     resolution: {integrity: sha512-hufNu0R3Ulq4/U8NB2gnoeLruAX42ZlRsfEdtOi8k1FP25/VUn8PfxUZpfSnhYbQSi1JRjoo6PFQgsdFRLDaJQ==}
@@ -10476,8 +10477,8 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@tanstack/react-store@0.11.1':
-    resolution: {integrity: sha512-HaIGKI3YLmjBYIvy5DFDY23oNaYZIsTZfngey07Uh5iLVJgM3bIGCnZeOFOqzjFld9JHWcaHJnasD/bKoGKwJQ==}
+  '@tanstack/react-store@0.11.2':
+    resolution: {integrity: sha512-oj5O5DmiMWE+ih+SioX2ayC1kbK7d3fpLx0B75fPJr9nY3zU+hoW010yr64qXsY/9fyiLVE2bn5mGNV3owm8RQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -10490,6 +10491,9 @@ packages:
 
   '@tanstack/store@0.11.1':
     resolution: {integrity: sha512-mzTOBhypOuDJAy/D8n2MfUZ1HFkXnmSETviRyhqEC8LUE7/IZQExOTxMANj3KjTofYTkFNpBY67qaVrT41YccA==}
+
+  '@tanstack/store@0.11.2':
+    resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
 
   '@tanstack/virtual-core@3.17.11':
     resolution: {integrity: sha512-+ILjvtHup6Y2hzQ6YzwMgX1Q+oQpxEGOXCEsCNaPoIP0VxMbizIBTmYTDtkerkIQS8/CbP1BRuyt8V/8BCsy1g==}
@@ -10791,8 +10795,8 @@ packages:
       '@txnlab/use-wallet': ^5.0.0
       algosdk: ^3.5.2
 
-  '@txnlab/use-wallet-react@5.0.1':
-    resolution: {integrity: sha512-3SlSXEA35srj5hZUFVrT3YZp/yJF7fxEy9PJpM8nEnuUiHNffKt6Gz0Y7wGHLbVRaMQOOe1sLd73bAll0jS9zQ==}
+  '@txnlab/use-wallet-react@5.1.1':
+    resolution: {integrity: sha512-EFEQqMohEDApclgfvb3I2pBH7kTxeT3FItascjp2IpE+FVr87tNHnQMIsCfA0Vgf6/InqUEONViJEjHYTPjaeQ==}
     engines: {node: '>=22'}
     peerDependencies:
       algosdk: ^3.0.0
@@ -10812,6 +10816,12 @@ packages:
     engines: {node: '>=22'}
     peerDependencies:
       algosdk: ^3.0.0
+
+  '@txnlab/use-wallet@5.1.1':
+    resolution: {integrity: sha512-Coz34EUz7rw9LDRbhtcsKSpRi/28SMMNXRI5/mwbcZuZlb6JdTlQbbxHLw/OY5FDmLE1K3qCgf9jfSMW2rzQAQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      algosdk: ^3.7.0
 
   '@txnlab/utils-ts@0.1.0':
     resolution: {integrity: sha512-Zt17JjiAxP8EbJFaAoNeilvJirM+961y5HIJ3V3hiSa9njW3HYlXcCtB7yBs99bCJbFNAezV5MZJiXXFEVEegA==}
@@ -37905,9 +37915,9 @@ snapshots:
       '@tanstack/query-core': 5.104.1
       react: 19.3.0
 
-  '@tanstack/react-store@0.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-store@0.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/store': 0.11.1
+      '@tanstack/store': 0.11.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.7.0(react@18.3.1)
@@ -37919,6 +37929,8 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@tanstack/store@0.11.1': {}
+
+  '@tanstack/store@0.11.2': {}
 
   '@tanstack/virtual-core@3.17.11': {}
 
@@ -38367,20 +38379,20 @@ snapshots:
       '@txnlab/use-wallet': 5.0.1(algosdk@3.8.0)
       algosdk: 3.8.0
 
-  '@txnlab/use-wallet-react@5.0.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@txnlab/use-wallet-react@5.1.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/react-store': 0.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@txnlab/use-wallet': 5.0.1(algosdk@3.8.0)
+      '@tanstack/react-store': 0.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@txnlab/use-wallet': 5.1.1(algosdk@3.8.0)
       algosdk: 3.8.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@txnlab/use-wallet-ui-react@1.2.1(@txnlab/use-wallet-react@5.0.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@txnlab/use-wallet-ui-react@1.2.1(@txnlab/use-wallet-react@5.1.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@floating-ui/react': 0.27.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@headlessui/react': 2.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query': 5.100.10(react@18.3.1)
-      '@txnlab/use-wallet-react': 5.0.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@txnlab/use-wallet-react': 5.1.1(algosdk@3.8.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@txnlab/utils-ts': 0.1.0
       clsx: 2.1.1
       react: 18.3.1
@@ -38390,6 +38402,12 @@ snapshots:
   '@txnlab/use-wallet@5.0.1(algosdk@3.8.0)':
     dependencies:
       '@tanstack/store': 0.11.1
+      algosdk: 3.8.0
+      tweetnacl: 1.0.3
+
+  '@txnlab/use-wallet@5.1.1(algosdk@3.8.0)':
+    dependencies:
+      '@tanstack/store': 0.11.2
       algosdk: 3.8.0
       tweetnacl: 1.0.3
 
@@ -38753,7 +38771,7 @@ snapshots:
 
   '@types/ws@8.18.2':
     dependencies:
-      '@types/node': 24.19.1
+      '@types/node': 22.20.5
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -45457,7 +45475,7 @@ snapshots:
 
   compressible@2.0.18:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   compression@1.8.2(supports-color@10.2.2):
     dependencies:

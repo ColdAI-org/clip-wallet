@@ -49,7 +49,7 @@
     "@txnlab/use-wallet-defly": "5.0.1",
     "@txnlab/use-wallet-exodus": "5.0.1",
     "@txnlab/use-wallet-pera": "5.0.1",
-    "@txnlab/use-wallet-react": "5.0.1",
+    "@txnlab/use-wallet-react": "5.1.1",
     "@txnlab/use-wallet-ui-react": "1.2.1",
     "algosdk": "^3.8.0",
     "buffer": "6.0.3",
