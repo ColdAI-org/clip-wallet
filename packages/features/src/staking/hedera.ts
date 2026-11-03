@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
-import { buildStakeUpdate, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
+import { type ChainContext, ClipError, type Network } from "@coldai/clip-wallet-core";
+import { buildStakeUpdate, mirrorFor, resolvePayer } from "@coldai/clip-wallet-chains-hedera";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { formatUnits, percent } from "../util.js";
 import type { StakeBuild, StakingProvider } from "./types.js";

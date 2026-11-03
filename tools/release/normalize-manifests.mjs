@@ -16,22 +16,22 @@ const reactPeer = { react: "^19.0.0", "react-dom": "^19.0.0" };
 
 /** Descriptions, keywords and peers per package. */
 export const EXTRA = {
-  "@clip-wallet/core": { description: "Clip Wallet's shared contract: networks, assets, the Vault and ChainModule interfaces, DecodedRequest, ClipError" },
-  "@clip-wallet/config": { description: "The typed clip.config.ts schema for Clip Wallet and kit-built wallets: identity, networks, routing, mainnet checklist" },
-  "@clip-wallet/vault": { description: "The only Clip Wallet package that touches recovery phrases and private keys: derivation, encrypted storage, approval-bound signing, passkey unlock" },
-  "@clip-wallet/1mask": { description: "1Mask: one wallet for every dapp. EIP-1193/6963, Wallet Standard, CIP-30, TON Connect, NEAR, Stellar, Algorand, Beacon and WalletConnect connectors" },
-  "@clip-wallet/engine": { description: "Clip Wallet's environment-free orchestration: approvals, permissions, portfolio, send/receive, 1Mask and WalletConnect hosting" },
-  "@clip-wallet/extension-kit": {
+  "@coldai/clip-wallet-core": { description: "Clip Wallet's shared contract: networks, assets, the Vault and ChainModule interfaces, DecodedRequest, ClipError" },
+  "@coldai/clip-wallet-config": { description: "The typed clip.config.ts schema for Clip Wallet and kit-built wallets: identity, networks, routing, mainnet checklist" },
+  "@coldai/clip-wallet-vault": { description: "The only Clip Wallet package that touches recovery phrases and private keys: derivation, encrypted storage, approval-bound signing, passkey unlock" },
+  "@coldai/clip-wallet-1mask": { description: "1Mask: one wallet for every dapp. EIP-1193/6963, Wallet Standard, CIP-30, TON Connect, NEAR, Stellar, Algorand, Beacon and WalletConnect connectors" },
+  "@coldai/clip-wallet-engine": { description: "Clip Wallet's environment-free orchestration: approvals, permissions, portfolio, send/receive, 1Mask and WalletConnect hosting" },
+  "@coldai/clip-wallet-extension-kit": {
     description: "Build a branded Clip Wallet browser extension with WXT: background, pages, 1Mask wiring and the security floor, configured by clip.config.ts",
     peerDependencies: { wxt: "^0.21.0", "@wxt-dev/module-react": "^1.2.0", ...reactPeer },
   },
-  "@clip-wallet/ui": { description: "Clip Wallet's React screens, components and theme tokens", peerDependencies: reactPeer },
-  "@clip-wallet/i18n": {
+  "@coldai/clip-wallet-ui": { description: "Clip Wallet's React screens, components and theme tokens", peerDependencies: reactPeer },
+  "@coldai/clip-wallet-i18n": {
     description: "Clip Wallet's translation layer: a small ICU message subset over Intl, 11 languages, optional React bindings",
     peerDependencies: { react: "^19.0.0" },
     peerDependenciesMeta: { react: { optional: true } },
   },
-  "@clip-wallet/connect": {
+  "@coldai/clip-wallet-connect": {
     description: "Clip Connect: wallet-agnostic dapp SDK. One connect() for Clip Wallet and any EIP-6963, Wallet Standard or WalletConnect wallet; CAIP-10 accounts, pay() with EIP-5792 + ERC-7682 auxiliary funds, React, wagmi and Solana adapters",
     keywords: ["clip-wallet", "wallet", "web3", "eip-6963", "eip-5792", "erc-7682", "wallet-standard", "walletconnect", "wagmi", "react"],
     peerDependencies: {
@@ -47,18 +47,18 @@ export const EXTRA = {
       "@walletconnect/ethereum-provider": { optional: true },
     },
   },
-  "@clip-wallet/route": { description: "Route and fund on CLPRouter: shortfalls, quotes, pay-on-Hedera and settle-on-Hedera planning" },
-  "@clip-wallet/security": { description: "Clip Wallet security services: phishing lists, transaction checks, approvals review, address poisoning and hidden-token cleanup" },
-  "@clip-wallet/features": { description: "Clip Wallet features as background services: staking, swaps, on-ramps, prices, featured dapps" },
-  "@clip-wallet/social": { description: "Clip Wallet social layer: contacts, Clip handles on Hedera, notifications and Discover" },
-  "@clip-wallet/plugins": { description: "Clip Plugins: small, SES-sandboxed wallet extensions installed from npm with integrity checks" },
-  "@clip-wallet/hardware": { description: "Hardware wallet accounts for Clip Wallet: Ledger (WebHID) and Keystone (QR); every signature is checked against what was approved" },
-  "@clip-wallet/names": { description: "Name resolution for Clip Wallet: ENS, SNS, HNS and Clip handles to an address and the network it implies" },
-  "@clip-wallet/backup-client": { description: "Client for the Clip Wallet passkey backup service; moves opaque encrypted blobs, never keys" },
-  "@clip-wallet/link": { description: "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging" },
-  "@clip-wallet/media-client": { description: "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy" },
-  "@clip-wallet/kit-modules": { description: "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet" },
-  "@clip-wallet/chains-tron": {
+  "@coldai/clip-wallet-route": { description: "Route and fund on CLPRouter: shortfalls, quotes, pay-on-Hedera and settle-on-Hedera planning" },
+  "@coldai/clip-wallet-security": { description: "Clip Wallet security services: phishing lists, transaction checks, approvals review, address poisoning and hidden-token cleanup" },
+  "@coldai/clip-wallet-features": { description: "Clip Wallet features as background services: staking, swaps, on-ramps, prices, featured dapps" },
+  "@coldai/clip-wallet-social": { description: "Clip Wallet social layer: contacts, Clip handles on Hedera, notifications and Discover" },
+  "@coldai/clip-wallet-plugins": { description: "Clip Plugins: small, SES-sandboxed wallet extensions installed from npm with integrity checks" },
+  "@coldai/clip-wallet-hardware": { description: "Hardware wallet accounts for Clip Wallet: Ledger (WebHID) and Keystone (QR); every signature is checked against what was approved" },
+  "@coldai/clip-wallet-names": { description: "Name resolution for Clip Wallet: ENS, SNS, HNS and Clip handles to an address and the network it implies" },
+  "@coldai/clip-wallet-backup-client": { description: "Client for the Clip Wallet passkey backup service; moves opaque encrypted blobs, never keys" },
+  "@coldai/clip-wallet-link": { description: "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging" },
+  "@coldai/clip-wallet-media-client": { description: "Decides what an untrusted NFT media URL may become; shared by the wallet UI and the media proxy" },
+  "@coldai/clip-wallet-kit-modules": { description: "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet" },
+  "@coldai/clip-wallet-chains-tron": {
     description: "TRON ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
     keywords: ["clip-wallet", "wallet", "tron", "chain-module"],
   },
@@ -89,19 +89,19 @@ const FAMILY = {
   antelope: "Antelope (Vaulta, Telos, XPR Network)",
 };
 for (const [f, label] of Object.entries(FAMILY)) {
-  EXTRA[`@clip-wallet/chains-${f}`] = {
+  EXTRA[`@coldai/clip-wallet-chains-${f}`] = {
     description: `${label} ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys`,
     keywords: ["clip-wallet", "wallet", f, "chain-module"],
   };
 }
-EXTRA["@clip-wallet/chains-fuel"] = {
+EXTRA["@coldai/clip-wallet-chains-fuel"] = {
   description: "Fuel ChainModule for Clip Wallet: builds and decodes transactions in plain words, dry-runs contract calls; never touches keys",
   keywords: ["clip-wallet", "wallet", "fuel", "chain-module"],
 };
 
 /** Third-party code a package ships, with the licence text its NOTICE must carry (read from the vendored LICENSE). */
 const THIRD_PARTY = {
-  "@clip-wallet/route": [
+  "@coldai/clip-wallet-route": [
     {
       title: "the CLPRouter SDK planner, vendored from github.com/ColdAI-org/clprouter",
       files: "built into dist/ from src/vendor/clprouter-sdk",
@@ -120,16 +120,16 @@ const THIRD_PARTY = {
 const read = (file) => (existsSync(file) ? readFileSync(file, "utf8") : undefined);
 const rootLicense = readFileSync(join(root, "LICENSE"), "utf8");
 
-EXTRA["@clip-wallet/chains-multiversx"] = {
+EXTRA["@coldai/clip-wallet-chains-multiversx"] = {
   description: "MultiversX ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   keywords: ["clip-wallet", "wallet", "multiversx", "egld", "chain-module"],
 };
-EXTRA["@clip-wallet/chains-icp"] = {
+EXTRA["@coldai/clip-wallet-chains-icp"] = {
   description: "Internet Computer (ICP) ChainModule for Clip Wallet: builds and decodes ledger transfers in plain words; never touches keys",
   keywords: ["clip-wallet", "wallet", "icp", "internet-computer", "chain-module"],
 };
 
-EXTRA["@clip-wallet/chains-cosmos"] = {
+EXTRA["@coldai/clip-wallet-chains-cosmos"] = {
   description:
     "Cosmos SDK ChainModule for Clip Wallet (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia): builds and decodes transactions in plain words; never touches keys",
   keywords: ["clip-wallet", "wallet", "cosmos", "osmosis", "dydx", "provenance", "thorchain", "initia", "chain-module"],

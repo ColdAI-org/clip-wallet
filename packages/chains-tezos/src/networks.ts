@@ -1,4 +1,4 @@
-import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@coldai/clip-wallet-core";
 
 /**
  * Tezos networks. CAIP-2 (ChainAgnostic namespaces, tezos/caip2.md): "tezos:" + the full base58 chain id

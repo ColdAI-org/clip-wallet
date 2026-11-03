@@ -1,6 +1,6 @@
 # Solana adapter
 
-`clipSolanaAdapter()` from `@clip-wallet/connect/solana` returns a `StandardWalletAdapter` for Clip Wallet's Solana
+`clipSolanaAdapter()` from `@coldai/clip-wallet-connect/solana` returns a `StandardWalletAdapter` for Clip Wallet's Solana
 wallet, or for another installed Solana wallet if Clip isn't there, or `null` when there is none.
 `@solana/wallet-standard-wallet-adapter-base` is an optional peer.
 

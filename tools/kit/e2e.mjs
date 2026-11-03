@@ -76,7 +76,7 @@ function plistValue(xml, key) {
 try {
   step("Pack every publishable package");
   const list = packs({ repack: !args.includes("--no-pack") });
-  for (const n of ["@clip-wallet/extension-kit", "@clip-wallet/desktop-kit", "@clip-wallet/mobile-kit", "create-clip-wallet"]) {
+  for (const n of ["@coldai/clip-wallet-extension-kit", "@coldai/clip-wallet-desktop-kit", "@coldai/clip-wallet-mobile-kit", "create-clip-wallet"]) {
     if (!list.some((p) => p.name === n)) throw new Error(`${n} is not in .packs`);
   }
   check(list.length >= 34, `${list.length} tarballs in .packs (extension-kit, desktop-kit, mobile-kit, create-clip-wallet among them)`);
@@ -288,7 +288,7 @@ try {
   writeFileSync(
     cfgPath,
     cfgText
-      .replace('import { defineConfig } from "@clip-wallet/config";', 'import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@clip-wallet/config";')
+      .replace('import { defineConfig } from "@coldai/clip-wallet-config";', 'import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@coldai/clip-wallet-config";')
       .replace(/^ {2}mainnet: false,$/m, "  mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT },"),
   );
   try {

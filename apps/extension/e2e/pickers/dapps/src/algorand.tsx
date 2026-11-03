@@ -1,7 +1,7 @@
 /**
  * TxnLab use-wallet v5 + its stock UI (@txnlab/use-wallet-ui-react WalletButton), the documented setup with the
  * package's style.css, TestNet. Stock: Pera, Defly and Exodus adapters. ?variant=clip: the same plus
- * @clip-wallet/kit-modules/algorand's clipWallet() adapter, the documented way a wallet joins use-wallet v5.
+ * @coldai/clip-wallet-kit-modules/algorand's clipWallet() adapter, the documented way a wallet joins use-wallet v5.
  * use-wallet restores the last session on load (resumeSessions).
  */
 import "@txnlab/use-wallet-ui-react/dist/style.css";
@@ -10,7 +10,7 @@ import { WalletButton, WalletUIProvider } from "@txnlab/use-wallet-ui-react";
 import { pera } from "@txnlab/use-wallet-pera";
 import { defly } from "@txnlab/use-wallet-defly";
 import { exodus } from "@txnlab/use-wallet-exodus";
-import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+import { clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
 import { Account, expose, mount } from "./kit";
 import { withClip } from "./variant";
 

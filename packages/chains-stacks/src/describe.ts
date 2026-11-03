@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, type Msg, type Warning, msg } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type Msg, type Warning, msg } from "@coldai/clip-wallet-core";
 import { type CV, cvText, principalOf } from "./clarity.js";
 import { stxAsset } from "./networks.js";
 import { type PcPrincipal, type PostCondition, type StacksTx, AUTH_SPONSORED, PC_MODE, memoText } from "./tx.js";

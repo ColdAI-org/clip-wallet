@@ -3,7 +3,7 @@
  * pnpm verify:provenance: check that the Clip Wallet kit packages this wallet runs were built and published by the
  * kit's own CI, from its public repository, and that the tarball npm serves is the one that build produced.
  *
- * For every @clip-wallet/* package in the pinned release (and create-clip-wallet) it fetches npm's attestations
+ * For every @coldai/clip-wallet-* package in the pinned release (and create-clip-wallet) it fetches npm's attestations
  * (https://registry.npmjs.org/-/npm/v1/attestations/<name>@<version>) and checks:
  *   - a SLSA provenance attestation exists (npm publish --provenance, signed through Sigstore);
  *   - it names the expected source repository and a GitHub Actions workflow;
@@ -36,17 +36,17 @@ function packages() {
   for (const f of files.filter((x) => existsSync(join(root, x)))) {
     const pkg = read(f);
     for (const [name, range] of Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })) {
-      if (!/^(?:@clip-wallet\/|create-clip-wallet$)/.test(name)) continue;
+      if (!/^(?:@coldai\/clip-wallet-|create-clip-wallet$)/.test(name)) continue;
       if (!/^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(String(range))) throw new Error(`${f} must pin ${name} to one exact version (it has "${range}").`);
       pinned.set(name, String(range));
       if (/-kit$/.test(name)) kits.push(join(root, dirname(f), "node_modules", name, "package.json"));
     }
   }
-  const version = pinned.get("@clip-wallet/config") ?? [...pinned.values()][0];
-  if (!version) throw new Error("No @clip-wallet/* package is pinned in this project.");
+  const version = pinned.get("@coldai/clip-wallet-config") ?? [...pinned.values()][0];
+  if (!version) throw new Error("No @coldai/clip-wallet-* package is pinned in this project.");
   for (const kit of kits) {
     if (!existsSync(kit)) continue;
-    for (const d of Object.keys(JSON.parse(readFileSync(kit, "utf8")).dependencies ?? {})) if (d.startsWith("@clip-wallet/") && !pinned.has(d)) pinned.set(d, version);
+    for (const d of Object.keys(JSON.parse(readFileSync(kit, "utf8")).dependencies ?? {})) if (d.startsWith("@coldai/clip-wallet-") && !pinned.has(d)) pinned.set(d, version);
   }
   return [...pinned].map(([name, v]) => ({ name, version: v }));
 }

@@ -1,4 +1,4 @@
-import type { Network, NetworkId } from "@clip-wallet/core";
+import type { Network, NetworkId } from "@coldai/clip-wallet-core";
 import { METHOD_WS_STATE } from "./protocol.js";
 
 /**

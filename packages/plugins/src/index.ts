@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/plugins — Clip Plugins: small, sandboxed extensions (the MetaMask Snaps idea, narrower).
+ * @coldai/clip-wallet-plugins — Clip Plugins: small, sandboxed extensions (the MetaMask Snaps idea, narrower).
  *
  * v1 capabilities: transaction insights, name resolution, rate-limited notifications (+ optional network to
  * exact origins). A plugin can never sign, never see the recovery phrase, keys, the vault, storage or chrome.*;

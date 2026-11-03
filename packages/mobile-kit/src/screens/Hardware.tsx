@@ -11,7 +11,7 @@
  */
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
-import { DEVICE_FAMILIES, FAMILY_WORDS, userMessageOf, type HardwareAccountView, type HardwareApprovalState, type HardwareFamilyView, type HardwareKindView, type KeystoneRequestView, type PathStyleView } from "@clip-wallet/ui";
+import { DEVICE_FAMILIES, FAMILY_WORDS, userMessageOf, type HardwareAccountView, type HardwareApprovalState, type HardwareFamilyView, type HardwareKindView, type KeystoneRequestView, type PathStyleView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Checkbox, Chip, Choices, Empty, ErrorNote, Field, Screen, Spinner, Steps, T, Toggle } from "../ui/kit";
 import { AnimatedUrQr, UrScanner } from "../ui/ur";

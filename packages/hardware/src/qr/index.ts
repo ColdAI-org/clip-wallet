@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/hardware/qr — the browser-side half of Keystone support (camera + animated UR), with no
+ * @coldai/clip-wallet-hardware/qr — the browser-side half of Keystone support (camera + animated UR), with no
  * Ledger or Keystone SDK code, so UI pages can import it without pulling in device libraries.
  *
  * @module

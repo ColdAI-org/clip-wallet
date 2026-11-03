@@ -6,7 +6,7 @@
  * (COMPAT_UPDATE=1 COMPAT_EXTENSION=<baseline build>), so a passing run means dapps that don't know Clip see no
  * difference. See docs/compat.md.
  *
- *   pnpm --filter @clip-wallet/extension exec playwright test e2e/compat.spec.ts
+ *   pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/compat.spec.ts
  *   COMPAT_EXTENSION=/path/to/other/chrome-mv3 …   run against another build
  *   COMPAT_UPDATE=1 …                              re-record (only for a deliberate, documented change)
  */

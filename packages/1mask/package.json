@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/1mask",
+  "name": "@coldai/clip-wallet-1mask",
   "version": "0.1.0",
   "description": "1Mask: one wallet for every dapp. EIP-1193/6963, Wallet Standard, CIP-30, TON Connect, NEAR, Stellar, Algorand, Beacon and WalletConnect connectors",
   "keywords": [
@@ -124,7 +124,7 @@
   "dependencies": {
     "@aptos-labs/ts-sdk": "^7.3.0",
     "@aptos-labs/wallet-standard": "^2.0.0",
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@mysten/sui": "^2.33.2",
     "@mysten/wallet-standard": "^0.21.31",
     "@reown/walletkit": "^1.6.0",

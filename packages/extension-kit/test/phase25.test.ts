@@ -4,9 +4,9 @@
  * apart from the wallet's own analysis, a stuck plugin host is closed) and backup social sign-in.
  */
 import { describe, expect, it, vi } from "vitest";
-import type { DappRequest, DecodedRequest, Network, Warning } from "@clip-wallet/core";
-import { hideKey } from "@clip-wallet/security";
-import { PLUGIN_KEYS, type InstalledPlugin } from "@clip-wallet/plugins";
+import type { DappRequest, DecodedRequest, Network, Warning } from "@coldai/clip-wallet-core";
+import { hideKey } from "@coldai/clip-wallet-security";
+import { PLUGIN_KEYS, type InstalledPlugin } from "@coldai/clip-wallet-plugins";
 import { makeService, PASSWORD } from "./helpers";
 import { createPlugins, type OffscreenApi } from "../src/background/plugins";
 import { MemoryKV } from "../src/shared/storage";

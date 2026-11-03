@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type DappRequest } from "@clip-wallet/core";
-import { SolanaRpc, TOKEN_2022_PROGRAM, clusterOf } from "@clip-wallet/chains-solana";
+import { type ChainContext, ClipError, type DappRequest } from "@coldai/clip-wallet-core";
+import { SolanaRpc, TOKEN_2022_PROGRAM, clusterOf } from "@coldai/clip-wallet-chains-solana";
 import {
   type Instruction,
   address,

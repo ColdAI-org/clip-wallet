@@ -14,7 +14,7 @@ import {
   WALLET_ORIGIN,
   isWalletOrigin,
   msg,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { decodeUint, encodeBalanceOf, encodeTransferCall } from "./abi.js";
 import { addressBytes, addressBytesFromPublicKey, encodeAddress, isTronAddress, sameAddress } from "./address.js";

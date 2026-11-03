@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
 import {
   CARDANO_METHODS,
   type CborValue,
@@ -13,7 +13,7 @@ import {
   parseTransaction,
   utxoRef,
   witnessDatums,
-} from "@clip-wallet/chains-cardano";
+} from "@coldai/clip-wallet-chains-cardano";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { formatUnits, randomId } from "../util.js";

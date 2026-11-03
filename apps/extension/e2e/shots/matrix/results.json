@@ -132,19 +132,19 @@
     "levels": {
       "connect": {
         "status": "skip",
-        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @coldai/clip-wallet-extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
       },
       "sign": {
         "status": "skip",
-        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @coldai/clip-wallet-extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
       },
       "approval": {
         "status": "skip",
-        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @coldai/clip-wallet-extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
       },
       "send": {
         "status": "skip",
-        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
+        "why": "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @coldai/clip-wallet-extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID)."
       }
     },
     "shots": [],
@@ -668,7 +668,7 @@
   "near": {
     "target": "near",
     "network": "near:testnet",
-    "dapp": "@near-wallet-selector/core v10 + @clip-wallet/kit-modules/near in a local page, NEAR testnet",
+    "dapp": "@near-wallet-selector/core v10 + @coldai/clip-wallet-kit-modules/near in a local page, NEAR testnet",
     "dappWhy": "the wallet-selector example is a Next.js app over this; NEAR Connect (no module) is covered by 1Mask's unit tests",
     "levels": {
       "connect": {
@@ -856,7 +856,7 @@
   "algorand": {
     "target": "algorand",
     "network": "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe",
-    "dapp": "@txnlab/use-wallet v5 + @clip-wallet/kit-modules/algorand + algosdk in a local page, TestNet",
+    "dapp": "@txnlab/use-wallet v5 + @coldai/clip-wallet-kit-modules/algorand + algosdk in a local page, TestNet",
     "dappWhy": "use-wallet is what Algorand dapps (and the use-wallet examples) use; a local page avoids the example's build",
     "levels": {
       "connect": {

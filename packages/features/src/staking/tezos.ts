@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@clip-wallet/core";
-import { type StakePosition, type TezosModule, rpcFor, tezosModule, tzktFor } from "@clip-wallet/chains-tezos";
+import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@coldai/clip-wallet-core";
+import { type StakePosition, type TezosModule, rpcFor, tezosModule, tzktFor } from "@coldai/clip-wallet-chains-tezos";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { formatUnits, percent, shortAddress } from "../util.js";
 import type { StakeActionParams, StakeBuild, StakingProvider } from "./types.js";

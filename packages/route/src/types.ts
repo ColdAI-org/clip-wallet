@@ -1,4 +1,4 @@
-import type { AssetRef, DappRequest, NetworkId, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, DappRequest, NetworkId, TokenBalance } from "@coldai/clip-wallet-core";
 import type { Mode, RouteGraphData, RouteQuote, TrustTier } from "./clprouter.js";
 import type { RouterDeployment } from "./deployments.js";
 

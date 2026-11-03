@@ -7,7 +7,7 @@
  */
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import type { Notice, Notifier } from "@clip-wallet/social";
+import type { Notice, Notifier } from "@coldai/clip-wallet-social";
 
 const CHANNEL = "wallet";
 

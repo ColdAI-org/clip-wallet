@@ -1,5 +1,5 @@
 // The security floor has no switch. A mainnet configuration that tries to lower it is refused.
-import { securityFloorProblems } from "@clip-wallet/security";
+import { securityFloorProblems } from "@coldai/clip-wallet-security";
 
 console.log(securityFloorProblems({ testnet: false, threat: { openLists: false, newContractDays: 0 } }));
 // [

@@ -19,13 +19,13 @@ node scripts/dapp-matrix-balances.mjs --json
 ```
 
 Once an account holds its minimum, the matrix's L3 (sign and broadcast) runs for that family instead of skipping:
-`pnpm --filter @clip-wallet/extension matrix`.
+`pnpm --filter @coldai/clip-wallet-extension matrix`.
 
 ## Status (2026-10-05)
 
 Funded and confirmed by the matrix's L3: EVM, Hedera (both accounts), Solana, Sui, Cardano, Substrate, Starknet,
 Stellar, Tezos, Algorand. **Still needed:** Bitcoin (holds 546 sats, needs 5,000), Aptos (0.01 APT), TON (0.2 GRAM),
-NEAR (0.1 NEAR). Then run `pnpm --filter @clip-wallet/extension matrix -- -g "bitcoin|aptos|ton|near"`.
+NEAR (0.1 NEAR). Then run `pnpm --filter @coldai/clip-wallet-extension matrix -- -g "bitcoin|aptos|ton|near"`.
 
 ## Table
 
@@ -106,4 +106,4 @@ the XRPL testnet faucet API); everything else, and every account creation, is fo
 | dYdX, ZIGChain | dydx-testnet-4, zig-test-2 | `dydx1re86ed5ck45dnyex8ajvytrae4c5ct7xne8dmg`, `zig1re86ed5ck45dnyex8ajvytrae4c5ct7xm2vmeh` | dYdX `POST faucet.v4testnet.dydx.exchange/faucet/native-token` (unverified); faucet.zigchain.com (Cloudflare challenge) | | | not matrix targets (same provider as Osmosis) |
 | THORChain | none | `thor13pajudku86vd59c8wkr4ctwcxdy8qpnap6afpx` (mainnet) | no public testnet (stagenet uses real funds) | | | not testable without mainnet funds |
 
-Then: `pnpm --filter @clip-wallet/extension matrix -- -g "matrix: (cosmos|tron|fuel|chainflip|multiversx)"`.
+Then: `pnpm --filter @coldai/clip-wallet-extension matrix -- -g "matrix: (cosmos|tron|fuel|chainflip|multiversx)"`.

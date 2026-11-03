@@ -7,7 +7,7 @@ Stellar Wallets Kit (github.com/Creit-Tech/Stellar-Wallets-Kit) lists wallets as
 the module and we will review", listing any extra dependency (e.g. a Buffer polyfill). Ours needs none.
 
 Until it is merged, dApps can add it themselves:
-`StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule()] })` from `@clip-wallet/kit-modules/stellar`.
+`StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule()] })` from `@coldai/clip-wallet-kit-modules/stellar`.
 
 ## Prerequisites
 - [ ] Chrome Web Store listing and product URL.

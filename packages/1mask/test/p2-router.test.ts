@@ -1,4 +1,4 @@
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { installOneMask } from "../src/inpage/index.js";
 import { NETWORKS, makeHarness, tick } from "./helpers.js";

@@ -15,10 +15,10 @@ import type {
   TokenBalance,
   Msg,
   Warning,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { currentBgText } from "./i18n/bg";
 import type { PasskeyCeremony } from "./lib/passkey";
-import type { LocalePref } from "@clip-wallet/i18n";
+import type { LocalePref } from "@coldai/clip-wallet-i18n";
 
 export type VaultStatus = "empty" | "locked" | "unlocked";
 export type ThemePref = "system" | "light" | "dark";
@@ -141,7 +141,7 @@ export interface SettleAmountView {
   decimals: number;
 }
 
-/** Same shape as @clip-wallet/route's SettleFundingInfo (the UI words every sentence from it). */
+/** Same shape as @coldai/clip-wallet-route's SettleFundingInfo (the UI words every sentence from it). */
 export interface SettleFundingView {
   orderId: string;
   stage: "offer" | "paying" | "waiting" | "opened" | "delivered" | "closed" | "late" | "claiming" | "claimed" | "rejected";

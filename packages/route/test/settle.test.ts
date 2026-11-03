@@ -1,5 +1,5 @@
-import { ClipError } from "@clip-wallet/core";
-import type { AssetRef } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { AssetRef } from "@coldai/clip-wallet-core";
 import {
   decodeFunctionData,
   encodeAbiParameters,

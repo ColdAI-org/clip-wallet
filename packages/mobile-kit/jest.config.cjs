@@ -10,6 +10,6 @@ module.exports = {
   testEnvironmentOptions: { customExportConditions: ["development", "react-native", "require", "default"] },
   // pnpm keeps packages under node_modules/.pnpm/<name>@<ver>/node_modules/<name>; transform RN, Expo and workspace sources.
   transformIgnorePatterns: [
-    "node_modules/(?!(\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|@react-native/.*|expo(nent)?|@expo(nent)?/.*|expo-.*|react-native-.*|@clip-wallet/.*|@noble/.*|@scure/.*|zod|@hiero-ledger/.*))",
+    "node_modules/(?!(\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|@react-native/.*|expo(nent)?|@expo(nent)?/.*|expo-.*|react-native-.*|@coldai/clip-wallet-.*|@noble/.*|@scure/.*|zod|@hiero-ledger/.*))",
   ],
 };

@@ -5,7 +5,7 @@
 export function stripAppTokens(ua: string, name: string): string {
   const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const names = [name, name.replace(/\s+/g, "-"), slug, `${slug}-desktop`, "@clip-wallet/desktop"];
+  const names = [name, name.replace(/\s+/g, "-"), slug, `${slug}-desktop`, "@coldai/clip-wallet-desktop"];
   const re = new RegExp(`\\s(?:Electron|${[...new Set(names)].map(esc).join("|")})/\\S+`, "gi");
   return ua.replace(re, "");
 }

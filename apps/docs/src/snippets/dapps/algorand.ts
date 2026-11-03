@@ -1,6 +1,6 @@
 // use-wallet v5 lists only the adapters you pass: add Clip Wallet's.
 import { NetworkId, WalletManager } from "@txnlab/use-wallet";
-import { WALLET_ID, clipWallet } from "@clip-wallet/kit-modules/algorand";
+import { WALLET_ID, clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
 import algosdk from "algosdk";
 
 export const manager = new WalletManager({ wallets: [clipWallet()], defaultNetwork: NetworkId.TESTNET });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 import { createEngineDependencies } from "../src/wiring.js";
 import { publicNetworks } from "../src/public-networks.js";
 import { FakeVault } from "./fixtures.js";

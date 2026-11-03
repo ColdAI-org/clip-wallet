@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/1mask/inpage — runs in the page's MAIN world.
+ * @coldai/clip-wallet-1mask/inpage — runs in the page's MAIN world.
  *
  * Installs the EIP-1193 provider (announced via EIP-6963), the Solana and Bitcoin Wallet Standard
  * wallets, and a postMessage transport to the content script. Holds no secrets and makes no

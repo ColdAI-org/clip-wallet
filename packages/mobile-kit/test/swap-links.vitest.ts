@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DiscoverToken } from "@clip-wallet/social/views";
+import type { DiscoverToken } from "@coldai/clip-wallet-social/views";
 import { SOL_MINT, UNISWAP_CHAINS, externalSwapUrl } from "../src/lib/swap-links";
 
 const tok = (p: Partial<DiscoverToken>): DiscoverToken => ({ id: "x", name: "Token", symbol: "TKN", swap: { buy: "x", symbol: "TKN" }, source: "dexscreener", ...p });

@@ -50,7 +50,7 @@ export function packs({ repack = true } = {}) {
 
 /**
  * Point a project's kit dependencies at the local tarballs instead of npm: pnpm overrides in pnpm-workspace.yaml
- * (they apply to transitive @clip-wallet/* dependencies too). The project's package.json pins stay untouched.
+ * (they apply to transitive @coldai/clip-wallet-* dependencies too). The project's package.json pins stay untouched.
  */
 export function useLocalPacks(projectDir, list) {
   const file = join(projectDir, "pnpm-workspace.yaml");

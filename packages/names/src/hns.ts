@@ -11,7 +11,7 @@
  *
  * A .hbar name implies the Hedera ledger whose resolver answered, so networkIds is that one ledger.
  */
-import type { Family, NetworkId } from "@clip-wallet/core";
+import type { Family, NetworkId } from "@coldai/clip-wallet-core";
 import { getJson } from "./http.js";
 import type { Backend, ResolvedName } from "./types.js";
 

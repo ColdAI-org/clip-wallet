@@ -1,4 +1,4 @@
-# @clip-wallet/desktop-kit
+# @coldai/clip-wallet-desktop-kit
 
 The Clip Wallet desktop app (Electron: macOS, Windows, Linux) as a library. A wallet project keeps its identity
 (`clip.config.ts`, icons), `electron.vite.config.ts`, `electron-builder.config.cjs` and one-line entrypoints; the main
@@ -10,15 +10,15 @@ dapp browser with 1Mask for all 14 network families and the pages come from here
 ## Install
 
 ```sh
-npm i @clip-wallet/desktop-kit @clip-wallet/config electron electron-vite vite react react-dom
+npm i @coldai/clip-wallet-desktop-kit @coldai/clip-wallet-config electron electron-vite vite react react-dom
 ```
 
 ## Example
 
 ```ts
 // electron.vite.config.ts (in a create-clip-wallet project: import clipConfig from "../../clip.config", configDir: "../..")
-import { defineConfig as defineClipConfig } from "@clip-wallet/config";
-import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
+import { defineConfig as defineClipConfig } from "@coldai/clip-wallet-config";
+import { clipDesktop } from "@coldai/clip-wallet-desktop-kit/electron-vite";
 
 const clipConfig = defineClipConfig({ name: "Acme Wallet", rdns: "com.acme.wallet", networks: ["evm:*", "hedera", "solana"] });
 
@@ -27,15 +27,15 @@ export default clipDesktop({ config: clipConfig, root: import.meta.dirname });
 
 ```js
 // electron-builder.config.cjs
-const { electronBuilderConfig } = require("@clip-wallet/desktop-kit/builder");
+const { electronBuilderConfig } = require("@coldai/clip-wallet-desktop-kit/builder");
 module.exports = electronBuilderConfig({ configFile: "../../clip.config.ts", root: __dirname });
 ```
 
 | Entrypoint | File in the project | Import |
 | --- | --- | --- |
-| main process | `src/main/index.ts` | `import "@clip-wallet/desktop-kit/main"` |
-| wallet / approval / toolbar preload | `src/preload/wallet.ts` | `import "@clip-wallet/desktop-kit/preload/wallet"` |
-| dapp-tab preload (1Mask) | `src/preload/dapp.ts` | `import "@clip-wallet/desktop-kit/preload/dapp"` |
+| main process | `src/main/index.ts` | `import "@coldai/clip-wallet-desktop-kit/main"` |
+| wallet / approval / toolbar preload | `src/preload/wallet.ts` | `import "@coldai/clip-wallet-desktop-kit/preload/wallet"` |
+| dapp-tab preload (1Mask) | `src/preload/dapp.ts` | `import "@coldai/clip-wallet-desktop-kit/preload/dapp"` |
 | wallet window | `src/renderer/wallet/main.tsx` | `mountWallet()` from `/renderer` |
 | approval window | `src/renderer/approval/main.tsx` | `mountApproval()` from `/renderer` |
 | browser toolbar | `src/renderer/browser/main.tsx` | `mountBrowserChrome()` from `/renderer` |
@@ -75,7 +75,7 @@ Peer dependencies: `electron`, `electron-vite`, `vite`, `react`, `react-dom`. No
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

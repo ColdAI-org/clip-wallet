@@ -8,9 +8,9 @@ New in this stream (merged as-is, no edits to shared files):
 | `packages/chains-stellar` | `createStellarModule()`, `STELLAR_NETWORKS` (`stellar:testnet`, `stellar:pubnet`), `USDC_ISSUERS`, `classicAsset`, `buildAddAsset` / `buildRemoveAsset` (trustlines) |
 | `packages/chains-tezos` | `createTezosModule()`, `TEZOS_NETWORKS` (`tezos:NetXsqzbfFenSTS` shadownet, `tezos:NetXdQprcVkpaWU` mainnet; ghostnet is retired), `KNOWN_TOKENS`, `fromBeaconNetwork` / `beaconNetworkType`, `staking` (delegation + stake/unstake/finalize) |
 | `packages/chains-algorand` | `createAlgorandModule()` (default ARC-52 BIP32-Ed25519 `m/44'/283'/i'/0/0`, `{ scheme: "slip10" }` for `m/44'/283'/i'/0'/0'`), `ALGORAND_NETWORKS`, `ALGORAND_NETS`, `asaAssetKey`, `buildOptIn` / `buildOptOut` |
-| `packages/kit-modules` | `@clip-wallet/kit-modules/{near,stellar,algorand,tezos}`: Wallet Selector module, Stellar Wallets Kit module, use-wallet v5 adapter, Beacon wallet side |
+| `packages/kit-modules` | `@coldai/clip-wallet-kit-modules/{near,stellar,algorand,tezos}`: Wallet Selector module, Stellar Wallets Kit module, use-wallet v5 adapter, Beacon wallet side |
 | `packages/1mask/src/inpage/{near,stellar,algorand,tezos,injected-base,p2}.ts` | injected providers at `window.clipwallet.<family>` (+ NEAR Connect announcement) and the Beacon page relay; `installP2Providers` |
-| `packages/1mask/src/background/p2-families.ts` | allowlists (`p2InjectedAllowlist`), `createP2Dispatcher`, `BeaconRelay`, `P2_CONNECT_METHODS` (also `@clip-wallet/1mask/background/p2`) |
+| `packages/1mask/src/background/p2-families.ts` | allowlists (`p2InjectedAllowlist`), `createP2Dispatcher`, `BeaconRelay`, `P2_CONNECT_METHODS` (also `@coldai/clip-wallet-1mask/background/p2`) |
 | `packages/1mask/src/shared/p2-methods.ts` | wire method names, Stellar passphrases, Algorand genesis map |
 | `packages/1mask/src/walletconnect/p2-namespaces.ts` | WalletConnect namespaces `near`, `stellar`, `tezos`, `algorand` |
 | `packages/core/src/index.ts` | additive: `Nft.standard` + `nep171`, `fa2`, `arc3`, `arc19`, `arc69`; `Warning.code` + `account-takeover`, `account-closure`, `memo-required` |
@@ -108,7 +108,7 @@ export * from "./p2.js";
 
 ### apps/extension
 
-- `package.json`: `@clip-wallet/chains-{near,stellar,tezos,algorand}`, `@clip-wallet/kit-modules` (workspace), `buffer ^6.0.3`.
+- `package.json`: `@coldai/clip-wallet-chains-{near,stellar,tezos,algorand}`, `@coldai/clip-wallet-kit-modules` (workspace), `buffer ^6.0.3`.
 - `clip.config.ts`: `networks: ["evm:*", "hedera", "solana", "bitcoin", "near", "stellar", "tezos", "algorand"]` (mainnet still gated).
 - `src/background/wiring.ts`: `near: createNearModule()`, `stellar: createStellarModule()`, `tezos: createTezosModule()`,
   `algorand: createAlgorandModule()` in `chains`; `dapps: new OneMaskConnector(networks, { kv: opts.kv, name: opts.config.name, iconUrl: opts.iconUrl })`.
@@ -118,7 +118,7 @@ export * from "./p2.js";
 - `src/background/real.ts`: `CONNECT_METHODS` gains `...P2_CONNECT_METHODS` (`near:connect`, `stellar:connect`,
   `tezos:connect`, `algorand:connect`); `PLAIN_ETA` gains `near: 2, stellar: 6, tezos: 10, algorand: 4`; `OneMaskConnector`
   takes `{ kv, name, iconUrl }` and passes `tezosBeacon: lazyBeacon(...)` to the router. `lazyBeacon` installs the `buffer`
-  polyfill, then imports `@clip-wallet/kit-modules/tezos` and creates the peer with `storage` on the KV (`beacon:*` keys)
+  polyfill, then imports `@coldai/clip-wallet-kit-modules/tezos` and creates the peer with `storage` on the KV (`beacon:*` keys)
   and `dispatch` = `router.dispatch`.
 - `src/background/service.ts`: `FAMILIES` gains the four; address recognition uses only families with a module
   (`this.deps.chains[f]?.isAddress`) so fixture mode keeps working.

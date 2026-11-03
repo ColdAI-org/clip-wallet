@@ -1,4 +1,4 @@
-import { ClipError, type Warning, msg, titled, say } from "@clip-wallet/core";
+import { ClipError, type Warning, msg, titled, say } from "@coldai/clip-wallet-core";
 import { LocalForger, type ProtocolsHash } from "@taquito/local-forging";
 import { fromHex, hex, hostOf, isHex, textOf } from "./encoding.js";
 import { unpack } from "./micheline.js";

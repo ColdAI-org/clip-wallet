@@ -5,7 +5,7 @@ user can restore their wallet on a new device with the passkey that synced there
 at `https://clip-backup.doyoka-platform.workers.dev` with email sign-in **off** (no provider key set); see
 [docs/phase25/deploy.md](../../docs/phase25/deploy.md) for resources, rotation, teardown and how to switch sign-in on.
 
-Client: [`@clip-wallet/backup-client`](../../packages/backup-client) (wire protocol in its `src/protocol.ts`).
+Client: [`@coldai/clip-wallet-backup-client`](../../packages/backup-client) (wire protocol in its `src/protocol.ts`).
 UI: `packages/ui/src/screens/Backup*.tsx`; integration lines in `docs/phase2/integration/platform.md`.
 
 ## Threat model
@@ -115,15 +115,15 @@ Set `APP_URL` (where the link lands; the wallet reads `#/backup/sign-in?token=�
 
 ## Tests
 
-`pnpm --filter @clip-wallet/service-backup test` runs inside workerd via `@cloudflare/vitest-pool-workers`
+`pnpm --filter @coldai/clip-wallet-service-backup test` runs inside workerd via `@cloudflare/vitest-pool-workers`
 0.22 (Vitest 4, local Miniflare D1/R2; nothing remote). 46 tests (22 for social sign-in, with mocked token/JWKS endpoints and ID tokens signed offline), including the real
-`@clip-wallet/backup-client` driving the Worker end to end.
+`@coldai/clip-wallet-backup-client` driving the Worker end to end.
 
 Sources: Workers Vitest integration <https://developers.cloudflare.com/workers/testing/vitest-integration/>;
 PKCE S256 RFC 7636 §4.2 (test vector in the client tests); WebAuthn credential id ≤ 1023 bytes
 (W3C WebAuthn L3 §5.1 `rawId`/Credential ID).
 
-## Settings sync (`/v1/sync`, @clip-wallet/link)
+## Settings sync (`/v1/sync`, @coldai/clip-wallet-link)
 
 No account and no email: each request is signed with the device's Ed25519 sync key (derived from the recovery
 phrase in the vault, label `clip/sync/v1`), and data is filed under `space = SHA-256(public key)`. D1 holds opaque

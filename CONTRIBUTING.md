@@ -35,7 +35,7 @@ registered on GitHub). The release workflow refuses an unsigned tag.
 ```sh
 pnpm install --frozen-lockfile
 pnpm typecheck && pnpm test && pnpm harness            # required (AGENTS.md)
-pnpm --filter @clip-wallet/extension e2e               # if you touched the extension or a shared package
+pnpm --filter @coldai/clip-wallet-extension e2e               # if you touched the extension or a shared package
 scripts/repro-check.sh                                 # if you touched the build (needs Docker)
 actionlint                                             # if you touched .github/workflows
 ```

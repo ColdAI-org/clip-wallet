@@ -16,7 +16,7 @@ import {
   type SecurityClient,
   type SocialClient,
   type WalletClient,
-} from "@clip-wallet/ui";
+} from "@coldai/clip-wallet-ui";
 import type { DesktopInfo } from "../../shared/ipc";
 import { BridgeError, callWallet, desktop, unwrap } from "./bridge";
 

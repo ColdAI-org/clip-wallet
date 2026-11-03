@@ -1,6 +1,6 @@
-import { withoutTrailing } from "@clip-wallet/core";
-import { normalize } from "@clip-wallet/chains-solana";
-import { clusterOf } from "@clip-wallet/chains-solana";
+import { withoutTrailing } from "@coldai/clip-wallet-core";
+import { normalize } from "@coldai/clip-wallet-chains-solana";
+import { clusterOf } from "@coldai/clip-wallet-chains-solana";
 import { fetchJson } from "../util.js";
 import type { ProviderStatus, ThreatFinding, ThreatIntelProvider, TxCheckInput } from "./types.js";
 

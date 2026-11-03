@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createWalletConnectWallet, mapProposalNamespaces, type WalletKitLike, type WcSessionLike } from "../src/walletconnect/index.js";
 import { BTC_ADDR, NETWORKS, tick } from "./helpers.js";

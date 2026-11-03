@@ -3,7 +3,7 @@ import { RPC_ERRORS, RpcError, type StarknetRpc } from "./rpc.js";
 import { bytesToBigInt, hex, padAddress, toHexFelt } from "./util.js";
 
 /**
- * Account contracts. Default: OpenZeppelin account v0.17.0, the class @clip-wallet/vault uses for its default
+ * Account contracts. Default: OpenZeppelin account v0.17.0, the class @coldai/clip-wallet-vault uses for its default
  * Starknet address (STARKNET_OZ_ACCOUNT_CLASS_HASH, as in the starknet.js create-account guide). Both OZ classes
  * below and Argent's are declared on Sepolia and mainnet (starknet_getClass, 2026-10-03).
  *
@@ -66,7 +66,7 @@ export function deploymentData(publicKeyX: bigint, account: AccountClass = DEFAU
 }
 
 /**
- * Account address for a Stark public key. Shaped for @clip-wallet/vault's `addressOf` injection, e.g.
+ * Account address for a Stark public key. Shaped for @coldai/clip-wallet-vault's `addressOf` injection, e.g.
  * `addressOf: (family, pk) => family === "starknet" ? accountAddress(pk, { kind: "argent", classHash: ARGENT_ACCOUNT_CLASS_HASH }) : undefined`.
  */
 export function accountAddress(publicKey: Uint8Array, account: AccountClass = DEFAULT_ACCOUNT_CLASS): string {

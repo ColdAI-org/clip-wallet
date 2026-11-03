@@ -1,4 +1,4 @@
-# @clip-wallet/chains-cosmos
+# @coldai/clip-wallet-chains-cosmos
 
 Cosmos SDK `ChainModule` for Clip Wallet: Osmosis, dYdX, ZIGChain, Provenance, THORChain and Initia. It builds,
 decodes and simulates transactions and never touches keys. `prepare()` returns the 32-byte digest a Cosmos
@@ -22,8 +22,8 @@ own module instance. `createCosmosModule({ family })` answers only that family's
 | `initia` | `m/44'/60'/0'/0/i` | ethsecp256k1 | Initia L1 |
 
 ```ts
-import { createCosmosModule } from "@clip-wallet/chains-cosmos";
-import { COSMOS_NETWORKS, networksOfFamily } from "@clip-wallet/chains-cosmos/networks"; // no module code
+import { createCosmosModule } from "@coldai/clip-wallet-chains-cosmos";
+import { COSMOS_NETWORKS, networksOfFamily } from "@coldai/clip-wallet-chains-cosmos/networks"; // no module code
 const osmosis = createCosmosModule({ family: "cosmos" }); // also cosmosModule, provenanceModule, thorchainModule, initiaModule
 ```
 

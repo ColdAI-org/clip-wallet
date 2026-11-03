@@ -4,12 +4,12 @@
  */
 import { act, render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
-import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSecurityClient, createEnginePluginsClient, createEngineSocialClient, type EnginePlugins } from "@clip-wallet/engine";
-import { EngineHardware, createEngineHardwareClient } from "@clip-wallet/engine/hardware";
-import { createSocial } from "@clip-wallet/engine/social";
-import type { Notice } from "@clip-wallet/social";
+import { WalletEngine, MemoryKV, createEngineClient, createEngineFeaturesClient, createEngineSecurityClient, createEnginePluginsClient, createEngineSocialClient, type EnginePlugins } from "@coldai/clip-wallet-engine";
+import { EngineHardware, createEngineHardwareClient } from "@coldai/clip-wallet-engine/hardware";
+import { createSocial } from "@coldai/clip-wallet-engine/social";
+import type { Notice } from "@coldai/clip-wallet-social";
 import type { MobileWallet } from "../src/background/host";
-import { createLinkClient } from "@clip-wallet/ui";
+import { createLinkClient } from "@coldai/clip-wallet-ui";
 import { Events } from "../src/background/events";
 import { WalletProvider, type Route } from "../src/ui/context";
 import { BASE_SEPOLIA, FakeVault, SEPOLIA, makeDeps, makeEnv } from "../../engine/test/fixtures";

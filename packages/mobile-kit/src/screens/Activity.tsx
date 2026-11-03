@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import { formatFiat, relativeTime, shortAddress, useBgText, userMessageOf, type ActivityEntry } from "@clip-wallet/ui";
+import { formatFiat, relativeTime, shortAddress, useBgText, userMessageOf, type ActivityEntry } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Card, Chip, Empty, ErrorNote, Screen, Spinner, T } from "../ui/kit";
 import { IconArrowDown, IconArrowUp, IconCheck } from "../ui/icons";

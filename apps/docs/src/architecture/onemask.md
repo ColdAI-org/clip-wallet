@@ -16,9 +16,9 @@ flowchart LR
     P4["Beacon postMessage relay<br/>Hedera extension discovery"]
   end
   T["transport<br/>window.postMessage on a build-specific channel"]
-  CB["content script (ISOLATED)<br/>@clip-wallet/1mask/content"]
-  R["router (background)<br/>@clip-wallet/1mask/background"]
-  WC["WalletConnect wallet<br/>@clip-wallet/1mask/walletconnect"]
+  CB["content script (ISOLATED)<br/>@coldai/clip-wallet-1mask/content"]
+  R["router (background)<br/>@coldai/clip-wallet-1mask/background"]
+  WC["WalletConnect wallet<br/>@coldai/clip-wallet-1mask/walletconnect"]
   H["WalletService / WalletEngine<br/>handle(DappRequest)"]
   P1 & P2 & P3 & P4 --> T --> CB -- "runtime port + real origin" --> R --> H
   WC --> H
@@ -28,11 +28,11 @@ flowchart LR
 
 | Import | Runs in | What it does |
 | --- | --- | --- |
-| `@clip-wallet/1mask/inpage` | page, MAIN world | `installOneMask(config)`: every family's provider, announced with the wallet's identity |
-| `@clip-wallet/1mask/content` | content script | `createContentBridge({ channel })`: checks each message (same window, channel, schema, size) and adds its own `location.origin` |
-| `@clip-wallet/1mask/background` | background | `createOneMaskRouter({ networks, handle, permissions, accountsFor, … })`: permissions, method allowlists, the per-site network, ids, timeouts, rate limits, events |
-| `@clip-wallet/1mask/walletconnect` | background | `createWalletConnectWallet({ projectId, metadata, networks, addressesFor, approveProposal, handle })` on Reown WalletKit |
-| `@clip-wallet/1mask` | anywhere | shared types, error codes, identity, network helpers |
+| `@coldai/clip-wallet-1mask/inpage` | page, MAIN world | `installOneMask(config)`: every family's provider, announced with the wallet's identity |
+| `@coldai/clip-wallet-1mask/content` | content script | `createContentBridge({ channel })`: checks each message (same window, channel, schema, size) and adds its own `location.origin` |
+| `@coldai/clip-wallet-1mask/background` | background | `createOneMaskRouter({ networks, handle, permissions, accountsFor, … })`: permissions, method allowlists, the per-site network, ids, timeouts, rate limits, events |
+| `@coldai/clip-wallet-1mask/walletconnect` | background | `createWalletConnectWallet({ projectId, metadata, networks, addressesFor, approveProposal, handle })` on Reown WalletKit |
+| `@coldai/clip-wallet-1mask` | anywhere | shared types, error codes, identity, network helpers |
 
 In a kit-built wallet the extension kit wires all of this; you only meet these imports if you host 1Mask yourself.
 
@@ -55,7 +55,7 @@ In a kit-built wallet the extension kit wires all of this; you only meet these i
 | Tezos | Beacon (TZIP-10) | answers Beacon's postMessage ping and pairing |
 | Hedera (native) | WalletConnect, `@hashgraph/hedera-wallet-connect` | answers `hedera-extension-query` (builds with a WalletConnect project id) |
 
-The keys come from the wallet's name: letters and digits for `clipwallet` (`walletKey()` in `@clip-wallet/config`),
+The keys come from the wallet's name: letters and digits for `clipwallet` (`walletKey()` in `@coldai/clip-wallet-config`),
 and kebab-case for the Polkadot entry (`clip-wallet`). A kit-built wallet called "Acme Wallet" is
 `window.acmewallet`, `window.cardano.acmewallet`, `window.starknet_acmewallet` and `injectedWeb3["acme-wallet"]`. Its
 Wallet Standard wallets and EIP-6963 announcement carry its own name, icon and rdns.

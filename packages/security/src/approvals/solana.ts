@@ -1,5 +1,5 @@
-import type { AssetRef, ChainContext } from "@clip-wallet/core";
-import { formatUnits, type Step } from "@clip-wallet/features";
+import type { AssetRef, ChainContext } from "@coldai/clip-wallet-core";
+import { formatUnits, type Step } from "@coldai/clip-wallet-features";
 import { address, createNoopSigner } from "@solana/kit";
 import { getRevokeInstruction } from "@solana-program/token";
 import { spenderName } from "../labels.js";

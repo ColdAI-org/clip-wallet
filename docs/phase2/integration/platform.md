@@ -9,9 +9,9 @@ New packages / services:
 
 | path | what |
 |---|---|
-| `packages/backup-client` | `@clip-wallet/backup-client`: `BackupClient` + wire protocol (`/protocol`) |
-| `packages/names` | `@clip-wallet/names`: `MultiNameResolver` (ENS / SNS / HNS) |
-| `packages/media-client` | `@clip-wallet/media-client`: proxy URL builder + shared validation/sniffing |
+| `packages/backup-client` | `@coldai/clip-wallet-backup-client`: `BackupClient` + wire protocol (`/protocol`) |
+| `packages/names` | `@coldai/clip-wallet-names`: `MultiNameResolver` (ENS / SNS / HNS) |
+| `packages/media-client` | `@coldai/clip-wallet-media-client`: proxy URL builder + shared validation/sniffing |
 | `services/backup` | Worker (D1 + R2), not deployed |
 | `services/media-proxy` | Worker (Cache API + rate-limit binding), not deployed |
 | `apps/extension/src/background/platform.ts` | `PlatformService` (backup, phrase flag, accounts, names) |
@@ -25,14 +25,14 @@ New packages / services:
 `apps/extension/package.json` → `dependencies`, add:
 
 ```json
-"@clip-wallet/backup-client": "workspace:*",
-"@clip-wallet/names": "workspace:*",
+"@coldai/clip-wallet-backup-client": "workspace:*",
+"@coldai/clip-wallet-names": "workspace:*",
 ```
 
 `packages/ui/package.json` → `dependencies`, add:
 
 ```json
-"@clip-wallet/media-client": "workspace:*",
+"@coldai/clip-wallet-media-client": "workspace:*",
 ```
 
 Then `pnpm install`.
@@ -128,7 +128,7 @@ And in each connected-site row (sessions list) a link to the per-site picker:
 Replace the body of `proxyMedia` (keep its signature, so `<NftMedia>` is unchanged):
 
 ```ts
-import { mediaProxyUrl } from "@clip-wallet/media-client";
+import { mediaProxyUrl } from "@coldai/clip-wallet-media-client";
 
 export function proxyMedia(raw: string | undefined, proxyBase: string | undefined): ProxiedMedia | null {
   return mediaProxyUrl(proxyBase, raw);
@@ -143,8 +143,8 @@ export function proxyMedia(raw: string | undefined, proxyBase: string | undefine
 
 ### `apps/extension/src/shared/messages.ts`
 
-Imports: add `FAMILIES` to the `@clip-wallet/core` import (it is a value: `import { FAMILIES, type Nft } from "@clip-wallet/core";`)
-and add `AccountView, ActiveAccounts, BackupStatusView` to the `@clip-wallet/ui` type import.
+Imports: add `FAMILIES` to the `@coldai/clip-wallet-core` import (it is a value: `import { FAMILIES, type Nft } from "@coldai/clip-wallet-core";`)
+and add `AccountView, ActiveAccounts, BackupStatusView` to the `@coldai/clip-wallet-ui` type import.
 
 After `const b64url = …`:
 
@@ -226,8 +226,8 @@ And when the media proxy is deployed: `export const MEDIA_PROXY_URL = "https://<
 Imports:
 
 ```ts
-import { BackupClient } from "@clip-wallet/backup-client";
-import { MultiNameResolver } from "@clip-wallet/names";
+import { BackupClient } from "@coldai/clip-wallet-backup-client";
+import { MultiNameResolver } from "@coldai/clip-wallet-names";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 ```
 
@@ -390,7 +390,7 @@ function (the path `importWallet` already takes). Add `addAccount`, `listAccount
 
 ## 5b. Solana: staking and Jupiter Swap API v2 now decode — drop the features fallback
 
-`@clip-wallet/chains-solana` now describes (not blind):
+`@coldai/clip-wallet-chains-solana` now describes (not blind):
 
 - **Native staking** (`src/stake.ts`): System `CreateAccountWithSeed` owned by the Stake program,
   `Initialize`, `DelegateStake`, `Deactivate`, `Withdraw`, in both the `@solana-program/stake` 0.10 layout

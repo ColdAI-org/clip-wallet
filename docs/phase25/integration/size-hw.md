@@ -6,7 +6,7 @@ shared files.
 ## What moved
 
 Ledger (WebHID) and Keystone (QR, camera) code now runs only in extension pages; the background service worker
-imports `@clip-wallet/hardware/core` alone (accounts, approvals, verification, errors, wire forms).
+imports `@coldai/clip-wallet-hardware/core` alone (accounts, approvals, verification, errors, wire forms).
 
 | | before | after |
 |---|---|---|

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Family } from "@clip-wallet/core";
-import type { ClipVault } from "@clip-wallet/vault";
+import type { Family } from "@coldai/clip-wallet-core";
+import type { ClipVault } from "@coldai/clip-wallet-vault";
 import config from "./clip.config";
 import { MemoryKV } from "../src/shared/storage";
 import { createDependencies } from "../src/background/wiring";
@@ -8,7 +8,7 @@ import { PasskeyCeremonies, b64url } from "../src/background/passkey-proxy";
 import { PLATFORM_KEYS, PlatformService, type BackupClientLike } from "../src/background/platform";
 import { FAST_ARGON2, PASSWORD } from "./helpers";
 
-/** In-memory stand-in for services/backup + @clip-wallet/backup-client (the real pair is tested end to end in services/backup). */
+/** In-memory stand-in for services/backup + @coldai/clip-wallet-backup-client (the real pair is tested end to end in services/backup). */
 function fakeBackupServer() {
   const blobs = new Map<string, { blob: Uint8Array; credentialId: string; rpId: string | null; createdAt: number }>();
   let n = 0;

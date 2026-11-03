@@ -1,5 +1,5 @@
-import type { AssetRef, DappRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError, say } from "@clip-wallet/core";
+import type { AssetRef, DappRequest, NetworkId } from "@coldai/clip-wallet-core";
+import { ClipError, say } from "@coldai/clip-wallet-core";
 import { encodeAbiParameters, encodeFunctionData, getAddress, isAddress, numberToHex, parseEventLogs } from "viem";
 import type { Hex, Log } from "viem";
 import { CLPR_ROUTER_ABI } from "./abi.js";

@@ -1,4 +1,4 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import {
   Asset,
   FeeBumpTransaction,
@@ -14,7 +14,7 @@ import type { Horizon, HorizonAccount } from "./horizon.js";
 import { USDC_ISSUERS, assetOf, netOf, sep41Asset, xlmAsset } from "./networks.js";
 import type { SimulateResult, SorobanRpc } from "./rpc.js";
 import { b64encode, baseAccount, formatUnits, hex, joinWords, short, toStroops } from "./util.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 export interface Line {
   label: string;

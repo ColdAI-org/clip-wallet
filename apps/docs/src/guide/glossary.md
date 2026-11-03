@@ -2,7 +2,7 @@
 
 **Family.** A group of networks that share keys, addresses and a wallet standard: `evm`, `hedera`, `solana`,
 `bitcoin`, `sui`, `aptos`, `cardano`, `substrate`, `starknet`, `ton`, `near`, `stellar`, `tezos`, `algorand`
-(`FAMILIES` in `@clip-wallet/core`). One `ChainModule` serves each family.
+(`FAMILIES` in `@coldai/clip-wallet-core`). One `ChainModule` serves each family.
 
 **Network.** One chain inside a family, identified by a CAIP-2 id: `eip155:84532`, `hedera:testnet`,
 `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`. Users rarely see it.

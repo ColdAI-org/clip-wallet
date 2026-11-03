@@ -6,8 +6,8 @@
  * and add the translation to every locale folder (typecheck fails until each has it).
  * Never translate: the product name (APP.config.name, passed as {name}), asset symbols, addresses, app names.
  */
-import { useT } from "@clip-wallet/i18n/react";
-import type { Catalogs } from "@clip-wallet/i18n";
+import { useT } from "@coldai/clip-wallet-i18n/react";
+import type { Catalogs } from "@coldai/clip-wallet-i18n";
 import { en, type MobileMessages } from "./en";
 import de from "./de";
 import fr from "./fr";
@@ -43,4 +43,4 @@ export function useMobileT() {
   return useT(MOBILE_CATALOGS);
 }
 
-export { useFormat, useLocale, rich } from "@clip-wallet/i18n/react";
+export { useFormat, useLocale, rich } from "@coldai/clip-wallet-i18n/react";

@@ -19,7 +19,7 @@
  *
  * Pure apart from the small Frame/Sender interfaces, so the origin binding is unit-tested with fakes.
  */
-import type { RouterPort } from "@clip-wallet/1mask/background";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 import { MAX_ONEMASK_BYTES, OneMaskFromPage } from "../../shared/ipc";
 import { webOrigin } from "./url-policy";
 

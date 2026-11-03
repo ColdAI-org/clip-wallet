@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, msg, titled, say } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled, say } from "@coldai/clip-wallet-core";
 import {
   type CardanoModule,
   type DrepChoice,
@@ -8,7 +8,7 @@ import {
   type KoiosPoolListItem,
   type StakingInfo,
   createCardanoModule,
-} from "@clip-wallet/chains-cardano";
+} from "@coldai/clip-wallet-chains-cardano";
 import type { Step } from "../steps.js";
 import { formatUnits, percent } from "../util.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";

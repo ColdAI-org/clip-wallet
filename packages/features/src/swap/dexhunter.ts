@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network } from "@coldai/clip-wallet-core";
 import type { Step } from "../steps.js";
 import type { Unavailable } from "../views.js";
 import type { SwapProvider, SwapQuote, SwapQuoteRequest } from "./types.js";

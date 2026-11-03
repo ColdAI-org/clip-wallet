@@ -3,7 +3,7 @@
  * Ledger over USB (WebHID), Keystone by scanning its account QR code. Picks accounts; keys stay on the device.
  */
 import { useCallback, useState } from "react";
-import { requestLedgerAccess } from "@clip-wallet/hardware/qr";
+import { requestLedgerAccess } from "@coldai/clip-wallet-hardware/qr";
 import { userMessageOf } from "../client";
 import { Button, ErrorNote, Screen, Spinner, Toggle } from "../components";
 import { useUi } from "../context";

@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { ClipAptosWallet } from "../src/inpage/aptos.js";
 import { ClipSuiWallet } from "../src/inpage/sui.js";

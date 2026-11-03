@@ -1,4 +1,4 @@
-import type { DappRequest, DecodedRequest } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest } from "@coldai/clip-wallet-core";
 import { encodeAbiParameters, getAddress, encodeFunctionData, erc20Abi, maxUint256, numberToHex, parseAbi, parseAbiParameters, stringToHex, toEventSelector, toFunctionSelector, zeroAddress } from "viem";
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";

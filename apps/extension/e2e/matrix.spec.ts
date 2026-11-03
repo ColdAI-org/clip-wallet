@@ -12,8 +12,8 @@
  * holds less than the minimum (e2e/matrix/chain.ts TARGETS); L4 always runs and declines in the wallet unless L3 is
  * approving the same request. Results go to e2e/shots/matrix/results.json and docs/r1/dapp-matrix.md.
  *
- *   pnpm --filter @clip-wallet/extension matrix [-- -g <target>]     build (WalletConnect on when the id is set) + run
- *   DAPP_MATRIX=1 pnpm --filter @clip-wallet/extension exec playwright test e2e/matrix.spec.ts   run against .output
+ *   pnpm --filter @coldai/clip-wallet-extension matrix [-- -g <target>]     build (WalletConnect on when the id is set) + run
+ *   DAPP_MATRIX=1 pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/matrix.spec.ts   run against .output
  * The default e2e (`pnpm e2e`) leaves the matrix out: it needs public testnets and the matrix wallet.
  *
  * Never logs, traces or screenshots the phrase: trace/screenshot/video are off and onboarding is never captured.
@@ -263,10 +263,10 @@ async function isHederaAccountOf(got: string, alias: string): Promise<boolean> {
 /** The WalletConnect path needs a project id in the env file AND a wallet built with it (pnpm … matrix does both). */
 function walletConnectSkip(): string | null {
   const id = walletConnectProjectId();
-  if (!id) return "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @clip-wallet/extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID).";
+  if (!id) return "WALLETCONNECT_PROJECT_ID is not set: add it to .env.dapp-matrix, then run `pnpm --filter @coldai/clip-wallet-extension matrix` (it builds the wallet with CLIP_WALLETCONNECT_PROJECT_ID).";
   const bundles = readdirSync(EXT, { recursive: true }).filter((f) => String(f).endsWith(".js"));
   const built = bundles.some((f) => readFileSync(path.join(EXT, String(f)), "utf8").includes(id));
-  return built ? null : `This build (${EXT}) has WalletConnect off: rebuild with \`pnpm --filter @clip-wallet/extension matrix\` so CLIP_WALLETCONNECT_PROJECT_ID is set.`;
+  return built ? null : `This build (${EXT}) has WalletConnect off: rebuild with \`pnpm --filter @coldai/clip-wallet-extension matrix\` so CLIP_WALLETCONNECT_PROJECT_ID is set.`;
 }
 
 const PHRASE_MISSING = "No DAPP_MATRIX_MNEMONIC: create .env.dapp-matrix (see docs/r1/dapp-matrix.md).";

@@ -1,4 +1,4 @@
-import { defineConfig, enabledFamilies } from "@clip-wallet/config";
+import { defineConfig, enabledFamilies } from "@coldai/clip-wallet-config";
 
 const config = defineConfig({
   name: "Acme Wallet",

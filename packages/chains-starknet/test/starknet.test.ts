@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { ec, hash } from "starknet";
 import { beforeEach, describe, expect, it } from "vitest";
 import {

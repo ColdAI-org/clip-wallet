@@ -4,8 +4,8 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import type { Family } from "@clip-wallet/core";
-import { amountInput, canonicalAmount, formatFiat, formatUnits, mergeBalances, parseUnits, shortAddress, userMessageOf, type RecipientResolution } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import { amountInput, canonicalAmount, formatFiat, formatUnits, mergeBalances, parseUnits, shortAddress, userMessageOf, type RecipientResolution } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, ErrorNote, Field, LinkButton, Notice, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT } from "../i18n";

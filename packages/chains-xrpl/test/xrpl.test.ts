@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { ClipError, type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { decode as rbcDecode, encodeForSigning } from "ripple-binary-codec";
 import { deriveAddress, verify } from "ripple-keypairs";
 import { hashes } from "xrpl";

@@ -27,12 +27,12 @@ pnpm --filter mobile start     # the phone app (a development build)
 
 | | Folder | On |
 | --- | --- | --- |
-| Browser extension | `packages/extension` | `@clip-wallet/extension-kit` (WXT) |
-| Desktop app | `packages/desktop` | `@clip-wallet/desktop-kit` (Electron) |
-| Phone app | `packages/mobile` | `@clip-wallet/mobile-kit` (Expo) |
-| Scaffold-HBAR dapp (`--scaffold-hbar`) | `packages/nextjs` | Next.js, `@clip-wallet/connect` |
+| Browser extension | `packages/extension` | `@coldai/clip-wallet-extension-kit` (WXT) |
+| Desktop app | `packages/desktop` | `@coldai/clip-wallet-desktop-kit` (Electron) |
+| Phone app | `packages/mobile` | `@coldai/clip-wallet-mobile-kit` (Expo) |
+| Scaffold-HBAR dapp (`--scaffold-hbar`) | `packages/nextjs` | Next.js, `@coldai/clip-wallet-connect` |
 
-Each platform depends only on published `@clip-wallet/*` packages, pinned to one exact, provenance-signed version.
+Each platform depends only on published `@coldai/clip-wallet-*` packages, pinned to one exact, provenance-signed version.
 
 ## Documentation
 
@@ -58,7 +58,7 @@ Each platform depends only on published `@clip-wallet/*` packages, pinned to one
 | `--walletconnect-project-id` | written to `.env`, never committed |
 | `--new-key`, `--no-git`, `--root <dir>`, `--yes` | new extension key (identity), no `git init`, project for in-project commands, no questions |
 
-Without `--yes` it asks for what the flags leave out and asks again after an answer `@clip-wallet/config` rejects.
+Without `--yes` it asks for what the flags leave out and asks again after an answer `@coldai/clip-wallet-config` rejects.
 
 ## What it writes
 
@@ -73,7 +73,7 @@ Without `--yes` it asks for what the flags leave out and asks again after an ans
 | `docs/listings/` | listing-submission drafts: EIP-6963, WalletConnect Explorer and, for the families you turn on, TON Connect, NEAR, Stellar Wallets Kit, Tezos Beacon, Algorand use-wallet |
 | `docs/signing.md` | code signing and store accounts per platform: what each needs and the variable names the tools read |
 
-It refuses Clip Wallet's own identity (`org.coldai.*`, the name "Clip Wallet") and anything `@clip-wallet/config`
+It refuses Clip Wallet's own identity (`org.coldai.*`, the name "Clip Wallet") and anything `@coldai/clip-wallet-config`
 rejects, and writes nothing then. Run again, it keeps the extension key unless you pass `--new-key`.
 
 **Icons with Node alone.** PNG decoding and encoding, area-average resampling with premultiplied alpha, and the ICO and
@@ -128,7 +128,7 @@ never acted on by the kit.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly. The projects create-clip-wallet makes pin that version exactly;
 `pnpm verify:provenance` checks every kit package's attestation.
 

@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/hardware": patch
+"@coldai/clip-wallet-hardware": patch
 ---
 
 `HardwareKeyring.addAccounts()` derives each account's address from its public key and refuses a record whose

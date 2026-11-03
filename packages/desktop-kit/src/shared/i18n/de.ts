@@ -1,5 +1,5 @@
 /** German (same glossary as packages/ui/src/i18n/de: informal "du", Wallet (das), entsperren / sperren). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const de: Translation<DesktopMessages> = {

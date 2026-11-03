@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * NEAR networks. ChainAgnostic/namespaces has no `near` namespace yet; "near:mainnet" / "near:testnet" are the

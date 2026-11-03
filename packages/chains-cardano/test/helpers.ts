@@ -1,4 +1,4 @@
-import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { CARDANO_PREPROD } from "../src/index.js";
 import { CborMap, CborTag, type CborValue, encode } from "../src/cbor.js";

@@ -1,10 +1,10 @@
 /**
  * Generates the reference pages that come straight from the source:
  *
- *   src/reference/config.md       the clip.config.ts schema (@clip-wallet/config's zod schema)
- *   src/reference/errors.md       error kinds and every ClipError code (@clip-wallet/core ERROR_CATEGORIES + a scan)
- *   src/reference/warnings.md     every Warning code and its messages (@clip-wallet/core WARNING_CODES, BG_MESSAGES)
- *   src/reference/dapp-errors.md  the codes 1Mask answers dapps with (@clip-wallet/1mask RpcErrorCode, CallsErrorCode)
+ *   src/reference/config.md       the clip.config.ts schema (@coldai/clip-wallet-config's zod schema)
+ *   src/reference/errors.md       error kinds and every ClipError code (@coldai/clip-wallet-core ERROR_CATEGORIES + a scan)
+ *   src/reference/warnings.md     every Warning code and its messages (@coldai/clip-wallet-core WARNING_CODES, BG_MESSAGES)
+ *   src/reference/dapp-errors.md  the codes 1Mask answers dapps with (@coldai/clip-wallet-1mask RpcErrorCode, CallsErrorCode)
  *
  * Bundled by esbuild and run from scripts/generate.mjs. Fails loudly when the schema grows a setting this file has no
  * description for, so the reference can't fall behind the code.
@@ -13,8 +13,8 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import ts from "typescript";
 import { z } from "zod";
-import { clipConfigSchema, MAINNET_ACKNOWLEDGEMENT, NETWORK_FAMILIES, ROUTE_MODES, WALLETCONNECT_ENV } from "@clip-wallet/config";
-import { BG_MESSAGES, BG_MESSAGE_PARTS, ERROR_CATEGORIES, WARNING_CODES, WARNING_DEFAULT_IDS, errorCategoryId, type BgMessageId } from "@clip-wallet/core";
+import { clipConfigSchema, MAINNET_ACKNOWLEDGEMENT, NETWORK_FAMILIES, ROUTE_MODES, WALLETCONNECT_ENV } from "@coldai/clip-wallet-config";
+import { BG_MESSAGES, BG_MESSAGE_PARTS, ERROR_CATEGORIES, WARNING_CODES, WARNING_DEFAULT_IDS, errorCategoryId, type BgMessageId } from "@coldai/clip-wallet-core";
 
 const root = process.argv[2]!;
 const out = process.argv[3]!;
@@ -50,7 +50,7 @@ const CONFIG_DOCS: Record<string, string> = {
   "route.filters.mica": "Only routes through providers with a MiCA label.",
   "route.filters.energy": "Only routes with an energy label; pass `{ capKgPerTx }` to cap emissions per transaction (kgCO2e).",
   "route.filters.energy.capKgPerTx": "Maximum emissions per transaction in kgCO2e.",
-  "route.filters.trustFloor": "The weakest verification tier a route may use. Allowed values are exported as `TRUST_TIERS` from `@clip-wallet/config`.",
+  "route.filters.trustFloor": "The weakest verification tier a route may use. Allowed values are exported as `TRUST_TIERS` from `@coldai/clip-wallet-config`.",
   "route.filters.maxHops": "Maximum number of hops in a route (1 to 6).",
   "route.filters.deadlineS": "Deliver within this many seconds (compared with each quote's p90 time).",
   "route.filters.excludedJurisdictions": "Two-letter country codes whose routers a route must avoid.",
@@ -150,7 +150,7 @@ function configPage(): string {
   return `${GENERATED}
 # clip.config.ts schema
 
-Every setting \`defineConfig()\` from [\`@clip-wallet/config\`](./api/config.md) accepts, generated from its zod schema. Anything
+Every setting \`defineConfig()\` from [\`@coldai/clip-wallet-config\`](./api/config.md) accepts, generated from its zod schema. Anything
 not listed here is refused with "isn't a setting Clip Wallet knows". Only \`name\` and \`rdns\` are required; everything
 else has a default.
 
@@ -265,7 +265,7 @@ function errorsPage(): string {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([c, e]) => {
       const kind = errorCategoryId(c);
-      return `| ${code(c)} | ${[...e.pkgs].sort().map((p) => code(p.replace("@clip-wallet/", ""))).join(", ")} | ${kind ? esc(BG_MESSAGES[kind as BgMessageId] as string) : "–"} | ${e.message ? esc(e.message) : "–"} |`;
+      return `| ${code(c)} | ${[...e.pkgs].sort().map((p) => code(p.replace("@coldai/clip-wallet-", ""))).join(", ")} | ${kind ? esc(BG_MESSAGES[kind as BgMessageId] as string) : "–"} | ${e.message ? esc(e.message) : "–"} |`;
     });
   const sentences = Object.entries(BG_MESSAGE_PARTS.errors)
     .filter(([id]) => !id.startsWith("bg.err.cat."))
@@ -274,7 +274,7 @@ function errorsPage(): string {
   return `${GENERATED}
 # Error codes
 
-Every error Clip Wallet shows a person is a \`ClipError\` from [\`@clip-wallet/core\`](./api/core.md): a plain-words
+Every error Clip Wallet shows a person is a \`ClipError\` from [\`@coldai/clip-wallet-core\`](./api/core.md): a plain-words
 \`userMessage\` with a next step, and a stable \`code\` for programs. Codes look like \`<area>/<kind>\` ("vault/locked",
 "near/insufficient-funds"). Match on the code, show the message.
 
@@ -329,7 +329,7 @@ function warningsPage(): string {
   for (const f of files) {
     const text = readFileSync(f, "utf8");
     for (const c of WARNING_CODES) {
-      if (text.includes(`"${c}"`)) (raisedBy.get(c) ?? raisedBy.set(c, new Set()).get(c)!).add(packageOf(f).replace("@clip-wallet/", ""));
+      if (text.includes(`"${c}"`)) (raisedBy.get(c) ?? raisedBy.set(c, new Set()).get(c)!).add(packageOf(f).replace("@coldai/clip-wallet-", ""));
     }
   }
   const rows = WARNING_CODES.map((c) => {
@@ -344,8 +344,8 @@ function warningsPage(): string {
 # Warning codes
 
 A \`DecodedRequest\` carries \`warnings\`: each has a \`level\` (\`info\`, \`caution\` or \`danger\`), a \`code\` from
-\`WARNING_CODES\` in [\`@clip-wallet/core\`](./api/core.md), and a plain-words \`message\`. Chain modules raise most of them
-while decoding; \`@clip-wallet/security\` adds the scam and look-alike ones; the background adds \`domain-mismatch\` for
+\`WARNING_CODES\` in [\`@coldai/clip-wallet-core\`](./api/core.md), and a plain-words \`message\`. Chain modules raise most of them
+while decoding; \`@coldai/clip-wallet-security\` adds the scam and look-alike ones; the background adds \`domain-mismatch\` for
 sites it doesn't recognise. Approval screens show every warning, strongest first.
 
 The level is the module's call for that request, so the same code can be a \`caution\` in one place and a
@@ -407,7 +407,7 @@ function dappErrorsPage(): string {
 
 What a dapp sees when Clip Wallet says no. 1Mask answers with standard codes, so wagmi, viem, ethers and the
 ecosystem libraries already know them. Generated from \`RpcErrorCode\` and \`CallsErrorCode\` in
-[\`@clip-wallet/1mask\`](./api/1mask.md).
+[\`@coldai/clip-wallet-1mask\`](./api/1mask.md).
 
 ## EIP-1193 and JSON-RPC
 

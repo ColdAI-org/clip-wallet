@@ -1,10 +1,10 @@
-import { useT } from "@clip-wallet/i18n/react";
-import { PRIVACY_CATALOGS, PRIVACY_SECTIONS } from "@clip-wallet/ui";
+import { useT } from "@coldai/clip-wallet-i18n/react";
+import { PRIVACY_CATALOGS, PRIVACY_SECTIONS } from "@coldai/clip-wallet-ui";
 import { APP } from "../env";
 import { Card, Screen, T } from "../ui/kit";
 
 /**
- * Settings → Your data. The same reviewed wording as the extension (the "privacy" namespace in @clip-wallet/ui);
+ * Settings → Your data. The same reviewed wording as the extension (the "privacy" namespace in @coldai/clip-wallet-ui);
  * the long form is docs/legal/privacy-policy.md.
  */
 export function DataUse() {

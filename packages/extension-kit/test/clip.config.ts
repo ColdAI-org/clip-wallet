@@ -1,4 +1,4 @@
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 
 // Test fixture: Clip Wallet's own config (apps/extension/clip.config.ts), which the vitest config aliases to
 // "virtual:clip-wallet/config". Keep the two in step when the brand config changes.
@@ -14,7 +14,7 @@ const TESTNET_SERVICES = {
   linkRelayUrl: "https://clip-link-relay.doyoka-platform.workers.dev",
 };
 
-// Clip Wallet's own brand. Every setting is documented in @clip-wallet/config.
+// Clip Wallet's own brand. Every setting is documented in @coldai/clip-wallet-config.
 export default defineConfig({
   name: "Clip Wallet",
   // The manifest adds " Test networks only." while mainnet is off (scripts/package.mjs checks for it).
@@ -30,7 +30,7 @@ export default defineConfig({
   // own (and add it to host_permissions) to keep passkeys stable across extension ids and browsers.
   passkeys: { enabled: true },
   services: MAINNET ? {} : TESTNET_SERVICES,
-  // Settle on Hedera (bonded Connectors, @clip-wallet/route SETTLE_DEPLOYMENTS): testnet builds only.
+  // Settle on Hedera (bonded Connectors, @coldai/clip-wallet-route SETTLE_DEPLOYMENTS): testnet builds only.
   route: { settleOnHedera: !MAINNET },
   mainnet: MAINNET,
 });

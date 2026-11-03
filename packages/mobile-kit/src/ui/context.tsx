@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { I18nManager, View, useColorScheme } from "react-native";
-import { setFormatLocale, type WalletClient, type WalletState } from "@clip-wallet/ui";
-import type { Family } from "@clip-wallet/core";
-import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
-import { LocaleProvider } from "@clip-wallet/i18n/react";
-import { BgTextProvider } from "@clip-wallet/ui";
+import { setFormatLocale, type WalletClient, type WalletState } from "@coldai/clip-wallet-ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import { dirOf, resolveLocale, type LocaleCode } from "@coldai/clip-wallet-i18n";
+import { LocaleProvider } from "@coldai/clip-wallet-i18n/react";
+import { BgTextProvider } from "@coldai/clip-wallet-ui";
 import { deviceLanguages } from "../i18n/device";
 import type { MobileWallet } from "../background/host";
 import { APP } from "../env";
@@ -132,7 +132,7 @@ export function WalletProvider(props: { wallet: MobileWallet; children: ReactNod
   );
 }
 
-/** Same contract as @clip-wallet/ui's useAsync: reloads when deps change or the wallet broadcasts a change. */
+/** Same contract as @coldai/clip-wallet-ui's useAsync: reloads when deps change or the wallet broadcasts a change. */
 export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]): { data: T | undefined; error: unknown; loading: boolean; reload: () => void } {
   const { wallet } = useWallet();
   const [data, setData] = useState<T | undefined>(undefined);

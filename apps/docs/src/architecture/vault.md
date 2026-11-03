@@ -1,12 +1,12 @@
 # Vault
 
-`@clip-wallet/vault` is the only package that touches recovery phrases and private keys. It implements the `Vault`
-interface from `@clip-wallet/core` as `ClipVault`: create or import a phrase, derive accounts for 26 families,
+`@coldai/clip-wallet-vault` is the only package that touches recovery phrases and private keys. It implements the `Vault`
+interface from `@coldai/clip-wallet-core` as `ClipVault`: create or import a phrase, derive accounts for 26 families,
 encrypt everything at rest, and sign only what the person approved.
 
 ```mermaid
 flowchart LR
-  subgraph Vault["@clip-wallet/vault (in the background only)"]
+  subgraph Vault["@coldai/clip-wallet-vault (in the background only)"]
     P["BIP-39 phrase<br/>12 or 24 words"] --> SEED["seed + entropy<br/>(in memory while unlocked)"]
     SEED --> D["derivation<br/>BIP-32 · SLIP-10 · BIP32-Ed25519<br/>sr25519 · Stark"]
     D --> SIGN["sign()"]
@@ -89,7 +89,7 @@ The background's part of the signing flow, step by step, is on [The signing flow
 
 ## Tests
 
-`pnpm --filter @clip-wallet/vault test` runs the official BIP-39, BIP-32 and SLIP-10 vectors, address known-answer
+`pnpm --filter @coldai/clip-wallet-vault test` runs the official BIP-39, BIP-32 and SLIP-10 vectors, address known-answer
 tests for the public "abandon … about" phrase in every family, and cross-checks against each ecosystem's own SDK
 (listed in the [vault README](repo:packages/vault/README.md#tests)). Tests use public test vectors only and never
 generate keys.

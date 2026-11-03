@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import { formatFiat, relativeTime, userMessageOf, type DiscoverFeed, type DiscoverToken, type FeaturedDappView } from "@clip-wallet/ui";
+import { formatFiat, relativeTime, userMessageOf, type DiscoverFeed, type DiscoverToken, type FeaturedDappView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Chip, Empty, ErrorNote, MenuItem, Row, Screen, Spinner, T } from "../ui/kit";
 import { useFormat, useMobileT, type MobileMessageId } from "../i18n";

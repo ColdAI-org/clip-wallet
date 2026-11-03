@@ -1,4 +1,4 @@
-import { type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import {
   createVirtualMachineBCH,
   decodeCashAddress as libDecode,

@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError } from "@clip-wallet/core";
-import { ledgerOf, mirrorFor, mirrorUrl } from "@clip-wallet/chains-hedera";
+import { type ChainContext, ClipError } from "@coldai/clip-wallet-core";
+import { ledgerOf, mirrorFor, mirrorUrl } from "@coldai/clip-wallet-chains-hedera";
 import { decodeFunctionResult, encodeFunctionData, erc20Abi, getAddress, type Hex } from "viem";
 import { ethCall, mirrorCall } from "../http.js";
 import { SAUCERSWAP_V2 } from "../swap/saucerswap.js";

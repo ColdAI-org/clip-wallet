@@ -1,7 +1,7 @@
 /**
- * @clip-wallet/i18n — the wallet's translation layer. Zero dependencies: messages are a small ICU subset
+ * @coldai/clip-wallet-i18n — the wallet's translation layer. Zero dependencies: messages are a small ICU subset
  * (message.ts) and everything locale-specific (plurals, numbers, currencies, relative time) comes from the
- * platform's Intl. React bindings: "@clip-wallet/i18n/react".
+ * platform's Intl. React bindings: "@coldai/clip-wallet-i18n/react".
  *
  * @module
  */

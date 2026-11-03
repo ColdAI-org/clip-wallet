@@ -1,6 +1,6 @@
 # r1/connect — integration (Clip Desktop wiring and shared-file edits)
 
-Stream: connect the extension, Clip Desktop and the mobile app (`@clip-wallet/link`, `services/link-relay`,
+Stream: connect the extension, Clip Desktop and the mobile app (`@coldai/clip-wallet-link`, `services/link-relay`,
 `/v1/sync` on `services/backup`). Threat model: `packages/link/README.md`.
 
 ## Deployed (testnet builds, 2026-10-05, wrangler 4.124.0)
@@ -41,7 +41,7 @@ Upgrade → 426; sync push from one device, pull on a second (same public test-v
 
 ## Clip Desktop (apps/desktop, Electron) — exact wiring
 
-Clip Desktop runs `@clip-wallet/engine` with its own vault (like mobile). It is the **key-holding side**: it serves
+Clip Desktop runs `@coldai/clip-wallet-engine` with its own vault (like mobile). It is the **key-holding side**: it serves
 signing requests from the paired extension and shows the approval in its own window.
 
 ### 1. Main process: LinkService + the local socket
@@ -49,9 +49,9 @@ signing requests from the paired extension and shows the approval in its own win
 ```ts
 // apps/desktop/src/main/link.ts  (main process; may import the vault like apps/mobile/src/background)
 import { app } from "electron";
-import { LinkService, contactsSource, walletSources } from "@clip-wallet/link";
-import { startDesktopLinkServer, defaultSocketPath } from "@clip-wallet/link/node";
-import { CONTACTS_KEY, encryptedContactStore } from "@clip-wallet/social/contacts";
+import { LinkService, contactsSource, walletSources } from "@coldai/clip-wallet-link";
+import { startDesktopLinkServer, defaultSocketPath } from "@coldai/clip-wallet-link/node";
+import { CONTACTS_KEY, encryptedContactStore } from "@coldai/clip-wallet-social/contacts";
 import config from "../../clip.config";
 
 export async function startDesktopLink({ kv, vault, engine, broadcast, openApproval }) {
@@ -92,9 +92,9 @@ export async function startDesktopLink({ kv, vault, engine, broadcast, openAppro
 }
 ```
 
-Bus: route `isLinkRequest(msg)` (from `@clip-wallet/link`) to `link.handle(msg)` in the IPC handler that already
+Bus: route `isLinkRequest(msg)` (from `@coldai/clip-wallet-link`) to `link.handle(msg)` in the IPC handler that already
 serves `engine.handleUntrusted` for the renderer. Renderer: pass `link={createLinkClient(call)}` (from
-`@clip-wallet/ui`) to `<WalletApp>`; Settings → Linked devices then shows the pairing code when the extension
+`@coldai/clip-wallet-ui`) to `<WalletApp>`; Settings → Linked devices then shows the pairing code when the extension
 starts "Use Clip Desktop" (`acceptNative` creates the pairing run; the renderer polls `linkStatus`). Bring the
 window to the front on a new pairing: `onChange` → if `(await link.status()).pairings.some(p => p.state === "compare")`, `win.show(); win.focus()`.
 
@@ -104,7 +104,7 @@ Bundle `packages/link/src/native/node.ts`'s `nativeHostMain` as a tiny Node scri
 
 ```ts
 // apps/desktop/native-host/main.ts
-import { nativeHostMain } from "@clip-wallet/link/node";
+import { nativeHostMain } from "@coldai/clip-wallet-link/node";
 void nativeHostMain();
 ```
 
@@ -118,7 +118,7 @@ own: browsers pass the caller origin (Chromium: argv[1]; Firefox: argv[1] = mani
 ### 3. Install the host manifests (first run and every update)
 
 ```ts
-import { installPlan, registryCommand } from "@clip-wallet/link/native";
+import { installPlan, registryCommand } from "@coldai/clip-wallet-link/native";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { execFileSync } from "node:child_process";

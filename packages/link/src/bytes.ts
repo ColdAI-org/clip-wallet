@@ -1,6 +1,6 @@
 /**
  * Byte helpers and symmetric crypto over DERIVED keys only (link secrets, sync data keys). Nothing here creates,
- * holds or uses a private key: X25519 and Ed25519 run in @clip-wallet/vault (harness rule).
+ * holds or uses a private key: X25519 and Ed25519 run in @coldai/clip-wallet-vault (harness rule).
  */
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { hkdf } from "@noble/hashes/hkdf.js";

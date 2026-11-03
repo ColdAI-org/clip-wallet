@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 
 /**
  * Per-origin, per-family connection permission. "Connected" means the user approved revealing that

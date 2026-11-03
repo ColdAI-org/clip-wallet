@@ -10,8 +10,8 @@
  * Reverse (primary names): getEnsName with the chain's coinType; the Universal Resolver checks that the
  * forward record matches, so a spoofed reverse record never shows.
  */
-import type { Family, Network, NetworkId } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { Family, Network, NetworkId } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { createPublicClient, http, isAddress, getAddress, type PublicClient } from "viem";
 import { mainnet, sepolia } from "viem/chains";
 import { normalize, toCoinType } from "viem/ens";

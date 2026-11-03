@@ -1,9 +1,9 @@
 /**
- * Stellar (testnet): Stellar Wallets Kit module interface (@clip-wallet/kit-modules/stellar's ClipWalletModule, the
+ * Stellar (testnet): Stellar Wallets Kit module interface (@coldai/clip-wallet-kit-modules/stellar's ClipWalletModule, the
  * module the kit loads), SEP-53 signMessage verified with @stellar/stellar-base Keypair.verify, and a 1-stroop native
  * payment to yourself built with TransactionBuilder, signed with signTransaction and submitted to Horizon.
  */
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
 import { Account, Asset, Keypair, Networks, Operation, TransactionBuilder, hash } from "@stellar/stellar-base";
 import { MESSAGE, NeedsFunds, expose } from "../dapp-kit";
 

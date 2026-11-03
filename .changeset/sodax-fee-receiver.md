@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/features": minor
+"@coldai/clip-wallet-features": minor
 ---
 
 The reviewed list of Clip fee receivers (`sodax-fee-receivers.json`) holds ColdAI LLC's address,

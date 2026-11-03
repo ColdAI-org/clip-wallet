@@ -1,3 +1,3 @@
-import { mountWallet } from "@clip-wallet/extension-kit/pages";
+import { mountWallet } from "@coldai/clip-wallet-extension-kit/pages";
 
 mountWallet("tab");

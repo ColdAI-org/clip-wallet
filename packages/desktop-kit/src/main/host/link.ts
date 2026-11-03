@@ -9,11 +9,11 @@
  * Lives in src/main/host because the LinkService is handed the vault (harness: the only vault importer here).
  */
 import { hostname } from "node:os";
-import type { Family } from "@clip-wallet/core";
-import type { KV, WalletEngine } from "@clip-wallet/engine";
-import { LinkService, contactsSource, walletSources, type LinkVault } from "@clip-wallet/link";
-import { startDesktopLinkServer } from "@clip-wallet/link/node";
-import { CONTACTS_KEY, encryptedContactStore } from "@clip-wallet/social/contacts";
+import type { Family } from "@coldai/clip-wallet-core";
+import type { KV, WalletEngine } from "@coldai/clip-wallet-engine";
+import { LinkService, contactsSource, walletSources, type LinkVault } from "@coldai/clip-wallet-link";
+import { startDesktopLinkServer } from "@coldai/clip-wallet-link/node";
+import { CONTACTS_KEY, encryptedContactStore } from "@coldai/clip-wallet-social/contacts";
 
 const SYNC_EVERY_MS = 5 * 60_000;
 

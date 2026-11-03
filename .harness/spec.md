@@ -90,8 +90,8 @@ test networks.
 
 Everything a wallet maker changes is identity and configuration:
 
-- `@clip-wallet/*` packages (one version, built to `dist/`, published only by CI with npm provenance);
-- `@clip-wallet/extension-kit`: the whole extension as a library, built by `clipWallet({ config })` for WXT, with no
+- `@coldai/clip-wallet-*` packages (one version, built to `dist/`, published only by CI with npm provenance);
+- `@coldai/clip-wallet-extension-kit`: the whole extension as a library, built by `clipWallet({ config })` for WXT, with no
   switch for the security floor and a build-time mainnet checklist;
 - `create-clip-wallet` and the Scaffold-HBAR template (`templates/scaffold-hbar-clip-wallet`,
   `npm create scaffold-hbar@latest -- --template ColdAI-org/scaffold-hbar-clip-wallet`), which produce the same project:

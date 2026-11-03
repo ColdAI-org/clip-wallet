@@ -2,7 +2,7 @@ import type { SocialClient } from "./client";
 
 /**
  * A SocialClient over any request/response transport (the extension bus, the mobile engine in-process).
- * Message shapes are @clip-wallet/social's SOCIAL_REQUESTS; the host validates them with zod.
+ * Message shapes are @coldai/clip-wallet-social's SOCIAL_REQUESTS; the host validates them with zod.
  */
 export function createSocialClient(
   call: (msg: { type: string } & Record<string, unknown>) => Promise<unknown>,

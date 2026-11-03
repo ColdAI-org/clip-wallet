@@ -40,7 +40,7 @@ import {
   xrplAddress,
 } from "../src/encodings87.js";
 import { isCanonicalK1, signEcdsaCanonical } from "../src/sign.js";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 
 // Public BIP-39 test phrase (official vectors). Never a real wallet.
 const ABANDON = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -276,15 +276,15 @@ describe("ClipVault: the networks87 families through the public API", () => {
 
 describe("chain modules agree with the vault (paths, curves, addresses per network)", () => {
   it("every networks87 module derives where the vault does and spells the vault's key the same way", async () => {
-    const { createCosmosModule, COSMOS_NETWORKS } = await import("@clip-wallet/chains-cosmos");
-    const { createTronModule, TRON_NETWORKS } = await import("@clip-wallet/chains-tron");
-    const { createXrplModule, XRPL_NETWORKS } = await import("@clip-wallet/chains-xrpl");
-    const { createAntelopeModule, ANTELOPE_NETWORKS } = await import("@clip-wallet/chains-antelope");
-    const { createMultiversXModule, MULTIVERSX_NETWORKS } = await import("@clip-wallet/chains-multiversx");
-    const { createIcpModule, ICP_NETWORKS } = await import("@clip-wallet/chains-icp");
-    const { createStacksModule, STACKS_NETWORKS } = await import("@clip-wallet/chains-stacks");
-    const { createFuelModule, FUEL_NETWORKS } = await import("@clip-wallet/chains-fuel");
-    const { createBitcoinCashModule, BCH_NETWORKS } = await import("@clip-wallet/chains-bitcoincash");
+    const { createCosmosModule, COSMOS_NETWORKS } = await import("@coldai/clip-wallet-chains-cosmos");
+    const { createTronModule, TRON_NETWORKS } = await import("@coldai/clip-wallet-chains-tron");
+    const { createXrplModule, XRPL_NETWORKS } = await import("@coldai/clip-wallet-chains-xrpl");
+    const { createAntelopeModule, ANTELOPE_NETWORKS } = await import("@coldai/clip-wallet-chains-antelope");
+    const { createMultiversXModule, MULTIVERSX_NETWORKS } = await import("@coldai/clip-wallet-chains-multiversx");
+    const { createIcpModule, ICP_NETWORKS } = await import("@coldai/clip-wallet-chains-icp");
+    const { createStacksModule, STACKS_NETWORKS } = await import("@coldai/clip-wallet-chains-stacks");
+    const { createFuelModule, FUEL_NETWORKS } = await import("@coldai/clip-wallet-chains-fuel");
+    const { createBitcoinCashModule, BCH_NETWORKS } = await import("@coldai/clip-wallet-chains-bitcoincash");
     const cases = [
       ...(["cosmos", "provenance", "thorchain", "initia"] as const).map((f) => [f, createCosmosModule({ family: f }), COSMOS_NETWORKS.filter((n) => n.family === f)] as const),
       ["tron", createTronModule(), TRON_NETWORKS] as const,

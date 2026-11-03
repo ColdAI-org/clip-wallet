@@ -6,7 +6,7 @@
  */
 import Solana from "@ledgerhq/hw-app-solana";
 import type Transport from "@ledgerhq/hw-transport";
-import type { DappRequest, SignablePayload, Signature } from "@clip-wallet/core";
+import type { DappRequest, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { equal, toHex } from "../bytes.js";
 import { HardwareErrors } from "../errors.js";
 import { ledgerPath } from "../paths.js";

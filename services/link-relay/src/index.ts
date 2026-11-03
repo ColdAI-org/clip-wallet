@@ -2,13 +2,13 @@
  * Clip Link relay. One Durable Object per channel forwards WebSocket text frames between role "a" and role "b".
  * It stores nothing but frames in flight to a role that isn't connected, for at most 10 minutes, then deletes
  * everything. It never sees plaintext: pairing frames carry only public keys, commitments and MACs, and every
- * frame after pairing is XChaCha20-Poly1305 ciphertext (@clip-wallet/link). Protocol: @clip-wallet/link/relay-protocol.
+ * frame after pairing is XChaCha20-Poly1305 ciphertext (@coldai/clip-wallet-link). Protocol: @coldai/clip-wallet-link/relay-protocol.
  *
  * Uses the WebSocket Hibernation API (state.acceptWebSocket, webSocketMessage/webSocketClose, attachments) so an
  * idle channel costs nothing: https://developers.cloudflare.com/durable-objects/best-practices/websockets/
  */
 import { DurableObject } from "cloudflare:workers";
-import { CHANNEL_ID, RELAY_LIMITS, type RelayControl, type RelayRole } from "@clip-wallet/link/relay-protocol";
+import { CHANNEL_ID, RELAY_LIMITS, type RelayControl, type RelayRole } from "@coldai/clip-wallet-link/relay-protocol";
 
 export interface Env {
   CHANNELS: DurableObjectNamespace<LinkChannel>;

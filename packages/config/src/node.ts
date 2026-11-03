@@ -1,6 +1,6 @@
 /**
  * Node-only helpers for build tools that need clip.config.ts outside a bundler: Expo's app.config.ts,
- * electron-builder's config file, create-clip-wallet. "@clip-wallet/config/node"; the main entry stays environment-free.
+ * electron-builder's config file, create-clip-wallet. "@coldai/clip-wallet-config/node"; the main entry stays environment-free.
  *
  * @module
  */
@@ -17,7 +17,7 @@ import {
   validateConfig,
   type ClipConfig,
   type ClipConfigInput,
-} from "@clip-wallet/config";
+} from "@coldai/clip-wallet-config";
 
 /** Node flags needed to import a .ts file: type stripping is on by default from Node 22.18 / 23.6. */
 export function typeStrippingFlags(version: string = process.versions.node): string[] {

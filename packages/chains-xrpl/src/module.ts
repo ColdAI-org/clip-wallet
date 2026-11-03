@@ -14,7 +14,7 @@ import {
   WALLET_ORIGIN,
   msg,
   say,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { addressOfPublicKey, decodeClassic, decodeXAddress, isClassicAddress } from "./address.js";
 import { TX_TYPES, UnsupportedField, derSignature, serializeObject, signingDigest, txHash } from "./codec.js";

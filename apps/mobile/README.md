@@ -1,13 +1,13 @@
 # Clip Wallet mobile (iOS + Android)
 
-> The app's code is [`@clip-wallet/mobile-kit`](../../packages/mobile-kit) (`packages/mobile-kit`), shared with every
+> The app's code is [`@coldai/clip-wallet-mobile-kit`](../../packages/mobile-kit) (`packages/mobile-kit`), shared with every
 > kit-built wallet; this folder is Clip Wallet's brand on it: `clip.config.ts`, `assets/` rendered from `brand/`,
 > `index.ts` (`registerClipWallet()`), `app.config.ts` (`expoConfig()`), `metro.config.js` (`withClipWallet()`) and the
 > local test dapp. Paths in "What's where" (`src/…`, `test/…`) are in the kit; its tests run with
-> `pnpm --filter @clip-wallet/mobile-kit test`.
+> `pnpm --filter @coldai/clip-wallet-mobile-kit test`.
 
 Expo SDK 57 (React Native 0.86.3, React 19.2.3, Hermes, New Architecture, which is the only architecture in
-RN 0.82+). It runs the same packages as the extension through `@clip-wallet/engine`. Testnets only.
+RN 0.82+). It runs the same packages as the extension through `@coldai/clip-wallet-engine`. Testnets only.
 
 ## Run
 
@@ -18,7 +18,7 @@ cp .env.example .env              # optional: EXPO_PUBLIC_WC_PROJECT_ID, EXPO_PU
 pnpm ios                          # builds the inpage bundle, then `expo run:ios` (needs Xcode, CocoaPods, an iOS Simulator runtime)
 pnpm android                      # `expo run:android`
 pnpm dapp                         # local test dapp on http://localhost:8787 (EIP-6963 + personal_sign); open it in Browse
-pnpm --filter @clip-wallet/mobile-kit test   # vitest (bridge e2e, Argon2, deep links, storage) + jest-expo (screens)
+pnpm --filter @coldai/clip-wallet-mobile-kit test   # vitest (bridge e2e, Argon2, deep links, storage) + jest-expo (screens)
 pnpm typecheck
 pnpm export:ios                   # Metro + Hermes bytecode bundle only (no Xcode needed)
 ```
@@ -30,7 +30,7 @@ modules (Argon2, passkeys). Use a dev build (`expo-dev-client`).
 
 | Path | |
 | --- | --- |
-| `src/background/` | the only place here that may import `@clip-wallet/vault` (harness). `host.ts` builds the vault + engine |
+| `src/background/` | the only place here that may import `@coldai/clip-wallet-vault` (harness). `host.ts` builds the vault + engine |
 | `src/background/argon2.ts` | Argon2id for Hermes: react-native-argon2, self-tested, @noble pure-JS fallback |
 | `src/background/storage.ts` | vault record → expo-secure-store; app data → AsyncStorage |
 | `src/background/device-key.ts` | Face ID / Touch ID / fingerprint unlock (device key as a PRF for the vault's passkey slot) |
@@ -42,7 +42,7 @@ modules (Argon2, passkeys). Use a dev build (`expo-dev-client`).
 | `src/screens/Hardware.tsx` | Hardware wallets in Settings, Connect (Ledger over Bluetooth, Keystone by camera), the device step over the approval sheet |
 | `src/background/ledger-ble.ts` | Ledger Bluetooth transport, device pick and permissions |
 | `src/ui/ur.tsx` | Keystone animated UR QR and the UR camera scanner |
-| `src/ui/` | tokens from `@clip-wallet/ui` `tokensFor` as RN values, plus RN versions of the ui components |
+| `src/ui/` | tokens from `@coldai/clip-wallet-ui` `tokensFor` as RN values, plus RN versions of the ui components |
 
 ## Unlock methods: what works where
 
@@ -58,7 +58,7 @@ prfInput)), the same construction it uses for WebAuthn PRF. The password always 
 
 ## WalletConnect
 
-`@reown/walletkit` 1.6 through `@clip-wallet/1mask/walletconnect`. `@walletconnect/react-native-compat` 2.25 is
+`@reown/walletkit` 1.6 through `@coldai/clip-wallet-1mask/walletconnect`. `@walletconnect/react-native-compat` 2.25 is
 the first import (`src/polyfills.ts`). It polyfills `crypto.getRandomValues`, `TextEncoder/Decoder`, `URL`,
 `Buffer`, `atob/btoa`, and needs `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`,
 `expo-application` and `react-native-get-random-values` (its peer dependencies). The project id comes from
@@ -68,7 +68,7 @@ scanner uses expo-camera. Deep links: `clipwallet://wc?uri=…`, `clipwallet://b
 
 ## Stake, Swap, Buy, Secure Trade
 
-The same screens and copy as the extension, on `@clip-wallet/engine`'s feature services (`wallet.features`).
+The same screens and copy as the extension, on `@coldai/clip-wallet-engine`'s feature services (`wallet.features`).
 Every action ends in the normal approval sheet.
 
 - **Getting there.** As in the extension: Explore is a bottom tab. It lists Stake, Swap, Buy and Secure Trade,

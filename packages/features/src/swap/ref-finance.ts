@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
 import {
   NEAR_METHODS,
   NearRpc,
@@ -11,7 +11,7 @@ import {
   refSwapTransactions,
   type NearModule,
   type RefSwapAction,
-} from "@clip-wallet/chains-near";
+} from "@coldai/clip-wallet-chains-near";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { formatUnits, randomId } from "../util.js";

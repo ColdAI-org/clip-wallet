@@ -1,5 +1,5 @@
 /**
- * Clip Wallet desktop is @clip-wallet/desktop-kit; this project is the brand. clipDesktop() builds the electron-vite
+ * Clip Wallet desktop is @coldai/clip-wallet-desktop-kit; this project is the brand. clipDesktop() builds the electron-vite
  * config from clip.config.ts: identity, the resolved config for the main process and pages, the native-messaging host
  * and the mainnet checklist.
  *
@@ -9,7 +9,7 @@
  *   CLIP_EXTENSION_IDS   Chromium extension ids allowed to use Clip Desktop over native messaging (Firefox's is fixed)
  */
 import { defineConfig } from "electron-vite";
-import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
+import { clipDesktop } from "@coldai/clip-wallet-desktop-kit/electron-vite";
 import clipConfig from "./clip.config";
 
 // electron-vite 5's isolated-entries progress line calls process.stdout.clearLine/cursorTo, which exist only on a

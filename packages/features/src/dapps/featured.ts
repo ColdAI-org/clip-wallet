@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import type { FeaturedDappView } from "../views.js";
 export { TRADE_DISCLAIMER } from "../views.js";
 import data from "./featured.json" with { type: "json" };

@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/backup-client — talks to services/backup. Holds no key material: it moves the opaque blob
+ * @coldai/clip-wallet-backup-client — talks to services/backup. Holds no key material: it moves the opaque blob
  * produced by vault.createPasskeyBackup and the sign-in session.
  *
  *   const c = new BackupClient({ baseUrl });
@@ -15,7 +15,7 @@
  *
  * @module
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import {
   API_VERSION,
   type BackupMeta,

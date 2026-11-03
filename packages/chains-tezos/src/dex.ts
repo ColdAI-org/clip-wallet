@@ -1,4 +1,4 @@
-import { ClipError, type NetworkId } from "@clip-wallet/core";
+import { ClipError, type NetworkId } from "@coldai/clip-wallet-core";
 import type { PartialTezosOperation } from "./build.js";
 import { isTezosAddress } from "./encoding.js";
 import { asAddress, asNat, pairArgs } from "./micheline.js";

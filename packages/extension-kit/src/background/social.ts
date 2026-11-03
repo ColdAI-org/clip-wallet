@@ -1,5 +1,5 @@
 /**
- * Social stream in the service worker: builds the SocialService (@clip-wallet/engine/social), shows its
+ * Social stream in the service worker: builds the SocialService (@coldai/clip-wallet-engine/social), shows its
  * notices with chrome.notifications, and polls on an alarm. New file from the "social" stream; main.ts calls
  * startSocial() (docs/phase25/integration/social.md).
  *
@@ -9,8 +9,8 @@
  * (https://developer.chrome.com/docs/extensions/reference/api/alarms).
  */
 import { browser } from "wxt/browser";
-import { createSocial, type SocialHostDeps } from "@clip-wallet/engine/social";
-import type { Notice, Notifier } from "@clip-wallet/social";
+import { createSocial, type SocialHostDeps } from "@coldai/clip-wallet-engine/social";
+import type { Notice, Notifier } from "@coldai/clip-wallet-social";
 import type {} from "../globals";
 
 export const SOCIAL_POLL_ALARM = "clip-social-poll";

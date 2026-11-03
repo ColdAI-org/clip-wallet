@@ -1,4 +1,4 @@
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 
 /**
  * Testnet-only service deployments (docs/phase25/deploy.md). A mainnet build gets none of these by default:
@@ -11,7 +11,7 @@ const TESTNET_SERVICES = {
   linkRelayUrl: "https://clip-link-relay.doyoka-platform.workers.dev",
 };
 
-// Same brand as the extension (apps/extension/clip.config.ts). Schema: @clip-wallet/config.
+// Same brand as the extension (apps/extension/clip.config.ts). Schema: @coldai/clip-wallet-config.
 // WalletConnect's project id comes from EXPO_PUBLIC_WC_PROJECT_ID at build time (see src/env.ts), never from here.
 export default defineConfig({
   name: "Clip Wallet",
@@ -23,7 +23,7 @@ export default defineConfig({
   passkeys: { enabled: true },
   walletConnect: {},
   services: MAINNET ? {} : TESTNET_SERVICES,
-  // Settle on Hedera (bonded Connectors, @clip-wallet/route SETTLE_DEPLOYMENTS): testnet builds only.
+  // Settle on Hedera (bonded Connectors, @coldai/clip-wallet-route SETTLE_DEPLOYMENTS): testnet builds only.
   route: { settleOnHedera: !MAINNET },
   mainnet: MAINNET,
 });

@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/1mask/walletconnect — WalletConnect wallet side (Reown WalletKit).
+ * @coldai/clip-wallet-1mask/walletconnect — WalletConnect wallet side (Reown WalletKit).
  *
  * Pair, map CAIP-25 proposals to Clip accounts (eip155, solana, bip122, hedera), turn
  * session_request into DappRequest{via:"walletconnect"}, attach Verify API warnings, support

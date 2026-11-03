@@ -44,8 +44,8 @@ run() {
       git init -q /work && cd /work
       git fetch -q /in/src.bundle refs/repro-check/src && git checkout -q $COMMIT
       npm install -g --silent pnpm@$PNPM_VERSION >/dev/null
-      pnpm install --frozen-lockfile --reporter=silent --filter \"@clip-wallet/extension...\"
-      pnpm --filter @clip-wallet/extension package >/out/package.log 2>&1 || { tail -50 /out/package.log; exit 1; }
+      pnpm install --frozen-lockfile --reporter=silent --filter \"@coldai/clip-wallet-extension...\"
+      pnpm --filter @coldai/clip-wallet-extension package >/out/package.log 2>&1 || { tail -50 /out/package.log; exit 1; }
       cp apps/extension/release/SHA256SUMS apps/extension/release/TREE-DIGESTS /out/
       # The container runs as root; with umask 077 the host user couldn't read what it wrote.
       chmod a+r /out/*

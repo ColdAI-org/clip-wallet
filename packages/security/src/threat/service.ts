@@ -1,4 +1,4 @@
-import type { DappRequest, DecodedRequest, Network, Warning } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest, Network, Warning } from "@coldai/clip-wallet-core";
 import type { SecurityConfig, SecurityHost } from "../host.js";
 import { hostOf } from "../util.js";
 import type { SiteCheckView, ThreatProviderStatusView } from "../views.js";

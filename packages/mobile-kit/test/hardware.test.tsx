@@ -4,7 +4,7 @@
  * waits. Device signing itself is faked (packages/engine/test/hardware-fixtures.ts); no keys anywhere.
  */
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import { AnimatedUr, urFromJson } from "@clip-wallet/hardware/qr";
+import { AnimatedUr, urFromJson } from "@coldai/clip-wallet-hardware/qr";
 import { App } from "../src/App";
 import { ConnectHardware, HardwareSettings } from "../src/screens/Hardware";
 import { EVM_ADDRESS, fakePort } from "../../engine/test/fixtures";

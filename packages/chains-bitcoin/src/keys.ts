@@ -1,7 +1,7 @@
 /**
  * Paths, addresses and scripts for an account. Public data only.
  *
- * Paths match @clip-wallet/vault, which derives and signs: BIP-84 (P2WPKH) m/84'/<coin>'/0'/0/<index>
+ * Paths match @coldai/clip-wallet-vault, which derives and signs: BIP-84 (P2WPKH) m/84'/<coin>'/0'/0/<index>
  * and BIP-86 (P2TR) m/86'/<coin>'/0'/0/<index>, coin 1' on test networks (the v1 default) and 0' on
  * mainnet. Mainnet accounts therefore use different keys from testnet accounts.
  *
@@ -11,7 +11,7 @@
  * the account's: taproot receive, coins and messages are unavailable (plain "taproot-unavailable" error),
  * because a P2TR script built from the BIP-84 key would not match what the vault signs.
  */
-import { type Account, type ChildAddress, ClipError, type Network } from "@clip-wallet/core";
+import { type Account, type ChildAddress, ClipError, type Network } from "@coldai/clip-wallet-core";
 import { hex } from "@scure/base";
 import { Address, OutScript, p2pkh, p2tr, p2wpkh } from "@scure/btc-signer";
 import { equalBytes, taprootTweakPubkey } from "@scure/btc-signer/utils.js";

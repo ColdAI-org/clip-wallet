@@ -1,5 +1,5 @@
-import { type AssetRef, ClipError, type DappRequest } from "@clip-wallet/core";
-import { USDC_CONTRACTS, clearTokenCache, createNearModule, decodeTransaction, encodeTransaction, parsePublicKey } from "@clip-wallet/chains-near";
+import { type AssetRef, ClipError, type DappRequest } from "@coldai/clip-wallet-core";
+import { USDC_CONTRACTS, clearTokenCache, createNearModule, decodeTransaction, encodeTransaction, parsePublicKey } from "@coldai/clip-wallet-chains-near";
 import { beforeEach, describe, expect, it } from "vitest";
 import { RefFinanceSwap, verifyRefRequest } from "../src/swap/ref-finance.js";
 import { minOut } from "../src/swap/types.js";

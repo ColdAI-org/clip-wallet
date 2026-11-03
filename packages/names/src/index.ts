@@ -1,10 +1,10 @@
 /**
- * @clip-wallet/names — "alice.eth" / "alice.sol" / "alice.hbar" → an address and the network it implies.
+ * @coldai/clip-wallet-names — "alice.eth" / "alice.sol" / "alice.hbar" → an address and the network it implies.
  * Used by Send (background resolveRecipient). Reads only; no keys, no signing.
  *
  * @module
  */
-import type { Family, Network, NetworkId } from "@clip-wallet/core";
+import type { Family, Network, NetworkId } from "@coldai/clip-wallet-core";
 import { EnsBackend, type EnsClient } from "./ens.js";
 import { HnsBackend } from "./hns.js";
 import { SnsBackend } from "./sns.js";

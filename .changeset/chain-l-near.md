@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/chains-near": patch
+"@coldai/clip-wallet-chains-near": patch
 ---
 
 NEAR call arguments are shown up to 4,000 characters (was 600, cut silently) and an ft_transfer_call `msg` up to

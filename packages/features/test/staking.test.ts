@@ -1,5 +1,5 @@
 import { AccountUpdateTransaction, Transaction } from "@hiero-ledger/sdk";
-import { HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+import { HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
 import { createAddressWithSeed, address, getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
 import { describe, expect, it } from "vitest";
 import { HederaStaking, hederaApy } from "../src/staking/hedera.js";

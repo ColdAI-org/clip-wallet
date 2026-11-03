@@ -14,7 +14,7 @@ import {
   type Warning,
   msg,
   say,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { AbiError, TOKEN_ABI, encodeActionData } from "./abi.js";
 import { fromHex, hex, isAccountName, isCanonical, isName, parseAsset, parsePublicKey, publicKeyString, signatureString, formatAsset } from "./bytes.js";

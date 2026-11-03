@@ -1,21 +1,21 @@
 # Clip Wallet desktop (macOS, Windows, Linux)
 
-> The app's code is [`@clip-wallet/desktop-kit`](../../packages/desktop-kit) (`packages/desktop-kit`), shared with every
+> The app's code is [`@coldai/clip-wallet-desktop-kit`](../../packages/desktop-kit) (`packages/desktop-kit`), shared with every
 > kit-built wallet; this folder is Clip Wallet's brand on it: `clip.config.ts`, the icons rendered from `brand/`,
 > `electron.vite.config.ts` (`clipDesktop()`), `electron-builder.config.cjs` (`electronBuilderConfig()`), one-line
 > entrypoints, and the Playwright e2e. Paths in the tables below (`src/…`, `scripts/build-inpage.mjs`) are in the kit;
-> its unit tests run with `pnpm --filter @clip-wallet/desktop-kit test`.
+> its unit tests run with `pnpm --filter @coldai/clip-wallet-desktop-kit test`.
 
-Electron app with the shared wallet engine in the main process, the extension's screens (`@clip-wallet/ui`) in the
+Electron app with the shared wallet engine in the main process, the extension's screens (`@coldai/clip-wallet-ui`) in the
 wallet and approval windows, and a built-in dapp browser where 1Mask is injected the way the extension injects it.
 Test networks only (`clip.config.ts`, `mainnet: false`).
 
 ```
-pnpm --filter @clip-wallet/desktop build      # electron-vite → out/ (main, sandboxed preloads, renderer)
-pnpm --filter @clip-wallet/desktop start      # run the built app
-pnpm --filter @clip-wallet/desktop-kit test   # unit tests (IPC schema, origin binding, storage, Touch ID PRF, HID relay, i18n QA, builder mapper)
-pnpm --filter @clip-wallet/desktop e2e        # build + Playwright _electron end-to-end (real vault, testnets)
-pnpm --filter @clip-wallet/desktop dist:mac   # electron-builder: dmg + zip, arm64 + x64 (dist:win, dist:linux, dist:dir)
+pnpm --filter @coldai/clip-wallet-desktop build      # electron-vite → out/ (main, sandboxed preloads, renderer)
+pnpm --filter @coldai/clip-wallet-desktop start      # run the built app
+pnpm --filter @coldai/clip-wallet-desktop-kit test   # unit tests (IPC schema, origin binding, storage, Touch ID PRF, HID relay, i18n QA, builder mapper)
+pnpm --filter @coldai/clip-wallet-desktop e2e        # build + Playwright _electron end-to-end (real vault, testnets)
+pnpm --filter @coldai/clip-wallet-desktop dist:mac   # electron-builder: dmg + zip, arm64 + x64 (dist:win, dist:linux, dist:dir)
 CLIP_EXTENSION_IDS=<id>[,<id>] pnpm … build   # Chromium extension ids allowed to use Clip Desktop (native messaging)
 ```
 
@@ -23,7 +23,7 @@ CLIP_EXTENSION_IDS=<id>[,<id>] pnpm … build   # Chromium extension ids allowed
 
 | Piece | Where | Notes |
 |---|---|---|
-| Engine + vault | `src/main/host/wallet.ts` | `@clip-wallet/engine` like the phone (`packages/mobile-kit/src/background/host.ts`); the only place in this app that imports `@clip-wallet/vault` (harness allowlist). Features, Ledger/Keystone, social, security attached as on mobile. |
+| Engine + vault | `src/main/host/wallet.ts` | `@coldai/clip-wallet-engine` like the phone (`packages/mobile-kit/src/background/host.ts`); the only place in this app that imports `@coldai/clip-wallet-vault` (harness allowlist). Features, Ledger/Keystone, social, security attached as on mobile. |
 | Storage | `src/main/storage.ts` | `vault.json`: the vault record (already Argon2id-sealed) wrapped again with Electron `safeStorage` (Keychain / DPAPI / libsecret or KWallet). `app.json`: public app data. Atomic writes. |
 | IPC | `src/shared/ipc.ts`, `src/main/ipc-guard.ts`, `src/preload/wallet.ts` | One typed bridge object (`window.clipDesktop`) via `contextBridge`. Main checks zod schema, then the sender (registered window role + top frame + `clip-app://wallet` origin), then the engine's own zod schema. |
 | Wallet pages | `src/renderer/{wallet,approval}` | Served from `clip-app://wallet/…` (`src/main/app-protocol.ts`) with a strict CSP; only the default session knows the scheme. |
@@ -31,7 +31,7 @@ CLIP_EXTENSION_IDS=<id>[,<id>] pnpm … build   # Chromium extension ids allowed
 | 1Mask | `src/preload/dapp.ts`, `src/main/browser/onemask-relay.ts` | Inpage bundle (`scripts/build-inpage.mjs`) runs in the page's main world at document start (`contextBridge.executeInMainWorld`); the content bridge runs in the preload's isolated world and relays to main over IPC; main sets the origin. |
 | Ledger | `src/main/hid.ts`, `src/renderer/shared/hid-agent.ts` | LedgerSigner in main over a relay transport; WebHID in the wallet/approval window does the raw APDU I/O. |
 | Touch ID | `src/main/biometric.ts` | PRF in the vault's passkey slot; the main process finishes the ceremony itself. |
-| Linked devices | `src/main/host/link.ts`, `src/main/native-hosts.ts`, `src/native-host/main.ts` | `@clip-wallet/link`: Clip Desktop signs for the paired extension (native messaging → per-user socket → engine → approval window), can use a paired phone as its own signer (relay), encrypted settings sync, moving a wallet, "continue on this device". Settings → Linked devices → Browser extension registers / repairs / removes the native-messaging host for Chrome, Chromium, Edge, Brave and Firefox. |
+| Linked devices | `src/main/host/link.ts`, `src/main/native-hosts.ts`, `src/native-host/main.ts` | `@coldai/clip-wallet-link`: Clip Desktop signs for the paired extension (native messaging → per-user socket → engine → approval window), can use a paired phone as its own signer (relay), encrypted settings sync, moving a wallet, "continue on this device". Settings → Linked devices → Browser extension registers / repairs / removes the native-messaging host for Chrome, Chromium, Edge, Brave and Firefox. |
 | Deep links | `src/main/deeplink.ts` | `clipwallet://wc?uri=…`, `clipwallet://browse?url=…` (with `&h=…`: a handoff, verified and restored from Linked devices), `clipwallet://link?…` (pairing code), `clipwallet://trade#offer=…`, bare `wc:`. |
 | Tray / menu | `src/main/index.ts` | Menu bar (macOS template glyph) / tray: open wallet, open browser, lock, quit; icons from `brand/` (`tools/brand/render.mjs`). |
 | Updates | `src/main/updater.ts` | electron-updater wired, **off** until signed releases exist (`CLIP_UPDATES=1`). |
@@ -54,7 +54,7 @@ new view in the target origin's session. Only https, plus plain http for localho
 secure"). Permission requests: camera, microphone, notifications, clipboard and location prompt the user in the
 toolbar (denied by default, grants last for the run); everything else (HID, USB, serial, Bluetooth, MIDI…) is denied.
 Downloads ask (native dialog naming the file, the site and the size), then a save dialog. Phishing: the host is
-checked against `@clip-wallet/security`'s lists (MetaMask, ScamSniffer, Phantom, Polkadot) before the site loads; a
+checked against `@coldai/clip-wallet-security`'s lists (MetaMask, ScamSniffer, Phantom, Polkadot) before the site loads; a
 listed site shows a warning and loads only if the user insists. The address bar always shows the committed origin
 (host in bold).
 
@@ -105,8 +105,8 @@ use it, plus Chromium's `--use-mock-keychain` on macOS so tests never touch the 
 - Not run here: Windows and Linux runtime (no VM / wine on the build Mac). `.github/workflows/desktop.yml` builds,
   tests, packages and smoke-tests on `macos-latest`, `windows-latest` and `ubuntu-latest`; it has not been run yet.
 - Not exercised: the phone-as-signer path from the desktop and settings sync against the deployed relay / backup
-  (covered by `@clip-wallet/link` tests and the mobile/extension e2e), a real Chrome/Firefox launching the host.
-- Not exercised with devices: Ledger over WebHID and Keystone over the camera (logic covered by `@clip-wallet/hardware`
+  (covered by `@coldai/clip-wallet-link` tests and the mobile/extension e2e), a real Chrome/Firefox launching the host.
+- Not exercised with devices: Ledger over WebHID and Keystone over the camera (logic covered by `@coldai/clip-wallet-hardware`
   and the relay tests), real Touch ID prompts (PRF covered by unit tests with a fake prompt), WalletConnect (needs a
   `CLIP_WC_PROJECT_ID`).
 

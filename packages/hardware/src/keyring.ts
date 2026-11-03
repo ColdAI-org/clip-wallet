@@ -10,7 +10,7 @@
  *    approved payload, so whatever the other side signed, only a signature over those exact bytes by the
  *    account's key is accepted, once.
  */
-import type { DappRequest, DecodedRequest, Signature, SignablePayload, SignatureScheme } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest, Signature, SignablePayload, SignatureScheme } from "@coldai/clip-wallet-core";
 import { HardwareApprovals } from "./approvals.js";
 import { HardwareErrors } from "./errors.js";
 import type { HardwareAccount, HardwareKind, HardwareSigner } from "./types.js";

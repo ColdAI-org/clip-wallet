@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 /** Soroban (Stellar) RPC, JSON-RPC 2.0. https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods */
 export class RpcError extends Error {

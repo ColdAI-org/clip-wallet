@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
 import { decodeFunctionData, encodeFunctionData, erc20Abi, getAddress, isAddressEqual, parseAbi, toHex } from "viem";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";

@@ -1,10 +1,10 @@
 # Stellar
 
 Clip Wallet injects a **SEP-43** wallet at `window.clipwallet.stellar`. Stellar Wallets Kit lists only the modules a
-dapp passes, so add Clip's: `ClipWalletModule` from `@clip-wallet/kit-modules/stellar`.
+dapp passes, so add Clip's: `ClipWalletModule` from `@coldai/clip-wallet-kit-modules/stellar`.
 
 ```sh
-npm i @clip-wallet/kit-modules
+npm i @coldai/clip-wallet-kit-modules
 ```
 
 <<< @/snippets/dapps/stellar.ts

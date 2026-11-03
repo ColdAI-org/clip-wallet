@@ -16,7 +16,7 @@ import {
   type SignablePayload,
   type SignatureScheme,
   type Vault,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { ApprovalRegistry, hashSignablePayload } from "./approvals.js";
 import { defaultAddressOf, type AddressContext, type AddressOf, type BitcoinAddressType, type BitcoinNetwork } from "./address.js";
 import { fromB64, randomBytes, toB64, toHex, wipe } from "./bytes.js";

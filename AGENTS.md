@@ -3,18 +3,18 @@
 Clip Wallet is a non-custodial wallet for the CLPR networks (85 of 87; Canton and Mixin have no self-custodial model, docs/r1/networks87.md): 26 network families, 1Mask for every dapp, decoded
 approvals, a security floor, features (staking, swaps, on-ramps, Secure Trade), social (contacts, Clip handles,
 notifications, Discover), sandboxed Clip Plugins, and route-and-fund / settle-on-Hedera on CLPRouter. It is also a
-kit: the `@clip-wallet/*` packages, `@clip-wallet/extension-kit`, `@clip-wallet/desktop-kit`, `@clip-wallet/mobile-kit`
+kit: the `@coldai/clip-wallet-*` packages, `@coldai/clip-wallet-extension-kit`, `@coldai/clip-wallet-desktop-kit`, `@coldai/clip-wallet-mobile-kit`
 and `create-clip-wallet` let anyone ship their own wallet on every platform from one `clip.config.ts`. Pre-release: test
 networks only.
 
 ## Rules that never break
 1. Only `packages/vault` touches seed phrases or private keys. `tools/harness/check.mjs` fails otherwise.
-2. Chain modules (`packages/chains-*`) implement `ChainModule` from `@clip-wallet/core` and never import the vault.
+2. Chain modules (`packages/chains-*`) implement `ChainModule` from `@coldai/clip-wallet-core` and never import the vault.
 3. Every dapp request becomes a `DecodedRequest` before approval. Undecodable = blind signing, off by default.
 4. Networks are invisible in the default UI: speak in assets and apps; show the network only where a mistake loses money.
 5. Never log, print or commit key material, phrases, API keys, `.env` values or key files (`*.pem`, `.keys/`). Tests use the public BIP-39 test vectors only.
 6. Testnet by default. Mainnet needs the checklist object in `clip.config.ts`, and a mainnet build needs everything `mainnetProblems()` asks for.
-7. The security floor is not configurable: open phishing lists on, decode-before-approve, new-contract and look-alike checks. `@clip-wallet/security` refuses a mainnet config below it.
+7. The security floor is not configurable: open phishing lists on, decode-before-approve, new-contract and look-alike checks. `@coldai/clip-wallet-security` refuses a mainnet config below it.
 8. Kit-built wallets announce their own identity. Nothing in the kit may hard-code "Clip Wallet" or `org.coldai.clipwallet` where a wallet's name or rdns belongs: read `config.name` / identity.
 9. Published packages build from `src/` to `dist/` and are only released by CI (changesets + npm provenance). Never `npm publish` or `pnpm publish` by hand.
 
@@ -22,11 +22,11 @@ networks only.
 ```bash
 pnpm install && pnpm typecheck && pnpm test && pnpm harness
 ```
-Touching the extension: also `pnpm --filter @clip-wallet/extension e2e`. Touching the desktop app or desktop-kit: also
-`pnpm --filter @clip-wallet/desktop e2e`. Touching packaging, `create-clip-wallet`, the kits or `templates/`: also
+Touching the extension: also `pnpm --filter @coldai/clip-wallet-extension e2e`. Touching the desktop app or desktop-kit: also
+`pnpm --filter @coldai/clip-wallet-desktop e2e`. Touching packaging, `create-clip-wallet`, the kits or `templates/`: also
 `pnpm pack-all && pnpm kit:e2e` (every platform from tarballs; and `pnpm kit:e2e:scaffold-hbar` for the template).
 
-Release work (Docker for the last one): `pnpm --filter @clip-wallet/extension package`, `actionlint`, `scripts/repro-check.sh`.
+Release work (Docker for the last one): `pnpm --filter @coldai/clip-wallet-extension package`, `actionlint`, `scripts/repro-check.sh`.
 
 ## Layout
 ```
@@ -50,7 +50,7 @@ packages/plugins         Clip Plugins: SES sandbox, npm install with integrity c
 packages/hardware        Ledger (WebHID) and Keystone (QR)
 packages/names           ENS, SNS, HNS, Clip handles
 packages/link            linked devices: phone/desktop as signer, encrypted sync, handoffs, native messaging
-packages/connect         Clip Connect (@clip-wallet/connect): wallet-agnostic dapp SDK; public standards only, never wallet internals
+packages/connect         Clip Connect (@coldai/clip-wallet-connect): wallet-agnostic dapp SDK; public standards only, never wallet internals
 packages/kit-modules     modules for ecosystem pickers (NEAR Wallet Selector, Stellar Wallets Kit, use-wallet, Beacon)
 packages/backup-client, packages/media-client   clients for services/backup and services/media-proxy
 packages/create-clip-wallet   npx create-clip-wallet: the template, platforms (--platforms), identity, icons from one logo, listing drafts, mainnet check
@@ -105,7 +105,7 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
 ### Add a screen
 1. `packages/ui/src/screens/<Name>.tsx`; state and actions from `packages/ui/src/context.tsx`, tokens from `packages/ui/src/theme`.
 2. Register it in `packages/ui/src/App.tsx`; every string through the i18n layer (`packages/ui/src/i18n`, all 11 languages).
-3. Screens never import `@clip-wallet/vault` (only `packages/ui/src/screens/Onboarding.tsx` may); ask the background through `packages/ui/src/client.ts`.
+3. Screens never import `@coldai/clip-wallet-vault` (only `packages/ui/src/screens/Onboarding.tsx` may); ask the background through `packages/ui/src/client.ts`.
 4. A render test in `packages/ui/test/screens.test.tsx`.
 
 ### Change the extension background
@@ -113,7 +113,7 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
    holds Clip Wallet's identity and one-line entrypoints.
 2. Build-time values come from `clipWallet()` in `packages/extension-kit/src/wxt.ts` as `__CLIP_*__` globals
    (`src/globals.ts`); the resolved config is the `virtual:clip-wallet/config` module (`src/config.ts`).
-3. Tests in `packages/extension-kit/test` (vitest aliases the virtual module to `test/clip.config.ts`); then `pnpm --filter @clip-wallet/extension e2e`.
+3. Tests in `packages/extension-kit/test` (vitest aliases the virtual module to `test/clip.config.ts`); then `pnpm --filter @coldai/clip-wallet-extension e2e`.
 
 ### Change the desktop or phone app
 1. The code lives in `packages/desktop-kit/src` (main process, preloads, pages) and `packages/mobile-kit/src` (screens,
@@ -125,7 +125,7 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
    literal. Node-side helpers (`electron-vite.ts`, `builder.ts`, `expo.ts`) have no relative imports: build tools load
    them from source.
 3. Tests in each kit's `test/` (vitest and, for mobile, jest-expo; both alias the virtual module to `test/clip.config.ts`);
-   then `pnpm --filter @clip-wallet/desktop e2e` for the desktop app, and `pnpm kit:e2e` (both platforms, from tarballs).
+   then `pnpm --filter @coldai/clip-wallet-desktop e2e` for the desktop app, and `pnpm kit:e2e` (both platforms, from tarballs).
 
 ### Security checks
 1. A new threat source implements `ThreatIntelProvider` (`packages/security/src/threat/types.ts`); say in its comment exactly what leaves the device.
@@ -140,7 +140,7 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
    Update `describePermissions` and the plugin README together.
 
 ### Write a chain module
-1. `packages/chains-<family>` with `package.json` depending on `@clip-wallet/core` (never the vault); copy `tsconfig.json`
+1. `packages/chains-<family>` with `package.json` depending on `@coldai/clip-wallet-core` (never the vault); copy `tsconfig.json`
    from a chain package; run `node tools/release/normalize-manifests.mjs` to give it the published manifest shape.
 2. Implement `ChainModule` in `src/module.ts`; export from `src/index.ts`.
 3. `decode` returns a plain-language `DecodedRequest`; anything undecodable is `blind: true`.

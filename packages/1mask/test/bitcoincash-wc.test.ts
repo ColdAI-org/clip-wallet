@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createBitcoinCashDispatcher } from "../src/background/bitcoincash.js";
 import { rpcError } from "../src/shared/errors.js";

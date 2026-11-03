@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/1mask": patch
-"@clip-wallet/kit-modules": patch
+"@coldai/clip-wallet-1mask": patch
+"@coldai/clip-wallet-kit-modules": patch
 ---
 
 1Mask: unconnected sites may only proxy cheap chain-state reads (eth_blockNumber, gas price, fee history, syncing,

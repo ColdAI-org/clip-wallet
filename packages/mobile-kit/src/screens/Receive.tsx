@@ -1,7 +1,7 @@
 /** Receive: pick the asset, then show the right address. Networks appear only when ambiguous. */
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { mergeBalances, userMessageOf } from "@clip-wallet/ui";
+import { mergeBalances, userMessageOf } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Card, CopyButton, ErrorNote, Notice, Qr, Screen, Spinner, T } from "../ui/kit";
 import { IconChevron } from "../ui/icons";

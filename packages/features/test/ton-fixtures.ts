@@ -1,5 +1,5 @@
-import type { Account, ChainContext, Network } from "@clip-wallet/core";
-import { TON_MAINNET, TON_TESTNET, addressCellHex, tonModule } from "@clip-wallet/chains-ton";
+import type { Account, ChainContext, Network } from "@coldai/clip-wallet-core";
+import { TON_MAINNET, TON_TESTNET, addressCellHex, tonModule } from "@coldai/clip-wallet-chains-ton";
 
 /** Public key only, from packages/chains-ton/test/signatures.ts (FIX.publicKey). No private key exists here. */
 export const TON_PUB = "4ab9e5d394a7d21e58523aa1c1175a8ae372747ca61112a0a1943f45ef74081d";

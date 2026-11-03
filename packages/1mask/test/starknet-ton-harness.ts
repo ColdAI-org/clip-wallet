@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { createStarknetTonDispatch, type StarknetTonHelpers, type StarknetTonOptions, type TonAddrItem } from "../src/background/starknet-ton.js";
 import type { EventListener, InpageTransport } from "../src/inpage/transport.js";
 import { fromRpcErrorShape, toRpcErrorShape } from "../src/shared/errors.js";

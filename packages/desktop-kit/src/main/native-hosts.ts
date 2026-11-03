@@ -4,7 +4,7 @@
  * (packages/link/src/native/manifests.ts has the per-browser locations and their sources).
  *
  *   launcher  <userData>/native-host/clip-native-host (sh) or .cmd (Windows): runs the bundled host program
- *             (out/native-host/clip-native-host.cjs, @clip-wallet/link/node nativeHostMain) with this app's own
+ *             (out/native-host/clip-native-host.cjs, @coldai/clip-wallet-link/node nativeHostMain) with this app's own
  *             executable as Node (ELECTRON_RUN_AS_NODE=1). Rewritten on every repair, so it always points at the
  *             current install after an update or a move.
  *   manifests one JSON per browser naming the launcher and the extension ids this build trusts; on Windows a
@@ -20,7 +20,7 @@
 import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { BROWSERS, installPlan, installTarget, nativeHostName, registryCommand, type BrowserKind, type HostManifest, type HostOS, type InstallTarget } from "@clip-wallet/link/native";
+import { BROWSERS, installPlan, installTarget, nativeHostName, registryCommand, type BrowserKind, type HostManifest, type HostOS, type InstallTarget } from "@coldai/clip-wallet-link/native";
 
 export interface ConnectorEnv {
   os: HostOS;

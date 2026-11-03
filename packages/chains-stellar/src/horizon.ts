@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 /** The fields of Horizon's `GET /accounts/{id}` this module reads. */
 export interface HorizonBalance {

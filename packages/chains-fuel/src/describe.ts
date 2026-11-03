@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, type Msg, type NetworkId, type Warning, msg, say } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type Msg, type NetworkId, type Warning, msg, say } from "@coldai/clip-wallet-core";
 import type { Receipt } from "./gql.js";
 import { assetFor } from "./networks.js";
 import { type ScriptTx, RETURN_ZERO_SCRIPT, ZERO32 } from "./tx.js";

@@ -1,8 +1,8 @@
 /** The host side of paying through a bonded Connector, shared by the engine (mobile) and the extension background. */
 import { describe, expect, it, vi } from "vitest";
-import { ClipError, type AssetRef, type DappRequest } from "@clip-wallet/core";
-import type { ApprovalPlan, ApprovalView, SettleFundingView } from "@clip-wallet/ui";
-import type { SettleFunding, SettleOrder } from "@clip-wallet/route";
+import { ClipError, type AssetRef, type DappRequest } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan, ApprovalView, SettleFundingView } from "@coldai/clip-wallet-ui";
+import type { SettleFunding, SettleOrder } from "@coldai/clip-wallet-route";
 import { SettleFundingRun, claimedTitle, txHashOf } from "../src/settle-funding.js";
 
 const USDC_BASE: AssetRef = { key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6, networkId: "eip155:84532", address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" };
@@ -34,7 +34,7 @@ function setup(o: { order?: () => Promise<unknown>; send?: (r: DappRequest, id: 
     order: vi.fn(o.order ?? (async () => ({ order: { id: ORDER }, requests: [req("approve"), req("deposit")], need: { asset: USDC_BASE, amount: "25000000" } }))),
     markDeposited: vi.fn(),
     stage: vi.fn(async (_id: string, arrived: boolean) => {
-      const { stageOf } = await import("@clip-wallet/route");
+      const { stageOf } = await import("@coldai/clip-wallet-route");
       return { stage: stageOf(order as SettleOrder, arrived), order };
     }),
     claim: vi.fn(async () => [req("claim", "eip155:296")]),

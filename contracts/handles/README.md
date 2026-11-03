@@ -2,8 +2,8 @@
 
 Opt-in handles for Clip Wallet: `@alex` (also written `alex.clip`) points to the addresses Alex chose to publish,
 one per network family (`evm`, `solana`, `hedera`, `bitcoin`, …). The registry is a small Solidity contract on
-Hedera's EVM. The wallet reads it through `@clip-wallet/names` (`ClipHandlesBackend`) and writes to it with
-ordinary Hedera `ContractExecuteTransaction`s that the user approves (`@clip-wallet/social`, `handles/publish.ts`).
+Hedera's EVM. The wallet reads it through `@coldai/clip-wallet-names` (`ClipHandlesBackend`) and writes to it with
+ordinary Hedera `ContractExecuteTransaction`s that the user approves (`@coldai/clip-wallet-social`, `handles/publish.ts`).
 
 **Not deployed.** This repo holds no keys. The steps below are for whoever deploys it, with their own key.
 

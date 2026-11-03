@@ -11,7 +11,7 @@
  *
  * Nothing from the package runs here. The result is a PendingInstall the UI shows as a permission prompt.
  */
-import { withoutTrailing } from "@clip-wallet/core";
+import { withoutTrailing } from "@coldai/clip-wallet-core";
 import { sha256 as nobleSha256, sha512 as nobleSha512 } from "@noble/hashes/sha2.js";
 import { BodyTooLargeError, readBodyCapped, readTextCapped } from "./body.js";
 import { MANIFEST_FILE, MAX_BUNDLE_BYTES, ManifestError, describePermissions, parseManifest, type PluginManifest } from "./manifest.js";

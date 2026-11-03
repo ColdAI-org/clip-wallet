@@ -1,4 +1,4 @@
-import type { AssetRef, DappRequest } from "@clip-wallet/core";
+import type { AssetRef, DappRequest } from "@coldai/clip-wallet-core";
 import {
   DEFI_OP,
   cellFromBase64,
@@ -9,7 +9,7 @@ import {
   parseStonfiSwapPayload,
   rawTonAddress,
   sameTonAddress,
-} from "@clip-wallet/chains-ton";
+} from "@coldai/clip-wallet-chains-ton";
 import { describe, expect, it } from "vitest";
 import { refineDecoded, registerIntent } from "../src/steps.js";
 import { STONFI_V2_ROUTERS, StonfiSwap, checkStonfiRequest } from "../src/swap/stonfi.js";

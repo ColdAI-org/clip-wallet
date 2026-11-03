@@ -20,7 +20,7 @@
  * Never attach suffixes to {variables}: use "{app} uygulaması", "{network} ağında", "{name} adlı kişiye",
  * "@{handle} kullanıcı adı", "{label} ile". Decimals use a comma ("0,5"); Hedera ids like 0.0.1234 stay as-is.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

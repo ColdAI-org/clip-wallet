@@ -9,9 +9,9 @@
  *   wc:…                                            a bare WalletConnect URI (some apps hand it over as-is)
  * Anything else is ignored. Pairing still requires the user to approve the connection.
  */
-import { isWalletConnectUri } from "@clip-wallet/ui";
+import { isWalletConnectUri } from "@coldai/clip-wallet-ui";
 import { webOrigin } from "../browser/bridge";
-import { parseOfferUri } from "@clip-wallet/link";
+import { parseOfferUri } from "@coldai/clip-wallet-link";
 
 export type DeepLink =
   | { kind: "wc"; uri: string }
@@ -20,7 +20,7 @@ export type DeepLink =
   | { kind: "link"; uri: string }
   | null;
 
-/** Same payload shape and limit @clip-wallet/features' decodeOffer accepts (it does the real checks). */
+/** Same payload shape and limit @coldai/clip-wallet-features' decodeOffer accepts (it does the real checks). */
 const OFFER = /(?:^|[#&?])offer=([A-Za-z0-9_-]{1,16000})(?:$|&)/;
 
 export function parseDeepLink(raw: string | null | undefined, opts: { scheme: string; universalHost?: string }): DeepLink {
@@ -60,7 +60,7 @@ export function parseDeepLink(raw: string | null | undefined, opts: { scheme: st
 
 /**
  * A scanned Secure Trade QR: any link (ours, the extension's https link, another wallet's) carrying an
- * `offer=` payload. Returns just the `#offer=…` part; @clip-wallet/features decodes and checks it.
+ * `offer=` payload. Returns just the `#offer=…` part; @coldai/clip-wallet-features decodes and checks it.
  */
 export function tradeOfferFrom(text: string): string | null {
   const m = OFFER.exec(text.trim());

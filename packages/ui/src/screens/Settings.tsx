@@ -12,7 +12,7 @@ import { useSecurityOptional } from "../security/context";
 import { useLinkOptional } from "../link/context";
 import { useSocialOptional } from "../social/context";
 import { useUiT } from "../i18n";
-import { localeInfo, offeredLocales, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
+import { localeInfo, offeredLocales, resolveLocale, type LocalePref } from "@coldai/clip-wallet-i18n";
 
 const AUTO_LOCK = [1, 5, 15, 30, 60];
 

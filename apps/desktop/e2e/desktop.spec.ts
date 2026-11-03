@@ -5,7 +5,7 @@
  *   properties: the page can't reach Node/Electron/IPC, can't spoof its origin, subframes get nothing, and a second
  *   site's session (storage and wallet permission) is separate. Screenshots go to apps/desktop/screenshots.
  *
- * Run: pnpm --filter @clip-wallet/desktop e2e (builds first). macOS / Windows / Linux (Linux needs a display: xvfb).
+ * Run: pnpm --filter @coldai/clip-wallet-desktop e2e (builds first). macOS / Windows / Linux (Linux needs a display: xvfb).
  */
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from "@playwright/test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";

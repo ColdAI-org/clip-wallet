@@ -1,4 +1,4 @@
-import type { Account } from "@clip-wallet/core";
+import type { Account } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { APTOS_DEVNET, APTOS_TESTNET, createAptosModule } from "../src/index.js";
 

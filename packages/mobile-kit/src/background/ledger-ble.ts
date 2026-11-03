@@ -4,7 +4,7 @@
  * tests run) without the native Bluetooth module.
  *
  * Flow: the Connect screen scans (`scan`), the user picks their Ledger, we remember its id (`select`), and
- * `transport` opens it for @clip-wallet/hardware's LedgerSigner. Later approvals reopen the same device.
+ * `transport` opens it for @coldai/clip-wallet-hardware's LedgerSigner. Later approvals reopen the same device.
  *
  * Permissions (app.config.ts): iOS NSBluetoothAlwaysUsageDescription (ble-plx config plugin). Android 12+
  * asks for BLUETOOTH_SCAN (declared neverForLocation) and BLUETOOTH_CONNECT at run time; Android 11 and
@@ -16,9 +16,9 @@
  * until it runs on a device.
  */
 import { PermissionsAndroid, Platform } from "react-native";
-import { ClipError } from "@clip-wallet/core";
-import type { KV } from "@clip-wallet/engine";
-import type { TransportFactory } from "@clip-wallet/hardware";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { KV } from "@coldai/clip-wallet-engine";
+import type { TransportFactory } from "@coldai/clip-wallet-hardware";
 
 const KEY = "clip-mobile/ledger-device";
 

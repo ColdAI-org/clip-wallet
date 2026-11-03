@@ -1,4 +1,4 @@
-import { b64url } from "@clip-wallet/backup-client/protocol";
+import { b64url } from "@coldai/clip-wallet-backup-client/protocol";
 
 export function randomToken(bytes = 32): string {
   return b64url(crypto.getRandomValues(new Uint8Array(bytes)));

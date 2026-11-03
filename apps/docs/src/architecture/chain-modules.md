@@ -2,7 +2,7 @@
 
 A chain module knows one family of networks: how its addresses look, how to read balances and NFTs, how to turn a
 request into plain words, what exactly to sign and how to send the result. It never sees a key. Each one lives in its
-own package, `packages/chains-<family>`, and implements `ChainModule` from `@clip-wallet/core`.
+own package, `packages/chains-<family>`, and implements `ChainModule` from `@coldai/clip-wallet-core`.
 
 ## The interface
 
@@ -32,31 +32,31 @@ the Antelope package three chains. Every network and its CLPR status: [Networks]
 
 | Family | Package | Factory | Test networks | Dapp standard |
 | --- | --- | --- | --- | --- |
-| EVM | `@clip-wallet/chains-evm` | `createEvmModule()` | Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia, Arc, Hedera EVM, others by chain id | EIP-1193 + EIP-6963 |
-| Hedera | `@clip-wallet/chains-hedera` | `createHederaModule()` | Hedera testnet | WalletConnect (`hedera_*`) |
-| Solana | `@clip-wallet/chains-solana` | `createSolanaModule()` | Devnet | Wallet Standard |
-| Bitcoin | `@clip-wallet/chains-bitcoin` | `createBitcoinModule()` | Testnet4 | Wallet Standard, sats-connect (PSBT) |
-| Sui | `@clip-wallet/chains-sui` | `createSuiModule()` | Testnet | Wallet Standard |
-| Aptos | `@clip-wallet/chains-aptos` | `createAptosModule()` | Testnet | AIP-62 |
-| Cardano | `@clip-wallet/chains-cardano` | `createCardanoModule()` | Preprod, Preview | CIP-30 |
-| Polkadot SDK | `@clip-wallet/chains-substrate` | `createSubstrateModule()` | Westend, Paseo and their Asset Hubs | `injectedWeb3` |
-| Starknet | `@clip-wallet/chains-starknet` | `createStarknetModule()` | Sepolia | get-starknet |
-| TON | `@clip-wallet/chains-ton` | `createTonModule()` | Testnet | TON Connect |
-| NEAR | `@clip-wallet/chains-near` | `createNearModule()` | Testnet | NEAR Connect, Wallet Selector |
-| Stellar | `@clip-wallet/chains-stellar` | `createStellarModule()` | Testnet | SEP-43 |
-| Tezos | `@clip-wallet/chains-tezos` | `createTezosModule()` | Shadownet | Beacon |
-| Algorand | `@clip-wallet/chains-algorand` | `createAlgorandModule()` | TestNet | ARC-1, use-wallet |
-| Cosmos SDK | `@clip-wallet/chains-cosmos` | `createCosmosModule()` | osmo-test-5, dydx-testnet-4, zig-test-2, pio-testnet-1, initiation-2 (THORChain: none) | Keplr-compatible API |
-| TRON | `@clip-wallet/chains-tron` | `createTronModule()` | Nile, Shasta | TIP-1193 + TIP-6963 |
-| XRP Ledger | `@clip-wallet/chains-xrpl` | `createXrplModule()` | Testnet, Devnet | XLS-72d (Wallet Standard) |
-| Stacks | `@clip-wallet/chains-stacks` | `createStacksModule()` | Testnet | SIP-030 + WBIP-004 |
-| Fuel | `@clip-wallet/chains-fuel` | `createFuelModule()` | Testnet | FuelConnector |
-| Bitcoin Cash | `@clip-wallet/chains-bitcoincash` | `createBitcoinCashModule()` | Chipnet, Testnet4 | WalletConnect (wc2-bch-bcr) |
-| MultiversX | `@clip-wallet/chains-multiversx` | `createMultiversXModule()` | Devnet, Testnet | best effort (sdk-dapp hook) |
-| Internet Computer | `@clip-wallet/chains-icp` | `createIcpModule()` | `icp:test` (DFINITY test ledgers) | none: send and receive |
-| Antelope | `@clip-wallet/chains-antelope` | `createAntelopeModule()` | Jungle4, Telos testnet, XPR testnet | none: send and receive |
+| EVM | `@coldai/clip-wallet-chains-evm` | `createEvmModule()` | Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia, Arc, Hedera EVM, others by chain id | EIP-1193 + EIP-6963 |
+| Hedera | `@coldai/clip-wallet-chains-hedera` | `createHederaModule()` | Hedera testnet | WalletConnect (`hedera_*`) |
+| Solana | `@coldai/clip-wallet-chains-solana` | `createSolanaModule()` | Devnet | Wallet Standard |
+| Bitcoin | `@coldai/clip-wallet-chains-bitcoin` | `createBitcoinModule()` | Testnet4 | Wallet Standard, sats-connect (PSBT) |
+| Sui | `@coldai/clip-wallet-chains-sui` | `createSuiModule()` | Testnet | Wallet Standard |
+| Aptos | `@coldai/clip-wallet-chains-aptos` | `createAptosModule()` | Testnet | AIP-62 |
+| Cardano | `@coldai/clip-wallet-chains-cardano` | `createCardanoModule()` | Preprod, Preview | CIP-30 |
+| Polkadot SDK | `@coldai/clip-wallet-chains-substrate` | `createSubstrateModule()` | Westend, Paseo and their Asset Hubs | `injectedWeb3` |
+| Starknet | `@coldai/clip-wallet-chains-starknet` | `createStarknetModule()` | Sepolia | get-starknet |
+| TON | `@coldai/clip-wallet-chains-ton` | `createTonModule()` | Testnet | TON Connect |
+| NEAR | `@coldai/clip-wallet-chains-near` | `createNearModule()` | Testnet | NEAR Connect, Wallet Selector |
+| Stellar | `@coldai/clip-wallet-chains-stellar` | `createStellarModule()` | Testnet | SEP-43 |
+| Tezos | `@coldai/clip-wallet-chains-tezos` | `createTezosModule()` | Shadownet | Beacon |
+| Algorand | `@coldai/clip-wallet-chains-algorand` | `createAlgorandModule()` | TestNet | ARC-1, use-wallet |
+| Cosmos SDK | `@coldai/clip-wallet-chains-cosmos` | `createCosmosModule()` | osmo-test-5, dydx-testnet-4, zig-test-2, pio-testnet-1, initiation-2 (THORChain: none) | Keplr-compatible API |
+| TRON | `@coldai/clip-wallet-chains-tron` | `createTronModule()` | Nile, Shasta | TIP-1193 + TIP-6963 |
+| XRP Ledger | `@coldai/clip-wallet-chains-xrpl` | `createXrplModule()` | Testnet, Devnet | XLS-72d (Wallet Standard) |
+| Stacks | `@coldai/clip-wallet-chains-stacks` | `createStacksModule()` | Testnet | SIP-030 + WBIP-004 |
+| Fuel | `@coldai/clip-wallet-chains-fuel` | `createFuelModule()` | Testnet | FuelConnector |
+| Bitcoin Cash | `@coldai/clip-wallet-chains-bitcoincash` | `createBitcoinCashModule()` | Chipnet, Testnet4 | WalletConnect (wc2-bch-bcr) |
+| MultiversX | `@coldai/clip-wallet-chains-multiversx` | `createMultiversXModule()` | Devnet, Testnet | best effort (sdk-dapp hook) |
+| Internet Computer | `@coldai/clip-wallet-chains-icp` | `createIcpModule()` | `icp:test` (DFINITY test ledgers) | none: send and receive |
+| Antelope | `@coldai/clip-wallet-chains-antelope` | `createAntelopeModule()` | Jungle4, Telos testnet, XPR testnet | none: send and receive |
 
-Each package also exports its networks (most at `@clip-wallet/chains-<family>/networks`) and its token tables. The
+Each package also exports its networks (most at `@coldai/clip-wallet-chains-<family>/networks`) and its token tables. The
 catalogue in [`packages/engine/src/catalog.ts`](repo:packages/engine/src/catalog.ts) assembles them for a wallet,
 filtered by `clip.config.ts` and limited to test networks unless mainnet is switched on with its checklist.
 
@@ -78,7 +78,7 @@ Every warning code and its message is listed in the [warning reference](../refer
 
 ## Rules for modules
 
-- Depend on `@clip-wallet/core`, never on the vault (`pnpm harness` checks the imports and `package.json`).
+- Depend on `@coldai/clip-wallet-core`, never on the vault (`pnpm harness` checks the imports and `package.json`).
 - `@noble/curves` only for verification and public-key maths.
 - Tests use fixtures and signatures precomputed offline from the public "abandon … about" account; never generate
   or embed keys.

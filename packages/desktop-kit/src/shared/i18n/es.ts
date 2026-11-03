@@ -1,5 +1,5 @@
 /** Spanish (same glossary as packages/ui/src/i18n/es: «tú», billetera, desbloquear / bloquear). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const es: Translation<DesktopMessages> = {

@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { type CborMap, type CborValue, cborDecode, cborEncode } from "./cbor.js";
 import { uleb } from "./candid.js";

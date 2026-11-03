@@ -1,4 +1,4 @@
-# @clip-wallet/route
+# @coldai/clip-wallet-route
 
 "Route and fund": CLPRouter quotes and payments (Phase 1, `src/client.ts`), and "settle on Hedera" through
 bonded Connectors (Phase 3, `src/settle.ts`). Nothing in this package signs; it builds `DappRequest`s that go
@@ -9,14 +9,14 @@ through the wallet's normal decode/approve path.
 ## Install
 
 ```sh
-npm i @clip-wallet/route
+npm i @coldai/clip-wallet-route
 ```
 
 ## Example
 
 ```ts
-import { findShortfall } from "@clip-wallet/route";
-import type { AssetRef, TokenBalance } from "@clip-wallet/core";
+import { findShortfall } from "@coldai/clip-wallet-route";
+import type { AssetRef, TokenBalance } from "@coldai/clip-wallet-core";
 
 const hbar: AssetRef = { key: "hbar", symbol: "HBAR", name: "HBAR", decimals: 8, networkId: "hedera:testnet" };
 const portfolio: TokenBalance[] = [{ asset: hbar, amount: "500000000" }]; // 5 HBAR
@@ -44,8 +44,8 @@ The user pays a bonded Connector on network Y through `SettleDeposit`, the Conne
 receives cover + penalty from the Connector's bond.
 
 ```ts
-import { SETTLE_DEPLOYMENTS, settleOnHedera, type ConnectorQuoteRequest } from "@clip-wallet/route";
-import type { AssetRef } from "@clip-wallet/core";
+import { SETTLE_DEPLOYMENTS, settleOnHedera, type ConnectorQuoteRequest } from "@coldai/clip-wallet-route";
+import type { AssetRef } from "@coldai/clip-wallet-core";
 
 const deployment = SETTLE_DEPLOYMENTS.find((d) => d.network === "testnet")!;
 const hbar: AssetRef = { key: "hbar", symbol: "HBAR", name: "HBAR", decimals: 8, networkId: "eip155:296" };
@@ -97,7 +97,7 @@ the deposit transaction), `OPEN` → `deposited` (`defaulted` once Hedera's cloc
   `timestamp=gte:…&timestamp=lt:…` range of at most 7 days (topic filters require it; checked live 2026-10-03).
 - Hedera JSON-RPC relay (https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay): fallback
   for `eth_call` and `eth_getBlockByNumber`; no log listing through it.
-- Hedera EVM requests are `eth_sendTransaction` on `eip155:296` handled by `@clip-wallet/chains-evm`
+- Hedera EVM requests are `eth_sendTransaction` on `eip155:296` handled by `@coldai/clip-wallet-chains-evm`
   (`packages/chains-hedera/src/networks.ts` header, `packages/1mask/README.md` "Hedera").
 
 ## Phase 1 sources
@@ -107,7 +107,7 @@ See `src/clprouter.ts` (vendored CLPRouter SDK planner, commit 564e29e), `src/ab
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

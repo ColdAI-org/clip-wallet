@@ -4,7 +4,7 @@
  * and EVM chain ids. A chain is shown when the wallet has that family (non-EVM) or that EVM chain or one of its
  * testnets (market data is always mainnet's).
  */
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 
 export interface DiscoverChain {
   /** DEX Screener chainId. */

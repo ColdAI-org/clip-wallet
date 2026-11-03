@@ -15,7 +15,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "pnpm -r --filter './packages/**' build && pnpm --filter @clip-wallet/extension build",
+    "build": "pnpm -r --filter './packages/**' build && pnpm --filter @coldai/clip-wallet-extension build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "harness": "node tools/harness/check.mjs && node --test tools/harness/test/*.test.mjs && node tools/release/check-manifests.mjs && node tools/release/sync-template.mjs --check",

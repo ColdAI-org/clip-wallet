@@ -1,4 +1,4 @@
-import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { address, getAddressEncoder } from "@solana/kit";
 import { SOLANA_DEVNET } from "../src/index.js";

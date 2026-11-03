@@ -2,7 +2,7 @@
  * Minimal NEAR JSON-RPC client (docs.near.org/api/rpc): `query` (view_account, view_access_key, call_function),
  * `block`, `gas_price`, `send_tx`.
  */
-import { includesInOrder } from "@clip-wallet/core";
+import { includesInOrder } from "@coldai/clip-wallet-core";
 import { b64encode } from "./util.js";
 
 export class RpcError extends Error {

@@ -1,4 +1,4 @@
-import { connect } from "@clip-wallet/connect";
+import { connect } from "@coldai/clip-wallet-connect";
 
 const wallet = await connect();
 

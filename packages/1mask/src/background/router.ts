@@ -1,5 +1,5 @@
 import { FAMILIES as ALL_FAMILIES } from "../shared/protocol.js";
-import type { DappRequest, Family, Network, NetworkId } from "@clip-wallet/core";
+import type { DappRequest, Family, Network, NetworkId } from "@coldai/clip-wallet-core";
 import { randomId } from "../shared/bytes.js";
 import { ProviderRpcError, RpcErrorCode, fromRpcErrorShape, rpcError, toRpcErrorShape } from "../shared/errors.js";
 import {

@@ -1,5 +1,5 @@
 /** Korean (same glossary as packages/ui/src/i18n/ko: 지갑, 잠금 해제, 해요체). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const ko: Translation<DesktopMessages> = {

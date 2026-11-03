@@ -1,4 +1,4 @@
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type en from "./en.js";
 
 /** Notification text (Brazilian Portuguese). */

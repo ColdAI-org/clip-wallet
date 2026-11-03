@@ -16,7 +16,7 @@ import {
   isWalletOrigin,
   msg,
   titled,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha224 } from "@noble/hashes/sha2.js";
 import { type Content, IcClient, IcRejectError, callContent, envelope, readStateContent, requestId, requestStatus, signDigest } from "./agent.js";

@@ -1,10 +1,10 @@
-import type { ChainContext } from "@clip-wallet/core";
-import { approveAllowanceDraft, freezeNew, mirrorFor, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
-import { formatUnits, type Step } from "@clip-wallet/features";
+import type { ChainContext } from "@coldai/clip-wallet-core";
+import { approveAllowanceDraft, freezeNew, mirrorFor, requestFor, resolvePayer } from "@coldai/clip-wallet-chains-hedera";
+import { formatUnits, type Step } from "@coldai/clip-wallet-features";
 import { spenderName } from "../labels.js";
 import { chunk } from "../solana.js";
 import { type ApprovalScanner, type Grant, type RevokeSpec, type ScanOptions, type ScanResult, grantId, risksFor } from "./types.js";
-import { msg, titled } from "@clip-wallet/core";
+import { msg, titled } from "@coldai/clip-wallet-core";
 
 /**
  * Hedera allowances (HIP-336): CryptoApproveAllowance grants HBAR, fungible-token and NFT allowances.

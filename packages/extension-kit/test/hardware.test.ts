@@ -5,8 +5,8 @@
  * Messages go through the bus schema and JSON, as between the page and the service worker. No keys, no device.
  */
 import { describe, expect, it, vi } from "vitest";
-import { ClipError, type ChainModule, type DappRequest, type Signature, type SignablePayload } from "@clip-wallet/core";
-import { HardwareKeyring, assertVerifies, signatureToWire, type HardwareAccount, type HardwareSigner } from "@clip-wallet/hardware";
+import { ClipError, type ChainModule, type DappRequest, type Signature, type SignablePayload } from "@coldai/clip-wallet-core";
+import { HardwareKeyring, assertVerifies, signatureToWire, type HardwareAccount, type HardwareSigner } from "@coldai/clip-wallet-hardware";
 import { readFileSync } from "node:fs";
 import { keyringWith, memoryStorage, replay } from "../../hardware/test/helpers";
 import * as I from "../../hardware/test/inputs";

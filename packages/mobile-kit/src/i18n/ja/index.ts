@@ -20,7 +20,7 @@
  *   CoinGecko, DEX Screener, on-device menu labels (e.g. 「Connect Software Wallet」).
  *   Mobile extras: browse (tab) → ブラウズ, biometrics → 生体認証, in-app browser → アプリ内ブラウザ.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { MobileMessages } from "../en";
 import common from "./common";
 import onboarding from "./onboarding";

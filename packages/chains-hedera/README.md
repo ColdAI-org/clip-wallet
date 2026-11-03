@@ -1,4 +1,4 @@
-# @clip-wallet/chains-hedera
+# @coldai/clip-wallet-chains-hedera
 
 Hedera `ChainModule` for Clip Wallet. Builds and decodes; never touches keys. `prepare()` returns
 `SignablePayload`s for the vault, `finalize()` puts the signatures back and submits.
@@ -14,14 +14,14 @@ about 2.3 MB from the extension's background script and the SDK's React Native b
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-hedera @clip-wallet/core
+npm i @coldai/clip-wallet-chains-hedera @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createHederaModule, HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createHederaModule, HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createHederaModule();
@@ -52,7 +52,7 @@ Ids match `LEDGER_ID_MAPPINGS` in hedera-wallet-connect. Asset keys: HBAR = `hba
 (`0.0.456858` mainnet, `0.0.429274` testnet) = `usdc`; other tokens `hts:<tokenId>`.
 
 **Hedera EVM is not here.** `eth_*` requests on `eip155:295` / `eip155:296` / `eip155:297` (JSON-RPC relay) go
-through `@clip-wallet/chains-evm`. The key is the same, so the 0x address is the same.
+through `@coldai/clip-wallet-chains-evm`. The key is the same, so the 0x address is the same.
 
 ## Accounts: ECDSA keys, EVM alias, auto-creation
 
@@ -60,7 +60,7 @@ Clip Wallet uses ECDSA secp256k1 keys, derived by the vault at `m/44'/3030'/0'/0
 path; see the vault README). Until an account id exists, the account *is* its EVM alias:
 
 ```ts
-import { aliasAddress } from "@clip-wallet/chains-hedera";
+import { aliasAddress } from "@coldai/clip-wallet-chains-hedera";
 
 // "0x…" = the last 20 bytes of keccak256(the uncompressed key)
 export const aliasOf = (compressedPublicKeyHex: string) => aliasAddress(compressedPublicKeyHex);
@@ -262,7 +262,7 @@ the SDK:
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

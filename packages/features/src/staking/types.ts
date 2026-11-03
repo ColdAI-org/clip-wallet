@@ -1,4 +1,4 @@
-import type { ChainContext, Family, Network } from "@clip-wallet/core";
+import type { ChainContext, Family, Network } from "@coldai/clip-wallet-core";
 import type { Step } from "../steps.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 

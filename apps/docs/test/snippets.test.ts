@@ -140,7 +140,7 @@ describe("pages", () => {
         if (!existsSync(pj)) continue;
         const p = JSON.parse(readFileSync(pj, "utf8")) as { name: string; scripts?: Record<string, string> };
         manifests.set(p.name, p.scripts ?? {});
-        manifests.set(p.name.replace(/^@clip-wallet\//, ""), p.scripts ?? {});
+        manifests.set(p.name.replace(/^@coldai\/clip-wallet-/, ""), p.scripts ?? {});
       }
     }
     // A kit-built wallet's packages (packages/extension, desktop, mobile, nextjs as @sh/*): the pages show its commands too.
@@ -278,7 +278,7 @@ describe("runnable snippets print what the docs say", () => {
   });
 
   it("extend/plugin-bundle.js returns output the wallet accepts", async () => {
-    const { InsightOutputSchema } = await import("@clip-wallet/plugins");
+    const { InsightOutputSchema } = await import("@coldai/clip-wallet-plugins");
     const module = { exports: {} as Record<string, (a: unknown) => Promise<unknown>> };
     new Function("module", "exports", readFileSync(join(snippets, "extend/plugin-bundle.js"), "utf8"))(module, module.exports);
     const request = { origin: "https://app.example", title: "Send 1 ETH to 0x0000…dEaD", lines: [{ label: "To", value: "0x000000000000000000000000000000000000dEaD" }], balanceChanges: [], networkId: "eip155:11155111", account: "0x0000000000000000000000000000000000000001" };
@@ -287,7 +287,7 @@ describe("runnable snippets print what the docs say", () => {
   });
 
   it("extend/plugin-typed.ts agrees with the bundle and the output schemas", async () => {
-    const { InsightOutputSchema, NameOutputSchema } = await import("@clip-wallet/plugins");
+    const { InsightOutputSchema, NameOutputSchema } = await import("@coldai/clip-wallet-plugins");
     const p = await import("../src/snippets/extend/plugin-typed");
     const request = { origin: "https://app.example", title: "Send", lines: [{ label: "To", value: "0x000000000000000000000000000000000000dEaD" }], balanceChanges: [], networkId: "eip155:1", account: "0x1" };
     expect(InsightOutputSchema.parse(await p.onTransaction({ request })).warnings).toHaveLength(1);
@@ -297,7 +297,7 @@ describe("runnable snippets print what the docs say", () => {
 
   it("extend/example-module.ts decodes, prepares, refuses a bad signature and reads balances", async () => {
     const { createExampleModule, EXAMPLE_TESTNET, EXM } = await import("../src/snippets/extend/example-module");
-    const { WALLET_ORIGIN } = await import("@clip-wallet/core");
+    const { WALLET_ORIGIN } = await import("@coldai/clip-wallet-core");
     // A public key only (the ed25519 base point's encoding): no private key exists anywhere in this test.
     const publicKey = "5866666666666666666666666666666666666666666666666666666666666666";
     const calls: string[] = [];

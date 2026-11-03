@@ -1,4 +1,4 @@
-import { BUILTIN_ASSETS, connect, type AssetSpec } from "@clip-wallet/connect";
+import { BUILTIN_ASSETS, connect, type AssetSpec } from "@coldai/clip-wallet-connect";
 
 // Built in: each EVM chain's native coin ("eth", "hbar", "pol", "avax") and Circle's USDC ("usdc").
 console.log(BUILTIN_ASSETS.map((a) => a.key));

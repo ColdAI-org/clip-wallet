@@ -1,10 +1,10 @@
 /**
- * Home: one total, assets merged across networks (@clip-wallet/ui mergeBalances), Send / Receive.
+ * Home: one total, assets merged across networks (@coldai/clip-wallet-ui mergeBalances), Send / Receive.
  * Networks are invisible here; they appear only on an asset's "Where it is" split.
  */
 import { useMemo } from "react";
 import { Pressable, RefreshControl, ScrollView, View } from "react-native";
-import { STAKEABLE_NOW, formatFiat, formatUnits, mergeBalances, shortAddress, userMessageOf, type MergedAsset } from "@clip-wallet/ui";
+import { STAKEABLE_NOW, formatFiat, formatUnits, mergeBalances, shortAddress, userMessageOf, type MergedAsset } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Chip, Empty, ErrorNote, IconButton, Row, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { IconArrowDown, IconArrowUp, IconLock, IconSwap } from "../ui/icons";

@@ -1,4 +1,4 @@
-import type { Account, ChainContext, DappRequest, Network, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, DappRequest, Network, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { TRON_NILE } from "../src/index.js";
 import { fromHex } from "../src/util.js";

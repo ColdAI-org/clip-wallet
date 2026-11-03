@@ -1,12 +1,12 @@
 /**
  * The phone's "background": builds the vault (this folder is the only place in apps/mobile allowed to import
- * @clip-wallet/vault, like packages/extension-kit/src/background) and the shared @clip-wallet/engine on React Native
+ * @coldai/clip-wallet-vault, like packages/extension-kit/src/background) and the shared @coldai/clip-wallet-engine on React Native
  * storage, crypto, timers and fetch. Screens talk to it only through the WalletClient (createEngineClient) and
  * the few mobile-only calls exported here (biometric/passkey unlock, browser bridge, deep links).
  */
 import { AppState, type AppStateStatus } from "react-native";
 import { randomUUID } from "expo-crypto";
-import { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
+import { ClipVault, hashSignablePayload } from "@coldai/clip-wallet-vault";
 import {
   WalletEngine,
   createEngineClient,
@@ -16,27 +16,27 @@ import {
   publicNetworks,
   type KV,
   type PrfProvider,
-} from "@clip-wallet/engine";
-import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
-import { EngineHardware, createEngineHardwareClient, type EngineKeystone, type EngineLedger } from "@clip-wallet/engine/hardware";
-import { HardwareKeyring, KeystoneBridge, type HardwareStorage, type KeystoneSigner, type LedgerSigner } from "@clip-wallet/hardware/core";
-import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@clip-wallet/ui";
-import { PluginBackend } from "@clip-wallet/names";
+} from "@coldai/clip-wallet-engine";
+import { createEngineDependencies } from "@coldai/clip-wallet-engine/wiring";
+import { createFeatureHost, createFeatures } from "@coldai/clip-wallet-engine/features";
+import { EngineHardware, createEngineHardwareClient, type EngineKeystone, type EngineLedger } from "@coldai/clip-wallet-engine/hardware";
+import { HardwareKeyring, KeystoneBridge, type HardwareStorage, type KeystoneSigner, type LedgerSigner } from "@coldai/clip-wallet-hardware/core";
+import type { FeaturesClient, FullHardwareClient, PasskeyPrfFactory, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@coldai/clip-wallet-ui";
+import { PluginBackend } from "@coldai/clip-wallet-names";
 import { createMobilePlugins, type MobilePlugins } from "../plugins/host";
 import { createWebViewChannels, type WebViewChannels } from "../plugins/channels";
 import { gunzipCapped } from "../plugins/gunzip";
 import * as WebBrowser from "expo-web-browser";
 import * as LocalAuthentication from "expo-local-authentication";
-import { createSocial } from "@clip-wallet/engine/social";
-import { RecipientLog, SecurityService } from "@clip-wallet/security";
-import { COINGECKO_IDS } from "@clip-wallet/features";
-import { createEngineSocialClient } from "@clip-wallet/engine";
+import { createSocial } from "@coldai/clip-wallet-engine/social";
+import { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
+import { COINGECKO_IDS } from "@coldai/clip-wallet-features";
+import { createEngineSocialClient } from "@coldai/clip-wallet-engine";
 import { expoNotifier, requestNotificationPermission } from "./notifications";
 import { setBackgroundPoll, syncBackgroundTask } from "./background-task";
 import { deviceLanguages } from "../i18n/device";
 import * as Linking from "expo-linking";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { APP } from "../env";
 import { pickArgon2id, selfTest, type Argon2Choice } from "./argon2";
 import { appKV, secureVaultStorage } from "./storage";
@@ -45,8 +45,8 @@ import { nativePasskeyPrf, passkeysConfigured } from "./passkey";
 import { Events } from "./events";
 import { ledgerBle, type LedgerBle } from "./ledger-ble";
 import { createMobileLink } from "./link";
-import type { LinkService } from "@clip-wallet/link";
-import type { LinkClient } from "@clip-wallet/ui";
+import type { LinkService } from "@coldai/clip-wallet-link";
+import type { LinkClient } from "@coldai/clip-wallet-ui";
 
 /** Vault backstop; the engine arms the user's (shorter) auto-lock. */
 const VAULT_MAX_IDLE_MS = 60 * 60 * 1000;
@@ -199,8 +199,8 @@ export function createMobileWallet(opts: { kv?: KV } = {}): MobileWallet {
   const ble = ledgerBle(kv);
   const bitcoinNetwork = APP.config.mainnet ? "mainnet" : "testnet";
   const keystoneBridge = new KeystoneBridge(() => events.emit({ type: "change" }));
-  let hwMod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
-  const loadHw = () => (hwMod ??= import("@clip-wallet/hardware"));
+  let hwMod: Promise<typeof import("@coldai/clip-wallet-hardware")> | undefined;
+  const loadHw = () => (hwMod ??= import("@coldai/clip-wallet-hardware"));
   let ledgerP: Promise<LedgerSigner> | undefined;
   let keystoneP: Promise<KeystoneSigner> | undefined;
   const led = () => (ledgerP ??= loadHw().then((m) => new m.LedgerSigner({ bitcoinNetwork, transport: ble.transport, deviceName: "Ledger" })));

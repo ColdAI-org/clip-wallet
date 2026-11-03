@@ -4,8 +4,8 @@
  * and Arabic isolates every interpolated value so right-to-left text can't reorder it.
  */
 import { describe, expect, it } from "vitest";
-import { LOCALE_CODES, loadCatalog, parseMessage } from "@clip-wallet/i18n";
-import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@clip-wallet/i18n/qa";
+import { LOCALE_CODES, loadCatalog, parseMessage } from "@coldai/clip-wallet-i18n";
+import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@coldai/clip-wallet-i18n/qa";
 import { UI_CATALOGS } from "../src/i18n";
 import { en } from "../src/i18n/en";
 

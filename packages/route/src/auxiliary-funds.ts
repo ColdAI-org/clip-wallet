@@ -8,7 +8,7 @@
  * network. This is static (catalog + deployment), never the user's balances: advertising balances would tell any
  * connected site what the user holds. Whether a particular payment can be funded is decided when it arrives.
  */
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 import { SETTLE_DEPLOYMENTS } from "./phase3.js";
 
 /** EIP-7528 native asset, as ERC-7682 lists it. */

@@ -1,5 +1,5 @@
 /**
- * Runtime settings that are not brand config (brand lives in clip.config.ts / @clip-wallet/config).
+ * Runtime settings that are not brand config (brand lives in clip.config.ts / @coldai/clip-wallet-config).
  */
 import config from "./config";
 import { passkeyBridgeUrl } from "./identity";

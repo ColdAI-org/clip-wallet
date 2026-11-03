@@ -151,7 +151,7 @@ describe("mainnet", () => {
       "mainnet: Clip Wallet runs on test networks unless you opt in: use mainnet: false, or mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT }",
     ]);
     const wrong = problems({ ...base, mainnet: { enabled: true, acknowledged: "yes" } });
-    expect(wrong.join("\n")).toMatch(/copy MAINNET_ACKNOWLEDGEMENT from @clip-wallet\/config word for word/);
+    expect(wrong.join("\n")).toMatch(/copy MAINNET_ACKNOWLEDGEMENT from @coldai\/clip-wallet-config word for word/);
     const c = defineConfig({ ...base, mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT } });
     expect(isMainnetEnabled(c)).toBe(true);
   });
@@ -229,7 +229,7 @@ describe("languages, ids and deep links", () => {
     expect(problems({ ...base, languages: ["xx"] })[0]).toMatch(/^languages\.0: use the languages the wallet ships: en, de/);
   });
 
-  it("matches @clip-wallet/i18n's shipped locales", async () => {
+  it("matches @coldai/clip-wallet-i18n's shipped locales", async () => {
     const { LOCALE_CODES } = await import("../../i18n/src/locales.js");
     expect([...LANGUAGES]).toEqual([...LOCALE_CODES]);
   });
@@ -276,7 +276,7 @@ describe("hosted mode (reserved for Clip Cloud)", () => {
   });
 });
 
-describe("loadClipConfigSync (@clip-wallet/config/node)", () => {
+describe("loadClipConfigSync (@coldai/clip-wallet-config/node)", () => {
   it("evaluates a clip.config.ts with its JSON identity in a child Node and validates it", async () => {
     const { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } = await import("node:fs");
     const { tmpdir } = await import("node:os");
@@ -288,14 +288,14 @@ describe("loadClipConfigSync (@clip-wallet/config/node)", () => {
     writeFileSync(join(dir, "wallet.identity.json"), JSON.stringify({ name: "Acme Wallet", rdns: "com.acme.wallet" }));
     writeFileSync(
       join(dir, "clip.config.ts"),
-      'import { defineConfig } from "@clip-wallet/config";\nimport identity from "./wallet.identity.json" with { type: "json" };\nconst langs: ("en" | "de")[] = ["de", "en"];\nexport default defineConfig({ ...identity, languages: langs });\n',
+      'import { defineConfig } from "@coldai/clip-wallet-config";\nimport identity from "./wallet.identity.json" with { type: "json" };\nconst langs: ("en" | "de")[] = ["de", "en"];\nexport default defineConfig({ ...identity, languages: langs });\n',
     );
     const prev = process.env.NODE_OPTIONS;
     process.env.NODE_OPTIONS = `${prev ?? ""} --conditions=development`.trim();
     try {
       const c = loadClipConfigSync("clip.config.ts", { cwd: dir });
       expect([c.name, c.rdns, c.languages]).toEqual(["Acme Wallet", "com.acme.wallet", ["de", "en"]]);
-      writeFileSync(join(dir, "clip.config.ts"), 'import { defineConfig } from "@clip-wallet/config";\nexport default defineConfig({ name: "", rdns: "x" } as never);\n');
+      writeFileSync(join(dir, "clip.config.ts"), 'import { defineConfig } from "@coldai/clip-wallet-config";\nexport default defineConfig({ name: "", rdns: "x" } as never);\n');
       expect(() => loadClipConfigSync(join(dir, "clip.config.ts"))).toThrow(/name: give your wallet a name/);
     } finally {
       if (prev === undefined) delete process.env.NODE_OPTIONS;

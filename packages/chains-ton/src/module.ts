@@ -1,5 +1,5 @@
 import "./buffer.js";
-import { type AssetRef, type BalanceChange, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, say, type Msg } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { Address, Cell, type MessageRelaxed, type StateInit, internal, loadStateInit } from "@ton/core";
 import { type AccountEvent, HttpError, type JettonBalance, type JettonPreview, TonHttp, type TonapiNft, type WalletInformation } from "./api.js";

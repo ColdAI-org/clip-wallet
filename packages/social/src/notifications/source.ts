@@ -4,7 +4,7 @@
  * ChainModule.getBalances/getNfts (the same indexers the portfolio uses), the stored activity list and the
  * approval queue. Nothing here touches the vault.
  */
-import type { Account, ChainModule, Family, Network } from "@clip-wallet/core";
+import type { Account, ChainModule, Family, Network } from "@coldai/clip-wallet-core";
 import type { Snapshot } from "./types.js";
 
 export interface PublicSnapshotDeps {

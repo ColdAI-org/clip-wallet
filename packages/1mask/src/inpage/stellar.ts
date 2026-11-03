@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { WalletIdentity } from "../shared/config.js";
 import { RpcErrorCode, toRpcErrorShape } from "../shared/errors.js";
 import { STELLAR_INJECTED, STELLAR_PASSPHRASES } from "../shared/p2-methods.js";
@@ -10,7 +10,7 @@ import type { InpageTransport } from "./transport.js";
  * Injected Stellar provider at `window.clipwallet.stellar`, implementing SEP-0043 (Standard Web Wallet
  * API Interface, v1.2.1): methods resolve to `{ ...result }` or `{ error: { code, message, ext? } }`
  * with SEP-43 codes (-1 internal, -2 external service, -3 invalid request, -4 user rejected) and never
- * throw. @clip-wallet/kit-modules/stellar wraps it as a Stellar Wallets Kit ModuleInterface.
+ * throw. @coldai/clip-wallet-kit-modules/stellar wraps it as a Stellar Wallets Kit ModuleInterface.
  * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0043.md
  */
 

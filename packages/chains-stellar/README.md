@@ -1,4 +1,4 @@
-# @clip-wallet/chains-stellar
+# @coldai/clip-wallet-chains-stellar
 
 Stellar `ChainModule` for Clip Wallet. It builds, decodes and simulates transactions, and never touches keys.
 `prepare()` returns the 32-byte hash that a Stellar ed25519 signature covers. `finalize()` checks the vault's
@@ -14,14 +14,14 @@ Its `Keypair` signing isn't used anywhere. Horizon and Soroban RPC are called wi
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-stellar @clip-wallet/core
+npm i @coldai/clip-wallet-chains-stellar @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createStellarModule, STELLAR_TESTNET } from "@clip-wallet/chains-stellar";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createStellarModule, STELLAR_TESTNET } from "@coldai/clip-wallet-chains-stellar";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createStellarModule();
@@ -248,7 +248,7 @@ Tests are in `test/stellar.test.ts` and use no network.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

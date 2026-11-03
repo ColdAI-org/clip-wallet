@@ -3,13 +3,13 @@
  * staking, nomination pools, utility batches, remarks and proxies; anything else is shown as `pallet.call(args)`
  * with a caution, never silently.
  */
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings";
 import { describeChainflip } from "./chainflip.js";
 import { locationAsset } from "./defi.js";
 import { assetKey } from "./networks.js";
 import { equal, formatUnits, hex, joinWords, short, textOf } from "./util.js";
-import { msg, titled, say, recallMsg, knownMsg } from "@clip-wallet/core";
+import { msg, titled, say, recallMsg, knownMsg } from "@coldai/clip-wallet-core";
 
 export interface DecodedCall {
   type: string;

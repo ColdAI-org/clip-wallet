@@ -1,6 +1,6 @@
 # Integration: security (Phase 2.5)
 
-Stream branch `p25/security`. New package `@clip-wallet/security`, new screens in `packages/ui/src/security/`.
+Stream branch `p25/security`. New package `@coldai/clip-wallet-security`, new screens in `packages/ui/src/security/`.
 Nothing here touches the shared background, catalog, engine, 1Mask or config files. This doc has the exact lines
 for the integration step. Everything below is additive.
 
@@ -10,18 +10,18 @@ Already on the branch (small and additive, outside the shared list):
   connect approval renders those warnings. With a danger warning, the button becomes "Connect anyway" (danger
   style). Today the WalletConnect Verify warnings passed to `enqueueConnect` are dropped; this is where they go.
 - `packages/ui/src/index.ts`: `export * from "./security";`
-- `packages/ui/package.json`: depends on `@clip-wallet/security` (type-only import of `/views`).
+- `packages/ui/package.json`: depends on `@coldai/clip-wallet-security` (type-only import of `/views`).
 
 ## 0. Dependencies
 
-`apps/extension/package.json` and `packages/engine/package.json` → `"@clip-wallet/security": "workspace:*"`.
+`apps/extension/package.json` and `packages/engine/package.json` → `"@coldai/clip-wallet-security": "workspace:*"`.
 
 ## 1. Build config (keys never committed)
 
 Next to `__CLIP_FEATURES__` (extension `wxt.config.ts` define, mobile build config), add `__CLIP_SECURITY__`:
 
 ```ts
-// SecurityConfig from @clip-wallet/security
+// SecurityConfig from @coldai/clip-wallet-security
 const security = {
   testnet: true,
   threat: {
@@ -42,7 +42,7 @@ in the privacy policy.
 After `svc.attachFeatures(...)`:
 
 ```ts
-import { RecipientLog, SecurityService } from "@clip-wallet/security";
+import { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
 // …
 const recipients = new RecipientLog(kv);
 const security = new SecurityService(
@@ -69,8 +69,8 @@ void security.start(); // loads cached lists; refreshes stale ones in the backgr
 ## 3. Extension background: `apps/extension/src/background/service.ts` (about 25 lines)
 
 ```ts
-import type { RecipientLog, SecurityService } from "@clip-wallet/security";
-import { hideKey, isSecurityRequest, type SecurityRequest } from "@clip-wallet/security";
+import type { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
+import { hideKey, isSecurityRequest, type SecurityRequest } from "@coldai/clip-wallet-security";
 
   private security?: Pick<SecurityService, "handle" | "refine" | "assessSite" | "threat" | "cleanup">;
   private recipients?: RecipientLog;
@@ -134,7 +134,7 @@ Expose it on the service (sync; it uses only the loaded lists):
 ```
 
 Also add `isKnownScam?(origin: string): boolean` to the `DappHost` type the adapter holds. `assessVerify` in
-`@clip-wallet/1mask/walletconnect/verify.ts` already merges Verify's `isScam` with this hook. With it, a listed
+`@coldai/clip-wallet-1mask/walletconnect/verify.ts` already merges Verify's `isScam` with this hook. With it, a listed
 site shows "known-scam" on the proposal and on every request.
 
 **Hide spam.** In `portfolio()` (and `collectibles()`), filter what Cleanup hid:
@@ -150,7 +150,7 @@ site shows "known-scam" on the proposal and on every request.
 ## 4. Shared messages: `apps/extension/src/shared/messages.ts` (and `packages/engine/src/messages.ts`)
 
 ```ts
-import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
+import { SECURITY_REQUESTS, type SecurityResponseMap } from "@coldai/clip-wallet-security/messages";
 // in the Request union, after ...FEATURE_REQUESTS:
   ...SECURITY_REQUESTS,
 // ResponseMap:
@@ -160,8 +160,8 @@ export interface ResponseMap extends FeatureResponseMap, SecurityResponseMap {
 ## 5. Page-side client: new file `apps/extension/src/shared/security-bus.ts`
 
 ```ts
-import type { SecurityRequest, SecurityResponseMap } from "@clip-wallet/security";
-import type { SecurityClient } from "@clip-wallet/ui";
+import type { SecurityRequest, SecurityResponseMap } from "@coldai/clip-wallet-security";
+import type { SecurityClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { Envelope } from "./messages";
 

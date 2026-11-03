@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { MemoryKV } from "@clip-wallet/engine";
+import { MemoryKV } from "@coldai/clip-wallet-engine";
 import { FileKV, SafeVaultStorage, protectionOf, type SafeStorageLike } from "../src/main/storage";
 import { TouchIdPrf } from "../src/main/biometric";
 import { HidRelay, ledgerDevices } from "../src/main/hid";

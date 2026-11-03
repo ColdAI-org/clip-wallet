@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
-import { relativeTime, userMessageOf, type LinkStatusView, type PairingView } from "@clip-wallet/ui";
+import { relativeTime, userMessageOf, type LinkStatusView, type PairingView } from "@coldai/clip-wallet-ui";
 import { useWallet } from "../ui/context";
 import { Button, Card, Empty, ErrorNote, Field, MenuItem, Notice, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { APP } from "../env";

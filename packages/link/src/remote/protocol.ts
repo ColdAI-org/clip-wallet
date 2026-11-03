@@ -6,7 +6,7 @@
  *   signer → extension   accounts | decoded | result | handoff | pong
  */
 import { z } from "zod";
-import { FAMILIES } from "@clip-wallet/core";
+import { FAMILIES } from "@coldai/clip-wallet-core";
 
 const family = z.enum(FAMILIES as unknown as [string, ...string[]]);
 const origin = z.string().url().max(500).refine((o) => /^https?:\/\//.test(o), "http(s) origin");

@@ -1,4 +1,4 @@
-# @clip-wallet/names
+# @coldai/clip-wallet-names
 
 Turns a name into an address and the network it implies: ENS (`alice.eth`), SNS (`alice.sol`), Hedera names
 (`alice.hbar`), Clip handles on Hedera, and names a Clip Plugin resolves. Read-only: no keys, no signing. Send uses it,
@@ -9,13 +9,13 @@ so the "network matters" question knows where a name points.
 ## Install
 
 ```sh
-npm i @clip-wallet/names
+npm i @coldai/clip-wallet-names
 ```
 
 ## Example
 
 ```ts
-import { createNameResolver } from "@clip-wallet/names";
+import { createNameResolver } from "@coldai/clip-wallet-names";
 
 const resolver = createNameResolver();
 const hit = await resolver.resolve("alice.eth"); // { name, address, family, networkIds, … } or null
@@ -30,7 +30,7 @@ console.log(hit?.address);
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/core",
+  "name": "@coldai/clip-wallet-core",
   "version": "0.1.0",
   "description": "Clip Wallet's shared contract: networks, assets, the Vault and ChainModule interfaces, DecodedRequest, ClipError",
   "keywords": [

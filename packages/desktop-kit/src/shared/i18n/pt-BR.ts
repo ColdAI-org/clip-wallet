@@ -1,5 +1,5 @@
 /** Brazilian Portuguese (same glossary as packages/ui/src/i18n/pt-BR: "você", carteira, desbloquear / bloquear). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const ptBR: Translation<DesktopMessages> = {

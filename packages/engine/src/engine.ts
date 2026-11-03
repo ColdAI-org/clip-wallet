@@ -11,8 +11,8 @@
  * Owns approvals, permissions, the portfolio cache, activity and prefs. Never returns key material,
  * except revealPhrase for the onboarding screen.
  */
-import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, decodeFailureReason, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@coldai/clip-wallet-core";
+import { ClipError, decodeFailureReason, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@coldai/clip-wallet-core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -25,16 +25,16 @@ import type {
   RecipientResolution,
   SessionView,
   WalletState,
-} from "@clip-wallet/ui";
-import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ, type RouterPort } from "@clip-wallet/1mask/background";
-import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
-import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
-import type { FeaturesService } from "@clip-wallet/features";
-import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
+} from "@coldai/clip-wallet-ui";
+import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ, type RouterPort } from "@coldai/clip-wallet-1mask/background";
+import type { CardanoModule, CardanoReadMethod } from "@coldai/clip-wallet-chains-cardano";
+import { isFeatureRequest, type FeatureRequest } from "@coldai/clip-wallet-features/messages";
+import type { FeaturesService } from "@coldai/clip-wallet-features";
+import { isSocialRequest, SocialService, type SocialRequest } from "@coldai/clip-wallet-social";
 // Light entry points only: the security package itself loads chain SDKs (it runs in the host, attached later).
-import { hideKey } from "@clip-wallet/security/hide";
-import { isSecurityRequest, type SecurityRequest } from "@clip-wallet/security/messages";
-import type { RecipientLog, SecurityService } from "@clip-wallet/security";
+import { hideKey } from "@coldai/clip-wallet-security/hide";
+import { isSecurityRequest, type SecurityRequest } from "@coldai/clip-wallet-security/messages";
+import type { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
 import { SocialSignInService, type SocialSignInRequest } from "./social-signin.js";
 import { PlatformService, type PlatformRequest } from "./platform.js";
 import type { KV } from "./kv.js";
@@ -42,10 +42,10 @@ import { EngineRequest, type EngineResponseMap } from "./messages.js";
 import { PasskeyCeremonies } from "./passkey-ceremonies.js";
 import type { EngineHardware } from "./hardware.js";
 import type { EnginePlugins } from "./plugins.js";
-import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
+import { toInsightInput, withPluginInsights } from "@coldai/clip-wallet-plugins";
 import type { DappHost, Dependencies, EngineEnv, PasskeyInfoLike, PermissionStoreLike, PrfProvider } from "./types.js";
 import { SettleFundingRun, claimedTitle, txHashOf } from "./settle-funding.js";
-import { formatUnits } from "@clip-wallet/route";
+import { formatUnits } from "@coldai/clip-wallet-route";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,

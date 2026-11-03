@@ -1,6 +1,6 @@
 # wagmi connector
 
-`clipConnect()` from `@clip-wallet/connect/wagmi` is wagmi's own `injected` connector, pointed at Clip Wallet's
+`clipConnect()` from `@coldai/clip-wallet-connect/wagmi` is wagmi's own `injected` connector, pointed at Clip Wallet's
 EIP-6963 provider. It falls back to another announced wallet, then to `window.ethereum`. `@wagmi/core` 2 or 3 is an
 optional peer.
 

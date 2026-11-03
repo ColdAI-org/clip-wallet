@@ -61,17 +61,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "@clip-wallet/extension..."
-      # The extension's unit tests live in @clip-wallet/extension-kit (the packages job runs them).
+      - run: pnpm install --frozen-lockfile --filter "@coldai/clip-wallet-extension..."
+      # The extension's unit tests live in @coldai/clip-wallet-extension-kit (the packages job runs them).
       - name: Typecheck
-        run: pnpm --filter @clip-wallet/extension typecheck
+        run: pnpm --filter @coldai/clip-wallet-extension typecheck
       - name: Install Chromium for Playwright
-        run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
+        run: pnpm --filter @coldai/clip-wallet-extension exec playwright install --with-deps chromium
       - name: e2e (real build and fixture build)
         # Some real-wiring checks read public testnets; each screen must still say plainly when a source is down.
-        run: pnpm --filter @clip-wallet/extension e2e
+        run: pnpm --filter @coldai/clip-wallet-extension e2e
       - name: Store packages (testnet; deterministic zips)
-        run: pnpm --filter @clip-wallet/extension package
+        run: pnpm --filter @coldai/clip-wallet-extension package
       - name: Firefox lint (addons-linter via web-ext; errors fail the job)
         run: npx --yes web-ext@8.10.0 lint --source-dir apps/extension/.output/firefox-mv3
       - name: Upload screenshots and packages
@@ -99,10 +99,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile --filter "@clip-wallet/mobile..."
-      - run: pnpm --filter @clip-wallet/mobile typecheck
-      - name: Test (vitest + jest-expo; the app's code is @clip-wallet/mobile-kit)
-        run: pnpm --filter @clip-wallet/mobile-kit test
+      - run: pnpm install --frozen-lockfile --filter "@coldai/clip-wallet-mobile..."
+      - run: pnpm --filter @coldai/clip-wallet-mobile typecheck
+      - name: Test (vitest + jest-expo; the app's code is @coldai/clip-wallet-mobile-kit)
+        run: pnpm --filter @coldai/clip-wallet-mobile-kit test
       - name: Expo config resolves (icons, splash, plugins)
         working-directory: apps/mobile
         env:
@@ -144,7 +144,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium for Playwright
-        run: pnpm --filter @clip-wallet/extension exec playwright install --with-deps chromium
+        run: pnpm --filter @coldai/clip-wallet-extension exec playwright install --with-deps chromium
       - name: Git identity for the scaffolded projects' first commit
         run: git config --global user.name "kit e2e" && git config --global user.email "kit-e2e@users.noreply.github.com"
       - name: create-clip-wallet from the packed tarballs (extension, desktop, mobile)

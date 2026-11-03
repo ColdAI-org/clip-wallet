@@ -1,7 +1,7 @@
-# @clip-wallet/vault
+# @coldai/clip-wallet-vault
 
 The only Clip Wallet package that touches recovery phrases and private keys. It implements `Vault` from
-`@clip-wallet/core` as `ClipVault`: one BIP-39 phrase derives accounts for fourteen network families, everything at
+`@coldai/clip-wallet-core` as `ClipVault`: one BIP-39 phrase derives accounts for fourteen network families, everything at
 rest is Argon2id + XChaCha20-Poly1305, passkeys can unlock it (WebAuthn PRF), and it signs only payloads registered for
 an approval the person gave, each once.
 
@@ -13,14 +13,14 @@ the onboarding screen (`pnpm harness` enforces this in the Clip Wallet repo and 
 ## Install
 
 ```sh
-npm i @clip-wallet/vault
+npm i @coldai/clip-wallet-vault
 ```
 
 ## Example
 
 ```ts
-import { ClipVault, MemoryStorage, hashSignablePayload } from "@clip-wallet/vault";
-import type { ChainContext, ChainModule, DappRequest } from "@clip-wallet/core";
+import { ClipVault, MemoryStorage, hashSignablePayload } from "@coldai/clip-wallet-vault";
+import type { ChainContext, ChainModule, DappRequest } from "@coldai/clip-wallet-core";
 
 // Host code only. Real hosts pass their own storage (chrome.storage.local, a secure store).
 const vault = new ClipVault({ storage: new MemoryStorage(), autoLockMs: 15 * 60_000 });
@@ -412,7 +412,7 @@ Yes, from an **extension page**, not from the service worker.
 
 ## Tests
 
-`pnpm --filter @clip-wallet/vault test` (138 tests). Phase 2 adds `test/families.test.ts` (37) and
+`pnpm --filter @coldai/clip-wallet-vault test` (138 tests). Phase 2 adds `test/families.test.ts` (37) and
 `test/vault-phase2.test.ts` (22).
 
 Phase 2 cross-checks against independent implementations (devDependencies only):
@@ -444,7 +444,7 @@ Tests use public test vectors only.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

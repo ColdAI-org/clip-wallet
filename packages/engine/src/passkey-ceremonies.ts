@@ -4,8 +4,8 @@
  * run (passkeyBegin → page runs WebAuthn → passkeyFinish). Mobile doesn't need this: the native passkey /
  * biometric module runs in the same JS context, so it calls WalletEngine.enrollPasskeyWith directly.
  */
-import type { PasskeyCeremony } from "@clip-wallet/ui";
-import { ClipError, withoutTrailing } from "@clip-wallet/core";
+import type { PasskeyCeremony } from "@coldai/clip-wallet-ui";
+import { ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
 import type { PrfProvider } from "./types.js";
 
 const TIMEOUT_MS = 3 * 60 * 1000;

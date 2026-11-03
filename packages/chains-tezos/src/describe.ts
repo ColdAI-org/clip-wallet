@@ -1,10 +1,10 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { formatUnits, isUint, short } from "./encoding.js";
 import { asAddress, isPrim, parseFa12Approve, parseFa12Transfer, parseFa2Transfer, parseUpdateOperators, preview } from "./micheline.js";
 import { tokenAssetKey, xtzAsset } from "./networks.js";
 import type { Tzkt } from "./rpc.js";
 import { type TzktToken, isSpamToken, tokenAsset } from "./tokens.js";
-import { msg, titled, say } from "@clip-wallet/core";
+import { msg, titled, say } from "@coldai/clip-wallet-core";
 
 export interface Line {
   label: string;

@@ -1,5 +1,5 @@
 import { FAMILIES } from "../src/shared/protocol.js";
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { Window as HappyWindow } from "happy-dom";
 import { createOneMaskRouter, createMemoryPermissionStore, type OneMaskRouterOptions } from "../src/background/index.js";
 import { createContentBridge, type RuntimePort } from "../src/content/index.js";

@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/kit-modules/tezos — the wallet side of Beacon (TZIP-10) for Clip Wallet.
+ * @coldai/clip-wallet-kit-modules/tezos — the wallet side of Beacon (TZIP-10) for Clip Wallet.
  *
  *  - createBeaconExtensionPeer: browser-extension discovery/pairing over postMessage (with 1Mask's page relay).
  *  - createBeaconP2PWallet: QR / pairing-string connections over Beacon's Matrix relays (@airgap/beacon-wallet).

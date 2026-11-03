@@ -11,8 +11,8 @@
  *
  * @module
  */
-import type { Account, Family } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { Account, Family } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { sha256 } from "@noble/hashes/sha2.js";
 import type { KV } from "./kv.js";
 import { b64url, fromB64url, type CeremonyMeta } from "./passkey-ceremonies.js";
@@ -47,7 +47,7 @@ export interface PlatformVault {
   setAccountLabel?(family: Family, index: number, label: string): Promise<void>;
 }
 
-/** Structural match for @clip-wallet/backup-client's BackupClient (so this file needs no new dependency). */
+/** Structural match for @coldai/clip-wallet-backup-client's BackupClient (so this file needs no new dependency). */
 export interface BackupClientLike {
   session: { token: string; expiresAt: number } | null;
   readonly signedIn: boolean;
@@ -64,7 +64,7 @@ export interface NameLookup {
   reverse(address: string, family: Family, networkId?: string): Promise<string | null>;
 }
 
-/* ------------------------------------------------------------------ views (structurally = @clip-wallet/ui platform/client.ts) */
+/* ------------------------------------------------------------------ views (structurally = @coldai/clip-wallet-ui platform/client.ts) */
 
 export interface BackupStatusView {
   signedIn: boolean;

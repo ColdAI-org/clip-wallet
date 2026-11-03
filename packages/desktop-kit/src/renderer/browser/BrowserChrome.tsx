@@ -7,9 +7,9 @@
  * "Not secure" for plain http (local development only), a red flag for listed scam sites.
  */
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { dirOf, isLocaleCode, type LocaleCode } from "@clip-wallet/i18n";
-import { LocaleProvider, useT } from "@clip-wallet/i18n/react";
-import { tokensFor } from "@clip-wallet/ui";
+import { dirOf, isLocaleCode, type LocaleCode } from "@coldai/clip-wallet-i18n";
+import { LocaleProvider, useT } from "@coldai/clip-wallet-i18n/react";
+import { tokensFor } from "@coldai/clip-wallet-ui";
 import { DESKTOP } from "../../shared/app-config";
 import { DESKTOP_CATALOGS, type DesktopMessageId } from "../../shared/i18n";
 import type { ChromeCall, ChromeState, PromptView, TabView } from "../../shared/ipc";

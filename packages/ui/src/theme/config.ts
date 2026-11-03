@@ -1,12 +1,12 @@
 /**
- * Brand config comes from `@clip-wallet/config` (the single schema for clip.config.ts): name, icon,
+ * Brand config comes from `@coldai/clip-wallet-config` (the single schema for clip.config.ts): name, icon,
  * theme { accent, accentText, font, radius }, passkeys, networks, route, mainnet opt-in.
  * Screens never hard-code a colour or the product name; they read tokens derived from it (tokens.ts).
  *
  * `UiOptions` holds the few app-runtime values that are not brand config: the bundled icon URL the
  * extension resolved, the untrusted-media proxy, and the display currencies offered in Settings.
  */
-import { defineConfig, type ClipConfig } from "@clip-wallet/config";
+import { defineConfig, type ClipConfig } from "@coldai/clip-wallet-config";
 
 export type { ClipConfig };
 
@@ -15,7 +15,7 @@ export interface UiOptions {
   iconUrl: string;
   /**
    * Media proxy for untrusted NFT media. Every image/video URL from token metadata is rewritten to
-   * `${mediaProxyUrl}/v1/media?src=<canonical>&kind=image|video` (@clip-wallet/media-client) and fetched
+   * `${mediaProxyUrl}/v1/media?src=<canonical>&kind=image|video` (@coldai/clip-wallet-media-client) and fetched
    * only from there. Unset = no remote media at all
    * (placeholders are drawn instead).
    */

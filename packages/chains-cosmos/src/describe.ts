@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, type Msg, type Warning, msg } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type Msg, type Warning, msg } from "@coldai/clip-wallet-core";
 import type { CosmosChainSpec } from "./networks.js";
 import { assetOf } from "./networks.js";
 import type { CosmosMsg } from "./msgs.js";

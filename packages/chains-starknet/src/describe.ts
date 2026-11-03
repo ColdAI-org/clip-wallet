@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, ClipError, type NetworkId, type Warning, msg, titled, say } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, ClipError, type NetworkId, type Warning, msg, titled, say } from "@coldai/clip-wallet-core";
 import { hash, typedData as td } from "starknet";
 import { chainOf, STARKNET_CHAINS } from "./networks.js";
 import type { StarknetRpc } from "./rpc.js";

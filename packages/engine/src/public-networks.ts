@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 
 /** Networks as the inpage providers may see them: public facts only, one RPC (never a user override). */
 export function publicNetworks(networks: Network[]): Network[] {

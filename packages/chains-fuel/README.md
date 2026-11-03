@@ -1,4 +1,4 @@
-# @clip-wallet/chains-fuel
+# @coldai/clip-wallet-chains-fuel
 
 Fuel `ChainModule` for Clip Wallet. It builds, decodes and dry-runs Fuel transactions, and never touches keys.
 `prepare()` returns the 32-byte digest a Fuel signature covers (the transaction id, or fuels-ts' message hash).

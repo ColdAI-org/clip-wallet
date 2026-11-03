@@ -1,5 +1,5 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, say, withoutTrailing } from "@clip-wallet/core";
-import { type ClassicAsset, MAX_PATH_LENGTH, STELLAR_HORIZON, buildPathSwap, checkPathSwap, netOf, swapAsset } from "@clip-wallet/chains-stellar";
+import { type AssetRef, type ChainContext, ClipError, type Network, say, withoutTrailing } from "@coldai/clip-wallet-core";
+import { type ClassicAsset, MAX_PATH_LENGTH, STELLAR_HORIZON, buildPathSwap, checkPathSwap, netOf, swapAsset } from "@coldai/clip-wallet-chains-stellar";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import type { Unavailable } from "../views.js";

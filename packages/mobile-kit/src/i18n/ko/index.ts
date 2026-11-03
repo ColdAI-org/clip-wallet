@@ -15,7 +15,7 @@
  *   unreadable request → 읽을 수 없는 요청.
  * Style: 해요체 for sentences, short nouns for buttons; 을(를)/이(가)/은(는) after variables.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { MobileMessages } from "../en";
 import common from "./common";
 import onboarding from "./onboarding";

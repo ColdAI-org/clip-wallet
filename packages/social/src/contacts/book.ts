@@ -3,7 +3,7 @@
  * the family's own rules (ChainModule.isAddress) before it is saved. Used by Send (search), the approval screen
  * ("Send to Alex") and the security stream's address-poisoning check (ContactLookup).
  */
-import { ClipError, FAMILIES, type Family } from "@clip-wallet/core";
+import { ClipError, FAMILIES, type Family } from "@coldai/clip-wallet-core";
 import type { AddressValidators, Contact, ContactAddress, ContactInput, ContactLookup, ContactMatch, LookalikeMatch } from "./types.js";
 import type { ContactStore } from "./store.js";
 

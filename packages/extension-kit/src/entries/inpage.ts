@@ -6,7 +6,7 @@
  *
  * @module
  */
-import { installOneMask } from "@clip-wallet/1mask/inpage";
+import { installOneMask } from "@coldai/clip-wallet-1mask/inpage";
 import type {} from "../globals";
 
 /** Where 1Mask's content scripts run. */

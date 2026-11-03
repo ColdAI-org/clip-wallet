@@ -4,7 +4,7 @@
  * most privacy-preserving option. For each: find Clip in the dapp's own connect UI, connect, and where it is free and
  * reversible do one signed action (a message signature; never a transaction, never mainnet).
  *
- *   pnpm --filter @clip-wallet/extension pickers -- e2e/hosted-dapps.spec.ts [-g <id>]
+ *   pnpm --filter @coldai/clip-wallet-extension pickers -- e2e/hosted-dapps.spec.ts [-g <id>]
  *
  * Live sites change: a failure here means "this dapp no longer works with Clip the way the doc says", which is what
  * this suite is for. Results: shots/pickers/hosted.json and docs/r1/picker-matrix.md. Screenshots: shots/pickers/.

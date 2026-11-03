@@ -1,4 +1,4 @@
-import type { AssetRef, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, TokenBalance } from "@coldai/clip-wallet-core";
 import type { Edge, Ledger, RouteGraphData } from "../src/clprouter.js";
 import type { RouterDeployment } from "../src/deployments.js";
 

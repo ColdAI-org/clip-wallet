@@ -1,4 +1,4 @@
-import type { AssetRef, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, NetworkId } from "@coldai/clip-wallet-core";
 import { decodeAddress } from "algosdk";
 import { type Algod, AlgodError, type AssetParamsJson } from "./algod.js";
 import { asaAssetKey } from "./networks.js";

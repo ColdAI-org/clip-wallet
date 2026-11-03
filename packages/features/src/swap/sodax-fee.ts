@@ -4,7 +4,7 @@
  * (@sodax/sdk 2.2.0 dist/index.mjs:25257-25258, :6791-6796), because the percentage form only takes whole basis
  * points: it is BigInt(percentage) over a scale of 10 000 (:5254, :6782-6784), and BigInt(87.5) throws.
  *
- * No runtime imports but the JSON: the extension build reads this in Node (@clip-wallet/features/sodax-fee) to refuse
+ * No runtime imports but the JSON: the extension build reads this in Node (@coldai/clip-wallet-features/sodax-fee) to refuse
  * a mainnet build whose CLIP_SODAX_FEE_RECEIVER isn't on the list, and the swap provider (./sodax.ts) checks every
  * intent against it before anything is signed.
  *

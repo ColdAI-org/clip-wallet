@@ -1,10 +1,10 @@
 /**
  * What the social screens see. Plain JSON data (it crosses the extension bus). Type-only module: packages/ui
- * imports it as "@clip-wallet/social/views" without pulling in SDKs.
+ * imports it as "@coldai/clip-wallet-social/views" without pulling in SDKs.
  *
  * @module
  */
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import type { ContactAddress, ContactInput } from "./contacts/types.js";
 import type { DiscoverFeed, DiscoverPool, DiscoverToken } from "./discover/service.js";
 import type { NotificationKind, NotificationSettings, PriceAlert } from "./notifications/types.js";

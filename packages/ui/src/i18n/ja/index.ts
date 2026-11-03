@@ -19,7 +19,7 @@
  *   Keystone, Face ID, Touch ID, MetaMask, Phantom, Google, Apple, asset symbols, network names,
  *   CoinGecko, DEX Screener, on-device menu labels (e.g. 「Connect Software Wallet」).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

@@ -1,5 +1,5 @@
-import type { Account, AssetRef, ChainContext } from "@clip-wallet/core";
-import { SUI_MAINNET, SUI_TESTNET, type TransactionData, inspectTransaction, normalizeSuiAddress, pureAddressOf } from "@clip-wallet/chains-sui";
+import type { Account, AssetRef, ChainContext } from "@coldai/clip-wallet-core";
+import { SUI_MAINNET, SUI_TESTNET, type TransactionData, inspectTransaction, normalizeSuiAddress, pureAddressOf } from "@coldai/clip-wallet-chains-sui";
 import { afterEach, describe, expect, it } from "vitest";
 import { AFTERMATH_PACKAGES, AftermathSwap, checkAftermathTrade } from "../src/swap/aftermath.js";
 import { mockFetch } from "./helpers.js";

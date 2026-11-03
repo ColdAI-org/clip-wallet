@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/chains-aptos",
+  "name": "@coldai/clip-wallet-chains-aptos",
   "version": "0.1.0",
   "description": "Aptos ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   "keywords": [
@@ -69,7 +69,7 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^7.3.0",
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0"
   },

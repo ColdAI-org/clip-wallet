@@ -4,10 +4,10 @@ Clip Wallet supports both ways NEAR dapps connect:
 
 - **NEAR Connect** (the connector the NEAR Infra Committee recommends): no module needed. Clip answers its
   `near-selector-ready` event with an injected wallet.
-- **NEAR Wallet Selector** v10: add Clip's module, `setupClipWallet()` from `@clip-wallet/kit-modules/near`.
+- **NEAR Wallet Selector** v10: add Clip's module, `setupClipWallet()` from `@coldai/clip-wallet-kit-modules/near`.
 
 ```sh
-npm i @clip-wallet/kit-modules
+npm i @coldai/clip-wallet-kit-modules
 ```
 
 <<< @/snippets/dapps/near.ts

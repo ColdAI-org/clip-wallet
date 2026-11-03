@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, withoutTrailing } from "@clip-wallet/core";
+import { type ChainContext, ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
 
 /** An error answered by an octez node: the JSON error list ([{ kind, id, ... }]). */
 export class RpcError extends Error {

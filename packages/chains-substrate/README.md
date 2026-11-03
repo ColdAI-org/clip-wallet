@@ -1,4 +1,4 @@
-# @clip-wallet/chains-substrate
+# @coldai/clip-wallet-chains-substrate
 
 Polkadot SDK (Substrate) `ChainModule` for Clip Wallet: Polkadot, Kusama, Westend and Paseo, plus their Asset Hubs,
 and the Chainflip State Chain (mainnet and the Perseverance testnet).
@@ -11,14 +11,14 @@ and returns a MultiSignature or the signed extrinsic.
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-substrate @clip-wallet/core
+npm i @coldai/clip-wallet-chains-substrate @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createSubstrateModule, WESTEND } from "@clip-wallet/chains-substrate";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createSubstrateModule, WESTEND } from "@coldai/clip-wallet-chains-substrate";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createSubstrateModule();
@@ -51,7 +51,7 @@ They share `@noble/hashes` and `@scure/base` with the rest of the wallet. The pa
 
 Byte-exactness was checked offline against `@polkadot/types` 17 with the same Westend Asset Hub metadata. The signing
 payload (with and without `CheckMetadataHash`) and the signed extrinsic match `ExtrinsicPayload.toU8a({ method:
-true })` and `Extrinsic.addSignature` byte for byte. An end-to-end run against `@clip-wallet/vault` (public "abandon
+true })` and `Extrinsic.addSignature` byte for byte. An end-to-end run against `@coldai/clip-wallet-vault` (public "abandon
 … about" vector) produced an sr25519 signature that `finalize()` accepted.
 
 ## Networks
@@ -218,7 +218,7 @@ things:
 
 ## Helpers for wallet features (staking, swaps)
 
-Added for `@clip-wallet/features` (`staking/polkadot.ts`, `swap/assethub.ts`). Reads only; every transaction
+Added for `@coldai/clip-wallet-features` (`staking/polkadot.ts`, `swap/assethub.ts`). Reads only; every transaction
 still goes through the approval path.
 
 - `module.buildCall({ pallet, call, args }, ctx)`: a `substrate_signAndSubmit` request for any call in live
@@ -277,7 +277,7 @@ throwaway key (`test/signatures.ts`), Chainflip with the vault's account 0 of th
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

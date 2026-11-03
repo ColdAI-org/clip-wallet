@@ -38,7 +38,7 @@ import {
   type PasskeyCeremony,
   type PasskeyFactory,
   type PasskeyPrf,
-} from "@clip-wallet/ui";
+} from "@coldai/clip-wallet-ui";
 
 export const BRIDGE_RESULT = "clip-passkey-bridge-result";
 

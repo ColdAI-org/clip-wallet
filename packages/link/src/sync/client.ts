@@ -2,7 +2,7 @@
  * The device side of settings sync: a local replica (sealed at rest with the sync data key), signed requests,
  * pull → merge → push with compare-and-set, and adapters ("sources") that map wallet state onto records.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { b64url, openJson, randomBytes, sealJson, withoutTrailingSlashes } from "../bytes.js";
 import type { SyncKeyHandle } from "../keys.js";
 import { COLLECTIONS, localWrite, mergeRecords, sameValue, stableJson, type Collection, type SyncRecord } from "./records.js";

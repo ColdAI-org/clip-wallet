@@ -1,6 +1,6 @@
 // DANGER: a mainnet build moves real funds. Clip Wallet is pre-release and has had no external audit.
 // Only do this after every box in packages/extension/MAINNET.md is ticked.
-import { MAINNET_ACKNOWLEDGEMENT, defineConfig, mainnetProblems } from "@clip-wallet/config";
+import { MAINNET_ACKNOWLEDGEMENT, defineConfig, mainnetProblems } from "@coldai/clip-wallet-config";
 
 const config = defineConfig({
   name: "Acme Wallet",

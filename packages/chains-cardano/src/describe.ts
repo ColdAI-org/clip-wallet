@@ -2,7 +2,7 @@
  * Plain-language description of a Cardano transaction from the signer's point of view, plus which of the
  * account's keys must sign (payment, stake) and which signatures belong to someone else.
  */
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { type Credential, addressToBech32, poolIdToBech32, shortAddress } from "./address.js";
 import { CborMap, CborTag, type CborValue, asInt } from "./cbor.js";
 import type { AssetMeta } from "./tokens.js";
@@ -11,7 +11,7 @@ import { type ParsedTx, type TxInput, type TxOutput, addressCred, usesScripts } 
 import { type Value, addValue, displayAssetName, emptyValue, nameOf } from "./value.js";
 import { equal, formatUnits, hex, joinWords } from "./util.js";
 import { adaAsset } from "./networks.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 export interface Me {
   paymentKeyHash: Uint8Array;

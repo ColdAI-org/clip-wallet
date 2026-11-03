@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/plugins",
+  "name": "@coldai/clip-wallet-plugins",
   "version": "0.1.0",
   "description": "Clip Plugins: small, SES-sandboxed wallet extensions installed from npm with integrity checks",
   "keywords": [
@@ -77,7 +77,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/hashes": "2.4.0",
     "ses": "2.3.0",
     "zod": "^4.6.5"

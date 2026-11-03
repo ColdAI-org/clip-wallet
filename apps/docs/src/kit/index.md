@@ -15,10 +15,10 @@ the harness all enforce. See [Build and ship](./build-and-ship.md#mainnet).
 
 | Platform | Folder | Built with | On the kit |
 | --- | --- | --- | --- |
-| Browser extension (Chrome, Edge, Brave, Firefox) | `packages/extension` | WXT | `@clip-wallet/extension-kit` |
-| Desktop app (macOS, Windows, Linux) | `packages/desktop` | Electron, electron-vite, electron-builder | `@clip-wallet/desktop-kit` |
-| Phone app (iOS, Android) | `packages/mobile` | Expo (React Native) | `@clip-wallet/mobile-kit` |
-| Scaffold-HBAR demo dapp (optional) | `packages/nextjs` | Next.js | `@clip-wallet/connect` |
+| Browser extension (Chrome, Edge, Brave, Firefox) | `packages/extension` | WXT | `@coldai/clip-wallet-extension-kit` |
+| Desktop app (macOS, Windows, Linux) | `packages/desktop` | Electron, electron-vite, electron-builder | `@coldai/clip-wallet-desktop-kit` |
+| Phone app (iOS, Android) | `packages/mobile` | Expo (React Native) | `@coldai/clip-wallet-mobile-kit` |
+| Scaffold-HBAR demo dapp (optional) | `packages/nextjs` | Next.js | `@coldai/clip-wallet-connect` |
 
 Each platform folder holds one-line entrypoints, a build config of one call and the icons. The wallet itself (vault,
 engine, approvals, screens, 1Mask, the security floor) comes from the kit packages, pinned to one signed release.
@@ -61,7 +61,7 @@ Scaffold-HBAR route gives every platform plus the dapp, which is what `npx creat
 ## What lives where in your project
 
 ```text
-clip.config.ts            the wallet, for every platform (typed by @clip-wallet/config)
+clip.config.ts            the wallet, for every platform (typed by @coldai/clip-wallet-config)
 wallet.identity.json      name, description, rdns, homepage, icon, appId, extension.key (written by wallet:identity)
 icon.svg | icon.png       the logo; every platform's icons are rendered from it
 MAINNET.md                the owner's mainnet checklist
@@ -80,5 +80,5 @@ tools/verify-provenance.mjs  checks the kit packages were built by the kit's CI
 .harness/  AGENTS.md  llms.txt  how agents (and people) change the project safely
 ```
 
-Every `@clip-wallet/*` package (and `create-clip-wallet`) is pinned to one exact version in the root and platform
+Every `@coldai/clip-wallet-*` package (and `create-clip-wallet`) is pinned to one exact version in the root and platform
 `package.json` files; `pnpm verify:provenance` checks each one's npm provenance.

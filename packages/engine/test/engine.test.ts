@@ -3,7 +3,7 @@ import { KV_KEYS, WalletEngine } from "../src/engine.js";
 import { MemoryKV, JsonKV } from "../src/kv.js";
 import { createEngineClient } from "../src/client.js";
 import { createFeatureHost } from "../src/features.js";
-import { ClipError, WALLET_ORIGIN, isWalletOrigin, type DappRequest } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN, isWalletOrigin, type DappRequest } from "@coldai/clip-wallet-core";
 import { BASE_SEPOLIA, EVM_ADDRESS, FakeVault, SEPOLIA, fakePort, makeDeps, makeEnv, tick } from "./fixtures.js";
 
 const ORIGIN = "https://dapp.test";

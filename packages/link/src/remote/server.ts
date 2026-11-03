@@ -4,8 +4,8 @@
  * engine decodes them, the approval shows HERE (the app that holds the keys), and only an approved request is
  * signed. The extension only ever gets back what a dapp would get (accounts, signatures, transaction hashes).
  */
-import type { Account, DappRequest, DecodedRequest, Family } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { Account, DappRequest, DecodedRequest, Family } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { SecureSession } from "../pairing/session.js";
 import { ToSigner, toPublicAccount, type FromSigner, type PublicAccount } from "./protocol.js";
 

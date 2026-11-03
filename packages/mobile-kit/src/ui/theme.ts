@@ -1,9 +1,9 @@
 /**
- * The extension's design tokens (@clip-wallet/ui tokensFor, from clip.config's theme) as React Native values.
+ * The extension's design tokens (@coldai/clip-wallet-ui tokensFor, from clip.config's theme) as React Native values.
  * Screens never hard-code a colour or the product name: they read this.
  */
-import { tokensFor, type ColorMode } from "@clip-wallet/ui";
-import type { ClipConfig } from "@clip-wallet/config";
+import { tokensFor, type ColorMode } from "@coldai/clip-wallet-ui";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
 
 export interface Theme {
   mode: ColorMode;

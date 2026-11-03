@@ -11,7 +11,7 @@
  *   signMessage    { account?, address, message: string, protocol?: "ecdsa" | "bip322" }                                    → { address, signature, messageHash }
  *   sendTransfer   { account?, recipientAddress, amount, memo? }                                                             → { txid }
  */
-import { ClipError, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import { base64 } from "@scure/base";
 import type { SignRequest } from "./psbt.js";
 

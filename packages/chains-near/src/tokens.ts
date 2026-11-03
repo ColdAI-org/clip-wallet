@@ -8,7 +8,7 @@
  *  - Token metadata from the contract itself: ft_metadata (NEP-148), nft_metadata (NEP-177),
  *    nft_tokens_for_owner (NEP-181).
  */
-import { type AssetRef, type Network, type NetworkId, type Nft, withoutTrailing } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, type Nft, withoutTrailing } from "@coldai/clip-wallet-core";
 import type { NearRpc } from "./rpc.js";
 import { USDC_CONTRACTS, WRAP_CONTRACTS, networkName, tokenAssetKey } from "./networks.js";
 

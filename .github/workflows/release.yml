@@ -5,7 +5,7 @@
 # provenance for every file (actions/attest-build-provenance, Sigstore-backed, verifiable with
 # `gh attestation verify`), and opens a DRAFT GitHub release. Nothing is uploaded to any store.
 #
-# Kit stream (@clip-wallet/* and create-clip-wallet on npm; the only way they reach npm). On every push to main,
+# Kit stream (@coldai/clip-wallet-* and create-clip-wallet on npm; the only way they reach npm). On every push to main,
 # Changesets opens or updates a "Version packages" pull request (pnpm version-packages: versions, changelogs, and the
 # Scaffold-HBAR template pinned to the new version). Publishing happens only from a signed version tag: after that
 # pull request is merged, the same tag runs pnpm release (pack-all: build + manifest and tarball checks, then
@@ -121,8 +121,8 @@ jobs:
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
           export SOURCE_DATE_EPOCH
           npm install -g "pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
-          pnpm install --frozen-lockfile --filter "@clip-wallet/extension..."
-          pnpm --filter @clip-wallet/extension package
+          pnpm install --frozen-lockfile --filter "@coldai/clip-wallet-extension..."
+          pnpm --filter @coldai/clip-wallet-extension package
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-${{ env.TAG }}

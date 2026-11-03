@@ -1,4 +1,4 @@
-import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { PublicKey } from "@hiero-ledger/sdk";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { HEDERA_TESTNET, aliasAddress } from "../src/index.js";

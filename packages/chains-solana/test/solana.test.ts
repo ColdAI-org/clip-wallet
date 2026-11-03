@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
   type Instruction,

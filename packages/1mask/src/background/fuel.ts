@@ -1,4 +1,4 @@
-import { type DappRequest, type Family, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
+import { type DappRequest, type Family, type Network, type NetworkId, withoutTrailing } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import { FUEL_INJECTED, fuelChainId, fuelConnectorNetwork } from "../shared/fuel.js";
 import type { ExposedAccount, OneMaskEvent } from "../shared/protocol.js";

@@ -1,5 +1,5 @@
 /**
- * Renders a structured message from the background ({ id, values, fallback }, @clip-wallet/core's Msg) in a
+ * Renders a structured message from the background ({ id, values, fallback }, @coldai/clip-wallet-core's Msg) in a
  * locale. Structural on purpose: this package has no dependencies.
  *
  * English (and any locale without the id) shows `fallback`, the module's exact English. Otherwise the

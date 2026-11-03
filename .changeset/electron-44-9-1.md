@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/desktop-kit": patch
+"@coldai/clip-wallet-desktop-kit": patch
 ---
 
 The `electron` peer range is now `>=44.9.1`: earlier 44.x releases are affected by high-severity advisories fixed in

@@ -4,7 +4,7 @@
  * accepting keyring has no device signers at all, only accounts and approvals.
  */
 import { describe, expect, it } from "vitest";
-import { ClipError, type Signature, type SignablePayload } from "@clip-wallet/core";
+import { ClipError, type Signature, type SignablePayload } from "@coldai/clip-wallet-core";
 import { HardwareKeyring, fromWire, signatureFromWire, signatureToWire, toWire, type HardwareAccount } from "../src/core.js";
 import * as I from "./inputs.js";
 import { approve, keyringWith, memoryStorage, replay } from "./helpers.js";

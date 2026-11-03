@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/1mask": patch
+"@coldai/clip-wallet-1mask": patch
 ---
 
 WalletConnect: a request naming an account the session didn't approve is refused with 5103 (UNSUPPORTED_ACCOUNTS),

@@ -7,7 +7,7 @@ Without it, NFT media show placeholder art and nothing remote is fetched.
 GET /v1/media?src=<canonical source>&kind=image|video
 ```
 
-Build the URL with `mediaProxyUrl()` from `@clip-wallet/media-client`. The Worker re-validates with the same code
+Build the URL with `mediaProxyUrl()` from `@coldai/clip-wallet-media-client`. The Worker re-validates with the same code
 (`parseProxyQuery()`), so the two can't disagree:
 
 <<< @/snippets/services/media-url.ts

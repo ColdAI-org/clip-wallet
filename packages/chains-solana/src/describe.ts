@@ -1,4 +1,4 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import type { Instruction } from "@solana/kit";
 import { COMPUTE_BUDGET_PROGRAM_ADDRESS, ComputeBudgetInstruction, identifyComputeBudgetInstruction } from "@solana-program/compute-budget";
 import { SYSTEM_PROGRAM_ADDRESS, SystemInstruction, identifySystemInstruction } from "@solana-program/system";
@@ -16,7 +16,7 @@ import type { ParsedTransaction } from "./tx.js";
 import { abs, b64encode, formatUnits, joinWords, short } from "./util.js";
 import { type SwapIntent, WSOL_MINT, decodeJupiterHelper, decodeSwap } from "./swaps.js";
 import { STAKE_PROGRAM, type StakeAction, decodeStake, decodeStakeAccountFunding } from "./stake.js";
-import { msg, type Msg, say } from "@clip-wallet/core";
+import { msg, type Msg, say } from "@coldai/clip-wallet-core";
 
 export interface Line {
   label: string;

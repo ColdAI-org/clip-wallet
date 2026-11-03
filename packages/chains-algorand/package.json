@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/chains-algorand",
+  "name": "@coldai/clip-wallet-chains-algorand",
   "version": "0.1.0",
   "description": "Algorand ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   "keywords": [
@@ -68,7 +68,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",
     "algosdk": "^3.8.0"

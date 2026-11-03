@@ -9,7 +9,7 @@
  */
 import { useState } from "react";
 import { View } from "react-native";
-import { userMessageOf, type PendingPluginView, type PluginInsightView, type PluginView, type PluginsClient } from "@clip-wallet/ui";
+import { userMessageOf, type PendingPluginView, type PluginInsightView, type PluginView, type PluginsClient } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, Empty, ErrorNote, Field, Notice, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { APP } from "../env";

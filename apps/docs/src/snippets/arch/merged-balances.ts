@@ -1,6 +1,6 @@
 // Home shows one row per asset: same-issuer balances merge across networks; bridged copies stay separate.
-import { mergeBalances } from "@clip-wallet/ui";
-import type { AssetRef, TokenBalance } from "@clip-wallet/core";
+import { mergeBalances } from "@coldai/clip-wallet-ui";
+import type { AssetRef, TokenBalance } from "@coldai/clip-wallet-core";
 
 const usdc = (networkId: string, address: string): AssetRef => ({ key: "usdc", symbol: "USDC", name: "USD Coin", decimals: 6, networkId, address });
 

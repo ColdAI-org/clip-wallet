@@ -1,6 +1,6 @@
 # Changesets
 
-Every change to a published package (`packages/*`: the `@clip-wallet/*` libraries, `@clip-wallet/extension-kit` and
+Every change to a published package (`packages/*`: the `@coldai/clip-wallet-*` libraries, `@coldai/clip-wallet-extension-kit` and
 `create-clip-wallet`) comes with a changeset: `pnpm changeset`, pick the packages, pick patch/minor/major, write one
 plain sentence for the changelog.
 

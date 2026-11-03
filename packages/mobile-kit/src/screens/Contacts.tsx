@@ -5,8 +5,8 @@
  */
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import type { Family } from "@clip-wallet/core";
-import { FAMILY_LABEL, hueFor, shortAddress, type ContactView } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import { FAMILY_LABEL, hueFor, shortAddress, type ContactView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Empty, ErrorNote, Field, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT, type MobileMessageId } from "../i18n";

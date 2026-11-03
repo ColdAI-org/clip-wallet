@@ -4,6 +4,6 @@
  *   macOS dmg + zip (arm64, x64) · Windows NSIS + zip (x64, arm64) · Linux AppImage + deb + tar.gz (x64, arm64)
  * Unsigned unless the signing variables in ../../docs/signing.md are set. Outputs go to release/.
  */
-const { electronBuilderConfig } = require("@clip-wallet/desktop-kit/builder");
+const { electronBuilderConfig } = require("@coldai/clip-wallet-desktop-kit/builder");
 
 module.exports = electronBuilderConfig({ configFile: "../../clip.config.ts", root: __dirname });

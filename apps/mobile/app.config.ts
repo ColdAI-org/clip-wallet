@@ -1,7 +1,7 @@
-import { expoConfig } from "@clip-wallet/mobile-kit/expo";
+import { expoConfig } from "@coldai/clip-wallet-mobile-kit/expo";
 
 /**
- * Clip Wallet mobile (iOS + Android). Testnets only. @clip-wallet/mobile-kit builds the Expo config from clip.config.ts
+ * Clip Wallet mobile (iOS + Android). Testnets only. @coldai/clip-wallet-mobile-kit builds the Expo config from clip.config.ts
  * (name, ids, scheme, icons, splash, permissions); native projects are generated (`expo prebuild`), not committed.
  * Optional build-time env (never committed, see .env.example): EXPO_PUBLIC_WC_PROJECT_ID, EXPO_PUBLIC_PASSKEY_RP_ID,
  * CLIP_ASSOCIATED_DOMAIN.

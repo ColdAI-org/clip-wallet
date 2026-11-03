@@ -1,7 +1,7 @@
 /**
  * Hardware accounts: the key lives on a Ledger or a Keystone; the extension only ever holds public data.
  */
-import type { Account, DappRequest, DecodedRequest, Family, Signature, SignablePayload } from "@clip-wallet/core";
+import type { Account, DappRequest, DecodedRequest, Family, Signature, SignablePayload } from "@coldai/clip-wallet-core";
 
 export type HardwareKind = "ledger" | "keystone";
 

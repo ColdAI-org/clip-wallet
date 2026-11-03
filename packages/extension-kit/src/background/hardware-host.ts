@@ -13,8 +13,8 @@
  * the window only names the job it answers. A compromised page can make signing fail, never succeed for
  * other bytes.
  */
-import { ClipError, type DappRequest, type DecodedRequest, type Signature, type SignablePayload } from "@clip-wallet/core";
-import { HardwareErrors, MAX_APPROVAL_TTL_MS, signatureFromWire, toWire, type HardwareKeyring, type SignatureWire } from "@clip-wallet/hardware/core";
+import { ClipError, type DappRequest, type DecodedRequest, type Signature, type SignablePayload } from "@coldai/clip-wallet-core";
+import { HardwareErrors, MAX_APPROVAL_TTL_MS, signatureFromWire, toWire, type HardwareKeyring, type SignatureWire } from "@coldai/clip-wallet-hardware/core";
 import type { HardwareSignJob } from "../shared/hardware-job";
 
 export const inProgress = () => new ClipError("Your hardware wallet is already signing this request.", "hw/in-progress");

@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@clip-wallet/config";
+import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@coldai/clip-wallet-config";
 import { DESKTOP_ICONS, electronBuilderConfig, electronLanguages } from "../src/builder";
 import { walletCsp } from "../src/csp";
 import { desktopBuildValues } from "../src/electron-vite";

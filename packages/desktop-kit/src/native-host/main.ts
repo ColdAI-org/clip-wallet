@@ -7,6 +7,6 @@
  *
  * @module
  */
-import { nativeHostMain } from "@clip-wallet/link/node";
+import { nativeHostMain } from "@coldai/clip-wallet-link/node";
 
 void nativeHostMain();

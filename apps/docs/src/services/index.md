@@ -21,9 +21,9 @@ Each service's tests run inside workerd with `@cloudflare/vitest-pool-workers`, 
 Objects. Nothing remote is touched:
 
 ```sh
-pnpm --filter @clip-wallet/service-backup test
-pnpm --filter @clip-wallet/service-media-proxy test
-pnpm --filter @clip-wallet/service-link-relay test
+pnpm --filter @coldai/clip-wallet-service-backup test
+pnpm --filter @coldai/clip-wallet-service-media-proxy test
+pnpm --filter @coldai/clip-wallet-service-link-relay test
 ```
 
-Run one locally with `pnpm --filter @clip-wallet/service-backup dev` (`wrangler dev --local`).
+Run one locally with `pnpm --filter @coldai/clip-wallet-service-backup dev` (`wrangler dev --local`).

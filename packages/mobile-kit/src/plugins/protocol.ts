@@ -7,11 +7,11 @@
  *                `window.dispatchEvent(new MessageEvent('message', {data}))` (iOS, apple/RNCWebViewImpl.m) or
  *                `document.dispatchEvent(…)` (Android, RNCWebViewManagerImpl.kt). Data is always a string.
  *   page → app   `window.ReactNativeWebView.postMessage(string)` → `onMessage({ nativeEvent: { data, url } })`.
- * Both directions carry JSON of the schemas in @clip-wallet/plugins/messages (strict zod, size-capped), checked on
+ * Both directions carry JSON of the schemas in @coldai/clip-wallet-plugins/messages (strict zod, size-capped), checked on
  * both sides. The sandbox page is loaded from an inline HTML string with baseUrl about:blank, so its origin is
  * opaque ("null"); a message whose frame URL isn't about:blank is dropped.
  */
-import { LIMITS, parseFromHost, parseFromSandbox, type HostToSandbox, type SandboxToHost } from "@clip-wallet/plugins";
+import { LIMITS, parseFromHost, parseFromSandbox, type HostToSandbox, type SandboxToHost } from "@coldai/clip-wallet-plugins";
 
 /** The sandbox page's URL (inline HTML, opaque origin). */
 export const SANDBOX_URL = "about:blank";

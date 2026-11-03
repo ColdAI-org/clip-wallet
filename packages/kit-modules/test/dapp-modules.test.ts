@@ -1,5 +1,5 @@
-import type { Network } from "@clip-wallet/core";
-import { installP2Providers } from "@clip-wallet/1mask/inpage/p2";
+import type { Network } from "@coldai/clip-wallet-core";
+import { installP2Providers } from "@coldai/clip-wallet-1mask/inpage/p2";
 import { WalletManager } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
 import { afterEach, describe, expect, it } from "vitest";

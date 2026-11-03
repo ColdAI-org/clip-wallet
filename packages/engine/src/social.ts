@@ -6,10 +6,10 @@
  *
  * @module
  */
-import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, Family, Msg, Network } from "@clip-wallet/core";
-import { resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
-import { ClipHandlesBackend } from "@clip-wallet/names";
-import { SocialService, publicSnapshot, type Notifier, type TokenRiskSource } from "@clip-wallet/social";
+import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, Family, Msg, Network } from "@coldai/clip-wallet-core";
+import { resolveLocale, type LocaleCode } from "@coldai/clip-wallet-i18n";
+import { ClipHandlesBackend } from "@coldai/clip-wallet-names";
+import { SocialService, publicSnapshot, type Notifier, type TokenRiskSource } from "@coldai/clip-wallet-social";
 import type { KV } from "./kv.js";
 
 /** KV keys this module reads from the wallet (written by WalletEngine / the extension service). */
@@ -44,7 +44,7 @@ export interface SocialHostDeps {
   /** The security stream's token lists, when present. */
   risk?: TokenRiskSource;
   coingeckoDemoKey?: string;
-  /** CoinGecko id per asset key (@clip-wallet/features COINGECKO_IDS): lets Discover recognise wallet assets. */
+  /** CoinGecko id per asset key (@coldai/clip-wallet-features COINGECKO_IDS): lets Discover recognise wallet assets. */
   coingeckoIds?: Record<string, string>;
 }
 

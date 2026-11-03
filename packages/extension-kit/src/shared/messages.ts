@@ -5,13 +5,13 @@
  * these messages (the background checks the sender is an extension page).
  */
 import { z } from "zod";
-import { LOCALE_CODES } from "@clip-wallet/i18n";
-import { FAMILIES, type Nft } from "@clip-wallet/core";
-import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
-import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
-import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
-import { LINK_REQUESTS, type LinkResponseMap } from "@clip-wallet/link/messages";
-import { PluginsRequestSchema, type PendingInstallView, type PluginView, type PluginsStatusView } from "@clip-wallet/plugins";
+import { LOCALE_CODES } from "@coldai/clip-wallet-i18n";
+import { FAMILIES, type Nft } from "@coldai/clip-wallet-core";
+import { FEATURE_REQUESTS, type FeatureResponseMap } from "@coldai/clip-wallet-features/messages";
+import { SOCIAL_REQUESTS, type SocialResponseMap } from "@coldai/clip-wallet-social/messages";
+import { SECURITY_REQUESTS, type SecurityResponseMap } from "@coldai/clip-wallet-security/messages";
+import { LINK_REQUESTS, type LinkResponseMap } from "@coldai/clip-wallet-link/messages";
+import { PluginsRequestSchema, type PendingInstallView, type PluginView, type PluginsStatusView } from "@coldai/clip-wallet-plugins";
 import type {
   AccountView,
   ActiveAccounts,
@@ -26,7 +26,7 @@ import type {
   RecipientResolution,
   SessionView,
   WalletState,
-} from "@clip-wallet/ui";
+} from "@coldai/clip-wallet-ui";
 import type { HardwareSignJob } from "./hardware-job";
 
 const password = z.string().min(1).max(1024);
@@ -141,7 +141,7 @@ export const Request = z.discriminatedUnion("type", [
   ...SECURITY_REQUESTS,
   // Linked devices (r1/connect, docs/r1/integration/connect.md)
   ...LINK_REQUESTS,
-  // Clip Plugins (Advanced mode; @clip-wallet/plugins validates again in PluginsService)
+  // Clip Plugins (Advanced mode; @coldai/clip-wallet-plugins validates again in PluginsService)
   ...PluginsRequestSchema.options,
   // Google / Apple sign-in for passkey backups (engine/social-signin)
   z.object({ type: z.literal("backupProviders") }),

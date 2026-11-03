@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/1mask — shared types and helpers. Entry points: ./inpage, ./content, ./background, ./walletconnect.
+ * @coldai/clip-wallet-1mask — shared types and helpers. Entry points: ./inpage, ./content, ./background, ./walletconnect.
  *
  * @module
  */

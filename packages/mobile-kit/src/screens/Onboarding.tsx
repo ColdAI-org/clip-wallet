@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, View } from "react-native";
-import { passwordStrength, pickConfirmIndexes, userMessageOf } from "@clip-wallet/ui";
+import { passwordStrength, pickConfirmIndexes, userMessageOf } from "@coldai/clip-wallet-ui";
 import { useWallet } from "../ui/context";
 import { Button, ErrorNote, Field, Screen, T } from "../ui/kit";
 import { IconFingerprint, IconShield } from "../ui/icons";

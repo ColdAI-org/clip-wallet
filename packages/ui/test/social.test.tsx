@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { SocialProvider } from "../src/social/context";
 import type { ContactView, DiscoverFeed, SocialClient } from "../src/social/client";
 import { Contacts } from "../src/social/Contacts";

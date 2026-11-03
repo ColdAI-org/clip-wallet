@@ -2,7 +2,7 @@
  * Ledger over WebHID for the main-process engine.
  *
  * WebHID exists only in a renderer, and the device picker (navigator.hid.requestDevice) needs a click there. The
- * engine (and @clip-wallet/hardware's LedgerSigner, with its APDU encoders and the checks on what comes back) runs
+ * engine (and @coldai/clip-wallet-hardware's LedgerSigner, with its APDU encoders and the checks on what comes back) runs
  * here, in the main process. So the transport is split, like the phone's Bluetooth transport is injected
  * (apps/mobile/src/background/ledger-ble.ts):
  *
@@ -16,8 +16,8 @@
  * 0x2c97) in a native dialog and the user picks one, or cancels. Nothing is auto-selected.
  */
 import Transport from "@ledgerhq/hw-transport";
-import { ClipError } from "@clip-wallet/core";
-import type { TransportFactory } from "@clip-wallet/hardware";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { TransportFactory } from "@coldai/clip-wallet-hardware";
 import type { DistributiveOmit, HidJob, HidReply } from "../shared/ipc";
 
 export const LEDGER_VENDOR_ID = 0x2c97;
@@ -79,7 +79,7 @@ export class HidRelay {
 
 function unwrap(r: HidReply): string {
   if (r.ok) return r.data ?? "";
-  // Shape @clip-wallet/hardware's ledgerError() understands (name / message / statusCode).
+  // Shape @coldai/clip-wallet-hardware's ledgerError() understands (name / message / statusCode).
   throw Object.assign(new Error(r.message), { name: r.name, ...(r.statusCode !== undefined ? { statusCode: r.statusCode } : {}) });
 }
 

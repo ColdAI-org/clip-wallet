@@ -1,4 +1,4 @@
-import { ClipError, type ChainContext } from "@clip-wallet/core";
+import { ClipError, type ChainContext } from "@coldai/clip-wallet-core";
 import { b64encode, isObj } from "./util.js";
 
 /** `url` without trailing slashes (a scan, not a regex: linear on any input). */

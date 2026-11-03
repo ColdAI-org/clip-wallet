@@ -1,4 +1,4 @@
-import type { NetworkId } from "@clip-wallet/core";
+import type { NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * CLPRouter testnet deployment (pre-audit, re-audit in progress), copied from clprouter
@@ -11,7 +11,7 @@ import type { NetworkId } from "@clip-wallet/core";
  *    Sepolia never verify; a route sent from Sepolia settles there only through `reclaim` after its deadline.
  */
 export interface RouterDeployment {
-  /** Wallet network id (CAIP-2 as @clip-wallet/core uses it). */
+  /** Wallet network id (CAIP-2 as @coldai/clip-wallet-core uses it). */
   networkId: NetworkId;
   /** Ledger id the Router uses on-chain (Hedera's Routers run on its EVM, so `eip155:296`). */
   routerLedgerId: string;

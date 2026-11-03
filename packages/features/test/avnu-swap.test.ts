@@ -1,4 +1,4 @@
-import type { Account, AssetRef, ChainContext, DappRequest, Network } from "@clip-wallet/core";
+import type { Account, AssetRef, ChainContext, DappRequest, Network } from "@coldai/clip-wallet-core";
 import {
   AVNU_EXCHANGE,
   ETH_ADDRESS,
@@ -10,7 +10,7 @@ import {
   parseApprove,
   parseMultiRouteSwap,
   type StarknetRpc,
-} from "@clip-wallet/chains-starknet";
+} from "@coldai/clip-wallet-chains-starknet";
 import { describe, expect, it } from "vitest";
 import { AvnuSwap, checkAvnuRequest } from "../src/swap/avnu.js";
 import { mockFetch } from "./helpers.js";

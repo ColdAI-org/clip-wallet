@@ -1,4 +1,4 @@
-import type { Account, ChainContext, Network, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, Network, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha224 } from "@noble/hashes/sha2.js";
 import { C, type CType, type CValue, ICP_TEST, cborDecode, cborEncode, candidDecode, candidEncode, createIcpModule, principalToText } from "../src/index.js";

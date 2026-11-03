@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { ProviderRpcError, RpcErrorCode, fromRpcErrorShape } from "../shared/errors.js";
 import { randomId } from "../shared/bytes.js";
 import {

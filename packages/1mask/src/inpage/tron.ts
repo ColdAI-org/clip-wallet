@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import { uuidV4 } from "../shared/bytes.js";
 import type { WalletIdentity } from "../shared/config.js";
 import { ProviderRpcError, RpcErrorCode, rpcError } from "../shared/errors.js";

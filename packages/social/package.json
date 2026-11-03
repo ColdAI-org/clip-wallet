@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/social",
+  "name": "@coldai/clip-wallet-social",
   "version": "0.1.0",
   "description": "Clip Wallet social layer: contacts, Clip handles on Hedera, notifications and Discover",
   "keywords": [
@@ -121,10 +121,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/chains-hedera": "workspace:*",
-    "@clip-wallet/core": "workspace:*",
-    "@clip-wallet/i18n": "workspace:*",
-    "@clip-wallet/names": "workspace:*",
+    "@coldai/clip-wallet-chains-hedera": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
+    "@coldai/clip-wallet-i18n": "workspace:*",
+    "@coldai/clip-wallet-names": "workspace:*",
     "viem": "^2.57.2",
     "zod": "^4.6.5"
   },

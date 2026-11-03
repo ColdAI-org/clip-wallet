@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { makeService, PASSWORD } from "./helpers";
 import { fromB64url, b64url } from "../src/background/passkey-proxy";
 

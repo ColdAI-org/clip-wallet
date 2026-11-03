@@ -5,7 +5,7 @@ anything on this page; signing and store accounts are only for shipping: see [St
 
 ## The extension's files
 
-A wallet project keeps three things; the rest comes from `@clip-wallet/extension-kit`.
+A wallet project keeps three things; the rest comes from `@coldai/clip-wallet-extension-kit`.
 
 **`wxt.config.ts`**: the whole build is `clipWallet()`. `configDir` points at the project root, where the config, the
 icon, `MAINNET.md` and the wallet-wide `.env` live.
@@ -27,7 +27,7 @@ icon, `MAINNET.md` and the wallet-wide `.env` live.
 :::
 
 The approval window, the offscreen plugin host and the plugin sandbox are one line each too
-(`mountApprovalWindow()`, `startPluginHost()`, `import "@clip-wallet/extension-kit/plugin-sandbox"`).
+(`mountApprovalWindow()`, `startPluginHost()`, `import "@coldai/clip-wallet-extension-kit/plugin-sandbox"`).
 `create-clip-wallet` writes all of them. What `clipWallet()` does with them: [Extension kit](../architecture/extension-kit.md).
 
 ## Build and try it
@@ -51,7 +51,7 @@ In a kit-built wallet, `pnpm extension:zip` writes the store zips with WXT, name
 uses a stricter script:
 
 ```sh
-pnpm --filter @clip-wallet/extension package
+pnpm --filter @coldai/clip-wallet-extension package
 ```
 
 It writes to `apps/extension/release/`:
@@ -126,7 +126,7 @@ autolinking finds them.
 
 `pnpm harness`, in the project, must pass before every commit:
 
-- key material only in `@clip-wallet/vault` (inside the kits); no logged secrets; no tracked `.env` or key files;
+- key material only in `@coldai/clip-wallet-vault` (inside the kits); no logged secrets; no tracked `.env` or key files;
 - the identity is the wallet's own (`rdns` and `appId` never `org.coldai.*`, the name never "Clip Wallet");
 - every platform builds through its kit: `clipWallet()`, `clipDesktop()` and `electronBuilderConfig()`, `expoConfig()`
   and `withClipWallet()`; nothing switches the phishing lists off;
@@ -142,7 +142,7 @@ Algorand use-wallet. Submit them once your extension is public; until then, some
 
 ## Upgrading the kit
 
-Your project pins every `@clip-wallet/*` package and `create-clip-wallet` to one exact version (the harness insists).
+Your project pins every `@coldai/clip-wallet-*` package and `create-clip-wallet` to one exact version (the harness insists).
 Upgrading is a deliberate change: bump the pins, read the kit's changelog, then
 `pnpm install && pnpm verify:provenance && pnpm harness && pnpm build`. `pnpm verify:provenance` checks each package's
 npm provenance attestation against the kit's public repository; `npm audit signatures` verifies the signatures.

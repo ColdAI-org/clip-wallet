@@ -12,7 +12,7 @@ import {
   type TokenBalance,
   WALLET_ORIGIN,
   msg,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { Hiro, HiroError, plainStacksError } from "./api.js";
 import { type StacksNet, addressOfKey, netOfVersion, parseAddress, parseAssetId, parseContractId } from "./c32.js";

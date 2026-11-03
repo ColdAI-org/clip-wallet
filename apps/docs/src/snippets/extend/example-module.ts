@@ -19,10 +19,10 @@ import {
   type DecodedRequest,
   type Family,
   type Network,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 
 // #region network
-// Step 1 adds "example" to Family in @clip-wallet/core (and to NETWORK_FAMILIES in @clip-wallet/config).
+// Step 1 adds "example" to Family in @coldai/clip-wallet-core (and to NETWORK_FAMILIES in @coldai/clip-wallet-config).
 // Until then, the cast keeps this file compiling against the published core.
 export const FAMILY = "example" as Family;
 

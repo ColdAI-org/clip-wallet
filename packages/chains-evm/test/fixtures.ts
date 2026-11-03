@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import type { MockSpec } from "./helpers.js";
 import { BOB, ME, ROOTSTOCK, SEPOLIA, SEPOLIA_USDC } from "./helpers.js";
 

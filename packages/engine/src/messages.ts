@@ -4,11 +4,11 @@
  * untrusted page input to `WalletEngine.handle` and get the same checks.
  */
 import { z } from "zod";
-import { LOCALE_CODES } from "@clip-wallet/i18n";
-import { FAMILIES, type Nft } from "@clip-wallet/core";
-import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features/messages";
-import { SOCIAL_REQUESTS, type SocialResponseMap } from "@clip-wallet/social/messages";
-import { SECURITY_REQUESTS, type SecurityResponseMap } from "@clip-wallet/security/messages";
+import { LOCALE_CODES } from "@coldai/clip-wallet-i18n";
+import { FAMILIES, type Nft } from "@coldai/clip-wallet-core";
+import { FEATURE_REQUESTS, type FeatureResponseMap } from "@coldai/clip-wallet-features/messages";
+import { SOCIAL_REQUESTS, type SocialResponseMap } from "@coldai/clip-wallet-social/messages";
+import { SECURITY_REQUESTS, type SecurityResponseMap } from "@coldai/clip-wallet-security/messages";
 import type {
   AccountView,
   ActiveAccounts,
@@ -22,7 +22,7 @@ import type {
   RecipientResolution,
   SessionView,
   WalletState,
-} from "@clip-wallet/ui";
+} from "@coldai/clip-wallet-ui";
 
 const password = z.string().min(1).max(1024);
 const id = z.string().min(1).max(200);

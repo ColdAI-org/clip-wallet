@@ -1,4 +1,4 @@
-import { type Account, type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, say, recallMsg, knownMsg, type Msg } from "@clip-wallet/core";
+import { type Account, type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, say, recallMsg, knownMsg, type Msg } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { type BuiltOperation, type PartialTezosOperation, ProtocolsHash, buildOperation, normalizeOperations } from "./build.js";
 import { describeOperations } from "./describe.js";

@@ -1,10 +1,10 @@
 # Algorand
 
 Clip Wallet injects an ARC-1 provider at `window.clipwallet.algorand`. TxnLab's use-wallet v5 lists only the adapters a
-dapp passes, so add Clip's: `clipWallet()` from `@clip-wallet/kit-modules/algorand` (wallet id `clip-wallet`).
+dapp passes, so add Clip's: `clipWallet()` from `@coldai/clip-wallet-kit-modules/algorand` (wallet id `clip-wallet`).
 
 ```sh
-npm i @clip-wallet/kit-modules @txnlab/use-wallet algosdk
+npm i @coldai/clip-wallet-kit-modules @txnlab/use-wallet algosdk
 ```
 
 <<< @/snippets/dapps/algorand.ts

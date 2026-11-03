@@ -1,5 +1,5 @@
 // Names to addresses: ENS, SNS, Hedera names, Clip handles, and names a Clip Plugin resolves. Read-only.
-import { createNameResolver, looksLikeName } from "@clip-wallet/names";
+import { createNameResolver, looksLikeName } from "@coldai/clip-wallet-names";
 
 const resolver = createNameResolver();
 

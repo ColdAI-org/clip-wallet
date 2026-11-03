@@ -2,8 +2,8 @@
 /**
  * The testnet dapp matrix (e2e/matrix.spec.ts, docs/r1/dapp-matrix.md), in one command:
  *
- *   pnpm --filter @clip-wallet/extension matrix [-- <playwright args, e.g. -g hedera>]
- *   pnpm --filter @clip-wallet/extension pickers [-- <playwright args>]   the picker matrix (docs/r1/picker-matrix.md):
+ *   pnpm --filter @coldai/clip-wallet-extension matrix [-- <playwright args, e.g. -g hedera>]
+ *   pnpm --filter @coldai/clip-wallet-extension pickers [-- <playwright args>]   the picker matrix (docs/r1/picker-matrix.md):
  *                                                                         stock picker UIs + hosted testnet dapps
  *
  * Reads WALLETCONNECT_PROJECT_ID from the git-excluded .env.dapp-matrix (see e2e/matrix/env.ts) and, when it is set,

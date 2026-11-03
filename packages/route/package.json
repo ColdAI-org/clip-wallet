@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/route",
+  "name": "@coldai/clip-wallet-route",
   "version": "0.1.0",
   "description": "Route and fund on CLPRouter: shortfalls, quotes, pay-on-Hedera and settle-on-Hedera planning",
   "keywords": [
@@ -55,7 +55,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "viem": "^2.57.1"
   },
   "devDependencies": {

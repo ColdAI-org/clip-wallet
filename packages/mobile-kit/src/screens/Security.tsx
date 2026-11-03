@@ -9,7 +9,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { relativeTime, userMessageOf, type CleanupItemView, type CleanupSummaryView, type GrantView } from "@clip-wallet/ui";
+import { relativeTime, userMessageOf, type CleanupItemView, type CleanupSummaryView, type GrantView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, Empty, ErrorNote, MenuItem, Notice, Screen, Spinner, T } from "../ui/kit";
 import { IconCheck } from "../ui/icons";

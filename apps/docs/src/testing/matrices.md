@@ -17,8 +17,8 @@ For each family with a dapp standard, that ecosystem's own dapp library in a loc
 L3 skips while the account holds less than its minimum, and L4 then declines the same request in the wallet.
 
 ```sh
-pnpm --filter @clip-wallet/extension matrix                  # builds, then runs every family
-pnpm --filter @clip-wallet/extension matrix -- -g cardano    # one family
+pnpm --filter @coldai/clip-wallet-extension matrix                  # builds, then runs every family
+pnpm --filter @coldai/clip-wallet-extension matrix -- -g cardano    # one family
 node scripts/dapp-matrix-balances.mjs --watch                # watch faucet funds land
 ```
 
@@ -37,9 +37,9 @@ Does Clip show up, look right and connect in the wallet pickers dapps actually s
   Explorer, Suiscan, HashScan, Reown AppKit Lab…), with one free, reversible signed action where there is one.
 
 ```sh
-pnpm --filter @clip-wallet/extension pickers                              # both parts
-pnpm --filter @clip-wallet/extension pickers -- -g "ton|near"             # some pickers
-pnpm --filter @clip-wallet/extension pickers -- e2e/hosted-dapps.spec.ts  # part 2 only
+pnpm --filter @coldai/clip-wallet-extension pickers                              # both parts
+pnpm --filter @coldai/clip-wallet-extension pickers -- -g "ton|near"             # some pickers
+pnpm --filter @coldai/clip-wallet-extension pickers -- e2e/hosted-dapps.spec.ts  # part 2 only
 ```
 
 The picker pages are in [`apps/extension/e2e/pickers/dapps/src`](repo:apps/extension/e2e/pickers/dapps/src). The latest

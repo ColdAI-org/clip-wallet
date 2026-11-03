@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/kit-modules",
+  "name": "@coldai/clip-wallet-kit-modules",
   "version": "0.1.0",
   "description": "Clip Wallet modules for ecosystem wallet pickers: NEAR Wallet Selector, Stellar Wallets Kit, Beacon, use-wallet",
   "keywords": [
@@ -132,7 +132,7 @@
     "@txnlab/use-wallet": "^5.0.1",
     "algosdk": "^3.8.0",
     "happy-dom": "^21.0.4",
-    "@clip-wallet/1mask": "workspace:*",
-    "@clip-wallet/core": "workspace:*"
+    "@coldai/clip-wallet-1mask": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*"
   }
 }

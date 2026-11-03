@@ -7,10 +7,10 @@
  *
  * This module is pure: it quotes, keeps the verified quote until the user approves, builds the requests and turns an
  * order's state into a stage. Signing, sending and the approval screen stay in the hosts (packages/engine and the
- * extension's background, through `SettleFundingRun` in @clip-wallet/engine/settle-funding).
+ * extension's background, through `SettleFundingRun` in @coldai/clip-wallet-engine/settle-funding).
  */
-import type { AssetRef, DappRequest, Network } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { AssetRef, DappRequest, Network } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { ConnectorQuote, SettleOnHederaClient, SettleOrder } from "./phase3.js";
 import type { Shortfall } from "./types.js";
 

@@ -37,7 +37,7 @@ npx create-clip-wallet acme-wallet \
 | `--yes` | No questions. `--no-git` skips `git init`; `--new-key` makes a new extension key (and id). |
 
 Without `--yes`, it asks for the folder, platforms, the dapp, name, rdns, app id, accent, logo, networks and languages,
-and asks again after an answer `@clip-wallet/config` rejects. It never switches mainnet on: there is no `--mainnet`.
+and asks again after an answer `@coldai/clip-wallet-config` rejects. It never switches mainnet on: there is no `--mainnet`.
 Every option and exit code: [create-clip-wallet CLI](../reference/cli.md).
 
 When it is done it prints the next steps for the platforms you chose:
@@ -76,7 +76,7 @@ When it is done it prints the next steps for the platforms you chose:
 | `docs/listings/` | listing drafts for this identity |
 | `docs/signing.md` | code signing and store accounts per platform: what each needs and the variable names the tools read |
 
-It refuses Clip Wallet's own identity (`org.coldai.*`, the name "Clip Wallet") and anything `@clip-wallet/config`
+It refuses Clip Wallet's own identity (`org.coldai.*`, the name "Clip Wallet") and anything `@coldai/clip-wallet-config`
 rejects, and then writes nothing. Run again, it keeps the extension key (and so the id) unless you pass `--new-key`.
 
 The config, identity, logo, `MAINNET.md`, `.env` and `.keys/` live at the **project root**, shared by every platform,

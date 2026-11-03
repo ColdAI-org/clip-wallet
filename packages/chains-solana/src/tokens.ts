@@ -1,4 +1,4 @@
-import { type AssetRef, type NetworkId, type Nft, withoutTrailing } from "@clip-wallet/core";
+import { type AssetRef, type NetworkId, type Nft, withoutTrailing } from "@coldai/clip-wallet-core";
 import { address, getAddressDecoder, getAddressEncoder, getProgramDerivedAddress } from "@solana/kit";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import { clusterOf, tokenAssetKey, USDC_MINTS } from "./networks.js";

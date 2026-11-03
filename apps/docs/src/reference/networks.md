@@ -15,7 +15,7 @@ maps each CLPR network to the mainnet(s) in the wallet's own catalogue (`walletN
 if anything but Canton and Mixin is missing, and prints the table:
 
 ```sh
-pnpm --filter @clip-wallet/engine exec vitest run test/networks87.test.ts
+pnpm --filter @coldai/clip-wallet-engine exec vitest run test/networks87.test.ts
 ```
 
 The working notes behind this page are in [`docs/r1/networks87.md`](repo:docs/r1/networks87.md).
@@ -126,11 +126,11 @@ twelve newer families and the Chainflip, STRATO and Arc additions.
 
 ## Families and derivation paths
 
-Every derivation is in `@clip-wallet/vault`, the only package that touches keys, and is cross-checked for the public
+Every derivation is in `@coldai/clip-wallet-vault`, the only package that touches keys, and is cross-checked for the public
 "abandon … about" test phrase against each ecosystem's own SDK
 ([`packages/vault/test/families87.test.ts`](repo:packages/vault/test/families87.test.ts)). Each chain module serializes
 transactions itself and is checked byte for byte against the official SDK, which is a development dependency only; a
-module's runtime dependencies are `@clip-wallet/core`, `@noble/*` and `@scure/base`.
+module's runtime dependencies are `@coldai/clip-wallet-core`, `@noble/*` and `@scure/base`.
 
 | Family (vault) | Path (account `i`) | Package | Mainnets / testnets | Dapp standard in 1Mask |
 | --- | --- | --- | --- | --- |

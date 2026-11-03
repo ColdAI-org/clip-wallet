@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@clip-wallet/core";
-import { MIN_STAKE_MIST, STAKED_SUI_TYPE, SuiGraphQL, buildStakeTransaction, buildUnstakeTransaction, normalizeSuiAddress } from "@clip-wallet/chains-sui";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say } from "@coldai/clip-wallet-core";
+import { MIN_STAKE_MIST, STAKED_SUI_TYPE, SuiGraphQL, buildStakeTransaction, buildUnstakeTransaction, normalizeSuiAddress } from "@coldai/clip-wallet-chains-sui";
 import { formatUnits, percent, randomId, shortAddress } from "../util.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import type { StakeActionParams, StakeBuild, StakingProvider } from "./types.js";

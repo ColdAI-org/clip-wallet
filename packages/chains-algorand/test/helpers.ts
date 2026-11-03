@@ -1,4 +1,4 @@
-import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { ALGORAND_TESTNET } from "../src/index.js";
 import { fromHex, hex } from "../src/util.js";

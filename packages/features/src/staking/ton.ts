@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
 import {
   cellFromBase64,
   cellToB64,
@@ -13,7 +13,7 @@ import {
   tonConnectNetwork,
   tonstakersDepositBody,
   type TonNet,
-} from "@clip-wallet/chains-ton";
+} from "@coldai/clip-wallet-chains-ton";
 import { fetchJson } from "../http.js";
 import { formatUnits, percent, randomId } from "../util.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";

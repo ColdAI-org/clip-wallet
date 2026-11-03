@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/config",
+  "name": "@coldai/clip-wallet-config",
   "version": "0.1.0",
   "description": "The typed clip.config.ts schema for Clip Wallet and kit-built wallets: identity, networks, routing, mainnet checklist",
   "keywords": [

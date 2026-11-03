@@ -1,5 +1,5 @@
 // Check a manifest the way the wallet does before anyone sees an install prompt.
-import { describePermissions, parseManifest } from "@clip-wallet/plugins";
+import { describePermissions, parseManifest } from "@coldai/clip-wallet-plugins";
 import manifest from "./plugin-manifest.json" with { type: "json" };
 
 const real = { ...manifest, bundle: { ...manifest.bundle, sha256: "a".repeat(64) } }; // your bundle's real hash

@@ -22,7 +22,7 @@
     "@aptos-labs/wallet-adapter-ant-design": "5.3.19",
     "@aptos-labs/wallet-adapter-react": "8.3.3",
     "@cardano-foundation/cardano-connect-with-wallet": "0.2.22",
-    "@clip-wallet/kit-modules": "workspace:*",
+    "@coldai/clip-wallet-kit-modules": "workspace:*",
     "@creit.tech/stellar-wallets-kit": "2.7.0",
     "@hashgraph/hedera-wallet-connect": "2.1.3",
     "@hiero-ledger/sdk": "2.79.0",

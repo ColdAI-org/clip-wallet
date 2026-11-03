@@ -1,4 +1,4 @@
-import { type AssetRef, ClipError, type Network, type Warning, msg, type Msg, say } from "@clip-wallet/core";
+import { type AssetRef, ClipError, type Network, type Warning, msg, type Msg, say } from "@coldai/clip-wallet-core";
 import type { FeatureHost } from "../host.js";
 import { queueSteps } from "../steps.js";
 import { formatUnits, parseUnits, percent } from "../util.js";

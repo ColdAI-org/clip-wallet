@@ -1,4 +1,4 @@
-/** Mobile copy of @clip-wallet/ui's "security" namespace (Settings → Security), ids "m.security.*". Keep the wording in step with it. */
+/** Mobile copy of @coldai/clip-wallet-ui's "security" namespace (Settings → Security), ids "m.security.*". Keep the wording in step with it. */
 export default {
   "m.security.title": "Security",
   "m.security.menu.permissions": "App permissions",

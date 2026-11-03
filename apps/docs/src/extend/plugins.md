@@ -98,7 +98,7 @@ most 10 plugins.
 
 ## Test it
 
-`@clip-wallet/plugins` exports what the wallet uses: `parseManifest`, `describePermissions`, the input and output
+`@coldai/clip-wallet-plugins` exports what the wallet uses: `parseManifest`, `describePermissions`, the input and output
 schemas (`InsightInputSchema`, `InsightOutputSchema`, `NameOutputSchema`) and `createSandboxRuntime`, which the
 package's own tests run under real SES. The example plugin in
 [`packages/plugins/examples/address-label`](repo:packages/plugins/examples/address-label) is tested end to end.

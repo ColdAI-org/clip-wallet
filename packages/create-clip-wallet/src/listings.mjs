@@ -138,7 +138,7 @@ ${DRAFT(id.name)}
 Submitting means a pull request that appends this entry to \`wallets-v2.json\` in github.com/ton-connect/wallets-list,
 validated against \`wallets-v2.schema.json\`. ${id.name}'s build already answers as this entry: the JS bridge is
 \`window.${id.key}.tonconnect\` and \`DeviceInfo.appName\` is \`${id.key}\` (the wallet key from the name, set by
-@clip-wallet/extension-kit).
+@coldai/clip-wallet-extension-kit).
 
 \`\`\`json
 ${JSON.stringify(entry, null, 2)}
@@ -167,7 +167,7 @@ ${DRAFT(id.name)}
   NEAR Connect's \`near-selector-ready\` event with a \`near-wallet-injected\` wallet named ${id.name}.
 - **NEAR Wallet Selector**: dapps add the module themselves, pointed at ${id.name}'s global:
   \`\`\`ts
-  import { setupClipWallet } from "@clip-wallet/kit-modules/near";
+  import { setupClipWallet } from "@coldai/clip-wallet-kit-modules/near";
   setupWalletSelector({ network: "testnet", modules: [setupClipWallet({ globalKey: "${id.key}" })] });
   \`\`\`
   or you upstream it as \`@near-wallet-selector/${id.slug}\`.
@@ -208,7 +208,7 @@ Stellar Wallets Kit (github.com/Creit-Tech/Stellar-Wallets-Kit) lists wallets as
 \`ModuleInterface\`; its guide asks for a pull request with the module. Until it is merged, dapps add it themselves:
 
 \`\`\`ts
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
 StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule({ globalKey: "${id.key}" })] });
 \`\`\`
 
@@ -281,11 +281,11 @@ linked from the npm package, an open-source licence, the adapter contract (exten
 \`@txnlab/use-wallet/adapter\`, a factory returning \`WalletAdapterConfig\`, a \`WALLET_ID\` export, peer deps
 \`@txnlab/use-wallet ^5\` and \`algosdk ^3\`), active maintenance, npm provenance recommended.
 
-\`@clip-wallet/kit-modules/algorand\` already follows the contract; for ${id.name}, publish a small adapter package that
+\`@coldai/clip-wallet-kit-modules/algorand\` already follows the contract; for ${id.name}, publish a small adapter package that
 re-exports it with your id and global:
 
 \`\`\`ts
-import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+import { clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
 export const WALLET_ID = "${id.slug}";
 export const wallet = (options = {}) => clipWallet({ ...options, globalKey: "${id.key}", metadata: { name: "${id.name}", icon: "<data URI>" } });
 \`\`\`
@@ -344,7 +344,7 @@ ${DRAFT(id.name)}
 | Chrome extension id | \`${id.extensionId}\` |
 | Wallet key (window global, TON Connect) | \`${id.key}\` |
 | Website | ${site(id)} |
-| Kit version | @clip-wallet/extension-kit ${id.version} |
+| Kit version | @coldai/clip-wallet-extension-kit ${id.version} |
 
 | Registry | Draft |
 | --- | --- |

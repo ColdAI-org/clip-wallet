@@ -31,17 +31,17 @@ export const SKIP_PATHS = ["tools/harness/test/fixtures/"];
 /** Only these may import key-material libraries. */
 export const VAULT_DIRS = ["packages/vault/"];
 
-/** Only these may import @clip-wallet/vault (besides the vault itself). */
+/** Only these may import @coldai/clip-wallet-vault (besides the vault itself). */
 export const VAULT_IMPORT_ALLOW = [
   /^packages\/vault\//,
   /^apps\/extension\/(?:src\/)?(?:entrypoints\/)?background(?:\/|\.[cm]?[jt]sx?$)/,
-  // The extension background as a library (@clip-wallet/extension-kit), which every kit-built wallet runs.
+  // The extension background as a library (@coldai/clip-wallet-extension-kit), which every kit-built wallet runs.
   /^packages\/extension-kit\/src\/background\//,
-  // The phone app's background as a library (@clip-wallet/mobile-kit): it builds the vault for @clip-wallet/engine,
+  // The phone app's background as a library (@coldai/clip-wallet-mobile-kit): it builds the vault for @coldai/clip-wallet-engine,
   // like the extension background.
   /^packages\/mobile-kit\/src\/background\//,
-  // The desktop app's main-process host as a library (@clip-wallet/desktop-kit): it builds the vault for
-  // @clip-wallet/engine; renderers and preloads never may.
+  // The desktop app's main-process host as a library (@coldai/clip-wallet-desktop-kit): it builds the vault for
+  // @coldai/clip-wallet-engine; renderers and preloads never may.
   /^packages\/desktop-kit\/src\/main\/host\//,
   // The desktop e2e's stand-in for the browser extension: an EMPTY vault, used only for ephemeral pairing keys.
   /^apps\/desktop\/e2e\/mock-extension\.ts$/,
@@ -389,24 +389,24 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
             "key-material-outside-vault",
             f,
             line(imp.offset),
-            `Only packages/vault may handle keys: this file uses ${rule.what} via "${imp.module}". Move the code into packages/vault and call it through the Vault interface from @clip-wallet/core.`,
+            `Only packages/vault may handle keys: this file uses ${rule.what} via "${imp.module}". Move the code into packages/vault and call it through the Vault interface from @coldai/clip-wallet-core.`,
           );
         }
       }
-      if (/^@clip-wallet\/vault(?:\/.*)?$/.test(imp.module) && !imp.typeOnly) {
+      if (/^@coldai\/clip-wallet-vault(?:\/.*)?$/.test(imp.module) && !imp.typeOnly) {
         if (pkg && chainPackages.has(pkg)) {
           fail(
             "chain-module-imports-vault",
             f,
             line(imp.offset),
-            `Chain modules never import the vault: ${pkg} implements ChainModule but imports @clip-wallet/vault. Return a SignablePayload from prepare() and let the background ask the vault to sign it.`,
+            `Chain modules never import the vault: ${pkg} implements ChainModule but imports @coldai/clip-wallet-vault. Return a SignablePayload from prepare() and let the background ask the vault to sign it.`,
           );
         } else if (!VAULT_IMPORT_ALLOW.some((re) => re.test(f))) {
           fail(
             "vault-import-not-allowed",
             f,
             line(imp.offset),
-            "Only the extension background, the mobile and desktop hosts and the onboarding screen may import @clip-wallet/vault. Send a message to the background instead (type-only imports are fine).",
+            "Only the extension background, the mobile and desktop hosts and the onboarding screen may import @coldai/clip-wallet-vault. Send a message to the background instead (type-only imports are fine).",
           );
         }
       }
@@ -438,19 +438,19 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
     const pj = join(root, pkg, "package.json");
     if (!existsSync(pj)) continue;
     const text = readFileSync(pj, "utf8");
-    const idx = text.indexOf('"@clip-wallet/vault"');
+    const idx = text.indexOf('"@coldai/clip-wallet-vault"');
     if (idx >= 0) {
       fail(
         "chain-module-imports-vault",
         `${pkg}/package.json`,
         lineOf(text, idx),
-        `Chain modules never depend on the vault: remove @clip-wallet/vault from ${pkg}/package.json.`,
+        `Chain modules never depend on the vault: remove @coldai/clip-wallet-vault from ${pkg}/package.json.`,
       );
     }
   }
 
   // Audit SUP-02: crypto-critical dependencies are pinned exactly (peer dependencies stay ranges: they are the
-  // app's to choose). The kit's own projects pin @clip-wallet/* instead (kitChecks).
+  // app's to choose). The kit's own projects pin @coldai/clip-wallet-* instead (kitChecks).
   if (!isKitProject(root)) {
     for (const f of files.filter((x) => /(?:^|\/)package\.json$/.test(x) && !x.startsWith("templates/"))) {
       const text = readFileSync(join(root, f), "utf8");
@@ -496,7 +496,7 @@ export function runChecks({ root, tracked, skipPaths = SKIP_PATHS, wordlistFrom 
 
   // The vault's known-answer tests must exist.
   if (kit) {
-    // The vault ships inside @clip-wallet/vault; its known-answer tests run in the kit's own CI.
+    // The vault ships inside @coldai/clip-wallet-vault; its known-answer tests run in the kit's own CI.
   } else if (!existsSync(join(root, "packages/vault"))) {
     warn("vault-kat-missing", "packages/vault", 0, "packages/vault is not in this checkout, so its test vectors were not checked.");
   } else {
@@ -525,7 +525,7 @@ export const CLIP_WALLET_RDNS = "org.coldai.clipwallet";
 export const KIT_EXTENSION = "packages/extension";
 export const KIT_DESKTOP = "packages/desktop";
 export const KIT_MOBILE = "packages/mobile";
-export const KIT_PACKAGES = /^(?:@clip-wallet\/[\w-]+|create-clip-wallet)$/;
+export const KIT_PACKAGES = /^(?:@coldai\/clip-wallet-[\w-]+|create-clip-wallet)$/;
 const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[\w.]+)?$/;
 
 /**
@@ -569,11 +569,11 @@ function kitChecks(root, files, parsed, fail, warn) {
   // kit-security: every platform's build goes through its kit (clipWallet(), clipDesktop(), expoConfig() +
   // withClipWallet()), none of which has a switch for the security floor, and all of which enforce the mainnet checklist.
   const builds = [
-    { dir: ext, file: `${ext}/wxt.config.ts`, module: "@clip-wallet/extension-kit/wxt", fn: "clipWallet", what: "the extension" },
-    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron.vite.config.ts`, module: "@clip-wallet/desktop-kit/electron-vite", fn: "clipDesktop", what: "the desktop app" },
-    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron-builder.config.cjs`, module: "@clip-wallet/desktop-kit/builder", fn: "electronBuilderConfig", what: "the desktop installers" },
-    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/app.config.ts`, module: "@clip-wallet/mobile-kit/expo", fn: "expoConfig", what: "the phone app's Expo config" },
-    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/metro.config.js`, module: "@clip-wallet/mobile-kit/metro", fn: "withClipWallet", what: "the phone app's bundle" },
+    { dir: ext, file: `${ext}/wxt.config.ts`, module: "@coldai/clip-wallet-extension-kit/wxt", fn: "clipWallet", what: "the extension" },
+    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron.vite.config.ts`, module: "@coldai/clip-wallet-desktop-kit/electron-vite", fn: "clipDesktop", what: "the desktop app" },
+    { dir: KIT_DESKTOP, file: `${KIT_DESKTOP}/electron-builder.config.cjs`, module: "@coldai/clip-wallet-desktop-kit/builder", fn: "electronBuilderConfig", what: "the desktop installers" },
+    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/app.config.ts`, module: "@coldai/clip-wallet-mobile-kit/expo", fn: "expoConfig", what: "the phone app's Expo config" },
+    { dir: KIT_MOBILE, file: `${KIT_MOBILE}/metro.config.js`, module: "@coldai/clip-wallet-mobile-kit/metro", fn: "withClipWallet", what: "the phone app's bundle" },
   ];
   for (const b of builds) {
     if (!existsSync(join(root, b.dir, "package.json"))) continue;
@@ -593,7 +593,7 @@ function kitChecks(root, files, parsed, fail, warn) {
     const off = /\bopenLists\s*:\s*false\b/.exec(lexed.code);
     if (off) fail("kit-security", f, lineOf(src, off.index), "The open phishing lists can't be switched off in a kit-built wallet. Remove `openLists: false`.");
     const def = /\b__CLIP_SECURITY__\b/.exec(lexed.code);
-    if (def) fail("kit-security", f, lineOf(src, def.index), "Security settings come from @clip-wallet/extension-kit only; don't define or override __CLIP_SECURITY__.");
+    if (def) fail("kit-security", f, lineOf(src, def.index), "Security settings come from @coldai/clip-wallet-extension-kit only; don't define or override __CLIP_SECURITY__.");
   }
 
   // kit-mainnet: mainnet on means every box in MAINNET.md is ticked.

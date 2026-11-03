@@ -1,4 +1,4 @@
-import { connect } from "@clip-wallet/connect";
+import { connect } from "@coldai/clip-wallet-connect";
 
 // Nothing injected (a phone browser, a browser without a wallet): fall back to WalletConnect.
 // Clip Connect never ships a project id: use your own from Reown Cloud.

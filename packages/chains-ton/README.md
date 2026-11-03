@@ -1,4 +1,4 @@
-# @clip-wallet/chains-ton
+# @coldai/clip-wallet-chains-ton
 
 TON `ChainModule` for Clip Wallet. It builds, decodes, emulates and broadcasts, but it never touches keys.
 `prepare()` returns the 32-byte hash to sign as an `ed25519` payload:
@@ -17,14 +17,14 @@ key is ever needed. `@ton/crypto` is only a peer dependency of those packages; t
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-ton @clip-wallet/core
+npm i @coldai/clip-wallet-chains-ton @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createTonModule, TON_TESTNET } from "@clip-wallet/chains-ton";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createTonModule, TON_TESTNET } from "@coldai/clip-wallet-chains-ton";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createTonModule();
@@ -149,7 +149,7 @@ isn't parsed against its TL-B schema yet.
 
 ## DeFi message bodies (`src/defi.ts`)
 
-Builders and parsers for wallet-built DeFi messages, so `@clip-wallet/features` never imports @ton/core and its
+Builders and parsers for wallet-built DeFi messages, so `@coldai/clip-wallet-features` never imports @ton/core and its
 tests parse the real BoCs back. Sources read 2026-10-03:
 
 | helper | op | source |
@@ -176,7 +176,7 @@ features layer lifts that only through `Step.verify` plus a clean emulation.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

@@ -4,8 +4,8 @@
  * constant placeholders. The real keyring's signature check is covered in packages/hardware with recorded
  * device answers; here a fake keyring stands in so the engine's routing can be tested without any signing.
  */
-import type { DappRequest, DecodedRequest, Signature, SignablePayload } from "@clip-wallet/core";
-import { KeystoneBridge, urFromJson, type HardwareAccount, type HardwareFamily, type HardwareKeyring } from "@clip-wallet/hardware/core";
+import type { DappRequest, DecodedRequest, Signature, SignablePayload } from "@coldai/clip-wallet-core";
+import { KeystoneBridge, urFromJson, type HardwareAccount, type HardwareFamily, type HardwareKeyring } from "@coldai/clip-wallet-hardware/core";
 import type { EngineHardwareDeps } from "../src/hardware.js";
 import type { KV } from "../src/kv.js";
 

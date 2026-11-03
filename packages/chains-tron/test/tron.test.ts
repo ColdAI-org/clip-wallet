@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { ClipError, type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { TronWeb, Trx, utils as twUtils } from "tronweb";
 import { describe, expect, it } from "vitest";

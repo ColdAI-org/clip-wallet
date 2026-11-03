@@ -12,8 +12,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { gzipSync } from "node:zlib";
 import { Window as HappyWindow } from "happy-dom";
-import { MemoryKV } from "@clip-wallet/engine";
-import { InstallError, PLUGIN_KEYS, type InsightInput } from "@clip-wallet/plugins";
+import { MemoryKV } from "@coldai/clip-wallet-engine";
+import { InstallError, PLUGIN_KEYS, type InsightInput } from "@coldai/clip-wallet-plugins";
 import { PLUGIN_SANDBOX_JS } from "../src/plugins/sandbox.generated";
 import { createWebViewChannels } from "../src/plugins/channels";
 import { SANDBOX_URL } from "../src/plugins/protocol";

@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type Network, msg, titled, say, withoutTrailing } from "@clip-wallet/core";
-import { NEAR_CHAINS, NearRpc, createNearModule, isPool, networkName, poolName, type NearModule } from "@clip-wallet/chains-near";
+import { type ChainContext, ClipError, type Network, msg, titled, say, withoutTrailing } from "@coldai/clip-wallet-core";
+import { NEAR_CHAINS, NearRpc, createNearModule, isPool, networkName, poolName, type NearModule } from "@coldai/clip-wallet-chains-near";
 import { fetchJson } from "../http.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { formatUnits, percent } from "../util.js";

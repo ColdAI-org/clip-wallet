@@ -1,17 +1,17 @@
 /**
  * Adapters from the real packages to the background's seams (see wiring.ts).
  */
-import type { Family, Network, Warning } from "@clip-wallet/core";
-import { ClipError, knownMsg, recallMsg, msg } from "@clip-wallet/core";
-import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
-import { rdnsDomain, type ClipConfig } from "@clip-wallet/config";
-import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, N87_CHAIN_READ, N87_CONNECT_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
-import type { createStarknetModule } from "@clip-wallet/chains-starknet";
-import type { createTonModule } from "@clip-wallet/chains-ton";
-import { P2_CONNECT_METHODS, type BeaconRelay } from "@clip-wallet/1mask/background/p2";
+import type { Family, Network, Warning } from "@coldai/clip-wallet-core";
+import { ClipError, knownMsg, recallMsg, msg } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan, PlanStep, SessionView } from "@coldai/clip-wallet-ui";
+import { rdnsDomain, type ClipConfig } from "@coldai/clip-wallet-config";
+import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, N87_CHAIN_READ, N87_CONNECT_METHODS, type OneMaskRouter, type RouterPort } from "@coldai/clip-wallet-1mask/background";
+import type { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import type { createTonModule } from "@coldai/clip-wallet-chains-ton";
+import { P2_CONNECT_METHODS, type BeaconRelay } from "@coldai/clip-wallet-1mask/background/p2";
 import type { KV } from "../shared/storage";
-import { createRouteClient, findShortfall, type RouteClient, type SettleFunding } from "@clip-wallet/route";
-import { isFeaturedOrigin } from "@clip-wallet/features";
+import { createRouteClient, findShortfall, type RouteClient, type SettleFunding } from "@coldai/clip-wallet-route";
+import { isFeaturedOrigin } from "@coldai/clip-wallet-features";
 import type { DappConnector, DappHost, DappRegistry, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
 
 const CONNECT_METHODS = new Set<string>([
@@ -43,7 +43,7 @@ function lazyBeacon(kv: KV, name: string, iconUrl: string, router: () => OneMask
     (peer ??= (async () => {
       const { Buffer } = await import("buffer");
       (globalThis as { Buffer?: unknown }).Buffer ??= Buffer;
-      const { createBeaconExtensionPeer } = await import("@clip-wallet/kit-modules/tezos");
+      const { createBeaconExtensionPeer } = await import("@coldai/clip-wallet-kit-modules/tezos");
       return createBeaconExtensionPeer({
         name,
         iconUrl,
@@ -124,10 +124,10 @@ export class OneMaskConnector implements DappConnector {
 
 /* ------------------------------------------------------------------ WalletConnect */
 
-type WcWallet = Awaited<ReturnType<typeof import("@clip-wallet/1mask/walletconnect")["createWalletConnectWallet"]>>;
+type WcWallet = Awaited<ReturnType<typeof import("@coldai/clip-wallet-1mask/walletconnect")["createWalletConnectWallet"]>>;
 
 /**
- * WalletConnect via @clip-wallet/1mask/walletconnect (Reown WalletKit). Needs a project id
+ * WalletConnect via @coldai/clip-wallet-1mask/walletconnect (Reown WalletKit). Needs a project id
  * (clip.config walletConnect.projectId, from CLIP_WALLETCONNECT_PROJECT_ID at build time); without one,
  * pairing explains that this build has WalletConnect switched off.
  */
@@ -149,7 +149,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
     if (!projectId) {
       return Promise.reject(new ClipError("Connecting with a code isn't switched on in this build yet.", "walletconnect/no-project-id"));
     }
-    this.wallet ??= import("@clip-wallet/1mask/walletconnect").then(({ createWalletConnectWallet }) =>
+    this.wallet ??= import("@coldai/clip-wallet-1mask/walletconnect").then(({ createWalletConnectWallet }) =>
       createWalletConnectWallet({
         projectId,
         metadata: { name: this.config.name, description: this.config.name, url: this.config.homepage ?? `https://${rdnsDomain(this.config.rdns)}`, icons: [this.iconUrl] },
@@ -249,7 +249,7 @@ const PLAIN_ETA: Record<Family, number> = {
   bitcoincash: 600,
 };
 
-/** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
+/** CLPRouter funding through @coldai/clip-wallet-route. Phase 1 routes pay on Hedera from EVM networks. */
 export class RoutePlannerAdapter implements RoutePlanner {
   private client: RouteClient;
   constructor(

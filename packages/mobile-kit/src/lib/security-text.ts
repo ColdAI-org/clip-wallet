@@ -1,11 +1,11 @@
 /**
- * Mobile copy of @clip-wallet/ui's security/text.ts (same logic, ids "m.security.*" in the mobile catalog).
+ * Mobile copy of @coldai/clip-wallet-ui's security/text.ts (same logic, ids "m.security.*" in the mobile catalog).
  * The security views are built in the background in English (the security package). Where a view carries
  * structured data or a stable code, the screen says it in the user's language from these helpers; anything without
  * one (an error the provider returned, a site warning) falls back to the background's own words.
  */
 import type { MobileMessageId as UiMessageId } from "../i18n";
-import { relativeTime, type CleanupItemView, type CleanupSummaryView, type GrantRisk, type GrantView, type ThreatProviderStatusView } from "@clip-wallet/ui";
+import { relativeTime, type CleanupItemView, type CleanupSummaryView, type GrantRisk, type GrantView, type ThreatProviderStatusView } from "@coldai/clip-wallet-ui";
 
 type T = (id: UiMessageId, vars?: Record<string, string | number>) => string;
 

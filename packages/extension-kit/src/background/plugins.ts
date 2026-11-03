@@ -18,7 +18,7 @@ import {
   type InstalledPlugin,
   type PluginInsight,
   type PluginNameResult,
-} from "@clip-wallet/plugins";
+} from "@coldai/clip-wallet-plugins";
 import type { KV } from "../shared/storage";
 
 export const PLUGIN_HOST_URL = "plugin-host.html";

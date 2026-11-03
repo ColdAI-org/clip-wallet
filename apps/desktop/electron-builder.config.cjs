@@ -1,10 +1,10 @@
 /**
- * electron-builder for Clip Wallet desktop: @clip-wallet/desktop-kit's electronBuilderConfig() from clip.config.ts
+ * electron-builder for Clip Wallet desktop: @coldai/clip-wallet-desktop-kit's electronBuilderConfig() from clip.config.ts
  * (app id, product name, executable and artifact names, deep-link scheme), with Clip Wallet's own icons rendered from
  * brand/ by tools/brand/render.mjs. Signing and notarization use electron-builder's standard environment variables
  * and are skipped when absent (see the kit's src/builder.ts). Auto-update metadata only for CLIP_UPDATES=1 builds.
  */
-const { electronBuilderConfig } = require("@clip-wallet/desktop-kit/builder");
+const { electronBuilderConfig } = require("@coldai/clip-wallet-desktop-kit/builder");
 
 const env = { CLIP_UPDATES_OWNER: "coldai", CLIP_UPDATES_REPO: "clip-wallet", ...process.env };
 

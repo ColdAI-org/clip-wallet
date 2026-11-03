@@ -1,13 +1,13 @@
 /** Settings → Security (permissions, cleanup, scam protection) and Clip Plugins (settings, install prompt, "From <plugin>" card). */
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { gunzipSync } from "node:zlib";
-import { PluginRegistry, PluginsService, type PluginInsight } from "@clip-wallet/plugins";
-import type { EnginePlugins } from "@clip-wallet/engine";
+import { PluginRegistry, PluginsService, type PluginInsight } from "@coldai/clip-wallet-plugins";
+import type { EnginePlugins } from "@coldai/clip-wallet-engine";
 import { Settings } from "../src/screens/Settings";
 import { Cleanup, Permissions, Protection, SecurityHome } from "../src/screens/Security";
 import { PluginSettings } from "../src/screens/Plugins";
 import { ApprovalScreen } from "../src/screens/Approval";
-import type { GrantView } from "@clip-wallet/ui";
+import type { GrantView } from "@coldai/clip-wallet-ui";
 import { eventually, renderWith, testWallet, type TestWalletOptions } from "./helpers";
 import { fakeRegistry, pluginTarball } from "./plugin-fixtures";
 import { PERMISSIONS } from "./security-fixtures";

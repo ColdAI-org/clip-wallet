@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/names",
+  "name": "@coldai/clip-wallet-names",
   "version": "0.1.0",
   "description": "Name resolution for Clip Wallet: ENS, SNS, HNS and Clip handles to an address and the network it implies",
   "keywords": [
@@ -55,7 +55,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "viem": "^2.57.2"
   },
   "devDependencies": {

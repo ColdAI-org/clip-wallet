@@ -12,7 +12,7 @@
  *
  * Results are cached (DISCOVER_TTL_MS) so opening Explore repeatedly doesn't hit the APIs.
  */
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 import type { KVLike } from "../contacts/store.js";
 import { DISCOVER_CHAINS, mainnetNetworkId, supportedChains, type DiscoverChain } from "./chains.js";
 import { verdictOf, type TokenRef, type TokenRiskSource } from "./risk.js";

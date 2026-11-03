@@ -1,5 +1,5 @@
 /** Parsing and validating dapp request params. Everything here throws ClipError with plain words. */
-import { ClipError, type ChainContext, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type ChainContext, type DappRequest } from "@coldai/clip-wallet-core";
 import { type Hex, type TypedDataDefinition, isAddress, isAddressEqual, isHex } from "viem";
 
 export interface TxParams {

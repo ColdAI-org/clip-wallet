@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/features": patch
+"@coldai/clip-wallet-features": patch
 ---
 
 SODAX swaps refuse an ExClip server that charges a fee of its own. Its `GET /api/exclip/config` must report SODAX

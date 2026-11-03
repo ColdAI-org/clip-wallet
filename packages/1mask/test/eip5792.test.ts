@@ -2,7 +2,7 @@
  * EIP-5792 / ERC-7682 in 1Mask: opt-in on the router and over WalletConnect, validation and error codes per spec,
  * and the backwards-compatibility promise (without `calls` nothing changes).
  */
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createMemoryPermissionStore, createOneMaskRouter, type CallsHost, type CallsStatus, type OneMaskRouterOptions } from "../src/background/index.js";
 import { createWalletConnectWallet, mapProposalNamespaces, type WalletKitLike, type WcSessionLike } from "../src/walletconnect/index.js";

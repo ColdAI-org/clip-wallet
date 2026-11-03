@@ -1,4 +1,4 @@
-import { connect } from "@clip-wallet/connect";
+import { connect } from "@coldai/clip-wallet-connect";
 
 const wallet = await connect({ families: ["solana"] });
 const solana = wallet.accounts.find((a) => a.startsWith("solana:"))!; // "solana:EtWT…:9xQe…" (devnet)

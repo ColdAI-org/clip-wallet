@@ -1,9 +1,9 @@
 // A host (the phone's background, Clip Desktop's main process) wiring the engine. Only host code may import the
 // vault; it builds `new ClipVault({ storage, argon2id })` with its own storage and passes it in.
-import type { ClipConfig } from "@clip-wallet/config";
-import { WalletEngine, createEngineClient, type KV } from "@clip-wallet/engine";
-import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import type { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { WalletEngine, createEngineClient, type KV } from "@coldai/clip-wallet-engine";
+import { createEngineDependencies } from "@coldai/clip-wallet-engine/wiring";
+import type { ClipVault, hashSignablePayload } from "@coldai/clip-wallet-vault";
 
 export function startEngine(host: {
   config: ClipConfig;
@@ -31,7 +31,7 @@ export function startEngine(host: {
     randomUUID: () => crypto.randomUUID(),
   });
   engine.start();
-  // What @clip-wallet/ui's screens talk to. Every message is validated with the engine's zod schema.
+  // What @coldai/clip-wallet-ui's screens talk to. Every message is validated with the engine's zod schema.
   return { engine, client: createEngineClient(engine, { subscribe: host.subscribe }) };
 }
 

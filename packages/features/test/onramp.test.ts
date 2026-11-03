@@ -1,4 +1,4 @@
-import { HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+import { HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
 import { describe, expect, it } from "vitest";
 import { BanxaOnRamp, C14OnRamp, MoonPayOnRamp } from "../src/onramp/providers.js";
 import { OnRampService } from "../src/onramp/service.js";

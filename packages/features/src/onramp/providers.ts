@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { fetchJson } from "../http.js";
 import type { Unavailable } from "../views.js";
 import type { ChainKey, OnRampProvider, OnRampRequest } from "./types.js";

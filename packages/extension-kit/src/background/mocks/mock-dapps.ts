@@ -1,11 +1,11 @@
 /**
- * MOCK 1Mask and WalletConnect. The real ones are @clip-wallet/1mask/background (createOneMaskRouter,
- * attached to runtime ports from the content script) and @clip-wallet/1mask/walletconnect
+ * MOCK 1Mask and WalletConnect. The real ones are @coldai/clip-wallet-1mask/background (createOneMaskRouter,
+ * attached to runtime ports from the content script) and @coldai/clip-wallet-1mask/walletconnect
  * (createWalletConnectWallet on Reown WalletKit). In dev builds, dapp requests come from the
  * "Developer (mock data)" buttons in Settings instead.
  */
-import type { SessionView } from "@clip-wallet/ui";
-import { ClipError } from "@clip-wallet/core";
+import type { SessionView } from "@coldai/clip-wallet-ui";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { DappConnector, DappHost, WalletConnectBridge } from "../wiring";
 
 export class MockDappConnector implements DappConnector {

@@ -1,4 +1,4 @@
-# @clip-wallet/chains-antelope
+# @coldai/clip-wallet-chains-antelope
 
 Antelope `ChainModule` for Clip Wallet: Vaulta (formerly EOS), Telos and XPR Network, with their testnets. One K1 key
 signs for all three. It builds, decodes and checks transactions in plain words and never touches keys: `prepare()`

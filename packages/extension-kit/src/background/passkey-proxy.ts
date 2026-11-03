@@ -12,9 +12,9 @@
  *
  * Only the PRF output crosses the bus; the vault wipes it after deriving the wrapping key.
  */
-import type { PasskeyCeremony } from "@clip-wallet/ui";
-import type { PasskeyPrf } from "@clip-wallet/vault";
-import { ClipError, withoutTrailing } from "@clip-wallet/core";
+import type { PasskeyCeremony } from "@coldai/clip-wallet-ui";
+import type { PasskeyPrf } from "@coldai/clip-wallet-vault";
+import { ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
 
 const TIMEOUT_MS = 3 * 60 * 1000;
 

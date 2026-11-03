@@ -1,6 +1,6 @@
 import { TokenDissociateTransaction, Transaction } from "@hiero-ledger/sdk";
 import { getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
-import type { Nft, TokenBalance } from "@clip-wallet/core";
+import type { Nft, TokenBalance } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { CleanupService, HIDE_NOTE } from "../src/cleanup/service.js";
 import { SecurityService } from "../src/background.js";

@@ -1,4 +1,4 @@
-# @clip-wallet/chains-bitcoin
+# @coldai/clip-wallet-chains-bitcoin
 
 The Bitcoin `ChainModule` for Clip Wallet: testnet4 and signet by default, native segwit and taproot, PSBT signing
 (sats-connect style), BIP-322 and BIP-137 messages and largest-first coin selection. It never touches keys: `prepare()`
@@ -10,14 +10,14 @@ warned about before they are spent.
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-bitcoin @clip-wallet/core
+npm i @coldai/clip-wallet-chains-bitcoin @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createBitcoinModule, BITCOIN_TESTNET4, networkById } from "@clip-wallet/chains-bitcoin";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createBitcoinModule, BITCOIN_TESTNET4, networkById } from "@coldai/clip-wallet-chains-bitcoin";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createBitcoinModule();
@@ -39,7 +39,7 @@ console.log(network.id, network.testnet); // a CAIP-2 id, true
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

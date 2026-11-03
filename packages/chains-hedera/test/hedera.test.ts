@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import { proto } from "@hiero-ledger/proto";
 import {
   AccountAllowanceApproveTransaction,

@@ -1,6 +1,6 @@
 # Linked devices
 
-`@clip-wallet/link` makes one wallet work across the browser extension, the phone and Clip Desktop: a phone or the
+`@coldai/clip-wallet-link` makes one wallet work across the browser extension, the phone and Clip Desktop: a phone or the
 desktop app as the signer for the extension, end-to-end encrypted settings sync, moving a wallet to another device,
 and "continue elsewhere" handoffs.
 

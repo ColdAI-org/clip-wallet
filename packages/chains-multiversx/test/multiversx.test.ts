@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { ClipError, type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { Address, Message, MessageComputer, Transaction, TransactionComputer, UserPublicKey } from "@multiversx/sdk-core";
 import {
   MULTIVERSX_DEVNET,

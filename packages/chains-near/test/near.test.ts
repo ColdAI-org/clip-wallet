@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest, attachMsgs } from "@clip-wallet/core";
+import { ClipError, type DappRequest, attachMsgs } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base58 } from "@scure/base";

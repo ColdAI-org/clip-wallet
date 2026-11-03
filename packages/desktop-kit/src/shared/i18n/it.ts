@@ -1,5 +1,5 @@
 /** Italian (same glossary as packages/ui/src/i18n/it: "tu", wallet, sbloccare / bloccare). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const it: Translation<DesktopMessages> = {

@@ -1,5 +1,5 @@
 /** Notification text (Korean). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type en from "./en.js";
 
 const messages: Translation<typeof en> = {

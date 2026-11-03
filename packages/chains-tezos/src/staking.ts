@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import type { PartialTezosOperation } from "./build.js";
 import { formatUnits, isTezosAddress, short } from "./encoding.js";
 import { xtzAsset } from "./networks.js";

@@ -1,10 +1,10 @@
 /**
- * NEAR (testnet): NEAR Wallet Selector v10 with Clip's module (@clip-wallet/kit-modules/near, the documented way a
+ * NEAR (testnet): NEAR Wallet Selector v10 with Clip's module (@coldai/clip-wallet-kit-modules/near, the documented way a
  * wallet joins the selector), signIn, NEP-413 signMessage verified with @near-js/crypto over the NEP-413 payload
  * hash, and a 1-yoctoNEAR Transfer to yourself via signAndSendTransaction.
  */
 import { setupWalletSelector } from "@near-wallet-selector/core";
-import { setupClipWallet } from "@clip-wallet/kit-modules/near";
+import { setupClipWallet } from "@coldai/clip-wallet-kit-modules/near";
 import { PublicKey } from "@near-js/crypto";
 import { MESSAGE, expose } from "../dapp-kit";
 
@@ -24,7 +24,7 @@ async function nep413Hash(message: string, nonce: Uint8Array, recipient: string)
 }
 
 expose({
-  info: { dapp: "@near-wallet-selector/core v10 + @clip-wallet/kit-modules/near in a local page, NEAR testnet", why: "the wallet-selector example is a Next.js app over this; NEAR Connect (no module) is covered by 1Mask's unit tests" },
+  info: { dapp: "@near-wallet-selector/core v10 + @coldai/clip-wallet-kit-modules/near in a local page, NEAR testnet", why: "the wallet-selector example is a Next.js app over this; NEAR Connect (no module) is covered by 1Mask's unit tests" },
   steps: {
     connect: async () => {
       selector = await setupWalletSelector({ network: "testnet", modules: [setupClipWallet()] });

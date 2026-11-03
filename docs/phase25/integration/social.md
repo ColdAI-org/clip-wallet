@@ -8,7 +8,7 @@ Tests use no network: real API responses are trimmed into fixtures.
 
 | Area | Where | Notes |
 |---|---|---|
-| Translation layer | `packages/i18n` (new) | ICU-subset messages, plurals, RTL, locale negotiation, locale-aware numbers and amount parsing. React bindings in `@clip-wallet/i18n/react`. No dependencies. |
+| Translation layer | `packages/i18n` (new) | ICU-subset messages, plurals, RTL, locale negotiation, locale-aware numbers and amount parsing. React bindings in `@coldai/clip-wallet-i18n/react`. No dependencies. |
 | UI strings | `packages/ui/src/i18n/{en,<locale>}/<namespace>.ts` | Every string in `packages/ui` goes through `t()`. The English catalog has 21 namespaces and 655 messages; mobile 332; notifications 15. Each was translated into 11 languages (about 11,000 messages), with a glossary comment at the top of each `<locale>/index.ts`. |
 | Mobile strings | `apps/mobile/src/i18n/{en,<locale>}/<namespace>.ts` | Every string in `apps/mobile/src` (screens, kit, app) goes through `t()`. |
 | Contacts | `packages/social/src/contacts` | `ContactBook`, sealed by the vault (`ClipVault.sealAppData("contacts")`, new). Exports `ContactLookup` for the security stream. |

@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/backup-client",
+  "name": "@coldai/clip-wallet-backup-client",
   "version": "0.1.0",
   "description": "Client for the Clip Wallet passkey backup service; moves opaque encrypted blobs, never keys",
   "keywords": [
@@ -66,7 +66,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*"
+    "@coldai/clip-wallet-core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

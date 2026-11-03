@@ -16,7 +16,7 @@
  *   scammer → धोखेबाज़, suspicious → संदिग्ध, publish → पब्लिश करें, Advanced mode → एडवांस्ड मोड,
  *   unreadable request → न पढ़ी जा सकने वाली रिक्वेस्ट, expire → समय-सीमा खत्म होना, verified → वेरिफ़ाइड.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { MobileMessages } from "../en";
 import common from "./common";
 import onboarding from "./onboarding";

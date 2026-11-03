@@ -1,5 +1,5 @@
-import { ClipError, type Family, say } from "@clip-wallet/core";
-import { queueSteps, type Step } from "@clip-wallet/features";
+import { ClipError, type Family, say } from "@coldai/clip-wallet-core";
+import { queueSteps, type Step } from "@coldai/clip-wallet-features";
 import type { SecurityConfig, SecurityHost } from "../host.js";
 import type { ApprovalsOverviewView, Unavailable } from "../views.js";
 import { EvmApprovals } from "./evm.js";

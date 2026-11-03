@@ -1,4 +1,4 @@
-import type { AssetRef, Nft, NetworkId, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, Nft, NetworkId, TokenBalance } from "@coldai/clip-wallet-core";
 import { short } from "./encoding.js";
 import { KNOWN_TOKENS, tokenAssetKey } from "./networks.js";
 import type { Tzkt } from "./rpc.js";

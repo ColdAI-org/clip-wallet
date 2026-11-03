@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { LOCALE_CODES, checkTranslation, loadCatalog, parseMessage } from "@clip-wallet/i18n";
+import { LOCALE_CODES, checkTranslation, loadCatalog, parseMessage } from "@coldai/clip-wallet-i18n";
 import { PROTECTED_TERMS, UI_CATALOGS } from "../src/i18n";
 import { en } from "../src/i18n/en";
 

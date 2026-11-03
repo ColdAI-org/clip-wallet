@@ -3,7 +3,7 @@
  * same, reviewed wording as the extension without bundling the whole UI catalog. The strings live in the
  * normal namespace files (src/i18n/<locale>/privacy.ts); this file only gathers them.
  */
-import type { Catalogs } from "@clip-wallet/i18n";
+import type { Catalogs } from "@coldai/clip-wallet-i18n";
 import en from "./en/privacy";
 import de from "./de/privacy";
 import fr from "./fr/privacy";

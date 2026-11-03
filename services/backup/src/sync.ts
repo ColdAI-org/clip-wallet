@@ -1,13 +1,13 @@
 /**
  * Settings sync endpoints (/v1/sync/*) on D1. The protocol, authentication and size caps live in
- * @clip-wallet/link/sync-server (handleSync); this file is the D1 store, Ed25519 verification with WebCrypto and
+ * @coldai/clip-wallet-link/sync-server (handleSync); this file is the D1 store, Ed25519 verification with WebCrypto and
  * rate limiting. The server only ever stores opaque record ids and XChaCha20-Poly1305 ciphertext.
  */
-import { handleSync, SyncHttpError, type SyncStore } from "@clip-wallet/link/sync-server";
+import { handleSync, SyncHttpError, type SyncStore } from "@coldai/clip-wallet-link/sync-server";
 import { RULES, enforce } from "./ratelimit.js";
 import { HttpError, readTextCapped, sha256Hex } from "./util.js";
 
-/** @clip-wallet/link SYNC_LIMITS.maxBodyBytes (not exported from the sync-server entry). */
+/** @coldai/clip-wallet-link SYNC_LIMITS.maxBodyBytes (not exported from the sync-server entry). */
 const SYNC_MAX_BODY_BYTES = 512 * 1024;
 
 export class D1SyncStore implements SyncStore {

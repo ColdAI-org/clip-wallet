@@ -1,10 +1,10 @@
 /**
  * Build-time settings. The wallet's validated clip.config comes from `virtual:clip-wallet/config`, which
- * withClipWallet() ("@clip-wallet/mobile-kit/metro") writes from the project's clip.config.ts with the build
+ * withClipWallet() ("@coldai/clip-wallet-mobile-kit/metro") writes from the project's clip.config.ts with the build
  * environment applied (and the icon inlined); tests alias it. EXPO_PUBLIC_* values are inlined by Expo's bundler at
  * build time; they are public identifiers, never secrets. Nothing here is logged.
  */
-import { platformIds, walletKey, type ClipConfig } from "@clip-wallet/config";
+import { platformIds, walletKey, type ClipConfig } from "@coldai/clip-wallet-config";
 // @ts-ignore: a virtual module, resolved by the host bundler (metro.cjs) or the test runner.
 import raw, { icon as rawIcon } from "virtual:clip-wallet/config";
 

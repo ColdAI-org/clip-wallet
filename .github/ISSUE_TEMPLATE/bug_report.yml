@@ -18,9 +18,9 @@ body:
         - Desktop app
         - Mobile app (iOS / Android)
         - A dapp connection (1Mask / WalletConnect)
-        - Clip Connect SDK (@clip-wallet/connect)
+        - Clip Connect SDK (@coldai/clip-wallet-connect)
         - create-clip-wallet / Scaffold-HBAR template
-        - A package (@clip-wallet/*)
+        - A package (@coldai/clip-wallet-*)
         - Docs
     validations:
       required: true

@@ -1,27 +1,27 @@
-# @clip-wallet/engine
+# @coldai/clip-wallet-engine
 
 The wallet's orchestration with no environment baked in: approvals, per-site permissions, the portfolio cache, send and
 receive (including the "network matters" question), activity, preferences, 1Mask and WalletConnect hosting, and
 passkey ceremonies. The same code runs in a React Native app, an Electron main process and tests.
 
-The engine never imports `@clip-wallet/vault`: the host builds the vault and passes it in with `hashPayload`. The root
-export is light (no chain SDKs); `@clip-wallet/engine/wiring` brings in the catalogue and the chain modules.
+The engine never imports `@coldai/clip-wallet-vault`: the host builds the vault and passes it in with `hashPayload`. The root
+export is light (no chain SDKs); `@coldai/clip-wallet-engine/wiring` brings in the catalogue and the chain modules.
 
 > Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
 ## Install
 
 ```sh
-npm i @clip-wallet/engine
+npm i @coldai/clip-wallet-engine
 ```
 
 ## Example
 
 ```ts
-import type { ClipConfig } from "@clip-wallet/config";
-import { MemoryKV, WalletEngine, createEngineClient } from "@clip-wallet/engine";
-import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import type { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { MemoryKV, WalletEngine, createEngineClient } from "@coldai/clip-wallet-engine";
+import { createEngineDependencies } from "@coldai/clip-wallet-engine/wiring";
+import type { ClipVault, hashSignablePayload } from "@coldai/clip-wallet-vault";
 
 // Host code: `vault` is the host's own ClipVault, built with its storage.
 export function startEngine(config: ClipConfig, vault: ClipVault, hash: typeof hashSignablePayload, openApproval: (id: string) => void) {
@@ -36,7 +36,7 @@ export function startEngine(config: ClipConfig, vault: ClipVault, hash: typeof h
     randomUUID: () => crypto.randomUUID(),
   });
   engine.start();
-  return createEngineClient(engine, { subscribe: () => () => undefined }); // what @clip-wallet/ui talks to
+  return createEngineClient(engine, { subscribe: () => () => undefined }); // what @coldai/clip-wallet-ui talks to
 }
 ```
 
@@ -52,7 +52,7 @@ senderOrigin)` wires a 1Mask port; `senderOrigin` must come from the host (brows
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

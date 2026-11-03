@@ -1,14 +1,14 @@
-# @clip-wallet/kit-modules
+# @coldai/clip-wallet-kit-modules
 
 Clip Wallet inside each ecosystem's own wallet picker, for pickers that list only the modules a dapp passes. Import
 only the subpath you need:
 
 | Subpath | For | Runs in | Talks to |
 |---|---|---|---|
-| `@clip-wallet/kit-modules/near` | NEAR Wallet Selector v10 (`setupClipWallet()`) | dapp | `window.clipwallet.near` |
-| `@clip-wallet/kit-modules/stellar` | Stellar Wallets Kit v2 (`new ClipWalletModule()`) | dapp | `window.clipwallet.stellar` (SEP-43) |
-| `@clip-wallet/kit-modules/algorand` | TxnLab use-wallet v5 (`clipWallet()`) | dapp | `window.clipwallet.algorand` |
-| `@clip-wallet/kit-modules/tezos` | Beacon / TZIP-10, wallet side | the wallet's background | 1Mask's Beacon page relay and Beacon's Matrix P2P |
+| `@coldai/clip-wallet-kit-modules/near` | NEAR Wallet Selector v10 (`setupClipWallet()`) | dapp | `window.clipwallet.near` |
+| `@coldai/clip-wallet-kit-modules/stellar` | Stellar Wallets Kit v2 (`new ClipWalletModule()`) | dapp | `window.clipwallet.stellar` (SEP-43) |
+| `@coldai/clip-wallet-kit-modules/algorand` | TxnLab use-wallet v5 (`clipWallet()`) | dapp | `window.clipwallet.algorand` |
+| `@coldai/clip-wallet-kit-modules/tezos` | Beacon / TZIP-10, wallet side | the wallet's background | 1Mask's Beacon page relay and Beacon's Matrix P2P |
 
 NEAR Connect needs no module: 1Mask answers its `near-selector-ready` event. Modules show the name and icon the
 installed wallet announces, so kit-built wallets appear as themselves; pass `globalKey` if a wallet injects under
@@ -19,7 +19,7 @@ another key.
 ## Install
 
 ```sh
-npm i @clip-wallet/kit-modules
+npm i @coldai/clip-wallet-kit-modules
 ```
 
 ## Example
@@ -27,7 +27,7 @@ npm i @clip-wallet/kit-modules
 ```ts
 // NEAR Wallet Selector
 import { setupWalletSelector } from "@near-wallet-selector/core";
-import { setupClipWallet } from "@clip-wallet/kit-modules/near";
+import { setupClipWallet } from "@coldai/clip-wallet-kit-modules/near";
 
 export const selector = await setupWalletSelector({ network: "testnet", modules: [setupClipWallet()] });
 ```
@@ -37,7 +37,7 @@ export const selector = await setupWalletSelector({ network: "testnet", modules:
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 import { Networks, type ModuleInterface } from "@creit.tech/stellar-wallets-kit/types";
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
 
 StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule() as unknown as ModuleInterface], network: Networks.TESTNET });
 ```
@@ -45,7 +45,7 @@ StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule() a
 ```ts
 // use-wallet v5
 import { NetworkId, WalletManager } from "@txnlab/use-wallet";
-import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+import { clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
 
 export const manager = new WalletManager({ wallets: [clipWallet()], defaultNetwork: NetworkId.TESTNET });
 ```
@@ -101,7 +101,7 @@ Peers, each optional (install the ones for your ecosystem): `@near-wallet-select
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

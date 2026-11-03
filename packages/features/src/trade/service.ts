@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest, WALLET_ORIGIN, msg, titled, type Msg, say } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest, WALLET_ORIGIN, msg, titled, type Msg, say } from "@coldai/clip-wallet-core";
 import {
   type SwapLeg,
   buildAssociate,
@@ -9,7 +9,7 @@ import {
   parseTransaction,
   resolvePayer,
   transactionIdString,
-} from "@clip-wallet/chains-hedera";
+} from "@coldai/clip-wallet-chains-hedera";
 import type { FeatureHost } from "../host.js";
 import { type Step, queueSteps } from "../steps.js";
 import { b64ToBytes, formatUnits, parseUnits } from "../util.js";

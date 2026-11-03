@@ -6,7 +6,7 @@
  *   Hedera   SaucerSwap's swap page (no documented token prefill)
  * Pure: no React Native imports, so it runs under vitest.
  */
-import type { DiscoverToken } from "@clip-wallet/social/views";
+import type { DiscoverToken } from "@coldai/clip-wallet-social/views";
 
 /** Wrapped SOL: what Jupiter sells by default (the user's SOL). */
 export const SOL_MINT = "So11111111111111111111111111111111111111112";

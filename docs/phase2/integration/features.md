@@ -1,15 +1,15 @@
 # Integration: features stream (HashPack parity)
 
 New in this stream:
-- `packages/features` (`@clip-wallet/features`)
+- `packages/features` (`@coldai/clip-wallet-features`)
 - `packages/ui/src/features/*`
 - `apps/extension/src/background/features.ts`
 - `apps/extension/src/shared/features-bus.ts`
 
 Small edits already on this branch, because the new files need them to compile:
-- `packages/ui/package.json`: dependency `@clip-wallet/features` (type-only use).
+- `packages/ui/package.json`: dependency `@coldai/clip-wallet-features` (type-only use).
 - `packages/ui/src/index.ts`: `export * from "./features";`
-- `apps/extension/package.json`: dependency `@clip-wallet/features`.
+- `apps/extension/package.json`: dependency `@coldai/clip-wallet-features`.
 
 Everything below is for the integration step. The edits were applied on a scratch copy and checked with
 `pnpm typecheck && pnpm test` (see the end of this file).
@@ -18,7 +18,7 @@ Everything below is for the integration step. The edits were applied on a scratc
 
 ```ts
 // imports
-import { FEATURE_REQUESTS, type FeatureResponseMap } from "@clip-wallet/features";
+import { FEATURE_REQUESTS, type FeatureResponseMap } from "@coldai/clip-wallet-features";
 
 // in `export const Request = z.discriminatedUnion("type", [ … ])`, after the devSimulateRequest entry:
   ...FEATURE_REQUESTS,
@@ -31,7 +31,7 @@ export interface ResponseMap extends FeatureResponseMap {
 
 ```ts
 // imports
-import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@clip-wallet/features";
+import { isFeatureRequest, type FeatureRequest, type FeaturesService } from "@coldai/clip-wallet-features";
 
 // field on WalletService
   private features?: FeaturesService;
@@ -81,13 +81,13 @@ import { createPriceFeed } from "./features";
 
 // WiringOptions: add
   /** Partner keys for features (from build env; never committed). */
-  features?: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
+  features?: import("@coldai/clip-wallet-features").FeaturesConfig & { coingeckoDemoKey?: string };
 ```
 
 Optional: also mark featured domains as verified in `KnownDappRegistry.lookup` (`real.ts`):
 
 ```ts
-import { isFeaturedOrigin } from "@clip-wallet/features";
+import { isFeaturedOrigin } from "@coldai/clip-wallet-features";
 // in lookup(), before `return name ? …`:
     const featured = isFeaturedOrigin(origin);
     if (!name && featured) return { name: featured.name, verified: true };
@@ -145,7 +145,7 @@ const FEATURES = {
 ```ts
 // src/env.d.ts, inside `declare global`
   /** Feature partner keys and switches (wxt.config.ts FEATURES). */
-  const __CLIP_FEATURES__: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
+  const __CLIP_FEATURES__: import("@coldai/clip-wallet-features").FeaturesConfig & { coingeckoDemoKey?: string };
 ```
 
 `__CLIP_FEATURES__` is read only in `main.ts`, so the extension's vitest setup needs no change.
@@ -233,5 +233,5 @@ Never add it to `packages/1mask/src/background/methods.ts`.
 A script applied the snippets above verbatim (anchors: the lines quoted in each section). Results:
 - `pnpm typecheck` passed for every package.
 - `pnpm test` passed: features 63, ui 45, extension 16, all other packages unchanged.
-- `pnpm --filter @clip-wallet/extension build` succeeded. The manifest's `host_permissions` include CoinGecko,
+- `pnpm --filter @coldai/clip-wallet-extension build` succeeded. The manifest's `host_permissions` include CoinGecko,
   Jupiter and 0x.

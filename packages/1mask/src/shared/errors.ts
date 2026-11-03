@@ -82,7 +82,7 @@ export function toRpcErrorShape(err: unknown): RpcErrorShape {
       const message = typeof e.message === "string" ? e.message : "Request failed.";
       return e.data === undefined ? { code: e.code, message } : { code: e.code, message, data: e.data };
     }
-    // ClipError from @clip-wallet/core: string code + userMessage.
+    // ClipError from @coldai/clip-wallet-core: string code + userMessage.
     if (typeof e.code === "string" && typeof e.userMessage === "string") {
       const rejected = /reject|denied|cancel/i.test(e.code);
       return { code: rejected ? RpcErrorCode.UserRejected : RpcErrorCode.Internal, message: e.userMessage };

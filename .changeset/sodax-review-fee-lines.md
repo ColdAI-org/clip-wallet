@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/features": patch
+"@coldai/clip-wallet-features": patch
 ---
 
 A SODAX swap's review keeps the Clip fee, who receives it, the minimum you get and where it arrives even when the

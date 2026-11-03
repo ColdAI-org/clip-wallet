@@ -24,7 +24,7 @@ const win = fakeWindow();
 const { Serializer, getSenderId } = await import("@airgap/beacon-core");
 const { PostMessageTransport } = await import("@airgap/beacon-transport-postmessage");
 const { getKeypairFromSeed, toHex } = await import("@airgap/beacon-utils");
-const { installTezosBeaconRelay } = await import("@clip-wallet/1mask/inpage/p2");
+const { installTezosBeaconRelay } = await import("@coldai/clip-wallet-1mask/inpage/p2");
 const { BEACON_ERROR, createBeaconExtensionPeer, createBeaconP2PWallet, mapBeaconRequest, DEFAULT_TEZOS_NETWORKS } = await import("../src/tezos/index.js");
 
 /** Beacon's dApp-side PostMessageClient (only reachable through PostMessageTransport). */

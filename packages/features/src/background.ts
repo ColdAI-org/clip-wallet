@@ -1,5 +1,5 @@
-import type { DappRequest, DecodedRequest } from "@clip-wallet/core";
-import { tokenAssetKey } from "@clip-wallet/chains-hedera";
+import type { DappRequest, DecodedRequest } from "@coldai/clip-wallet-core";
+import { tokenAssetKey } from "@coldai/clip-wallet-chains-hedera";
 import { featuredFor } from "./dapps/featured.js";
 import type { FeatureHost, FeaturesConfig } from "./host.js";
 import { saucerSwapPositions, uniswapPositions } from "./lp/readers.js";

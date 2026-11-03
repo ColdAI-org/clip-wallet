@@ -1,4 +1,4 @@
-import type { Account } from "@clip-wallet/core";
+import type { Account } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { Address, NETWORK, OutScript, RawWitness, Transaction, p2wpkh } from "@scure/btc-signer";
@@ -15,7 +15,7 @@ describe("BIP-84 / BIP-86 test vectors (abandon … about)", () => {
   it("paths", () => {
     expect(derivationPath(0, true)).toBe("m/84'/0'/0'/0/0");
     expect(derivationPathTaproot(2, true)).toBe("m/86'/0'/0'/0/2");
-    expect(derivationPath(3)).toBe("m/84'/1'/0'/0/3"); // testnet default, same as @clip-wallet/vault
+    expect(derivationPath(3)).toBe("m/84'/1'/0'/0/3"); // testnet default, same as @coldai/clip-wallet-vault
   });
   it("BIP-84 m/84'/0'/0'/0/0 → bc1qcr8te4…", () => {
     expect(segwitAddress(hex.decode("0330d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c"), MAIN)).toBe("bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu");

@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { computeGroupID, decodeUnsignedTransaction } from "algosdk";
 import { describe, expect, it } from "vitest";
 import { buildGroup, createAlgorandModule, decodeTxn, logicSigAddress, readAccount, readLocalState } from "../src/index.js";

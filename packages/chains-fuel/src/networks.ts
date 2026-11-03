@@ -1,4 +1,4 @@
-import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@clip-wallet/core";
+import { type AssetRef, type Network, type NetworkId, withoutTrailing } from "@coldai/clip-wallet-core";
 
 /**
  * Fuel networks (Fuel Ignition mainnet and the public Sepolia-anchored testnet).

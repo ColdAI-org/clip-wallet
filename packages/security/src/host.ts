@@ -1,5 +1,5 @@
-import type { Family, Nft } from "@clip-wallet/core";
-import type { FeatureHost } from "@clip-wallet/features";
+import type { Family, Nft } from "@coldai/clip-wallet-core";
+import type { FeatureHost } from "@coldai/clip-wallet-features";
 
 /** One thing in your history, as far as security checks care. */
 export interface HistoryEntry {

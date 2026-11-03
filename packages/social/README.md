@@ -1,4 +1,4 @@
-# @clip-wallet/social
+# @coldai/clip-wallet-social
 
 The wallet's social layer, as background services with no keys: an address book (contacts), Clip handles on Hedera
 (read through the JSON-RPC relay; registration is a normal approval), notifications, and Discover (market data for
@@ -10,13 +10,13 @@ assets you hold or watch). Hosts build a `SocialService`; screens use the views 
 ## Install
 
 ```sh
-npm i @clip-wallet/social
+npm i @coldai/clip-wallet-social
 ```
 
 ## Example
 
 ```ts
-import { isSocialRequest, type SocialService } from "@clip-wallet/social";
+import { isSocialRequest, type SocialService } from "@coldai/clip-wallet-social";
 
 // In the wallet's background: route the screens' social messages to the service.
 export function routeSocial(service: SocialService, message: { type: string }) {
@@ -32,7 +32,7 @@ export function routeSocial(service: SocialService, message: { type: string }) {
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

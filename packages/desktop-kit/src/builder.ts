@@ -2,7 +2,7 @@
  * The electron-builder config for a Clip Wallet desktop app, from clip.config.ts (https://www.electron.build/configuration):
  *
  *   // electron-builder.config.cjs
- *   const { electronBuilderConfig } = require("@clip-wallet/desktop-kit/builder");
+ *   const { electronBuilderConfig } = require("@coldai/clip-wallet-desktop-kit/builder");
  *   module.exports = electronBuilderConfig({ configFile: "../../clip.config.ts", root: __dirname });
  *
  *   macOS    dmg + zip, arm64 and x64; hardened runtime with build/entitlements.mac*.plist; icon build/icon.icns
@@ -21,8 +21,8 @@
  * @module
  */
 import { resolve } from "node:path";
-import { platformIds, type ClipConfig } from "@clip-wallet/config";
-import { loadClipConfigSync } from "@clip-wallet/config/node";
+import { platformIds, type ClipConfig } from "@coldai/clip-wallet-config";
+import { loadClipConfigSync } from "@coldai/clip-wallet-config/node";
 
 export interface BuilderOptions {
   /** The resolved clip.config (or give configFile). */

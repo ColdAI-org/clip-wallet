@@ -5,7 +5,7 @@
  * fixture balances.
  */
 import { afterEach, describe, expect, it } from "vitest";
-import type { ApprovalView } from "@clip-wallet/ui";
+import type { ApprovalView } from "@coldai/clip-wallet-ui";
 import { resetMockSettleCredits } from "../src/background/mocks/mock-settle";
 import { makeService, PASSWORD } from "./helpers";
 

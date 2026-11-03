@@ -35,17 +35,17 @@ Then add `"starknet"` and `"ton"` to `networks` in `apps/extension/clip.config.t
 ## 2. `apps/extension/package.json` dependencies
 
 ```json
-"@clip-wallet/chains-starknet": "workspace:*",
-"@clip-wallet/chains-ton": "workspace:*",
+"@coldai/clip-wallet-chains-starknet": "workspace:*",
+"@coldai/clip-wallet-chains-ton": "workspace:*",
 ```
 
 ## 3. `apps/extension/src/shared/catalog.ts`
 
-Imports, after the `@clip-wallet/chains-bitcoin` import:
+Imports, after the `@coldai/clip-wallet-chains-bitcoin` import:
 
 ```ts
-import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@clip-wallet/chains-starknet";
-import { TON_MAINNET, TON_TESTNET } from "@clip-wallet/chains-ton";
+import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@coldai/clip-wallet-chains-starknet";
+import { TON_MAINNET, TON_TESTNET } from "@coldai/clip-wallet-chains-ton";
 ```
 
 In `walletNetworks`, add these to the `all` array after `...BITCOIN_NETWORKS.filter(...)`:
@@ -72,11 +72,11 @@ TON has no curated testnet jettons. On mainnet, USD₮ shows up from balances.
 
 ## 4. `apps/extension/src/background/wiring.ts`
 
-Imports, after `import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";`:
+Imports, after `import { createBitcoinModule } from "@coldai/clip-wallet-chains-bitcoin";`:
 
 ```ts
-import { createStarknetModule } from "@clip-wallet/chains-starknet";
-import { createTonModule } from "@clip-wallet/chains-ton";
+import { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import { createTonModule } from "@coldai/clip-wallet-chains-ton";
 ```
 
 In the real-dependencies branch, replace the `chains:` line and the `dapps:` line:
@@ -102,9 +102,9 @@ The vault and the modules must agree:
 
 ```ts
 // imports
-import type { ChainModule } from "@clip-wallet/core";
-import type { createStarknetModule } from "@clip-wallet/chains-starknet";
-import type { createTonModule } from "@clip-wallet/chains-ton";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import type { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import type { createTonModule } from "@coldai/clip-wallet-chains-ton";
 
 // CONNECT_METHODS gains the two connect methods
 const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect", "wallet_requestAccounts", "tonconnect:connect"]);

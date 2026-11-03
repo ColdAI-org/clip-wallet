@@ -1,4 +1,4 @@
-import { type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { Checksum256, PublicKey, Signature as WkSignature } from "@wharfkit/antelope";
 import { beforeEach, describe, expect, it } from "vitest";
 import {

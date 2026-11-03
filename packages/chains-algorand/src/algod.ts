@@ -1,4 +1,4 @@
-import { ClipError, type ChainContext, includesInOrder } from "@clip-wallet/core";
+import { ClipError, type ChainContext, includesInOrder } from "@coldai/clip-wallet-core";
 import { IntDecoding, parseJSON } from "algosdk";
 import { specFor } from "./networks.js";
 

@@ -1,6 +1,6 @@
 /**
  * The engine's seams. Everything environment-specific is injected: the vault (constructed by the host,
- * the only place allowed to import @clip-wallet/vault), storage, timers, fetch and randomness, and the
+ * the only place allowed to import @coldai/clip-wallet-vault), storage, timers, fetch and randomness, and the
  * UI side effects (open an approval, tell screens to re-fetch).
  */
 import type {
@@ -17,11 +17,11 @@ import type {
   SignablePayload,
   TokenBalance,
   Warning,
-} from "@clip-wallet/core";
-import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
-import type { RouterPort } from "@clip-wallet/1mask/background";
+} from "@coldai/clip-wallet-core";
+import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@coldai/clip-wallet-ui";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 
-/** Passkey PRF the vault calls (same shape as @clip-wallet/vault's PasskeyPrf; restated so the engine stays vault-free). */
+/** Passkey PRF the vault calls (same shape as @coldai/clip-wallet-vault's PasskeyPrf; restated so the engine stays vault-free). */
 export interface PrfProvider {
   enroll(prfInput: Uint8Array): Promise<{ credentialId: Uint8Array; prfOutput: Uint8Array }>;
   evaluate(credentialId: Uint8Array, prfInput: Uint8Array): Promise<Uint8Array>;
@@ -164,7 +164,7 @@ export interface Dependencies {
    */
   requestNetworks?: Network[];
   /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
-  settleFunding?: import("@clip-wallet/route").SettleFunding | null;
+  settleFunding?: import("@coldai/clip-wallet-route").SettleFunding | null;
 }
 
 /** Side effects the engine needs from its host. */

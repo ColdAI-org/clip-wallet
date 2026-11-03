@@ -50,7 +50,7 @@ export class Cip30Error extends Error {
 
 type Kind = "api" | "signTx" | "signData" | "submitTx";
 
-/** Markers from @clip-wallet/chains-cardano's user messages (PROOF_GENERATION_MESSAGE, ADDRESS_NOT_PK_MESSAGE …). */
+/** Markers from @coldai/clip-wallet-chains-cardano's user messages (PROOF_GENERATION_MESSAGE, ADDRESS_NOT_PK_MESSAGE …). */
 const PROOF = /can't sign all of this transaction|isn't this account's|doesn't need your signature/i;
 const NOT_PK = /isn't controlled by a key/i;
 

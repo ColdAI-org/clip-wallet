@@ -6,8 +6,8 @@
  */
 import { useState } from "react";
 import { View } from "react-native";
-import type { Family } from "@clip-wallet/core";
-import { asPlatform, userMessageOf, type AccountView, type ActiveAccounts } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import { asPlatform, userMessageOf, type AccountView, type ActiveAccounts } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Field, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT } from "../i18n";

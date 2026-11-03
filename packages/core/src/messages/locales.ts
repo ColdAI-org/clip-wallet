@@ -2,7 +2,7 @@ import type { BgTranslation } from "./en/index.js";
 
 /**
  * Translations of BG_MESSAGES, loaded on demand (each is its own chunk; English needs none). Codes match
- * @clip-wallet/i18n's LOCALE_CODES. Consumers: the UI (approval screens, errors, activity) and the
+ * @coldai/clip-wallet-i18n's LOCALE_CODES. Consumers: the UI (approval screens, errors, activity) and the
  * notification watcher.
  */
 export const BG_LOCALE_LOADERS = {

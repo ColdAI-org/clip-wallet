@@ -2,15 +2,15 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ConfigError, MAINNET_ACKNOWLEDGEMENT, defineConfig, type ClipConfigInput } from "@clip-wallet/config";
-import { SONIC_RPC_URL } from "@clip-wallet/features";
+import { ConfigError, MAINNET_ACKNOWLEDGEMENT, defineConfig, type ClipConfigInput } from "@coldai/clip-wallet-config";
+import { SONIC_RPC_URL } from "@coldai/clip-wallet-features";
 import { clipWallet, sodaxFor } from "../src/wxt";
 
 // The committed list of reviewed fee receivers holds ColdAI LLC's address (features' tests pin it). Here a test can
 // add the fake receiver to it; everything else about the list is the real code.
 const reviewed = vi.hoisted(() => new Set<string>());
-vi.mock("@clip-wallet/features/sodax-fee", async (importOriginal) => {
-  const real = await importOriginal<typeof import("@clip-wallet/features/sodax-fee")>();
+vi.mock("@coldai/clip-wallet-features/sodax-fee", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@coldai/clip-wallet-features/sodax-fee")>();
   return { ...real, isReviewedFeeReceiver: (address: string) => reviewed.has(address.toLowerCase()) || real.isReviewedFeeReceiver(address) };
 });
 
@@ -73,7 +73,7 @@ describe("SODAX swaps in the extension build", () => {
     };
     expect(problems({ CLIP_SODAX_FEE_RECEIVER: FAKE_RECEIVER })).toEqual([
       "mainnet checklist: CLIP_SODAX_SERVER_URL: set the https base URL of the ExClip server that quotes SODAX swaps, or unset CLIP_SODAX_FEE_RECEIVER too",
-      `mainnet checklist: CLIP_SODAX_FEE_RECEIVER: ${FAKE_RECEIVER} isn't on the reviewed list of fee receivers (@clip-wallet/features src/swap/sodax-fee-receivers.json); add it there in a reviewed commit, or unset both SODAX settings`,
+      `mainnet checklist: CLIP_SODAX_FEE_RECEIVER: ${FAKE_RECEIVER} isn't on the reviewed list of fee receivers (@coldai/clip-wallet-features src/swap/sodax-fee-receivers.json); add it there in a reviewed commit, or unset both SODAX settings`,
     ]);
     expect(problems({ CLIP_SODAX_SERVER_URL: SERVER })).toEqual([
       "mainnet checklist: CLIP_SODAX_FEE_RECEIVER: set the 0x address the 0.875% Clip fee on SODAX swaps goes to, or unset CLIP_SODAX_SERVER_URL too",

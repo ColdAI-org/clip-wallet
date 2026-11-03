@@ -8,8 +8,8 @@
  * The providers talk to the preload's 1Mask content bridge over window.postMessage on a per-run random channel.
  * Nothing in this world is trusted: the main process sets the origin from the frame (onemask-relay.ts).
  */
-import { installOneMask } from "@clip-wallet/1mask/inpage";
-import type { InpageConfig } from "@clip-wallet/1mask";
+import { installOneMask } from "@coldai/clip-wallet-1mask/inpage";
+import type { InpageConfig } from "@coldai/clip-wallet-1mask";
 
 declare const __CLIP_BOOT__: {
   channel: string;

@@ -1,4 +1,4 @@
-# @clip-wallet/backup-client
+# @coldai/clip-wallet-backup-client
 
 Client for the optional Clip Wallet backup service (`services/backup`). It moves the opaque, passkey-encrypted blob the
 vault produces and the sign-in session; it never sees keys or the phrase. Google and Apple sign-in only find your
@@ -9,13 +9,13 @@ backups; they can't open them. Off unless `services.backupUrl` is set in clip.co
 ## Install
 
 ```sh
-npm i @clip-wallet/backup-client
+npm i @coldai/clip-wallet-backup-client
 ```
 
 ## Example
 
 ```ts
-import { BackupClient } from "@clip-wallet/backup-client";
+import { BackupClient } from "@coldai/clip-wallet-backup-client";
 
 const backup = new BackupClient({ baseUrl: "https://backup.example.com" });
 
@@ -35,7 +35,7 @@ export async function upload(email: string, pastedLink: () => Promise<string>, b
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

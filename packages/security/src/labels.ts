@@ -1,6 +1,6 @@
-import { KNOWN_APPS } from "@clip-wallet/chains-evm";
-import { SAUCERSWAP } from "@clip-wallet/chains-hedera";
-import { SAUCERSWAP_V2 } from "@clip-wallet/features";
+import { KNOWN_APPS } from "@coldai/clip-wallet-chains-evm";
+import { SAUCERSWAP } from "@coldai/clip-wallet-chains-hedera";
+import { SAUCERSWAP_V2 } from "@coldai/clip-wallet-features";
 
 /**
  * Plain names for spenders and operators. A name here means "we checked this address belongs to that app",

@@ -1,4 +1,4 @@
-# @clip-wallet/chains-xrpl
+# @coldai/clip-wallet-chains-xrpl
 
 XRP Ledger `ChainModule` for Clip Wallet. It builds, decodes and checks transactions in plain words and never
 touches keys: `prepare()` returns the 32-byte digest for the vault to sign (`ecdsa-secp256k1`), and `finalize()`

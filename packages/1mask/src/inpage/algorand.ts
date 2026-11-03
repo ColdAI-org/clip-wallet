@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { WalletIdentity } from "../shared/config.js";
 import { toRpcErrorShape } from "../shared/errors.js";
 import { ALGORAND_GENESIS, ALGORAND_INJECTED, algorandChainFromGenesisHash } from "../shared/p2-methods.js";
@@ -14,7 +14,7 @@ import type { InpageTransport } from "./transport.js";
  *    injected Algorand wallets such as Exodus expose and what TxnLab use-wallet's injected adapters call).
  *  - Errors carry ARC-0001 status codes: 4001 rejected, 4100 unauthorized, 4200 unsupported, 4202 not
  *    enabled, 4300 invalid input.
- * @clip-wallet/kit-modules/algorand wraps it as a use-wallet v5 adapter.
+ * @coldai/clip-wallet-kit-modules/algorand wraps it as a use-wallet v5 adapter.
  */
 
 /** ARC-0001 WalletTransaction. */

@@ -25,7 +25,7 @@ import {
   msg,
   titled,
   warning,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { Address, OutScript, SigHash, Transaction } from "@scure/btc-signer";

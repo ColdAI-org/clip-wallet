@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Antelope networks: Vaulta (formerly EOS), Telos and XPR Network, each with its testnet.

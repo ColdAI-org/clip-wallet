@@ -1,4 +1,4 @@
-import { ClipError, WALLET_ORIGIN } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { InputType, OutputType, ScriptTransactionRequest, Signer, hashMessage as fuelsHashMessage, transactionRequestify } from "fuels";
 import { describe, expect, it } from "vitest";
 import { FUEL_MAINNET, FUEL_METHODS, createFuelModule, encodeScriptTx, parseTransactionRequest, requiredMaxFee } from "../src/index.js";

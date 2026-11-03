@@ -1,5 +1,5 @@
 // Stand-in for Node's `crypto`, which `hdkey` (via @keystonehq/bc-ur-registry-eth, pulled in by the Keystone
-// SDK) requires at load time. The wallet's Keystone code derives public keys itself (@clip-wallet/hardware's
+// SDK) requires at load time. The wallet's Keystone code derives public keys itself (@coldai/clip-wallet-hardware's
 // bip32pub), so this is only here so Metro can bundle; the few calls hdkey can make are backed by @noble/hashes
 // so they give correct answers instead of crashing. Public-key math only: nothing here sees a private key.
 const { sha256, sha512 } = require("@noble/hashes/sha2.js");

@@ -7,7 +7,7 @@ import { ed25519 } from "@noble/curves/ed25519.js";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { cryptoWaitReady, sr25519Verify } from "@polkadot/util-crypto";
 import { ec as starkEc } from "starknet";
-import { FAMILIES, ClipError, type Family, type SignablePayload } from "@clip-wallet/core";
+import { FAMILIES, ClipError, type Family, type SignablePayload } from "@coldai/clip-wallet-core";
 import { ClipVault, MemoryStorage, hashSignablePayload, type ClipVaultOptions } from "../src/index.js";
 import { fromHex, toHex } from "../src/bytes.js";
 

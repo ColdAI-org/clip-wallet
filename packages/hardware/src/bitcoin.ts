@@ -6,7 +6,7 @@
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { Transaction, p2wpkh, NETWORK, TEST_NETWORK } from "@scure/btc-signer";
-import type { SignablePayload } from "@clip-wallet/core";
+import type { SignablePayload } from "@coldai/clip-wallet-core";
 import { equal, fromHex, toHex } from "./bytes.js";
 import { HardwareErrors } from "./errors.js";
 import { parsePath } from "./paths.js";

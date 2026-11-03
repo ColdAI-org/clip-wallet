@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { base58 } from "@scure/base";
 import { beforeEach, describe, expect, it } from "vitest";
 import {

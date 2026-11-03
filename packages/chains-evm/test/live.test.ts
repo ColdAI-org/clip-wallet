@@ -1,6 +1,6 @@
 /**
  * Optional live smoke test on Sepolia, read-only. Runs only with LIVE=1:
- *   LIVE=1 pnpm --filter @clip-wallet/chains-evm test
+ *   LIVE=1 pnpm --filter @coldai/clip-wallet-chains-evm test
  */
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";

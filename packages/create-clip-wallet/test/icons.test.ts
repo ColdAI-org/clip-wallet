@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { platformIds, defineConfig } from "@clip-wallet/config";
+import { platformIds, defineConfig } from "@coldai/clip-wallet-config";
 import {
   canvas,
   decodePng,

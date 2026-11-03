@@ -7,14 +7,14 @@
  * Ref Finance swaps (ft_transfer_call to the exchange with a swap message, see ref.ts).
  * Anything else is shown as "Call <method> on <contract>" with its JSON arguments; binary arguments are blind.
  */
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { type Action, type PublicKey, publicKeyToString, samePublicKey } from "./borsh.js";
 import { WRAP_CONTRACTS, isPool, nearAsset, networkName, poolName } from "./networks.js";
 import { checkRefRoute, isRefContract, parseRefSwapMsg } from "./ref.js";
 import type { NearRpc } from "./rpc.js";
 import { assetFor, ftMetadata } from "./tokens.js";
 import { formatUnits, hex, short } from "./util.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 export const TGAS = 10n ** 12n;
 export const YOCTO_PER_NEAR = 10n ** 24n;

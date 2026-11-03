@@ -1,7 +1,7 @@
 ---
-"@clip-wallet/ui": minor
-"@clip-wallet/mobile-kit": minor
-"@clip-wallet/features": patch
+"@coldai/clip-wallet-ui": minor
+"@coldai/clip-wallet-mobile-kit": minor
+"@coldai/clip-wallet-features": patch
 ---
 
 The swap quote shows the Clip fee on a SODAX swap before you review it: "Clip fee 0.875% · 0.875 USDC", with the

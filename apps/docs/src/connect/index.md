@@ -1,6 +1,6 @@
 # Clip Connect
 
-`@clip-wallet/connect` is the dapp side of Clip Wallet: a small, wallet-agnostic SDK for apps that want more than
+`@coldai/clip-wallet-connect` is the dapp side of Clip Wallet: a small, wallet-agnostic SDK for apps that want more than
 "connect and sign". It finds Clip Wallet first, falls back to any other wallet, and gives you one way to ask for money
 that lets a capable wallet bring it in from the person's other networks.
 
@@ -20,7 +20,7 @@ extras. See [Clip works with your dapp](../dapps/).
 ## Install
 
 ```sh
-npm i @clip-wallet/connect
+npm i @coldai/clip-wallet-connect
 ```
 
 Optional peers, only for the parts you use: `react` (hooks), `@wagmi/core` (the wagmi connector),
@@ -35,12 +35,12 @@ WalletConnect fallback).
 
 | Import | What |
 | --- | --- |
-| `@clip-wallet/connect` | [`connect()`](./connect.md), and on the connection [`request()`](./request.md), [`pay()`, `canPay()`, `balances()`](./pay.md), `capabilities()`, `on()`, `disconnect()`; CAIP and amount helpers |
-| `@clip-wallet/connect/react` | [`ClipConnectProvider`, `useClipConnect`, `usePay`, `useBalances`](./react.md) |
-| `@clip-wallet/connect/wagmi` | [`clipConnect()`](./wagmi.md), a wagmi connector that prefers Clip |
-| `@clip-wallet/connect/solana` | [`clipSolanaAdapter()`](./solana.md), a wallet-adapter adapter that prefers Clip |
+| `@coldai/clip-wallet-connect` | [`connect()`](./connect.md), and on the connection [`request()`](./request.md), [`pay()`, `canPay()`, `balances()`](./pay.md), `capabilities()`, `on()`, `disconnect()`; CAIP and amount helpers |
+| `@coldai/clip-wallet-connect/react` | [`ClipConnectProvider`, `useClipConnect`, `usePay`, `useBalances`](./react.md) |
+| `@coldai/clip-wallet-connect/wagmi` | [`clipConnect()`](./wagmi.md), a wagmi connector that prefers Clip |
+| `@coldai/clip-wallet-connect/solana` | [`clipSolanaAdapter()`](./solana.md), a wallet-adapter adapter that prefers Clip |
 
-Generated API reference: [`@clip-wallet/connect`](../reference/api/connect.md).
+Generated API reference: [`@coldai/clip-wallet-connect`](../reference/api/connect.md).
 
 ## What happens with each kind of wallet
 

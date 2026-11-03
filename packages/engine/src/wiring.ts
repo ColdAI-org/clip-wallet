@@ -1,38 +1,38 @@
 /**
  * Real dependencies from the packages, for any host. The host constructs the vault (only hosts may import
- * @clip-wallet/vault) and passes it with the vault's hashSignablePayload.
+ * @coldai/clip-wallet-vault) and passes it with the vault's hashSignablePayload.
  *
  * @module
  */
-import type { ChainModule, Family, SignablePayload } from "@clip-wallet/core";
-import type { ClipConfig } from "@clip-wallet/config";
-import { createEvmModule } from "@clip-wallet/chains-evm";
-import { MIRROR_NODE_URLS, createHederaModule } from "@clip-wallet/chains-hedera";
-import { SettleFunding, settleClientFor } from "@clip-wallet/route";
-import { isMainnetEnabled } from "@clip-wallet/config";
-import { createSolanaModule } from "@clip-wallet/chains-solana";
-import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-import { createSuiModule } from "@clip-wallet/chains-sui";
-import { createAptosModule } from "@clip-wallet/chains-aptos";
-import { createCardanoModule } from "@clip-wallet/chains-cardano";
-import { createSubstrateModule } from "@clip-wallet/chains-substrate";
-import { createCosmosModule } from "@clip-wallet/chains-cosmos";
-import { createTronModule } from "@clip-wallet/chains-tron";
-import { createMultiversXModule } from "@clip-wallet/chains-multiversx";
-import { createIcpModule } from "@clip-wallet/chains-icp";
-import { createStacksModule } from "@clip-wallet/chains-stacks";
-import { createFuelModule } from "@clip-wallet/chains-fuel";
-import { createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
-import { createXrplModule } from "@clip-wallet/chains-xrpl";
-import { createAntelopeModule } from "@clip-wallet/chains-antelope";
-import { createStarknetModule } from "@clip-wallet/chains-starknet";
-import { createTonModule } from "@clip-wallet/chains-ton";
-import { createNearModule } from "@clip-wallet/chains-near";
-import { createStellarModule } from "@clip-wallet/chains-stellar";
-import { createTezosModule } from "@clip-wallet/chains-tezos";
-import { createAlgorandModule } from "@clip-wallet/chains-algorand";
-import { BackupClient } from "@clip-wallet/backup-client";
-import { MultiNameResolver, type Backend as NameBackend } from "@clip-wallet/names";
+import type { ChainModule, Family, SignablePayload } from "@coldai/clip-wallet-core";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { createEvmModule } from "@coldai/clip-wallet-chains-evm";
+import { MIRROR_NODE_URLS, createHederaModule } from "@coldai/clip-wallet-chains-hedera";
+import { SettleFunding, settleClientFor } from "@coldai/clip-wallet-route";
+import { isMainnetEnabled } from "@coldai/clip-wallet-config";
+import { createSolanaModule } from "@coldai/clip-wallet-chains-solana";
+import { createBitcoinModule } from "@coldai/clip-wallet-chains-bitcoin";
+import { createSuiModule } from "@coldai/clip-wallet-chains-sui";
+import { createAptosModule } from "@coldai/clip-wallet-chains-aptos";
+import { createCardanoModule } from "@coldai/clip-wallet-chains-cardano";
+import { createSubstrateModule } from "@coldai/clip-wallet-chains-substrate";
+import { createCosmosModule } from "@coldai/clip-wallet-chains-cosmos";
+import { createTronModule } from "@coldai/clip-wallet-chains-tron";
+import { createMultiversXModule } from "@coldai/clip-wallet-chains-multiversx";
+import { createIcpModule } from "@coldai/clip-wallet-chains-icp";
+import { createStacksModule } from "@coldai/clip-wallet-chains-stacks";
+import { createFuelModule } from "@coldai/clip-wallet-chains-fuel";
+import { createBitcoinCashModule } from "@coldai/clip-wallet-chains-bitcoincash";
+import { createXrplModule } from "@coldai/clip-wallet-chains-xrpl";
+import { createAntelopeModule } from "@coldai/clip-wallet-chains-antelope";
+import { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import { createTonModule } from "@coldai/clip-wallet-chains-ton";
+import { createNearModule } from "@coldai/clip-wallet-chains-near";
+import { createStellarModule } from "@coldai/clip-wallet-chains-stellar";
+import { createTezosModule } from "@coldai/clip-wallet-chains-tezos";
+import { createAlgorandModule } from "@coldai/clip-wallet-chains-algorand";
+import { BackupClient } from "@coldai/clip-wallet-backup-client";
+import { MultiNameResolver, type Backend as NameBackend } from "@coldai/clip-wallet-names";
 import { KnownDappRegistry, OneMaskConnector, ReferencePriceFeed, RoutePlannerAdapter, WalletConnectAdapter, type WalletConnectAdapterOptions } from "./adapters.js";
 import { dappRequestNetworks, walletAssets, walletNetworks } from "./catalog.js";
 import { createPriceFeed } from "./features.js";

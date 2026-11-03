@@ -5,7 +5,7 @@
  *
  * It is wagmi's own `injected` connector pointed at Clip Wallet's EIP-6963 provider, falling back to another
  * announced wallet, then `window.ethereum`. wagmi's EIP-6963 discovery still lists every other wallet as usual; this
- * gives an app one "Connect" button that prefers Clip. Use @clip-wallet/connect's `connect()` (or the React hooks)
+ * gives an app one "Connect" button that prefers Clip. Use @coldai/clip-wallet-connect's `connect()` (or the React hooks)
  * on the same provider for pay() with auxiliary funds.
  *
  * @module

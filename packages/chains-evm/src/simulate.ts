@@ -4,7 +4,7 @@
  * logs into the permissions it would give. Falls back to eth_call + eth_estimateGas, which only
  * tells us whether the transaction would revert.
  */
-import type { BalanceChange, ChainContext } from "@clip-wallet/core";
+import type { BalanceChange, ChainContext } from "@coldai/clip-wallet-core";
 import { type Hex, decodeFunctionResult, encodeFunctionData, erc20Abi, hexToBigInt, isAddressEqual, numberToHex, pad, toEventSelector, zeroAddress } from "viem";
 import { ethCall, tokenMeta } from "./chain.js";
 import { RpcError, rpc } from "./rpc.js";

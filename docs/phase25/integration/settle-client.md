@@ -25,8 +25,8 @@ apps/ or packages/ui calls the settle client yet, so no wiring is needed to merg
    1Mask `familyForNetwork` hook instead.
 3. Background (`apps/extension/src/background/real.ts` or `wiring.ts`), next to the existing `createRouteClient`:
    ```ts
-   import { SETTLE_DEPLOYMENTS, settleOnHedera } from "@clip-wallet/route";
-   import { MIRROR_NODE_URLS } from "@clip-wallet/chains-hedera";
+   import { SETTLE_DEPLOYMENTS, settleOnHedera } from "@coldai/clip-wallet-route";
+   import { MIRROR_NODE_URLS } from "@coldai/clip-wallet-chains-hedera";
    const dep = SETTLE_DEPLOYMENTS.find((d) => d.network === (config.mainnet ? "mainnet" : "testnet"));
    const settle = dep
      ? settleOnHedera({ ...dep, mirrorNodeUrl: MIRROR_NODE_URLS[config.mainnet ? "mainnet" : "testnet"], coverAssets: [

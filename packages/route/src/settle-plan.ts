@@ -2,7 +2,7 @@
  * Phase 3: the settle client for this build (`settleClientFor`), and `settleFundingOption`, a one-line description of
  * the best Connector quote for a shortfall. Paying through a quote is ./settle-funding.ts (`SettleFunding`).
  */
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 import { SETTLE_DEPLOYMENTS, settleOnHedera, type CoverAssetConfig, type SettleOnHederaClient } from "./phase3.js";
 import type { Shortfall } from "./types.js";
 

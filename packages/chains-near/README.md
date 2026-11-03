@@ -1,4 +1,4 @@
-# @clip-wallet/chains-near
+# @coldai/clip-wallet-chains-near
 
 The NEAR `ChainModule` for Clip Wallet. It builds, decodes and broadcasts NEAR transactions and NEP-413 messages,
 and it never touches keys. `prepare()` returns what the vault signs (ed25519): `sha256(borsh(Transaction))` for
@@ -14,14 +14,14 @@ independently with `@near-js/transactions` 2.5.1.
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-near @clip-wallet/core
+npm i @coldai/clip-wallet-chains-near @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createNearModule, NEAR_TESTNET } from "@clip-wallet/chains-near";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createNearModule, NEAR_TESTNET } from "@coldai/clip-wallet-chains-near";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createNearModule();
@@ -206,7 +206,7 @@ Titles and lines are in plain language. The fee is `estimated gas × gas_price`,
 
 ## Ref Finance swaps (`src/ref.ts`)
 
-Helpers for wallet-built swaps on Ref Finance (now branded Rhea), used by `@clip-wallet/features` (`RefFinanceSwap`):
+Helpers for wallet-built swaps on Ref Finance (now branded Rhea), used by `@coldai/clip-wallet-features` (`RefFinanceSwap`):
 
 - `REF_CONTRACTS`: mainnet `v2.ref-finance.near`, testnet `ref-finance-101.testnet` (ref-sdk `src/constant.ts`; the
   exchange's `metadata` view on 2026-10-03: version 1.9.20 / 1.9.19, state `Running`, `wnear_id` `wrap.near` /
@@ -269,7 +269,7 @@ Helpers for wallet-built swaps on Ref Finance (now branded Rhea), used by `@clip
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

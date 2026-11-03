@@ -1,4 +1,4 @@
-# @clip-wallet/core
+# @coldai/clip-wallet-core
 
 The shared contract between Clip Wallet packages: networks and assets, accounts, the `Vault` and `ChainModule`
 interfaces, `DappRequest` → `DecodedRequest`, `SignablePayload`, warning and error codes, and `ClipError` (a plain-words
@@ -12,13 +12,13 @@ minor version.
 ## Install
 
 ```sh
-npm i @clip-wallet/core
+npm i @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import { ClipError, FAMILIES, displaySafe, errorMsg, type DecodedRequest } from "@clip-wallet/core";
+import { ClipError, FAMILIES, displaySafe, errorMsg, type DecodedRequest } from "@coldai/clip-wallet-core";
 
 console.log(FAMILIES.length); // 14 network families
 
@@ -43,7 +43,7 @@ export function titleOf(decoded: DecodedRequest): string {
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

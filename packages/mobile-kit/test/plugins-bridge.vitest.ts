@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
-import { LIMITS } from "@clip-wallet/plugins";
+import { LIMITS } from "@coldai/clip-wallet-plugins";
 import { SANDBOX_URL, allowSandboxLoad, decodeFromSandbox, encodeForSandbox } from "../src/plugins/protocol";
 import { createWebViewChannels } from "../src/plugins/channels";
 import { PLUGIN_SANDBOX_CSP, PLUGIN_SANDBOX_HTML, PLUGIN_SANDBOX_JS } from "../src/plugins/sandbox.generated";

@@ -16,9 +16,9 @@ minified by Vite (through WXT), so AMO asks for the sources; nothing in the pack
 From the root of this archive:
 
 ```sh
-pnpm install --frozen-lockfile --filter "@clip-wallet/extension..."
+pnpm install --frozen-lockfile --filter "@coldai/clip-wallet-extension..."
 SOURCE_DATE_EPOCH=<the value from the release's BUILD-INFO, or the commit time> \
-  pnpm --filter @clip-wallet/extension package --no-source
+  pnpm --filter @coldai/clip-wallet-extension package --no-source
 ```
 
 Or, to build just the Firefox package without zipping:

@@ -2,7 +2,7 @@
  * Clip Wallet for NEAR Wallet Selector (@near-wallet-selector/core v10), as an injected-wallet module:
  *
  *   import { setupWalletSelector } from "@near-wallet-selector/core";
- *   import { setupClipWallet } from "@clip-wallet/kit-modules/near";
+ *   import { setupClipWallet } from "@coldai/clip-wallet-kit-modules/near";
  *   const selector = await setupWalletSelector({ network: "testnet", modules: [setupClipWallet()] });
  *
  * It talks to the provider 1Mask injects at `window.clipwallet.near` (packages/1mask/src/inpage/near.ts).

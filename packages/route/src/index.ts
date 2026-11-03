@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/route — "Route and fund".
+ * @coldai/clip-wallet-route — "Route and fund".
  *
  * Phase 1: pay on Hedera from any EVM network with a CLPRouter (CLPR proofs only run chain -> Hedera today).
  *  - findShortfall: what a request needs that the user doesn't hold where it's needed.

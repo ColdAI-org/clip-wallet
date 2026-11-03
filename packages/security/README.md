@@ -1,4 +1,4 @@
-# @clip-wallet/security
+# @coldai/clip-wallet-security
 
 The security features people expect from a modern wallet, as background services. Pure logic, no keys: every action
 is a `DappRequest` on the normal approval path (decode, approve, vault signs). Screens live in
@@ -16,7 +16,7 @@ is a `DappRequest` on the normal approval path (decode, approve, vault signs). S
 ## Install
 
 ```sh
-npm i @clip-wallet/security
+npm i @coldai/clip-wallet-security
 ```
 
 ## Example
@@ -24,7 +24,7 @@ npm i @clip-wallet/security
 The security floor has no switch. A mainnet configuration that tries to lower it is refused:
 
 ```ts
-import { securityFloorProblems } from "@clip-wallet/security";
+import { securityFloorProblems } from "@coldai/clip-wallet-security";
 
 console.log(securityFloorProblems({ testnet: false, threat: { openLists: false } }));
 // ["threat.openLists: the open phishing lists can't be switched off on mainnet"]
@@ -46,7 +46,7 @@ console.log(securityFloorProblems({ testnet: false, threat: { openLists: false }
 | Permission scan | Your address goes to the same RPC / Blockscout / Hedera mirror node / Solana RPC the wallet already uses for balances. Nothing goes to a third party. |
 | Blockaid | **Off unless an API key is configured.** When on, the site, the full transaction and your address go to `api.blockaid.io` for every request you review. Settings → Security says so. |
 
-Warning codes added to `@clip-wallet/core` (additive): `phishing-site`, `address-poisoning`,
+Warning codes added to `@coldai/clip-wallet-core` (additive): `phishing-site`, `address-poisoning`,
 `malicious-transaction`. New contracts reuse `new-recipient` (caution).
 
 ## Verified sources (2026-10-03)
@@ -112,7 +112,7 @@ Warning codes added to `@clip-wallet/core` (additive): `phishing-site`, `address
 
 ## Tests
 
-`pnpm --filter @clip-wallet/security test`: fixtures and mocked fetch only. No keys and no signing. The tests
+`pnpm --filter @coldai/clip-wallet-security test`: fixtures and mocked fetch only. No keys and no signing. The tests
 check list parsing and matching, caching and refresh, the privacy contract (which requests carry your address),
 Blockaid on and off, the heuristics, the permission scan for each family (Blockscout, the `eth_getLogs`
 fallback, Solana and the Hedera mirror), the revoke transactions (decoded back from their bytes), and cleanup
@@ -121,7 +121,7 @@ fallback, Solana and the Hedera mirror), the revoke transactions (decoded back f
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

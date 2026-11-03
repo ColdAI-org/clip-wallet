@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Substrate networks. CAIP-2 (ChainAgnostic namespaces, polkadot/caip2.md): `polkadot:` + the first 32 hex

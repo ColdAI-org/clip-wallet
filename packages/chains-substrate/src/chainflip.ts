@@ -13,8 +13,8 @@
  *  - Fees are burned from `Flip.Account.balance`, bond included (cf-flip on_charge_transaction.rs `try_debit`),
  *    while redemptions can only take the liquid part (`balance - bond`, `FlipAccount::liquid`).
  */
-import type { AssetRef, BalanceChange, Warning } from "@clip-wallet/core";
-import { knownMsg, recallMsg, say } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, Warning } from "@coldai/clip-wallet-core";
+import { knownMsg, recallMsg, say } from "@coldai/clip-wallet-core";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base58, createBase58check } from "@scure/base";

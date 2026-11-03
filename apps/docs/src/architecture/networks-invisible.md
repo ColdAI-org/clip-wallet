@@ -29,13 +29,13 @@ with the real thing, because it isn't the same claim on the same issuer.
 
 The first two share the key `usdc` and become one "USDC" row; the bridged copy keeps its own row.
 
-The keys come from each chain package's token tables (`CURATED_TOKENS` in `@clip-wallet/chains-evm`, the Hedera,
+The keys come from each chain package's token tables (`CURATED_TOKENS` in `@coldai/clip-wallet-chains-evm`, the Hedera,
 Solana, Sui, Aptos, NEAR, Stellar and Algorand USDC tables) and are assembled per wallet by the catalogue in
 [`packages/engine/src/catalog.ts`](repo:packages/engine/src/catalog.ts), filtered by the networks in `clip.config.ts`.
 
 ## Merged balances
 
-Home shows one row per key. `mergeBalances()` from `@clip-wallet/ui` sums the parts (scaling to the largest decimals),
+Home shows one row per key. `mergeBalances()` from `@coldai/clip-wallet-ui` sums the parts (scaling to the largest decimals),
 adds up the fiat values, keeps bridged copies apart, and hides spam and small balances when asked:
 
 <<< @/snippets/arch/merged-balances.ts

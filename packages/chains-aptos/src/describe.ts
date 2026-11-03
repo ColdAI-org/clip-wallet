@@ -1,4 +1,4 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import {
   type AnyRawTransaction,
   type EntryFunction,
@@ -16,7 +16,7 @@ import { sha3_256 } from "@noble/hashes/sha3.js";
 import { APT_METADATA, aptAsset, assetKey, isApt, longAddress } from "./networks.js";
 import { AptosApiError, type AptosRest, plainAptosError } from "./rest.js";
 import { formatUnits, fromHex, short } from "./util.js";
-import { say, recallMsg, knownMsg, withFallback } from "@clip-wallet/core";
+import { say, recallMsg, knownMsg, withFallback } from "@coldai/clip-wallet-core";
 
 export type Role = "sender" | "secondary" | "feePayer";
 

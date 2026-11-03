@@ -1,6 +1,6 @@
 import "../shared/globals";
 import "@fontsource-variable/inter";
-import "@clip-wallet/desktop-kit/browser.css";
+import "@coldai/clip-wallet-desktop-kit/browser.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserChrome } from "./BrowserChrome";

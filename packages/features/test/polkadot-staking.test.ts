@@ -1,4 +1,4 @@
-import { PASEO_ASSET_HUB, POLKADOT_ASSET_HUB, WESTEND, WESTEND_ASSET_HUB, Enum, createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { PASEO_ASSET_HUB, POLKADOT_ASSET_HUB, WESTEND, WESTEND_ASSET_HUB, Enum, createSubstrateModule } from "@coldai/clip-wallet-chains-substrate";
 import { describe, expect, it } from "vitest";
 import { StakingService } from "../src/staking/service.js";
 import { POLKADOT_STAKING_KEYS, PolkadotStaking, poolName, polkadotStakingProviders, rankPools } from "../src/staking/polkadot.js";

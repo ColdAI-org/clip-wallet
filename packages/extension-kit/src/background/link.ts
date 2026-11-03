@@ -1,5 +1,5 @@
 /**
- * Linked devices in the service worker (new file, r1/connect stream): the LinkService from @clip-wallet/link with
+ * Linked devices in the service worker (new file, r1/connect stream): the LinkService from @coldai/clip-wallet-link with
  *   - the phone as signer over the Clip Link relay (config.services.linkRelayUrl),
  *   - Clip Desktop as signer over native messaging (runtime.connectNative; the optional "nativeMessaging"
  *     permission is asked for from the page, when the person taps "Use Clip Desktop"),
@@ -12,11 +12,11 @@
  * messaging port (Chrome 105+). The relay channel sends a keep-alive every 20 s while a phone session is open.
  */
 import { browser } from "wxt/browser";
-import type { Family } from "@clip-wallet/core";
-import { LinkService, NativePortChannel, contactsSource, nativeHostName, walletSources, type LinkVault, type NativePortLike } from "@clip-wallet/link";
-import type { LinkRequest } from "@clip-wallet/link/messages";
-import { CONTACTS_KEY, encryptedContactStore } from "@clip-wallet/social/contacts";
-import type { Notifier } from "@clip-wallet/social";
+import type { Family } from "@coldai/clip-wallet-core";
+import { LinkService, NativePortChannel, contactsSource, nativeHostName, walletSources, type LinkVault, type NativePortLike } from "@coldai/clip-wallet-link";
+import type { LinkRequest } from "@coldai/clip-wallet-link/messages";
+import { CONTACTS_KEY, encryptedContactStore } from "@coldai/clip-wallet-social/contacts";
+import type { Notifier } from "@coldai/clip-wallet-social";
 import type { KV } from "../shared/storage";
 
 export const LINK_SYNC_ALARM = "clip-link-sync";

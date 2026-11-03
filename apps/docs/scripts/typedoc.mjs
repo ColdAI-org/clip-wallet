@@ -2,9 +2,9 @@
  * The API reference: TypeDoc over every export of every published package (packages/*, not private), rendered to
  * VitePress Markdown by typedoc-plugin-markdown + typedoc-vitepress-theme into src/reference/api.
  *
- * One module per package export, named by its import path ("@clip-wallet/connect/react") and filed under
- * reference/api/<package>/<subpath>. The vendored CLPRouter planner internals in @clip-wallet/route are left out:
- * they are documented upstream in the CLPRouter SDK, and dapps and wallets use @clip-wallet/route's own API.
+ * One module per package export, named by its import path ("@coldai/clip-wallet-connect/react") and filed under
+ * reference/api/<package>/<subpath>. The vendored CLPRouter planner internals in @coldai/clip-wallet-route are left out:
+ * they are documented upstream in the CLPRouter SDK, and dapps and wallets use @coldai/clip-wallet-route's own API.
  */
 import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, sep } from "node:path";
@@ -15,7 +15,7 @@ const SKIP_PACKAGES = new Set(["create-clip-wallet"]);
 /** Source files whose declarations stay out of the reference (see the header). */
 const OMIT_SOURCES = [/packages\/route\/src\/vendor\//];
 /** Exports omitted by name, as "<module>#<name>". */
-const OMIT_EXPORTS = new Set(["@clip-wallet/config#TRUST_TIERS", "@clip-wallet/route#TrustTier"]);
+const OMIT_EXPORTS = new Set(["@coldai/clip-wallet-config#TRUST_TIERS", "@coldai/clip-wallet-route#TrustTier"]);
 
 /**
  * Wording the reference renders differently from the source comments. The trust-tier union is shown by its name
@@ -83,7 +83,7 @@ async function fixAnchors(files, srcDir) {
   return fixed;
 }
 
-/** Every published export: { spec: "@clip-wallet/connect/react", file, slug: "connect/react" }. */
+/** Every published export: { spec: "@coldai/clip-wallet-connect/react", file, slug: "connect/react" }. */
 export function publishedEntries(root) {
   const out = [];
   for (const dir of readdirSync(join(root, "packages")).sort()) {
@@ -94,7 +94,7 @@ export function publishedEntries(root) {
     for (const [sub, target] of Object.entries(pj.exports ?? {})) {
       const rel = typeof target === "string" ? target : target.development;
       if (!rel || !/\.tsx?$/.test(rel)) continue;
-      const short = pj.name.replace(/^@clip-wallet\//, "");
+      const short = pj.name.replace(/^@coldai\/clip-wallet-/, "");
       const subpath = sub === "." ? "" : sub.slice(2);
       out.push({ spec: subpath ? `${pj.name}/${subpath}` : pj.name, file: join(root, "packages", dir, rel), slug: subpath ? `${short}/${subpath}` : short });
     }

@@ -15,7 +15,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
-import { LANGUAGES, MAINNET_ACKNOWLEDGEMENT, WALLETCONNECT_ENV, isPlaceholderRdns, mainnetProblems, platformIds, validateConfig, walletKey } from "@clip-wallet/config";
+import { LANGUAGES, MAINNET_ACKNOWLEDGEMENT, WALLETCONNECT_ENV, isPlaceholderRdns, mainnetProblems, platformIds, validateConfig, walletKey } from "@coldai/clip-wallet-config";
 import {
   CHECKLIST_FILE,
   CONFIG_FILE,

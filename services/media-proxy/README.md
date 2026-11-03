@@ -7,7 +7,7 @@ untrusted URL itself. Deployed for testnet builds at `https://clip-media-proxy.d
 GET /v1/media?src=<canonical source>&kind=image|video
 ```
 
-Build URLs with `mediaProxyUrl(base, rawUrl)` from [`@clip-wallet/media-client`](../../packages/media-client);
+Build URLs with `mediaProxyUrl(base, rawUrl)` from [`@coldai/clip-wallet-media-client`](../../packages/media-client);
 the Worker re-validates with the same code (`parseProxyQuery`), so the two can't disagree.
 
 ## What it enforces
@@ -19,7 +19,7 @@ the Worker re-validates with the same code (`parseProxyQuery`), so the two can't
   spelling the URL parser accepts: `127.1`, `0x7f.0.0.1`, `2130706433`), IPv6 literals, single-label hosts, and
   special-use or private-use names (`localhost`, `.local`, `.internal`, `.arpa`/`.home.arpa`, `.test`, `.invalid`,
   `.onion`, `.alt`, `.lan`, `.home`, `.corp`, `.intranet`, `.private`). Hosts are parsed with the WHATWG URL parser
-  and compared as addresses or by labels (`parseHost` / `isBlockedHost` in `@clip-wallet/media-client`), never as
+  and compared as addresses or by labels (`parseHost` / `isBlockedHost` in `@coldai/clip-wallet-media-client`), never as
   strings.
 - **Redirects:** followed by hand (`redirect: "manual"`), at most 3, and every hop is re-validated with the
   same rules, so a public URL can't bounce to `169.254.169.254`, a private address or a `.lan` name.
@@ -43,7 +43,7 @@ the Worker re-validates with the same code (`parseProxyQuery`), so the two can't
 
 ## Tests
 
-`pnpm --filter @clip-wallet/service-media-proxy test` (workerd via `@cloudflare/vitest-pool-workers` 0.22; upstream
+`pnpm --filter @coldai/clip-wallet-service-media-proxy test` (workerd via `@cloudflare/vitest-pool-workers` 0.22; upstream
 fetch injected, nothing leaves the machine). 20 tests: headers stripped, gateways, SVG CSP, type sniffing,
 size caps (declared and streamed), redirect SSRF, redirect limit, error mapping, rate limit, cache.
 

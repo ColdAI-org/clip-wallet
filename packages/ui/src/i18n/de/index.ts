@@ -17,7 +17,7 @@
  *   Activity → Aktivität, Settings → Einstellungen, pin / unpin → anheften / loslösen, QR code → QR-Code, device → Gerät,
  *   (this) build → (diese) Version. Apple Account stays verbatim (Apple's product name, der Account).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

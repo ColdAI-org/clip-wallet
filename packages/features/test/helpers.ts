@@ -1,6 +1,6 @@
-import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Network, TokenBalance } from "@clip-wallet/core";
-import { HEDERA_TESTNET, aliasAddress, clearMirrorCache } from "@clip-wallet/chains-hedera";
-import { SOLANA_DEVNET, SOLANA_MAINNET } from "@clip-wallet/chains-solana";
+import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Network, TokenBalance } from "@coldai/clip-wallet-core";
+import { HEDERA_TESTNET, aliasAddress, clearMirrorCache } from "@coldai/clip-wallet-chains-hedera";
+import { SOLANA_DEVNET, SOLANA_MAINNET } from "@coldai/clip-wallet-chains-solana";
 import { vi } from "vitest";
 import type { FeatureHost } from "../src/host.js";
 

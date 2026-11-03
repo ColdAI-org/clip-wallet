@@ -1,4 +1,4 @@
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 import {
   AccountAddress,
   AccountAuthenticatorEd25519,

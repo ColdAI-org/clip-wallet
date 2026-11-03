@@ -1,4 +1,4 @@
-import { ClipError, type Signature } from "@clip-wallet/core";
+import { ClipError, type Signature } from "@coldai/clip-wallet-core";
 import {
   type Hex,
   bytesToHex,

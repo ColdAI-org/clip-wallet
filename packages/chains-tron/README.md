@@ -1,4 +1,4 @@
-# @clip-wallet/chains-tron
+# @coldai/clip-wallet-chains-tron
 
 TRON `ChainModule` for Clip Wallet. It builds and decodes TRON transactions with hand-written protobuf (no TronWeb,
 no protobuf runtime) and never touches keys. `prepare()` returns the 32-byte digest the vault signs (`txID` =

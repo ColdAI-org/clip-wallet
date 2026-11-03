@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/chains-evm": patch
-"@clip-wallet/chains-hedera": patch
+"@coldai/clip-wallet-chains-evm": patch
+"@coldai/clip-wallet-chains-hedera": patch
 ---
 
 EVM: multicall(bytes[]), multicall(uint256,bytes[]), aggregate3 and the Universal Router's execute are read step by

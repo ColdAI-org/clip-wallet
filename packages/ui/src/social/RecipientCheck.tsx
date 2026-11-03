@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { useAsync } from "../context";
 import { IconAlert } from "../components/icons";
 import { useUiT } from "../i18n";

@@ -1,4 +1,4 @@
-import type { Family, Network, NetworkId } from "@clip-wallet/core";
+import type { Family, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Network helpers. 1Mask never invents networks: everything here is derived from the

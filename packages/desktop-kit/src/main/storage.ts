@@ -14,8 +14,8 @@
  */
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { KV } from "@clip-wallet/engine";
-import type { VaultStorage } from "@clip-wallet/vault";
+import type { KV } from "@coldai/clip-wallet-engine";
+import type { VaultStorage } from "@coldai/clip-wallet-vault";
 
 /** The slice of Electron's safeStorage used here (injected so tests run without Electron). */
 export interface SafeStorageLike {

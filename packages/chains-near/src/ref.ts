@@ -16,7 +16,7 @@
  * Before the swap the account must be registered (NEP-145 storage_deposit) with the output token, and with
  * wrap.near when NEAR is wrapped first (`near_deposit`, which needs registration too).
  */
-import type { NetworkId } from "@clip-wallet/core";
+import type { NetworkId } from "@coldai/clip-wallet-core";
 import { type NearNetworkName, WRAP_CONTRACTS, networkName } from "./networks.js";
 
 const TGAS = 10n ** 12n;

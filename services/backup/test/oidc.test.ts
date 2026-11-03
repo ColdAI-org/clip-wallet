@@ -1,7 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { BackupClient, BLOB_MIN_BYTES, sha256b64url } from "@clip-wallet/backup-client";
+import { BackupClient, BLOB_MIN_BYTES, sha256b64url } from "@coldai/clip-wallet-backup-client";
 import { createApp, MemoryEmailSender, type Env } from "../src/index";
 import { clearJwksCache } from "../src/oidc";
 import { APPLE_CLIENT_ID, CHALLENGE, GOOGLE_CLIENT_ID, ID_TOKENS, JWKS_BOTH, JWKS_KEY1, NOW_S, VERIFIER } from "./oidc-fixtures";

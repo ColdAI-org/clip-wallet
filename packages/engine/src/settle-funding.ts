@@ -3,7 +3,7 @@
  * extension's background (packages/extension-kit/src/background/service.ts) so both run the same steps:
  *
  *   1. Approve on a payment whose plan has `funding` (stage "offer"): build the exact-amount approve + deposit
- *      requests (@clip-wallet/route SettleFunding.order) and sign/send each through the host's normal path, in that
+ *      requests (@coldai/clip-wallet-route SettleFunding.order) and sign/send each through the host's normal path, in that
  *      one approval; the approve must be mined before the deposit is checked and signed.
  *   2. Follow the order: Hedera's mirror node (opened → closed, or late) and the balance on the payment's network
  *      (delivered). When the money is there, the plan is recomputed and the original request waits for Approve again.
@@ -13,10 +13,10 @@
  *
  * @module
  */
-import type { AssetRef, DappRequest } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
-import type { ApprovalPlan, ApprovalView, SettleFundingView } from "@clip-wallet/ui";
-import { SETTLE_FINAL_STAGES, type SettleFunding, type SettleFundingPlan } from "@clip-wallet/route";
+import type { AssetRef, DappRequest } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan, ApprovalView, SettleFundingView } from "@coldai/clip-wallet-ui";
+import { SETTLE_FINAL_STAGES, type SettleFunding, type SettleFundingPlan } from "@coldai/clip-wallet-route";
 
 export interface SettleRunHost {
   /** Decode (must be readable), sign and send a wallet-built request as the account of the app's request. */

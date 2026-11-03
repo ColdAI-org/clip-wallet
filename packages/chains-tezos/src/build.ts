@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { LocalForger, ProtocolsHash } from "@taquito/local-forging";
 import { ZERO_SIGNATURE, isTezosAddress, isUint } from "./encoding.js";
 import { type OperationResult, RpcError, type SimulationResult, type TezosRpc, type TezosRpcErrorItem, plainTezosError, simulationErrors } from "./rpc.js";

@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/1mask/background — the router the extension background uses.
+ * @coldai/clip-wallet-1mask/background — the router the extension background uses.
  *
  *   chrome.runtime.onConnect.addListener((port) => {
  *     if (port.name !== PORT_NAME) return;

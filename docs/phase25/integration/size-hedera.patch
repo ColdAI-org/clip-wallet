@@ -3,9 +3,9 @@ index 925db09..d747ea0 100644
 --- a/packages/features/package.json
 +++ b/packages/features/package.json
 @@ -19,7 +19,6 @@
-     "@clip-wallet/chains-solana": "workspace:*",
-     "@clip-wallet/core": "workspace:*",
-     "@clip-wallet/route": "workspace:*",
+     "@coldai/clip-wallet-chains-solana": "workspace:*",
+     "@coldai/clip-wallet-core": "workspace:*",
+     "@coldai/clip-wallet-route": "workspace:*",
 -    "@hiero-ledger/sdk": "^2.89.1",
      "@solana-program/stake": "^0.10.0",
      "@solana-program/system": "^0.15.0",
@@ -23,8 +23,8 @@ index 71e004e..119a2b1 100644
 --- a/packages/features/src/swap/saucerswap.ts
 +++ b/packages/features/src/swap/saucerswap.ts
 @@ -1,6 +1,16 @@
- import { type ChainContext, ClipError, type Network } from "@clip-wallet/core";
--import { buildAssociate, freezeNew, ledgerOf, mirrorFor, mirrorUrl, requestFor, resolvePayer, type HederaLedger } from "@clip-wallet/chains-hedera";
+ import { type ChainContext, ClipError, type Network } from "@coldai/clip-wallet-core";
+-import { buildAssociate, freezeNew, ledgerOf, mirrorFor, mirrorUrl, requestFor, resolvePayer, type HederaLedger } from "@coldai/clip-wallet-chains-hedera";
 -import { AccountAllowanceApproveTransaction, AccountId, ContractExecuteTransaction, ContractId, Hbar } from "@hiero-ledger/sdk";
 +import {
 +  buildAssociate,
@@ -37,7 +37,7 @@ index 71e004e..119a2b1 100644
 +  resolvePayer,
 +  tokenAllowanceDraft,
 +  type HederaLedger,
-+} from "@clip-wallet/chains-hedera";
++} from "@coldai/clip-wallet-chains-hedera";
  import { decodeFunctionResult, encodeFunctionData, encodePacked, parseAbi, type Hex } from "viem";
  import { mirrorCall } from "../http.js";
  import type { Step } from "../steps.js";
@@ -68,8 +68,8 @@ index df0a73b..a2ed082 100644
 --- a/packages/features/src/trade/service.ts
 +++ b/packages/features/src/trade/service.ts
 @@ -1,6 +1,15 @@
- import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest } from "@clip-wallet/core";
--import { type SwapLeg, buildAssociate, buildAtomicSwap, buildScheduleSign, hbarAsset, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
+ import { type AssetRef, type ChainContext, ClipError, type DappRequest, type DecodedRequest } from "@coldai/clip-wallet-core";
+-import { type SwapLeg, buildAssociate, buildAtomicSwap, buildScheduleSign, hbarAsset, mirrorFor, resolvePayer } from "@coldai/clip-wallet-chains-hedera";
 -import { Transaction } from "@hiero-ledger/sdk";
 +import {
 +  type SwapLeg,
@@ -81,7 +81,7 @@ index df0a73b..a2ed082 100644
 +  parseTransaction,
 +  resolvePayer,
 +  transactionIdString,
-+} from "@clip-wallet/chains-hedera";
++} from "@coldai/clip-wallet-chains-hedera";
  import type { FeatureHost } from "../host.js";
  import { type Step, queueSteps } from "../steps.js";
  import { b64ToBytes, formatUnits, parseUnits } from "../util.js";

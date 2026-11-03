@@ -1,4 +1,4 @@
-import { ClipError, type Network } from "@clip-wallet/core";
+import { ClipError, type Network } from "@coldai/clip-wallet-core";
 import type { FeatureHost } from "../host.js";
 import type { OnRampOptionView, OnRampView } from "../views.js";
 import { CHAIN_PREFERENCE, type ChainKey, type OnRampProvider, chainKeyOf } from "./types.js";

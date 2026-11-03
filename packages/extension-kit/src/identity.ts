@@ -1,5 +1,5 @@
 /** Identity helpers shared by the build (wxt.ts) and the pages. Pure functions. */
-import type { ClipConfig } from "@clip-wallet/config";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
 
 /**
  * The Chrome extension id for a manifest `key` (base64 DER SubjectPublicKeyInfo): the first 128 bits of its

@@ -1,3 +1,3 @@
-import { mountApprovalWindow } from "@clip-wallet/extension-kit/pages";
+import { mountApprovalWindow } from "@coldai/clip-wallet-extension-kit/pages";
 
 mountApprovalWindow();

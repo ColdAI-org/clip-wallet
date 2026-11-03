@@ -2,7 +2,7 @@
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 import { Networks, type ModuleInterface } from "@creit.tech/stellar-wallets-kit/types";
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
 
 // ClipWalletModule matches the kit's ModuleInterface at run time; its moduleType is typed as a string, not the kit's
 // enum, so TypeScript needs the cast.

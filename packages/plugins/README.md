@@ -1,4 +1,4 @@
-# @clip-wallet/plugins — Clip Plugins
+# @coldai/clip-wallet-plugins — Clip Plugins
 
 Small, sandboxed extensions for Clip Wallet. The idea is the same as MetaMask Snaps, but the scope is narrower and safety comes first.
 
@@ -9,7 +9,7 @@ Small, sandboxed extensions for Clip Wallet. The idea is the same as MetaMask Sn
 ## Install
 
 ```sh
-npm i @clip-wallet/plugins
+npm i @coldai/clip-wallet-plugins
 ```
 
 ## Example
@@ -18,7 +18,7 @@ A plugin is an npm package with a manifest (`clip.plugin.json`) and one script. 
 does before anyone sees an install prompt:
 
 ```ts
-import { describePermissions, parseManifest } from "@clip-wallet/plugins";
+import { describePermissions, parseManifest } from "@coldai/clip-wallet-plugins";
 
 const manifest = parseManifest({
   manifestVersion: 1,
@@ -112,7 +112,7 @@ Example: `examples/address-label/` (insight only: names the zero/burn address an
 
 ## Tests
 
-`pnpm --filter @clip-wallet/plugins test` (each file in its own process, because `lockdown()` freezes the realm):
+`pnpm --filter @coldai/clip-wallet-plugins test` (each file in its own process, because `lockdown()` freezes the realm):
 
 - `isolation.test.ts` runs plugin code under real SES through the real runtime. It shows the plugin can't see the host's `chrome`, `browser`, `localStorage`, `indexedDB` or vault decoys, or any DOM, network, timer or Node global. It also shows:
   - no escape via `Function`, `eval` or constructor chains
@@ -141,7 +141,7 @@ Not covered by unit tests: the real iframe/offscreen wiring in Chrome (see `exte
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

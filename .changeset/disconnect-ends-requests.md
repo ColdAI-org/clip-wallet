@@ -1,8 +1,8 @@
 ---
-"@clip-wallet/engine": patch
-"@clip-wallet/extension-kit": patch
-"@clip-wallet/1mask": patch
-"@clip-wallet/core": patch
+"@coldai/clip-wallet-engine": patch
+"@coldai/clip-wallet-extension-kit": patch
+"@coldai/clip-wallet-1mask": patch
+"@coldai/clip-wallet-core": patch
 ---
 
 Disconnecting an app now ends the requests it sent while connected. Disconnect in the wallet, or the app's own

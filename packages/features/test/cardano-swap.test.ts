@@ -10,8 +10,8 @@ import {
   parseTransaction,
   rewardAddress,
   witnessDatums,
-} from "@clip-wallet/chains-cardano";
-import type { AssetRef, DappRequest } from "@clip-wallet/core";
+} from "@coldai/clip-wallet-chains-cardano";
+import type { AssetRef, DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { DexHunterSwap } from "../src/swap/dexhunter.js";
 import { MINSWAP_AGG_BASE, MinswapSwap, verifyMinswapTx } from "../src/swap/minswap.js";

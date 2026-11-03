@@ -1,5 +1,5 @@
 /**
- * Clip Link key material (additive): everything @clip-wallet/link needs that touches a seed or a private key.
+ * Clip Link key material (additive): everything @coldai/clip-wallet-link needs that touches a seed or a private key.
  * The link package only ever receives DERIVED keys or handles from here; the seed, the Ed25519 sync secret and
  * every X25519 private key stay in this file.
  *

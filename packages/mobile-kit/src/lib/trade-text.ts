@@ -2,7 +2,7 @@
  * Trade & earn entries come from packages/features/src/dapps/featured.json in English. The curated ones have
  * translated copies here, keyed by domain; an entry added later falls back to its English text until translated.
  */
-import type { FeaturedDappView } from "@clip-wallet/ui";
+import type { FeaturedDappView } from "@coldai/clip-wallet-ui";
 import type { MobileMessageId } from "../i18n";
 
 const SLUG: Record<string, string> = {

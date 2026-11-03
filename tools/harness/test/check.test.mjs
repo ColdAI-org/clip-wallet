@@ -169,7 +169,7 @@ test("kit-built wallets: Clip Wallet's identity, a switched-off security floor, 
     writeFileSync(cfg, on);
     const mainnetLine = on.split("\n").findLastIndex((l) => l.includes("mainnet: { enabled")) + 1;
     const pkg = join(ext, "package.json");
-    writeFileSync(pkg, readFileSync(pkg, "utf8").replace('"@clip-wallet/extension-kit": "0.1.0"', '"@clip-wallet/extension-kit": "^0.1.0"'));
+    writeFileSync(pkg, readFileSync(pkg, "utf8").replace('"@coldai/clip-wallet-extension-kit": "0.1.0"', '"@coldai/clip-wallet-extension-kit": "^0.1.0"'));
     const r = runChecks({ root: dir, tracked: [".keys/extension.pem"], wordlistFrom: repo });
     assert.deepEqual(where(r), [
       "key-file-tracked .keys/extension.pem:0",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FAMILIES, type Family } from "@clip-wallet/core";
+import { FAMILIES, type Family } from "@coldai/clip-wallet-core";
 import config from "./clip.config";
 import { FAST_ARGON2 } from "./helpers";
 import { MemoryKV } from "../src/shared/storage";
@@ -30,7 +30,7 @@ describe("chain module derivation paths match the vault's accounts", () => {
   });
 
   it("Hedera: m/44'/3030'/0'/0/i, not the EVM path", async () => {
-    const { createHederaModule } = await import("@clip-wallet/chains-hedera");
+    const { createHederaModule } = await import("@coldai/clip-wallet-chains-hedera");
     const hedera = createHederaModule();
     expect(hedera.derivationPath(0)).toBe("m/44'/3030'/0'/0/0");
     expect(hedera.derivationPath(5)).toBe("m/44'/3030'/0'/0/5");

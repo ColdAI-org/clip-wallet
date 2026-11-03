@@ -1,5 +1,5 @@
 /** MOCK: testnet catalogue until the chain packages export theirs. Testnets only (AGENTS rule 6). */
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 
 const native = (key: string, symbol: string, name: string, decimals: number, networkId: string): AssetRef => ({
   key,

@@ -1,1 +1,1 @@
-import "@clip-wallet/desktop-kit/preload/dapp";
+import "@coldai/clip-wallet-desktop-kit/preload/dapp";

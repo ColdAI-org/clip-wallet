@@ -15,7 +15,7 @@
  *   POST   /v1/auth/oidc/finish { state, handoff, verifier } → 200 { session, expiresAt, provider }
  *   GET    /v1/health                                   → 200
  *   GET    /v1/sync/changes?since=  POST /v1/sync/push  DELETE /v1/sync   settings sync, signed with the device's
- *          Ed25519 sync key (no account); ciphertext only (src/sync.ts, @clip-wallet/link/sync-server)
+ *          Ed25519 sync key (no account); ciphertext only (src/sync.ts, @coldai/clip-wallet-link/sync-server)
  */
 import {
   type BackupMeta,
@@ -28,7 +28,7 @@ import {
   isPasskeyBackupBlob,
   normaliseEmail,
   sha256b64url,
-} from "@clip-wallet/backup-client/protocol";
+} from "@coldai/clip-wallet-backup-client/protocol";
 import { EmailUnavailableError, UnconfiguredEmailSender, signInEmail, type EmailSender } from "./email.js";
 import { PROVIDERS, oidcCallback, oidcFinish, oidcStart, providerEnabled, type OidcEnv } from "./oidc.js";
 import { RULES, cleanupWindows, enforce } from "./ratelimit.js";

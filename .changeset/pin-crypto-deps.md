@@ -1,23 +1,23 @@
 ---
-"@clip-wallet/1mask": patch
-"@clip-wallet/chains-algorand": patch
-"@clip-wallet/chains-aptos": patch
-"@clip-wallet/chains-bitcoin": patch
-"@clip-wallet/chains-cardano": patch
-"@clip-wallet/chains-evm": patch
-"@clip-wallet/chains-hedera": patch
-"@clip-wallet/chains-near": patch
-"@clip-wallet/chains-solana": patch
-"@clip-wallet/chains-stellar": patch
-"@clip-wallet/chains-substrate": patch
-"@clip-wallet/chains-sui": patch
-"@clip-wallet/chains-tezos": patch
-"@clip-wallet/chains-ton": patch
-"@clip-wallet/engine": patch
-"@clip-wallet/hardware": patch
-"@clip-wallet/link": patch
-"@clip-wallet/plugins": patch
-"@clip-wallet/vault": patch
+"@coldai/clip-wallet-1mask": patch
+"@coldai/clip-wallet-chains-algorand": patch
+"@coldai/clip-wallet-chains-aptos": patch
+"@coldai/clip-wallet-chains-bitcoin": patch
+"@coldai/clip-wallet-chains-cardano": patch
+"@coldai/clip-wallet-chains-evm": patch
+"@coldai/clip-wallet-chains-hedera": patch
+"@coldai/clip-wallet-chains-near": patch
+"@coldai/clip-wallet-chains-solana": patch
+"@coldai/clip-wallet-chains-stellar": patch
+"@coldai/clip-wallet-chains-substrate": patch
+"@coldai/clip-wallet-chains-sui": patch
+"@coldai/clip-wallet-chains-tezos": patch
+"@coldai/clip-wallet-chains-ton": patch
+"@coldai/clip-wallet-engine": patch
+"@coldai/clip-wallet-hardware": patch
+"@coldai/clip-wallet-link": patch
+"@coldai/clip-wallet-plugins": patch
+"@coldai/clip-wallet-vault": patch
 ---
 
 Crypto-critical dependencies (`@noble/*`, `@scure/*`, `hash-wasm`, `@walletconnect/*`, `@ledgerhq/*`,

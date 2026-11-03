@@ -1,7 +1,7 @@
 {
-  "name": "@clip-wallet/chains-evm",
+  "name": "@coldai/clip-wallet-chains-evm",
   "dependencies": {
-    "@clip-wallet/vault": "workspace:*",
+    "@coldai/clip-wallet-vault": "workspace:*",
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "2.4.0"
   },

@@ -1,9 +1,9 @@
 /**
  * Page-side FeaturesClient over the same message bus as the wallet (messages are FEATURE_REQUESTS from
- * @clip-wallet/features, merged into shared/messages.ts at integration). New file from the "features" stream.
+ * @coldai/clip-wallet-features, merged into shared/messages.ts at integration). New file from the "features" stream.
  */
-import type { FeatureRequest, FeatureRequestType, FeatureResponseMap } from "@clip-wallet/features";
-import type { FeaturesClient } from "@clip-wallet/ui";
+import type { FeatureRequest, FeatureRequestType, FeatureResponseMap } from "@coldai/clip-wallet-features";
+import type { FeaturesClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { Envelope } from "./messages";
 

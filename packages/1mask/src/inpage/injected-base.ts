@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import type { WalletIdentity } from "../shared/config.js";
 import type { ExposedAccount } from "../shared/protocol.js";
 import { Emitter } from "./emitter.js";

@@ -1,5 +1,5 @@
-import type { DappRequest } from "@clip-wallet/core";
-import { DEFI_OP, cellFromBase64, createTonModule, opOf, parseJettonBurn, parseSendTx, parseTonstakersDeposit, rawTonAddress, sameTonAddress } from "@clip-wallet/chains-ton";
+import type { DappRequest } from "@coldai/clip-wallet-core";
+import { DEFI_OP, cellFromBase64, createTonModule, opOf, parseJettonBurn, parseSendTx, parseTonstakersDeposit, rawTonAddress, sameTonAddress } from "@coldai/clip-wallet-chains-ton";
 import { describe, expect, it } from "vitest";
 import { refineDecoded, registerIntent } from "../src/steps.js";
 import { DEPOSIT_FEE, TONSTAKERS, TonStaking, UNSTAKE_FEE, checkTonstakersRequest } from "../src/staking/ton.js";

@@ -1,4 +1,4 @@
-import type { Account, ChainContext, Network } from "@clip-wallet/core";
+import type { Account, ChainContext, Network } from "@coldai/clip-wallet-core";
 import {
   CARDANO_MAINNET,
   CARDANO_PREPROD,
@@ -7,7 +7,7 @@ import {
   keyHash,
   poolIdToBech32,
   rewardAddress,
-} from "@clip-wallet/chains-cardano";
+} from "@coldai/clip-wallet-chains-cardano";
 import { mockFetch, type Route } from "./helpers.js";
 
 /**

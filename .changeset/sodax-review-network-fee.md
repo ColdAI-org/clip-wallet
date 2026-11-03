@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/ui": patch
+"@coldai/clip-wallet-ui": patch
 ---
 
 The review of a swap that carries the Clip fee (SODAX) calls its other fee row "Network fee" instead of "Fee", so the

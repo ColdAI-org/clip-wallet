@@ -1,4 +1,4 @@
-# @clip-wallet/chains-tezos
+# @coldai/clip-wallet-chains-tezos
 
 Tezos `ChainModule` for Clip Wallet. It builds, simulates, decodes and broadcasts. It never touches keys:
 `prepare()` returns the 32 bytes the vault signs with ed25519, and `finalize()` checks the signature, assembles
@@ -14,14 +14,14 @@ packages are used. Base58check, blake2b and address maths come from `@scure/base
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-tezos @clip-wallet/core
+npm i @coldai/clip-wallet-chains-tezos @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createTezosModule, TEZOS_SHADOWNET } from "@clip-wallet/chains-tezos";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createTezosModule, TEZOS_SHADOWNET } from "@coldai/clip-wallet-chains-tezos";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createTezosModule();
@@ -258,7 +258,7 @@ Options: `simulate` (default true), `ipfsGateway`, `protocol` (a `ProtocolsHash`
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

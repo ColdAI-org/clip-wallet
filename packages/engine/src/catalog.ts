@@ -5,34 +5,34 @@
  *
  * @module
  */
-import type { AssetRef, Network } from "@clip-wallet/core";
-import { enabledFamilies, includesEvmChain, isMainnetEnabled, type ClipConfig } from "@clip-wallet/config";
-import { EVM_NETWORKS, CURATED_TOKENS, HEDERA_EVM_NETWORKS } from "@clip-wallet/chains-evm";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
+import { enabledFamilies, includesEvmChain, isMainnetEnabled, type ClipConfig } from "@coldai/clip-wallet-config";
+import { EVM_NETWORKS, CURATED_TOKENS, HEDERA_EVM_NETWORKS } from "@coldai/clip-wallet-chains-evm";
 
 type CuratedToken = (typeof CURATED_TOKENS)[number];
-import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
-import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
-import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
-import { CARDANO_NETWORKS } from "@clip-wallet/chains-cardano/networks";
-import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@clip-wallet/chains-substrate/networks";
-import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@clip-wallet/chains-starknet/networks";
-import { TON_MAINNET, TON_TESTNET } from "@clip-wallet/chains-ton/networks";
-import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui/networks";
-import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos/networks";
-import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@clip-wallet/chains-near/networks";
-import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@clip-wallet/chains-stellar/networks";
-import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@clip-wallet/chains-tezos/networks";
-import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@clip-wallet/chains-algorand/networks";
+import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@coldai/clip-wallet-chains-hedera";
+import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@coldai/clip-wallet-chains-solana";
+import { BITCOIN_NETWORKS } from "@coldai/clip-wallet-chains-bitcoin";
+import { CARDANO_NETWORKS } from "@coldai/clip-wallet-chains-cardano/networks";
+import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@coldai/clip-wallet-chains-substrate/networks";
+import { STARKNET_MAINNET, STARKNET_SEPOLIA, CURATED_TOKENS as STARKNET_TOKENS, STARKNET_CHAINS } from "@coldai/clip-wallet-chains-starknet/networks";
+import { TON_MAINNET, TON_TESTNET } from "@coldai/clip-wallet-chains-ton/networks";
+import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@coldai/clip-wallet-chains-sui/networks";
+import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@coldai/clip-wallet-chains-aptos/networks";
+import { NEAR_NETWORKS, USDC_CONTRACTS, tokenAssetKey as nep141Key } from "@coldai/clip-wallet-chains-near/networks";
+import { STELLAR_NETWORKS, USDC_ISSUERS, classicAsset } from "@coldai/clip-wallet-chains-stellar/networks";
+import { TEZOS_NETWORKS, KNOWN_TOKENS as TEZOS_TOKENS } from "@coldai/clip-wallet-chains-tezos/networks";
+import { ALGORAND_NETWORKS, ALGORAND_NETS, asaAssetKey } from "@coldai/clip-wallet-chains-algorand/networks";
 // networks87
-import { COSMOS_NETWORKS, assetOf as cosmosAssetOf, specOf as cosmosSpecOf } from "@clip-wallet/chains-cosmos/networks";
-import { TRON_NETWORKS, usdtAsset as tronUsdt } from "@clip-wallet/chains-tron/networks";
-import { MULTIVERSX_NETWORKS } from "@clip-wallet/chains-multiversx/networks";
-import { ICP_IDS, ICP_NETWORKS, LEDGERS as ICP_LEDGERS, ledgerAsset as icpLedgerAsset } from "@clip-wallet/chains-icp/networks";
-import { STACKS_NETWORKS, specFor as stacksSpecFor, tokenAsset as stacksTokenAsset } from "@clip-wallet/chains-stacks/networks";
-import { BCH_NETWORKS } from "@clip-wallet/chains-bitcoincash/networks";
-import { XRPL_NETWORKS } from "@clip-wallet/chains-xrpl/networks";
-import { ANTELOPE_NETWORKS } from "@clip-wallet/chains-antelope/networks";
-import { FUEL_NETWORKS, assetFor as fuelAssetFor, specFor as fuelSpecFor } from "@clip-wallet/chains-fuel/networks";
+import { COSMOS_NETWORKS, assetOf as cosmosAssetOf, specOf as cosmosSpecOf } from "@coldai/clip-wallet-chains-cosmos/networks";
+import { TRON_NETWORKS, usdtAsset as tronUsdt } from "@coldai/clip-wallet-chains-tron/networks";
+import { MULTIVERSX_NETWORKS } from "@coldai/clip-wallet-chains-multiversx/networks";
+import { ICP_IDS, ICP_NETWORKS, LEDGERS as ICP_LEDGERS, ledgerAsset as icpLedgerAsset } from "@coldai/clip-wallet-chains-icp/networks";
+import { STACKS_NETWORKS, specFor as stacksSpecFor, tokenAsset as stacksTokenAsset } from "@coldai/clip-wallet-chains-stacks/networks";
+import { BCH_NETWORKS } from "@coldai/clip-wallet-chains-bitcoincash/networks";
+import { XRPL_NETWORKS } from "@coldai/clip-wallet-chains-xrpl/networks";
+import { ANTELOPE_NETWORKS } from "@coldai/clip-wallet-chains-antelope/networks";
+import { FUEL_NETWORKS, assetFor as fuelAssetFor, specFor as fuelSpecFor } from "@coldai/clip-wallet-chains-fuel/networks";
 
 /** Same mapping as chains-evm's (unexported) curatedAsset(). */
 function curatedAsset(t: CuratedToken): AssetRef {

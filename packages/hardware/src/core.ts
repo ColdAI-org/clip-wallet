@@ -1,5 +1,5 @@
 /**
- * The light half of @clip-wallet/hardware: account records, approval binding and signature checks
+ * The light half of @coldai/clip-wallet-hardware: account records, approval binding and signature checks
  * (HardwareKeyring: registerApproval / acceptSignature), errors, the wire forms for a message bus, the
  * Keystone QR bridge and UR helpers. No device SDKs. The extension's background uses only this; the device
  * signers (LedgerSigner, KeystoneSigner) and their libraries stay in the root entry, which the approval

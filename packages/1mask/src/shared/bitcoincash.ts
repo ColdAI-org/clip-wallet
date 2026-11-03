@@ -1,4 +1,4 @@
-import type { NetworkId } from "@clip-wallet/core";
+import type { NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Bitcoin Cash dapp connectivity. BCH has no injected-provider standard; dapps reach wallets over WalletConnect v2

@@ -3,7 +3,7 @@
  * (staking positions and validators, swap quotes, liquidity positions). Everything else (featured apps,
  * Buy links, Secure Trade's local list) is the real FeaturesService. Never used in the default build.
  */
-import type { FeatureRequest, FeaturesService, StakeAssetView, SwapQuoteView, LpPositionView } from "@clip-wallet/features";
+import type { FeatureRequest, FeaturesService, StakeAssetView, SwapQuoteView, LpPositionView } from "@coldai/clip-wallet-features";
 import { NET } from "./networks";
 
 export type FeaturesLike = Pick<FeaturesService, "handle" | "refine">;

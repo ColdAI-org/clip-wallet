@@ -4,8 +4,8 @@
  * 1Mask and WalletConnect talk to it through DappHost. Nothing here returns key material, except
  * revealPhrase for the onboarding screen.
  */
-import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError, decodeFailureReason, msg, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@clip-wallet/core";
+import type { Account, AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network, Nft, TokenBalance, Warning } from "@coldai/clip-wallet-core";
+import { ClipError, decodeFailureReason, msg, FAMILIES as CORE_FAMILIES, WALLET_ORIGIN, activityTitleMsg, attachMsgs, connectedMsg, displaySafe, isWalletOrigin, sanitizeDecoded, unverifiedLabel, type ChainModule } from "@coldai/clip-wallet-core";
 import type {
   ActivityEntry,
   ActivityLeg,
@@ -18,35 +18,35 @@ import type {
   RecipientResolution,
   SessionView,
   WalletState,
-} from "@clip-wallet/ui";
-import { hashSignablePayload } from "@clip-wallet/vault";
+} from "@coldai/clip-wallet-ui";
+import { hashSignablePayload } from "@coldai/clip-wallet-vault";
 import type { Request, ResponseMap } from "../shared/messages";
 import type { KV } from "../shared/storage";
 import type { DappHost, Dependencies, PermissionStoreLike } from "./wiring";
-import type { CardanoModule, CardanoReadMethod } from "@clip-wallet/chains-cardano";
-import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ } from "@clip-wallet/1mask/background";
+import type { CardanoModule, CardanoReadMethod } from "@coldai/clip-wallet-chains-cardano";
+import { CARDANO_METHODS_ALLOWED, COSMOS_FAMILIES, N87_CHAIN_READ } from "@coldai/clip-wallet-1mask/background";
 import type { LazyChainModule } from "./wiring";
 import { PasskeyCeremonies, type CeremonyMeta } from "./passkey-proxy";
 import { PlatformService, type PlatformRequest } from "./platform";
-import type { Signature, SignablePayload } from "@clip-wallet/core";
-import { HardwareErrors, MAX_APPROVAL_TTL_MS, type HardwareAccount } from "@clip-wallet/hardware/core";
+import type { Signature, SignablePayload } from "@coldai/clip-wallet-core";
+import { HardwareErrors, MAX_APPROVAL_TTL_MS, type HardwareAccount } from "@coldai/clip-wallet-hardware/core";
 import { hardwareAccountView } from "../shared/hardware-job";
 import { HardwareSignHost, inProgress } from "./hardware-host";
-import { isFeatureRequest, type FeatureRequest } from "@clip-wallet/features/messages";
-import type { FeaturesService } from "@clip-wallet/features";
-import { isSocialRequest, SocialService, type SocialRequest } from "@clip-wallet/social";
+import { isFeatureRequest, type FeatureRequest } from "@coldai/clip-wallet-features/messages";
+import type { FeaturesService } from "@coldai/clip-wallet-features";
+import { isSocialRequest, SocialService, type SocialRequest } from "@coldai/clip-wallet-social";
 // Light entry points only: the security package itself loads chain SDKs (it runs in the host, attached later).
-import { hideKey } from "@clip-wallet/security/hide";
-import { isSecurityRequest, type SecurityRequest } from "@clip-wallet/security/messages";
-import type { RecipientLog, SecurityService } from "@clip-wallet/security";
-import { toInsightInput, withPluginInsights } from "@clip-wallet/plugins";
-import { SocialSignInService, type SocialSignInRequest } from "@clip-wallet/engine/social-signin";
+import { hideKey } from "@coldai/clip-wallet-security/hide";
+import { isSecurityRequest, type SecurityRequest } from "@coldai/clip-wallet-security/messages";
+import type { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
+import { toInsightInput, withPluginInsights } from "@coldai/clip-wallet-plugins";
+import { SocialSignInService, type SocialSignInRequest } from "@coldai/clip-wallet-engine/social-signin";
 import { chromeOffscreen, createPlugins, type BackgroundPlugins, type OffscreenApi } from "./plugins";
-import { SettleFundingRun, claimedTitle, txHashOf } from "@clip-wallet/engine/settle-funding";
-import { formatUnits } from "@clip-wallet/route";
+import { SettleFundingRun, claimedTitle, txHashOf } from "@coldai/clip-wallet-engine/settle-funding";
+import { formatUnits } from "@coldai/clip-wallet-route";
 import { settleFixture } from "./mocks/mock-settle";
 import { BackgroundCalls } from "./calls";
-import { SEND_CALLS, batchPlan, mergeBatchDecoded, requiredAssetChanges, sendCallsParams, splitSendCalls } from "@clip-wallet/engine/calls-batch";
+import { SEND_CALLS, batchPlan, mergeBatchDecoded, requiredAssetChanges, sendCallsParams, splitSendCalls } from "@coldai/clip-wallet-engine/calls-batch";
 
 export const DEFAULT_PREFS: Prefs = {
   advanced: false,
@@ -100,7 +100,7 @@ interface Pending {
   /** Transactions: an Approve is running (audit APPR-01). One approval prepares, signs and broadcasts once. */
   busy?: boolean;
   connect?: { origin: string; family: Family; via: "injected" | "walletconnect"; account: Account };
-  /** Paying through a bonded Connector (@clip-wallet/engine/settle-funding), once Approve started it. */
+  /** Paying through a bonded Connector (@coldai/clip-wallet-engine/settle-funding), once Approve started it. */
   settle?: SettleFundingRun;
   /** EIP-5792 wallet_sendCalls: the calls and what each decoded to (./calls.ts). */
   batch?: { calls: DappRequest[]; decoded: DecodedRequest[] };
@@ -1047,7 +1047,7 @@ export class WalletService implements DappHost {
     }
   }
 
-  /* ------------------------------------------------------------------ settle on Hedera (@clip-wallet/engine/settle-funding) */
+  /* ------------------------------------------------------------------ settle on Hedera (@coldai/clip-wallet-engine/settle-funding) */
 
   private async settleRun(p: Pending): Promise<SettleFundingRun> {
     const req = p.request!;

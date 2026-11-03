@@ -1,5 +1,5 @@
-import type { Account, ChainContext, DappRequest } from "@clip-wallet/core";
-import { APTOS_TESTNET, type EntryAbi, bcsAddress, bcsU64, createAptosModule, decodeEntryPayload, encodeEntryPayload } from "@clip-wallet/chains-aptos";
+import type { Account, ChainContext, DappRequest } from "@coldai/clip-wallet-core";
+import { APTOS_TESTNET, type EntryAbi, bcsAddress, bcsU64, createAptosModule, decodeEntryPayload, encodeEntryPayload } from "@coldai/clip-wallet-chains-aptos";
 import { describe, expect, it } from "vitest";
 import { AptosStaking, aptosBaseApy, rankAptosPools } from "../src/staking/aptos.js";
 import { mockFetch } from "./helpers.js";

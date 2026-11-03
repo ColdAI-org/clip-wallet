@@ -5,7 +5,7 @@
  */
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
-import type { Signature, SignablePayload } from "@clip-wallet/core";
+import type { Signature, SignablePayload } from "@coldai/clip-wallet-core";
 import { HardwareErrors } from "./errors.js";
 import { equal, fromHex, toHex } from "./bytes.js";
 

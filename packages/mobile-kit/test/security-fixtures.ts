@@ -1,5 +1,5 @@
 /** Sample answers for the security service in screen tests (the real one scans RPCs, mirror nodes and lists). */
-import type { ApprovalsOverviewView, CleanupOverviewView, CleanupSummaryView, ThreatProviderStatusView } from "@clip-wallet/ui";
+import type { ApprovalsOverviewView, CleanupOverviewView, CleanupSummaryView, ThreatProviderStatusView } from "@coldai/clip-wallet-ui";
 import { QUEUE } from "./feature-fixtures";
 
 const DAY = 86_400_000;

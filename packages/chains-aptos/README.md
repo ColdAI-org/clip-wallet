@@ -1,4 +1,4 @@
-# @clip-wallet/chains-aptos
+# @coldai/clip-wallet-chains-aptos
 
 The Aptos `ChainModule` for Clip Wallet. It builds, decodes and simulates transactions but never touches keys. `prepare()` returns the signing
 message for the vault (ed25519), and `finalize()` returns an `AccountAuthenticator` or submits a `SignedTransaction`.
@@ -12,14 +12,14 @@ not used. It never uses the SDK's `Account`/private-key classes.
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-aptos @clip-wallet/core
+npm i @coldai/clip-wallet-chains-aptos @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createAptosModule, APTOS_TESTNET } from "@clip-wallet/chains-aptos";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createAptosModule, APTOS_TESTNET } from "@coldai/clip-wallet-chains-aptos";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createAptosModule();
@@ -109,7 +109,7 @@ console.log(network.id, network.testnet); // a CAIP-2 id, true
 
 ## Wallet-built DeFi payloads (`src/defi.ts`)
 
-Used by `@clip-wallet/features` (Aptos delegated staking, Hyperion swaps). Payloads use the wire form `aptos:signAndSubmitTransaction`
+Used by `@coldai/clip-wallet-features` (Aptos delegated staking, Hyperion swaps). Payloads use the wire form `aptos:signAndSubmitTransaction`
 accepts, so this module fetches the ABI, encodes, simulates and builds them like any dapp payload.
 
 - `delegationPayload("add_stake" | "unlock" | "withdraw", pool, amount)`: `0x1::delegation_pool::<action>(pool_address, amount)`.
@@ -137,7 +137,7 @@ a store observed on testnet. `LIVE=1 pnpm test` adds read-only testnet/devnet ch
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

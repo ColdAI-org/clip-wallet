@@ -94,12 +94,12 @@ npm dependencies are not vendored; each is distributed under its own licence, as
 listed in its package. Browser extension, desktop and mobile builds bundle them, and
 a build's distributor must meet those licences. In particular:
 
-- WalletConnect / Reown (@reown/walletkit, @walletconnect/*, used by @clip-wallet/1mask
+- WalletConnect / Reown (@reown/walletkit, @walletconnect/*, used by @coldai/clip-wallet-1mask
   and the mobile app) are under the WalletConnect Community License, not an open-source
   licence. Builds that include them carry: Portions © 2025 Reown, Inc. All Rights
   Reserved. That licence also requires shipping a copy of it, using the Reown network,
   and a commercial licence above its usage thresholds.
-- @ethereumjs/rlp and @ethereumjs/util (via @clip-wallet/hardware) are MPL-2.0; they
+- @ethereumjs/rlp and @ethereumjs/util (via @coldai/clip-wallet-hardware) are MPL-2.0; they
   are used unmodified and their source is available from npm.
 - The Inter variable font (@fontsource-variable/inter, bundled by
-  @clip-wallet/extension-kit) is under the SIL Open Font License 1.1.
+  @coldai/clip-wallet-extension-kit) is under the SIL Open Font License 1.1.

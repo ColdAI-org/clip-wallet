@@ -16,7 +16,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, Pressable, View } from "react-native";
-import { asPlatform, quizPositions, runCeremony, userMessageOf, type BackupStatusView } from "@clip-wallet/ui";
+import { asPlatform, quizPositions, runCeremony, userMessageOf, type BackupStatusView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Checkbox, Empty, ErrorNote, Field, Notice, Row, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { IconFingerprint, IconShield } from "../ui/icons";

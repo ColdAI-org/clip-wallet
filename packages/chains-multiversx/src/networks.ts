@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * MultiversX networks. Ids are the WalletConnect / CAIP-2 chain ids of the `mvx` namespace: "mvx:" + the chain's

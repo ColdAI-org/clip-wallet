@@ -1,10 +1,10 @@
 /**
  * Build-time settings shared by the main process and the renderers. Public identifiers only, never secrets.
  * The wallet's validated clip.config comes from `virtual:clip-wallet/config`, which clipDesktop()
- * ("@clip-wallet/desktop-kit/electron-vite") resolves to the project's clip.config.ts, with the WalletConnect project
+ * ("@coldai/clip-wallet-desktop-kit/electron-vite") resolves to the project's clip.config.ts, with the WalletConnect project
  * id from the build environment applied, plus the icon as a data URI (tests alias the module).
  */
-import { platformIds, walletKey, type ClipConfig } from "@clip-wallet/config";
+import { platformIds, walletKey, type ClipConfig } from "@coldai/clip-wallet-config";
 // @ts-ignore: a virtual module, resolved by the host bundler (electron-vite.ts) or the test runner.
 import raw, { icon as rawIcon } from "virtual:clip-wallet/config";
 

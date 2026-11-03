@@ -1,6 +1,6 @@
-// The checks every catalog passes in CI, run on a new language (Polish here). Test-only: @clip-wallet/i18n/qa.
-import { checkTranslation, formatMessage } from "@clip-wallet/i18n";
-import { checkGlossary, lintCatalog, type GlossaryEntry } from "@clip-wallet/i18n/qa";
+// The checks every catalog passes in CI, run on a new language (Polish here). Test-only: @coldai/clip-wallet-i18n/qa.
+import { checkTranslation, formatMessage } from "@coldai/clip-wallet-i18n";
+import { checkGlossary, lintCatalog, type GlossaryEntry } from "@coldai/clip-wallet-i18n/qa";
 
 const en = {
   "send.title": "Send {symbol}",

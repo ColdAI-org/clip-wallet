@@ -3,7 +3,7 @@
  *
  * @module
  */
-import { createContentBridge } from "@clip-wallet/1mask/content";
+import { createContentBridge } from "@coldai/clip-wallet-1mask/content";
 import type {} from "../globals";
 
 export { CONTENT_MATCHES } from "./inpage";

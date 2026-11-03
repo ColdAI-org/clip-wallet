@@ -4,9 +4,9 @@
  *
  * @module
  */
-import { WALLET_ORIGIN, type AssetRef, type ChainContext, type DappRequest, type DecodedRequest, type Network, type TokenBalance } from "@clip-wallet/core";
-import { CoinGeckoPriceFeed, FeaturesService, type FeatureHost, type FeaturesConfig } from "@clip-wallet/features";
-import { createRouteClient } from "@clip-wallet/route";
+import { WALLET_ORIGIN, type AssetRef, type ChainContext, type DappRequest, type DecodedRequest, type Network, type TokenBalance } from "@coldai/clip-wallet-core";
+import { CoinGeckoPriceFeed, FeaturesService, type FeatureHost, type FeaturesConfig } from "@coldai/clip-wallet-features";
+import { createRouteClient } from "@coldai/clip-wallet-route";
 import type { KV } from "./kv.js";
 
 /** What the wallet exposes to the features. */

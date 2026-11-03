@@ -5,7 +5,7 @@
  * blocked, and now also shows the module's reason.
  */
 import { describe, expect, it, vi } from "vitest";
-import { ClipError, type ChainModule } from "@clip-wallet/core";
+import { ClipError, type ChainModule } from "@coldai/clip-wallet-core";
 import { makeService, PASSWORD } from "./helpers";
 
 describe("a request the chain module refuses to decode", () => {

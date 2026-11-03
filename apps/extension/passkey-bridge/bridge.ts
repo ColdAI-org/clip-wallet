@@ -3,7 +3,7 @@
  * Input arrives in the URL fragment; output goes to the extension id from the fragment, which only
  * accepts it from this origin (externally_connectable) with the matching nonce.
  */
-import { WebAuthnPasskeyPrf, b64urlDecode, b64urlEncode } from "@clip-wallet/ui";
+import { WebAuthnPasskeyPrf, b64urlDecode, b64urlEncode } from "@coldai/clip-wallet-ui";
 
 declare const chrome: { runtime: { sendMessage(extId: string, msg: unknown): Promise<unknown> } };
 

@@ -3,16 +3,16 @@
  * anyway, so their libraries (~1.5 MB) load here, in their own chunk, the first time a hardware account
  * is connected or signs; the service worker never contains them.
  */
-import type { KeystoneBridge, KeystoneSigner, LedgerSigner } from "@clip-wallet/hardware";
-import type { HardwareKind, HardwareSigner, HardwareStorage, PendingExchangeView } from "@clip-wallet/hardware/core";
+import type { KeystoneBridge, KeystoneSigner, LedgerSigner } from "@coldai/clip-wallet-hardware";
+import type { HardwareKind, HardwareSigner, HardwareStorage, PendingExchangeView } from "@coldai/clip-wallet-hardware/core";
 import { browser } from "wxt/browser";
 import { AreaKV } from "../../shared/storage";
 
 /** Same as the background's vault: Bitcoin testnet (a mainnet build would configure both). */
 const BITCOIN_NETWORK = "testnet" as const;
 
-let mod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
-export const loadHardware = () => (mod ??= import("@clip-wallet/hardware"));
+let mod: Promise<typeof import("@coldai/clip-wallet-hardware")> | undefined;
+export const loadHardware = () => (mod ??= import("@coldai/clip-wallet-hardware"));
 
 /** Public data only (Keystone's synced public keys), in the same chrome.storage.local keys as before. */
 const kv = new AreaKV(browser.storage.local);
