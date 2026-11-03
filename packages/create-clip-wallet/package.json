@@ -59,7 +59,7 @@
     "@coldai/clip-wallet-config": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.6",
     "typescript": "^5.6.0",
     "vitest": "~4.1.11"
   }
