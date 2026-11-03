@@ -111,11 +111,11 @@
     "@wallet-standard/app": "^1.1.1",
     "@wxt-dev/module-react": "^1.2.2",
     "algosdk": "^3.8.0",
-    "axios": "^1.20.0",
+    "axios": "^1.21.0",
     "bignumber.js": "^9.3.1",
     "bip322-js": "4.0.0",
     "buffer": "6.0.3",
-    "cborg": "^6.1.4",
+    "cborg": "^6.2.1",
     "esbuild": "^0.28.2",
     "events": "3.3.0",
     "fuels": "0.103.0",
@@ -124,6 +124,6 @@
     "tronweb": "^6.5.1",
     "viem": "^2.57.1",
     "wagmi": "^3.7.7",
-    "wxt": "^0.21.4"
+    "wxt": "^0.21.5"
   }
 }
