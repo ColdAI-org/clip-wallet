@@ -4,9 +4,9 @@ This site is a [VitePress](https://vitepress.dev) app in `apps/docs`. Pages are 
 code sample is a real file in `apps/docs/src/snippets` that is typechecked against the workspace packages.
 
 ```sh
-pnpm --filter docs dev       # http://localhost:5173/clip/docs/, with hot reload
-pnpm --filter docs build     # generate, build, then check links and safety
-pnpm --filter docs test      # typecheck and run the snippets, check the pages and the package READMEs
+pnpm --filter @coldai/clip-wallet-docs dev       # http://localhost:5173/clip/docs/, with hot reload
+pnpm --filter @coldai/clip-wallet-docs build     # generate, build, then check links and safety
+pnpm --filter @coldai/clip-wallet-docs test      # typecheck and run the snippets, check the pages and the package READMEs
 ```
 
 ## Where it is served
@@ -22,7 +22,7 @@ configurable at build time:
 | `DOCS_REPO_BRANCH` | `main` | the branch those links use |
 
 ```sh
-DOCS_BASE=/ DOCS_SITE_URL=https://docs.example.org pnpm --filter docs build
+DOCS_BASE=/ DOCS_SITE_URL=https://docs.example.org pnpm --filter @coldai/clip-wallet-docs build
 ```
 
 The output in `apps/docs/.vitepress/dist` is static files: copy it under the base path on any static host. Links end in
@@ -37,7 +37,7 @@ Never paste TypeScript into a page. Put it in `src/snippets/<section>/<name>.ts`
 <<< @/snippets/extend/example-module.ts#decode
 ```
 
-The second form includes a `// #region decode` … `// #endregion decode` part of the file. `pnpm --filter docs test`
+The second form includes a `// #region decode` … `// #endregion decode` part of the file. `pnpm --filter @coldai/clip-wallet-docs test`
 fails if a page has inline TypeScript or JavaScript, an include points at a missing file or region, a snippet isn't
 used anywhere, a snippet has a type error, a runnable snippet prints something other than what its comments say, or a
 `pnpm --filter` command names a script that doesn't exist. Package READMEs' code blocks are typechecked the same way.
@@ -60,7 +60,7 @@ Link to other pages with relative `.md` links. Link to files in the repository w
 `[the vault README](repo:packages/vault/README.md)`; the build fails if the path doesn't exist. After the build,
 `scripts/check-site.mjs` checks every internal link and anchor in the output, checks that repository links point at
 real files, and scans for anything that must never be published (local paths, secrets, recovery phrases).
-`pnpm --filter docs check:external` also requests every external link.
+`pnpm --filter @coldai/clip-wallet-docs check:external` also requests every external link.
 
 ## Style
 

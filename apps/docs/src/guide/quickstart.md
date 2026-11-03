@@ -69,8 +69,8 @@ extension (see [Linked devices](../architecture/link.md)).
 ## The docs (this site)
 
 ```sh
-pnpm --filter docs dev       # http://localhost:5173/clip/docs/
-pnpm --filter docs build     # static files in apps/docs/.vitepress/dist
+pnpm --filter @coldai/clip-wallet-docs dev       # http://localhost:5173/clip/docs/
+pnpm --filter @coldai/clip-wallet-docs build     # static files in apps/docs/.vitepress/dist
 ```
 
 See [Working on these docs](../contributing/docs.md).

@@ -140,7 +140,8 @@ describe("pages", () => {
         if (!existsSync(pj)) continue;
         const p = JSON.parse(readFileSync(pj, "utf8")) as { name: string; scripts?: Record<string, string> };
         manifests.set(p.name, p.scripts ?? {});
-        manifests.set(p.name.replace(/^@coldai\/clip-wallet-/, ""), p.scripts ?? {});
+        // pnpm --filter also takes a name without its scope: clip-wallet-docs for @coldai/clip-wallet-docs.
+        manifests.set(p.name.replace(/^@coldai\//, ""), p.scripts ?? {});
       }
     }
     // A kit-built wallet's packages (packages/extension, desktop, mobile, nextjs as @sh/*): the pages show its commands too.

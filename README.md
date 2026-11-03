@@ -230,7 +230,7 @@ cd apps/mobile && pnpm ios                          # or pnpm android (Expo dev 
 
 The developer docs are at [coldai.org/clip/docs](https://coldai.org/clip/docs): architecture, the signing flow,
 per-ecosystem dapp guides, the kit, extending Clip Wallet, services, security and the API reference for every package.
-Their sources are in [`apps/docs`](apps/docs) (VitePress; `pnpm --filter docs build`).
+Their sources are in [`apps/docs`](apps/docs) (VitePress; `pnpm --filter @coldai/clip-wallet-docs build`).
 
 Coding agents start at [AGENTS.md](AGENTS.md) (rules that never break, recipes) and [llms.txt](llms.txt).
 

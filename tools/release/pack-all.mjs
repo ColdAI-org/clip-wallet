@@ -6,7 +6,7 @@
  *   node tools/release/pack-all.mjs [--no-build]
  *
  * Every tarball is then opened and checked: package.json points only at files inside it, nothing from src/, test/
- * or a .env file is included, and no @clip-wallet dependency is left as workspace:*. The list is written to
+ * or a .env file is included, and no @coldai/clip-wallet-* dependency is left as workspace:*. The list is written to
  * .packs/manifest.json ({ name, version, file }) for tools/kit/e2e.mjs and the template overrides.
  */
 import { execFileSync } from "node:child_process";

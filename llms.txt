@@ -76,7 +76,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - security/: threat model, vault cryptography, approval-bound signing, sanitization, scam checks, hardware wallets, disclosure.
 - testing/: unit, harness, extension e2e, dapp and picker matrices, funding a test wallet, reproducible builds.
 - reference/config (clip.config.ts schema), reference/errors (every ClipError code), reference/warnings (every Warning code), reference/dapp-errors (EIP-1193 and EIP-5792 codes), reference/cli, reference/api/<package>[/<subpath>] (TypeDoc for every published export). All generated from the source by apps/docs/scripts/generate.mjs.
-- Build and check the docs: pnpm --filter docs build (generate, VitePress, link and safety check); pnpm --filter docs test (snippets typecheck and run, README code blocks typecheck). Base path: DOCS_BASE (default /clip/docs/).
+- Build and check the docs: pnpm --filter @coldai/clip-wallet-docs build (generate, VitePress, link and safety check); pnpm --filter @coldai/clip-wallet-docs test (snippets typecheck and run, README code blocks typecheck). Base path: DOCS_BASE (default /clip/docs/).
 
 ## Optional
 - .harness/README.md: every harness rule and what to do when one is wrong

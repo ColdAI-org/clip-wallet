@@ -135,7 +135,7 @@ try {
   step("Install from the tarballs");
   useLocalPacks(app, list);
   run("pnpm", ["install"], { cwd: app });
-  const installed = JSON.parse(readFileSync(join(desk, "node_modules", "@clip-wallet", "desktop-kit", "package.json"), "utf8"));
+  const installed = JSON.parse(readFileSync(join(desk, "node_modules", "@coldai", "clip-wallet-desktop-kit", "package.json"), "utf8"));
   check(!JSON.stringify(installed.exports).includes("development"), "installed kits are the packed (dist) shape, not workspace sources");
 
   step("pnpm harness and check-types (every platform) inside the project");

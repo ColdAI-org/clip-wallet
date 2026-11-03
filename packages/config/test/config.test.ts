@@ -283,8 +283,8 @@ describe("loadClipConfigSync (@coldai/clip-wallet-config/node)", () => {
     const { join, resolve } = await import("node:path");
     const { loadClipConfigSync, typeStrippingFlags } = await import("../src/node.js");
     const dir = mkdtempSync(join(tmpdir(), "clip-config-"));
-    mkdirSync(join(dir, "node_modules", "@clip-wallet"), { recursive: true });
-    symlinkSync(resolve(__dirname, ".."), join(dir, "node_modules", "@clip-wallet", "config"));
+    mkdirSync(join(dir, "node_modules", "@coldai"), { recursive: true });
+    symlinkSync(resolve(__dirname, ".."), join(dir, "node_modules", "@coldai", "clip-wallet-config"));
     writeFileSync(join(dir, "wallet.identity.json"), JSON.stringify({ name: "Acme Wallet", rdns: "com.acme.wallet" }));
     writeFileSync(
       join(dir, "clip.config.ts"),

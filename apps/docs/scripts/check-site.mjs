@@ -40,7 +40,7 @@ const walk = (dir, keep, out = []) => {
 };
 
 if (!existsSync(dist)) {
-  console.error("check-site: no build in .vitepress/dist; run pnpm --filter docs build");
+  console.error("check-site: no build in .vitepress/dist; run pnpm --filter @coldai/clip-wallet-docs build");
   process.exit(1);
 }
 

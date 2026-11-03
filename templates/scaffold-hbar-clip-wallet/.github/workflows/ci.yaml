@@ -31,7 +31,7 @@ jobs:
       - name: Harness (key material, identity, security floor, mainnet checklist, pins)
         run: pnpm harness
 
-      - name: Kit provenance (every @clip-wallet package built by the kit's CI)
+      - name: Kit provenance (every @coldai/clip-wallet-* package built by the kit's CI)
         run: pnpm verify:provenance
 
       - name: Types

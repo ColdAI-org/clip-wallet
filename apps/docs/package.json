@@ -12,7 +12,7 @@
     "directory": "apps/docs"
   },
   "private": true,
-  "description": "Clip Wallet developer documentation (VitePress). Build: pnpm --filter docs build",
+  "description": "Clip Wallet developer documentation (VitePress). Build: pnpm --filter @coldai/clip-wallet-docs build",
   "type": "module",
   "scripts": {
     "gen": "node scripts/generate.mjs",

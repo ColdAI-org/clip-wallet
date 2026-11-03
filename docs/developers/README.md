@@ -4,9 +4,9 @@ The developer documentation for Clip Wallet is a [VitePress](https://vitepress.d
 [`apps/docs`](../../apps/docs). It is published at <https://coldai.org/clip/docs/>.
 
 ```sh
-pnpm --filter docs dev       # http://localhost:5173/clip/docs/
-pnpm --filter docs build     # static site in apps/docs/.vitepress/dist, then link and safety checks
-pnpm --filter docs test      # every code sample typechecks; the runnable ones run
+pnpm --filter @coldai/clip-wallet-docs dev       # http://localhost:5173/clip/docs/
+pnpm --filter @coldai/clip-wallet-docs build     # static site in apps/docs/.vitepress/dist, then link and safety checks
+pnpm --filter @coldai/clip-wallet-docs test      # every code sample typechecks; the runnable ones run
 ```
 
 - Pages are Markdown in [`apps/docs/src`](../../apps/docs/src). Start with
