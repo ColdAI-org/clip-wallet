@@ -163,7 +163,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "~19.2.0",
     "@walletconnect/react-native-compat": "2.25.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.2",
     "expo": "~57.0.26",
     "expo-application": "~57.0.3",
     "expo-background-task": "~57.0.21",
