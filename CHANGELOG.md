@@ -6,6 +6,8 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-03
+
 ### Added
 
 - **Swaps between networks (SODAX)**, in mainnet builds that set them up: an asset on one of ten EVM mainnets for an
