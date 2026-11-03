@@ -93,7 +93,7 @@
     "@coldai/clip-wallet-chains-solana": "workspace:*",
     "@coldai/clip-wallet-core": "workspace:*",
     "@coldai/clip-wallet-features": "workspace:*",
-    "@solana-program/token": "^0.17.0",
+    "@solana-program/token": "^0.18.0",
     "@solana/kit": "^8.4.0",
     "viem": "^2.57.2",
     "zod": "^4.6.5"
