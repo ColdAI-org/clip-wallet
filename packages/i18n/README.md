@@ -1,4 +1,4 @@
-# @clip-wallet/i18n
+# @coldai/clip-wallet-i18n
 
 Clip Wallet's translation layer, with no dependencies: a small ICU message subset (plurals, select, tags) over the
 platform's `Intl` for numbers, currencies and relative time. Ships the locale list (English plus 11 translations,
@@ -12,13 +12,13 @@ The product name is never translated: messages take it as `{name}`, so a kit-bui
 ## Install
 
 ```sh
-npm i @clip-wallet/i18n
+npm i @coldai/clip-wallet-i18n
 ```
 
 ## Example
 
 ```ts
-import { createTranslator, negotiateLocale } from "@clip-wallet/i18n";
+import { createTranslator, negotiateLocale } from "@coldai/clip-wallet-i18n";
 
 const en = { "approvals.count": "{n, plural, one {# request is waiting} other {# requests are waiting}}" };
 const de = { "approvals.count": "{n, plural, one {# Anfrage wartet} other {# Anfragen warten}}" };
@@ -28,8 +28,8 @@ const t = createTranslator(en, de, locale);
 console.log(t("approvals.count", { n: 3 })); // "3 Anfragen warten"
 ```
 
-React: `LocaleProvider`, `useT`, `useFormat` from `@clip-wallet/i18n/react` (React is an optional peer). QA checks for
-tests: `lintCatalog`, `checkGlossary`, `unisolatedArguments` from `@clip-wallet/i18n/qa`.
+React: `LocaleProvider`, `useT`, `useFormat` from `@coldai/clip-wallet-i18n/react` (React is an optional peer). QA checks for
+tests: `lintCatalog`, `checkGlossary`, `unisolatedArguments` from `@coldai/clip-wallet-i18n/qa`.
 
 ## Documentation
 
@@ -39,7 +39,7 @@ tests: `lintCatalog`, `checkGlossary`, `unisolatedArguments` from `@clip-wallet/
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

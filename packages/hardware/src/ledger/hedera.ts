@@ -9,7 +9,7 @@
  * The device decodes the TransactionBody protobuf itself and shows it; the body must fit one APDU.
  */
 import type Transport from "@ledgerhq/hw-transport";
-import type { SignablePayload, Signature } from "@clip-wallet/core";
+import type { SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { concat, equal, toHex } from "../bytes.js";
 import { HardwareErrors } from "../errors.js";
 import { ed25519Signature } from "../verify.js";

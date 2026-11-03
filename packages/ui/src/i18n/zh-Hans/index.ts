@@ -21,7 +21,7 @@
  * {variables} (e.g. "发送 {amount} {symbol}"), none next to full-width punctuation. Exception: no space around a
  * {variable} that always holds Chinese text (e.g. "你的{account}" in approval.connect.lede).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

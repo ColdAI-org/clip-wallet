@@ -1,7 +1,7 @@
 # Engine and hosts
 
 The same wallet runs in three places: a browser extension's service worker, a React Native app and an Electron main
-process. `@clip-wallet/engine` is the part that doesn't care which: approvals, per-site permissions, the portfolio
+process. `@coldai/clip-wallet-engine` is the part that doesn't care which: approvals, per-site permissions, the portfolio
 cache, send and receive (with the "network matters" question), activity, preferences, 1Mask and WalletConnect hosting,
 and passkey ceremonies, all on injected seams.
 
@@ -12,9 +12,9 @@ flowchart TB
     MOB["Phone app<br/>mobile-kit src/background"]
     DESK["Desktop app<br/>desktop-kit src/main/host"]
   end
-  ENGINE["@clip-wallet/engine<br/>WalletEngine"]
-  WIRING["@clip-wallet/engine/wiring<br/>catalog + the 14 chain modules"]
-  VAULT[("@clip-wallet/vault")]
+  ENGINE["@coldai/clip-wallet-engine<br/>WalletEngine"]
+  WIRING["@coldai/clip-wallet-engine/wiring<br/>catalog + the 14 chain modules"]
+  VAULT[("@coldai/clip-wallet-vault")]
   SERVICES["features · security · social · plugins · hardware · link"]
   MOB --> ENGINE
   DESK --> ENGINE
@@ -49,7 +49,7 @@ the vault):
   sender, WebView URL, IPC frame), never from the page.
 - Optional services attach afterwards: `attachFeatures`, `attachSecurity`, `attachSocial`, `attachPlugins`,
   `attachHardware`.
-- The root export is light (no chain SDKs). `@clip-wallet/engine/wiring` brings in the catalogue and the chain modules,
+- The root export is light (no chain SDKs). `@coldai/clip-wallet-engine/wiring` brings in the catalogue and the chain modules,
   so tests and light hosts can skip them.
 
 ## The extension background
@@ -57,12 +57,12 @@ the vault):
 The extension's background (`WalletService` in
 [`packages/extension-kit/src/background/service.ts`](repo:packages/extension-kit/src/background/service.ts)) came first
 and the engine reimplements it on injected seams; both follow the same steps and share the catalogue
-(`@clip-wallet/engine/catalog`) and the batch logic (`@clip-wallet/engine/calls-batch`). Changes to the approval path
+(`@coldai/clip-wallet-engine/catalog`) and the batch logic (`@coldai/clip-wallet-engine/calls-batch`). Changes to the approval path
 usually belong in both. See [Extension kit](./extension-kit.md).
 
 ## The screens
 
-`@clip-wallet/ui` is React. Screens read state and send actions through a `WalletClient`
+`@coldai/clip-wallet-ui` is React. Screens read state and send actions through a `WalletClient`
 ([`packages/ui/src/client.ts`](repo:packages/ui/src/client.ts)): in the extension that is a message bus to the
 background; on desktop and in tests it is `createEngineClient(engine)`. The phone app has React Native versions of the
 screens on the same engine and the same message catalogue.
@@ -73,6 +73,6 @@ wallet looks and reads like itself. Every string goes through the translation la
 
 ## Tests
 
-`pnpm --filter @clip-wallet/engine test` covers the lifecycle, the message schema, the portfolio, send with the
+`pnpm --filter @coldai/clip-wallet-engine test` covers the lifecycle, the message schema, the portfolio, send with the
 network-matters prompt, connect and `personal_sign` over a real 1Mask router port, reject (4001), the origin
 cross-check, lock, and the real wiring on testnets only. Its vault is a test double with no keys.

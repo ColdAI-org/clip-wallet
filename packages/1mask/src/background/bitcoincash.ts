@@ -1,4 +1,4 @@
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import { BCH_SIGNING_METHODS, BCH_WC, bchAddressOn, bchNetworkForWcChain } from "../shared/bitcoincash.js";
 import type { P2RouterInternals } from "./p2-families.js";

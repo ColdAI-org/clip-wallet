@@ -4,7 +4,7 @@
  * (docs/phase2/integration/platform.md). Nothing here carries key material: the recovery phrase still only
  * crosses via the existing `revealPhrase`, and passkey ceremonies reuse `passkeyFinish` (PRF output only).
  */
-import type { Family, NetworkId } from "@clip-wallet/core";
+import type { Family, NetworkId } from "@coldai/clip-wallet-core";
 import type { PasskeyCeremony } from "../lib/passkey";
 import type { WalletClient } from "../client";
 import type { UiMessageId } from "../i18n/en";

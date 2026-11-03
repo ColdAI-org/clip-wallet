@@ -19,11 +19,11 @@ What a coding agent reads before changing Clip Wallet, and what it must pass aft
    `getSharedSecret`, `keygen`, `randomSecretKey`/`randomPrivateKey`) of `@noble/curves` secp256k1/ed25519,
    argon2 from `hash-wasm`, `viem/accounts` key accounts, `ethers` wallets, Hedera SDK `PrivateKey`/`Mnemonic` or
    Solana `Keypair`. Verification and public-key maths (`verify`, `Point`) are fine anywhere.
-2. **vault-import-not-allowed**: `@clip-wallet/vault` is imported outside the vault, the extension background
+2. **vault-import-not-allowed**: `@coldai/clip-wallet-vault` is imported outside the vault, the extension background
    (`apps/extension/**/background*`, `packages/extension-kit/src/background/`), the mobile background and the onboarding screen (`packages/ui/src/screens/Onboarding.tsx` or an
    `onboarding/` folder in the UI or extension). Type-only imports are fine.
 3. **chain-module-imports-vault**: a ChainModule package (`packages/chains-*`, or any package that implements
-   `ChainModule`) imports `@clip-wallet/vault` anywhere, tests included, or lists it in `package.json`.
+   `ChainModule`) imports `@coldai/clip-wallet-vault` anywhere, tests included, or lists it in `package.json`.
 4. **logs-secret**: `console.*` prints an identifier named like phrase, mnemonic, seed, privateKey or secret.
 5. **phrase-literal**: a string that is a BIP-39 phrase appears outside `packages/vault/test`.
 6. **env-tracked**: git tracks a `.env` or `.env.*` file (`.env.example` is fine). **key-file-tracked**: git tracks a
@@ -36,10 +36,10 @@ create-clip-wallet or the Scaffold-HBAR template, which ships this same file) it
 
 8. **kit-identity**: `packages/extension/wallet.identity.json` exists, holds no private key and isn't Clip Wallet's
    identity (`org.coldai.*`, "Clip Wallet"); a warning while the placeholder identity is still there.
-9. **kit-security**: `wxt.config.ts` builds through `clipWallet()` from `@clip-wallet/extension-kit/wxt`; nothing sets
+9. **kit-security**: `wxt.config.ts` builds through `clipWallet()` from `@coldai/clip-wallet-extension-kit/wxt`; nothing sets
    `openLists: false` or defines `__CLIP_SECURITY__`.
 10. **kit-mainnet**: mainnet on in `clip.config.ts` means no open `- [ ]` box in `packages/extension/MAINNET.md`.
-11. **kit-pinned**: `@clip-wallet/*` and `create-clip-wallet` dependencies are exact versions.
+11. **kit-pinned**: `@coldai/clip-wallet-*` and `create-clip-wallet` dependencies are exact versions.
 
 `pnpm harness` in this repo also runs `tools/release/check-manifests.mjs` (published manifests and declared runtime
 imports) and `tools/release/sync-template.mjs --check` (the template's pins and harness copy).

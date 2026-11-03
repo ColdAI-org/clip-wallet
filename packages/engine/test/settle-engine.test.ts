@@ -1,8 +1,8 @@
 /** The mobile engine runs the same settle-on-Hedera flow as the extension: pay, follow, sign — or claim when late. */
 import { describe, expect, it, vi } from "vitest";
-import type { DappRequest } from "@clip-wallet/core";
-import { stageOf, type SettleFunding, type SettleOrder } from "@clip-wallet/route";
-import type { ApprovalPlan, SettleFundingView } from "@clip-wallet/ui";
+import type { DappRequest } from "@coldai/clip-wallet-core";
+import { stageOf, type SettleFunding, type SettleOrder } from "@coldai/clip-wallet-route";
+import type { ApprovalPlan, SettleFundingView } from "@coldai/clip-wallet-ui";
 import { WalletEngine } from "../src/engine.js";
 import { MemoryKV } from "../src/kv.js";
 import { EVM_ADDRESS, FakeVault, SEPOLIA, makeDeps, makeEnv, tick } from "./fixtures.js";

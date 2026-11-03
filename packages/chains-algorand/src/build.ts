@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import {
   LogicSigAccount,
   type SuggestedParams,

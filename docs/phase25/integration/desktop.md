@@ -1,6 +1,6 @@
 # Integration: desktop app (apps/desktop)
 
-New package `@clip-wallet/desktop` (Electron 44, electron-vite 5, electron-builder 26). Everything lives in
+New package `@coldai/clip-wallet-desktop` (Electron 44, electron-vite 5, electron-builder 26). Everything lives in
 `apps/desktop`; no shared package source changed. Edits outside the app:
 
 1. `tools/harness/check.mjs`: `VAULT_IMPORT_ALLOW` gains `/^apps\/desktop\/src\/main\/host\//` (the main-process

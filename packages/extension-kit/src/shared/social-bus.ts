@@ -1,8 +1,8 @@
 /**
- * Page-side SocialClient over the wallet bus (messages are SOCIAL_REQUESTS from @clip-wallet/social, merged into
+ * Page-side SocialClient over the wallet bus (messages are SOCIAL_REQUESTS from @coldai/clip-wallet-social, merged into
  * shared/messages.ts). New file from the "social" stream.
  */
-import { createSocialClient, type SocialClient } from "@clip-wallet/ui";
+import { createSocialClient, type SocialClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { Envelope } from "./messages";
 

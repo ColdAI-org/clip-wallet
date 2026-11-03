@@ -1,4 +1,4 @@
-import { ClipError, WALLET_ORIGIN, type DappRequest } from "@clip-wallet/core";
+import { ClipError, WALLET_ORIGIN, type DappRequest } from "@coldai/clip-wallet-core";
 import { makeSignDoc, pubkeyToAddress, serializeSignDoc as cosmjsSerialize } from "@cosmjs/amino";
 import { Secp256k1, Secp256k1Signature, keccak256, sha256 } from "@cosmjs/crypto";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";

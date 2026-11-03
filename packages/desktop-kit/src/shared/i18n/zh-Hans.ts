@@ -1,5 +1,5 @@
 /** Simplified Chinese (same glossary as packages/ui/src/i18n/zh-Hans: 钱包, 解锁 / 锁定). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const zhHans: Translation<DesktopMessages> = {

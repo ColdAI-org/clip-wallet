@@ -1,7 +1,7 @@
 # The phone app
 
 Your wallet for iOS and Android: an [Expo](https://expo.dev) app on
-[`@clip-wallet/mobile-kit`](https://www.npmjs.com/package/@clip-wallet/mobile-kit). The kit is the app (vault in the
+[`@coldai/clip-wallet-mobile-kit`](https://www.npmjs.com/package/@coldai/clip-wallet-mobile-kit). The kit is the app (vault in the
 Keychain / Keystore, Face ID and fingerprint unlock, passkeys, the screens, an in-app dapp browser with 1Mask,
 WalletConnect, Ledger over Bluetooth, Keystone, linked devices); this folder holds a three-line `index.ts`, the Expo and
 Metro configs and the icons. Name, ids, theme, networks, languages, deep links and services come from

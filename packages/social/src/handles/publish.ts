@@ -7,10 +7,10 @@
  * `refineHandleRequest` turns the approval for these calls into plain words, bound to the ClipHandles contract
  * id (selectors like release() are too generic to name globally), and adds the "public-record" warning.
  */
-import type { ChainContext, DappRequest, DecodedRequest, Family, Warning } from "@clip-wallet/core";
-import { ClipError, msg, titled } from "@clip-wallet/core";
-import { contractCallDraft, contractCallOf, freezeNew, requestFor, resolvePayer } from "@clip-wallet/chains-hedera";
-import { CLIP_HANDLES_ABI, isValidHandle } from "@clip-wallet/names";
+import type { ChainContext, DappRequest, DecodedRequest, Family, Warning } from "@coldai/clip-wallet-core";
+import { ClipError, msg, titled } from "@coldai/clip-wallet-core";
+import { contractCallDraft, contractCallOf, freezeNew, requestFor, resolvePayer } from "@coldai/clip-wallet-chains-hedera";
+import { CLIP_HANDLES_ABI, isValidHandle } from "@coldai/clip-wallet-names";
 import { decodeFunctionData, encodeFunctionData, type Hex } from "viem";
 
 export type HandleAction =

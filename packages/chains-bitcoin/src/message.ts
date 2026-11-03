@@ -8,7 +8,7 @@ import { base64 } from "@scure/base";
 import { RawWitness, Script, SigHash, Transaction } from "@scure/btc-signer";
 import { RawOldTx } from "@scure/btc-signer/script.js";
 import { concatBytes, sha256x2, tagSchnorr } from "@scure/btc-signer/utils.js";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { type OwnScripts, TAPROOT_UNAVAILABLE, wpkhScriptCode } from "./keys.js";
 import { TX_OPTS } from "./psbt.js";
 

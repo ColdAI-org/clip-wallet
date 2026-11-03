@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, labelled, msg, titled, withoutTrailing } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, labelled, msg, titled, withoutTrailing } from "@coldai/clip-wallet-core";
 import { decodeFunctionResult, encodeFunctionData, erc20Abi, getAddress, isAddressEqual, toHex } from "viem";
 import type { FeatureHost } from "../host.js";
 import { ethCall, fetchJson } from "../http.js";

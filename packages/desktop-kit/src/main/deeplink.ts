@@ -3,7 +3,7 @@
  * (apps/mobile/src/lib/deeplinks.ts):
  *   clipwallet://wc?uri=<encoded wc: URI>        WalletConnect pairing; the user still approves the connection
  *   clipwallet://browse?url=<encoded https URL>   open a dapp in the built-in browser (phishing check applies)
- *   clipwallet://browse?url=…&h=<token>          "continue on this device" from a linked device (@clip-wallet/link
+ *   clipwallet://browse?url=…&h=<token>          "continue on this device" from a linked device (@coldai/clip-wallet-link
  *                                                 handoff): Linked devices offers one tap to reopen it, connected
  *   clipwallet://link?…                           a pairing code from another device (Linked devices)
  *   clipwallet://trade#offer=… or ?offer=…        a Secure Trade offer (opens the review; Accept still asks)

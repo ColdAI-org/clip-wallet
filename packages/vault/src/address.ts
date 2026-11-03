@@ -7,7 +7,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { ripemd160 } from "@noble/hashes/legacy.js";
 import { secp256k1, schnorr } from "@noble/curves/secp256k1.js";
 import { base58, bech32, bech32m } from "@scure/base";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { concat, toHex } from "./bytes.js";
 import {
   algorandAddress,

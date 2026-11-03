@@ -1,4 +1,4 @@
-import { ClipError, msg } from "@clip-wallet/core";
+import { ClipError, msg } from "@coldai/clip-wallet-core";
 
 /**
  * A small Electrum Cash protocol (1.4) client over WebSocket for public Fulcrum servers

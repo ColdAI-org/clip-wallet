@@ -3,7 +3,7 @@ import { secp256k1, schnorr } from "@noble/curves/secp256k1.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { ClipError, type SignablePayload } from "@clip-wallet/core";
+import { ClipError, type SignablePayload } from "@coldai/clip-wallet-core";
 import {
   BACKUP_PRF_INPUT,
   ClipVault,
@@ -472,7 +472,7 @@ describe("passkeyBackup (Phase 2)", () => {
 });
 
 describe("BACKUP_PRF_INPUT", () => {
-  // Pinned: @clip-wallet/engine restates this value (packages/engine/test/platform.test.ts checks the same hex).
+  // Pinned: @coldai/clip-wallet-engine restates this value (packages/engine/test/platform.test.ts checks the same hex).
   it("is sha256 of the published label", () => {
     expect(Buffer.from(BACKUP_PRF_INPUT).toString("hex")).toBe("160feec3b9d9d1ace9480314d3219d71223fd9ca5f9f6e93e7996fb123ab43cf");
   });

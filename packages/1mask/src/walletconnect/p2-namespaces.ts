@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 
 /**
  * WalletConnect namespaces for NEAR, Stellar, Tezos and Algorand, merged into namespaces.ts

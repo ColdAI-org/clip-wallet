@@ -2,7 +2,7 @@
 import "@near-wallet-selector/modal-ui/styles.css";
 import { setupWalletSelector } from "@near-wallet-selector/core";
 import { setupModal } from "@near-wallet-selector/modal-ui";
-import { setupClipWallet } from "@clip-wallet/kit-modules/near";
+import { setupClipWallet } from "@coldai/clip-wallet-kit-modules/near";
 
 export async function openNearModal() {
   const selector = await setupWalletSelector({

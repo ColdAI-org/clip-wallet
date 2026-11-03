@@ -1,4 +1,4 @@
-# @clip-wallet/chains-cardano
+# @coldai/clip-wallet-chains-cardano
 
 Cardano `ChainModule` for Clip Wallet. It builds, decodes and assembles transactions but never touches keys:
 `prepare()` returns the blake2b-256 body hash (or the CIP-8 `Sig_structure`) for the vault to sign with ed25519, and
@@ -9,14 +9,14 @@ Cardano `ChainModule` for Clip Wallet. It builds, decodes and assembles transact
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-cardano @clip-wallet/core
+npm i @coldai/clip-wallet-chains-cardano @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createCardanoModule, CARDANO_PREPROD } from "@clip-wallet/chains-cardano";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createCardanoModule, CARDANO_PREPROD } from "@coldai/clip-wallet-chains-cardano";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createCardanoModule();
@@ -51,7 +51,7 @@ a signed transaction must be reassembled without re-encoding the body or auxilia
 Cross-checked offline against cardano-serialization-lib 15 (nodejs) and cardano-message-signing 1.1: built
 transfers, token transfers and delegations parse in CSL with the same transaction hash, every vkey witness
 verifies, the fee is at or above `min_fee`, every output is at or above `min_ada_for_output`, and the COSE_Sign1
-from `signData` parses and verifies with message-signing. An end-to-end run against `@clip-wallet/vault` (public
+from `signData` parses and verifies with message-signing. An end-to-end run against `@coldai/clip-wallet-vault` (public
 "abandon … about" vector) signed a delegation with the payment key plus the stake key (`derivationSubPath: "2/0"`)
 and a reward-address `signData`. These checks ran outside the repo, so the tests don't depend on CSL.
 
@@ -199,7 +199,7 @@ certificates are tag-258 sets, and the TTL is tip + 7200 slots. The result is a 
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

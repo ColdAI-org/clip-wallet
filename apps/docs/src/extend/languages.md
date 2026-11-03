@@ -25,9 +25,9 @@ few checks that keep every language as safe and as clear as the English.
 3. **Write the glossary.** About 25 terms whose translation must be the same everywhere: wallet, recovery phrase,
    passkey, account, address, network fee, collectible, stake… Each entry is a case-insensitive regex, so inflected
    forms match.
-4. **Run the checks** (they run in `pnpm test` for every catalog): `pnpm --filter @clip-wallet/ui test`,
-   `pnpm --filter @clip-wallet/mobile test`, `pnpm --filter @clip-wallet/social test`,
-   `pnpm --filter @clip-wallet/core test`.
+4. **Run the checks** (they run in `pnpm test` for every catalog): `pnpm --filter @coldai/clip-wallet-ui test`,
+   `pnpm --filter @coldai/clip-wallet-mobile test`, `pnpm --filter @coldai/clip-wallet-social test`,
+   `pnpm --filter @coldai/clip-wallet-core test`.
 5. **Have a native speaker read it,** especially the safety-critical strings (below).
 
 ## The rules the checks enforce
@@ -40,7 +40,7 @@ few checks that keep every language as safe and as clear as the English.
 | A glossary term's translation appears wherever English uses the term | `checkGlossary()` |
 | Right-to-left languages wrap every interpolated value in isolates | `unisolatedArguments()` |
 
-All of them are in `@clip-wallet/i18n/qa`, a test-only entry point. Here they are on a small Polish catalog:
+All of them are in `@coldai/clip-wallet-i18n/qa`, a test-only entry point. Here they are on a small Polish catalog:
 
 <<< @/snippets/extend/i18n-qa.ts
 

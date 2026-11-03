@@ -5,7 +5,7 @@
  * coins at or below SMALL_UTXO_SATS go last because inscriptions usually sit on small outputs.
  * Change below the dust limit is dropped into the fee.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 export interface Utxo {
   txid: string;

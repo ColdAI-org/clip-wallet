@@ -1,6 +1,6 @@
 // The same plugin in TypeScript, typed with the schemas the wallet validates against. Compile it to one
 // CommonJS-style script (module.exports.onTransaction = …) for dist/bundle.js.
-import type { InsightInput, InsightOutput, NameInput, NameOutput } from "@clip-wallet/plugins";
+import type { InsightInput, InsightOutput, NameInput, NameOutput } from "@coldai/clip-wallet-plugins";
 
 const BURN = "0x000000000000000000000000000000000000dead";
 

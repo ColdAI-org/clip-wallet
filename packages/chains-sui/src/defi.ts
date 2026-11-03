@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { bcs } from "@mysten/sui/bcs";
 import { type TransactionData, Transaction } from "@mysten/sui/transactions";
 import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui/utils";

@@ -1,5 +1,5 @@
 /** Core's text helpers (withoutTrailing, includesInOrder) and the features code that uses them. */
-import { includesInOrder, withoutTrailing } from "@clip-wallet/core";
+import { includesInOrder, withoutTrailing } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { encodeOffer, decodeOffer, type OfferPayload } from "../src/trade/offer.js";
 import { b64urlDecode, b64urlEncode } from "../src/util.js";

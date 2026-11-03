@@ -1,5 +1,5 @@
 /**
- * Wire protocol shared by @clip-wallet/backup-client and services/backup. Pure; no I/O.
+ * Wire protocol shared by @coldai/clip-wallet-backup-client and services/backup. Pure; no I/O.
  *
  * The server only ever sees: the email address (at sign-in, to send the link; stored as a keyed hash),
  * opaque "CLPB" ciphertext blobs from vault.createPasskeyBackup, the passkey credential id and rp id the

@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { HardwareAccount } from "../src/index.js";
 import { hardwarePath } from "../src/index.js";
 import * as I from "./inputs.js";

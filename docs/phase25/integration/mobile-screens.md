@@ -1,6 +1,6 @@
 # Integration: stream "mobile-screens" (`p25/mobile-screens`)
 
-This stream adds the missing React Native screens in `apps/mobile`, on `@clip-wallet/engine`:
+This stream adds the missing React Native screens in `apps/mobile`, on `@coldai/clip-wallet-engine`:
 - Stake, Swap, Buy, Secure Trade
 - Backup (recovery phrase and passkey) and Accounts
 - Hardware wallets: Keystone by camera, Ledger over Bluetooth
@@ -14,7 +14,7 @@ It also gives the engine hardware-account support. Nothing in `apps/extension`, 
 | --- | --- |
 | `packages/engine/src/engine.ts` | +27 / −8, additive hooks only (below) |
 | `packages/engine/src/index.ts` | type re-exports of `EngineHardware`, `EngineHardwareDeps`, `HardwareHost` |
-| `packages/engine/package.json` | dependency `@clip-wallet/hardware`; export `./hardware` |
+| `packages/engine/package.json` | dependency `@coldai/clip-wallet-hardware`; export `./hardware` |
 
 ### `engine.ts` hooks
 
@@ -48,7 +48,7 @@ The zod schema in `hardware.ts` is the one in `apps/extension/src/shared/message
 ## Mobile wiring (all in `apps/mobile`)
 
 - `src/background/host.ts`:
-  - Builds `HardwareKeyring` + `KeystoneBridge` and loads the signers on first use (`import("@clip-wallet/hardware")`).
+  - Builds `HardwareKeyring` + `KeystoneBridge` and loads the signers on first use (`import("@coldai/clip-wallet-hardware")`).
   - Ledger uses the Bluetooth transport from `ledger-ble.ts`.
   - Exposes `hardware`, `ledger`, `passkeyPrf` (react-native-passkey for backup ceremonies), `openSheet`
     (expo-web-browser) and `confirmPresence` (LocalAuthentication).
@@ -65,7 +65,7 @@ The zod schema in `hardware.ts` is the one in `apps/extension/src/shared/message
 - `metro.config.js`: `crypto` and `stream` shims for the Keystone SDK's `hdkey` / `cipher-base`.
 
 New dependencies (apps/mobile):
-- `@clip-wallet/hardware`
+- `@coldai/clip-wallet-hardware`
 - `@ledgerhq/react-native-hw-transport-ble` 6.41.0
 - `react-native-ble-plx` 3.4.0 (the version the transport pins)
 - `expo-web-browser` ~57.0.3

@@ -1,5 +1,5 @@
 // clip.config.ts at the root of a kit-built wallet, for every platform (apps/*/clip.config.ts in this repo).
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 
 export default defineConfig({
   name: "Acme Wallet",

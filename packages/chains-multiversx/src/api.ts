@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { PlainTransaction } from "./tx.js";
 import type { TokenInfo } from "./networks.js";
 

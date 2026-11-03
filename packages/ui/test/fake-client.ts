@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import type { AssetRef, DecodedRequest, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, DecodedRequest, TokenBalance } from "@coldai/clip-wallet-core";
 import type { ApprovalView, NetworkView, Prefs, WalletClient, WalletState } from "../src/client";
 
 export const NETWORKS: NetworkView[] = [

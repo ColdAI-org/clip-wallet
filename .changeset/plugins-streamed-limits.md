@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/plugins": patch
+"@coldai/clip-wallet-plugins": patch
 ---
 
 Size limits hold while downloading: a plugin's network fetch (256 KB), the npm tarball (5 MB) and npm's listing

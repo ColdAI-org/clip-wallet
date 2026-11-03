@@ -1,7 +1,7 @@
 # The desktop app
 
 Your wallet for macOS, Windows and Linux: an [Electron](https://www.electronjs.org) app built with
-[electron-vite](https://electron-vite.org) on [`@clip-wallet/desktop-kit`](https://www.npmjs.com/package/@clip-wallet/desktop-kit).
+[electron-vite](https://electron-vite.org) on [`@coldai/clip-wallet-desktop-kit`](https://www.npmjs.com/package/@coldai/clip-wallet-desktop-kit).
 The kit is the app (vault and engine in the main process, the same screens as the extension, approvals, a built-in dapp
 browser with 1Mask, Touch ID, Ledger, linked devices); this folder holds one-line entrypoints and the icons. Name, ids,
 theme, networks, languages, deep links and services come from `../../clip.config.ts`.

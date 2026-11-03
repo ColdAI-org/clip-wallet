@@ -8,11 +8,11 @@ wallet's check. Points the owner has to decide are marked **Decision**. How the 
 
 ## What kit wallets get today
 
-- **The same swap.** A kit wallet's extension is `clipWallet()` from `@clip-wallet/extension-kit`
+- **The same swap.** A kit wallet's extension is `clipWallet()` from `@coldai/clip-wallet-extension-kit`
   (`templates/scaffold-hbar-clip-wallet/packages/extension/wxt.config.ts`), so `sodaxFor()` reads the same two build
   settings, `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER`, in a mainnet build. Nothing in the template has to
   change for that. The desktop and phone apps pass no swap partner settings yet, for kit wallets or for Clip Wallet.
-- **The same fee, to ColdAI.** The receiver must be on the reviewed list inside `@clip-wallet/features`
+- **The same fee, to ColdAI.** The receiver must be on the reviewed list inside `@coldai/clip-wallet-features`
   (`src/swap/sodax-fee-receivers.json`), which a kit project can't change without forking the package. So a kit
   wallet can only pay ColdAI LLC's reviewed address. Its review says "Clip fee" and "Fee goes to: ColdAI LLC, 0x…"
   (`CLIP_FEE.name` and `receivedBy` belong to the fee, not to the wallet), and its operator receives nothing.

@@ -14,7 +14,7 @@ import type { InpageTransport } from "./transport.js";
  *   us   → { message: { target: "toPage", encryptedPayload: <hex> }, sender: { id } }
  *
  * This file is only a relay. Pairing keys, decryption and the Beacon message handling live in the
- * background (@clip-wallet/kit-modules/tezos `createBeaconExtensionPeer`), so nothing secret is in the
+ * background (@coldai/clip-wallet-kit-modules/tezos `createBeaconExtensionPeer`), so nothing secret is in the
  * page. The page sees exactly what any Beacon extension (e.g. Temple) shows it.
  */
 

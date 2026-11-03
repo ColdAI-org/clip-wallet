@@ -1,5 +1,5 @@
 /**
- * End to end: @clip-wallet/chains-bitcoin prepares, the real ClipVault signs, chains-bitcoin finalizes, and
+ * End to end: @coldai/clip-wallet-chains-bitcoin prepares, the real ClipVault signs, chains-bitcoin finalizes, and
  * @scure/btc-signer recomputes every input's sighash from the finished transaction and checks the witness
  * signatures. Covers the taproot contract: SignablePayload.options.taprootTweak is the BIP-341 merkle root
  * (empty for BIP-86) and the taproot key is the vault's BIP-86 key (Account.taprootPublicKey).
@@ -10,7 +10,7 @@ import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { hex } from "@scure/base";
 import { SigHash, Transaction, p2pkh, p2tr, p2wpkh } from "@scure/btc-signer";
 import { equalBytes, hash160, tagSchnorr } from "@scure/btc-signer/utils.js";
-import type { ChainContext, DappRequest, Signature, SignablePayload } from "@clip-wallet/core";
+import type { ChainContext, DappRequest, Signature, SignablePayload } from "@coldai/clip-wallet-core";
 import {
   BITCOIN_MAINNET,
   BITCOIN_TESTNET4,
@@ -20,7 +20,7 @@ import {
   ownTaprootAddress,
   segwitAddress,
   taprootOutputKey,
-} from "@clip-wallet/chains-bitcoin";
+} from "@coldai/clip-wallet-chains-bitcoin";
 import { ClipVault, MemoryStorage, hashSignablePayload } from "../src/index.js";
 
 // Public BIP-39 test phrase (official vectors). Never a real wallet.

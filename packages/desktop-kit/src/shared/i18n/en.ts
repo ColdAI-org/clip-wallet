@@ -1,9 +1,9 @@
 /**
  * The desktop app's own English strings (ids "d.<area>.<name>"): the browser toolbar, site prompts, menus and
- * native dialogs. Wallet screens come from @clip-wallet/ui's catalog, unchanged.
+ * native dialogs. Wallet screens come from @coldai/clip-wallet-ui's catalog, unchanged.
  *
  * Adding a string: add it here, use it via t(), and add it to every locale file (typecheck fails until each has
- * it; test/i18n.test.ts runs @clip-wallet/i18n's structural checks). Never translate the product name ({name}),
+ * it; test/i18n.test.ts runs @coldai/clip-wallet-i18n's structural checks). Never translate the product name ({name}),
  * site names ({site}) or file names ({file}).
  */
 export const en = {

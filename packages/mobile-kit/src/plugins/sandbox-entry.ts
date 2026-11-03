@@ -1,7 +1,7 @@
 /**
  * The page script of a plugin's WebView sandbox (bundled by scripts/build-plugin-sandbox.mjs into an inline
  * <script> of the sandbox HTML; one WebView runs exactly one plugin). It is the mobile twin of
- * @clip-wallet/plugins/sandbox (sandbox-entry.ts in the extension's sandbox iframe):
+ * @coldai/clip-wallet-plugins/sandbox (sandbox-entry.ts in the extension's sandbox iframe):
  *
  *  1. take the one way out (react-native-webview's `window.ReactNativeWebView.postMessage`) and drop the global;
  *  2. SES `lockdown()` freezes the shared intrinsics;
@@ -13,8 +13,8 @@
  * (Android)); they are JSON-parsed, size-capped and schema-checked by the runtime (parseFromHost).
  */
 import "ses";
-import { createSandboxRuntime, type SesApi } from "@clip-wallet/plugins/runtime";
-import { LIMITS, type SandboxToHost } from "@clip-wallet/plugins";
+import { createSandboxRuntime, type SesApi } from "@coldai/clip-wallet-plugins/runtime";
+import { LIMITS, type SandboxToHost } from "@coldai/clip-wallet-plugins";
 
 declare const lockdown: (opts?: Record<string, string>) => void;
 declare const Compartment: SesApi["Compartment"];

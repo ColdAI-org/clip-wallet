@@ -8,7 +8,7 @@
  * Clip Wallet accounts are EOAs, so the `atomic` capability is `unsupported` on every chain: a batch runs as one
  * approval and then call by call, in order; `atomicRequired: true` is refused with 5760 as the spec says.
  */
-import type { NetworkId } from "@clip-wallet/core";
+import type { NetworkId } from "@coldai/clip-wallet-core";
 import { ProviderRpcError, rpcError } from "./errors.js";
 
 export const CALLS_METHODS = ["wallet_getCapabilities", "wallet_sendCalls", "wallet_getCallsStatus", "wallet_showCallsStatus"] as const;

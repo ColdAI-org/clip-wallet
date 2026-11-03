@@ -1,26 +1,26 @@
-# @clip-wallet/ui
+# @coldai/clip-wallet-ui
 
 Clip Wallet's React screens, components and theme tokens: onboarding, home, send and receive, approvals (every request
 decoded in plain words), activity, collectibles, settings, security, hardware, plugins, social and the route-and-fund
 flow. Screens read state through a `WalletClient` (they never import the vault) and brand from `clip.config.ts` (name,
 accent, font, radius), so a kit-built wallet looks like itself.
 
-In an extension you normally don't use this directly: `@clip-wallet/extension-kit` mounts it. React 19 is a peer.
+In an extension you normally don't use this directly: `@coldai/clip-wallet-extension-kit` mounts it. React 19 is a peer.
 
 > Pre-release: Clip Wallet runs on test networks only and has had no external audit.
 
 ## Install
 
 ```sh
-npm i @clip-wallet/ui react react-dom
+npm i @coldai/clip-wallet-ui react react-dom
 ```
 
 ## Example
 
 ```tsx
-import "@clip-wallet/ui/styles.css";
-import { WalletApp, mergeBalances, type ClipConfig, type WalletClient } from "@clip-wallet/ui";
-import type { TokenBalance } from "@clip-wallet/core";
+import "@coldai/clip-wallet-ui/styles.css";
+import { WalletApp, mergeBalances, type ClipConfig, type WalletClient } from "@coldai/clip-wallet-ui";
+import type { TokenBalance } from "@coldai/clip-wallet-core";
 
 // The whole wallet, for a client you provide (the extension's message bus, or createEngineClient()).
 export function Wallet({ client, config }: { client: WalletClient; config: ClipConfig }) {
@@ -41,7 +41,7 @@ export const rows = (balances: TokenBalance[]) => mergeBalances(balances).assets
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

@@ -1,5 +1,5 @@
 /** Notification text (French). Same terms as the UI glossary in packages/ui/src/i18n/fr/index.ts. */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type en from "./en.js";
 
 const messages: Translation<typeof en> = {

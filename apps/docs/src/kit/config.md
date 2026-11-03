@@ -3,7 +3,7 @@
 Everything a wallet maker changes, apart from the logo, is one file: `clip.config.ts`. In a kit-built wallet it sits at
 the project root and drives every platform: the extension, the desktop app and the phone app read the same file. In
 this repo, each of Clip Wallet's own apps has one (`apps/extension/clip.config.ts`, `apps/desktop/clip.config.ts`,
-`apps/mobile/clip.config.ts`). It is validated by `defineConfig()` from `@clip-wallet/config`, which fills in defaults
+`apps/mobile/clip.config.ts`). It is validated by `defineConfig()` from `@coldai/clip-wallet-config`, which fills in defaults
 and refuses anything wrong with a plain sentence per problem.
 
 <<< @/snippets/kit/project/clip.config.ts
@@ -49,7 +49,7 @@ These settings are optional; without them every platform takes its ids from `rdn
 fallback, and only the languages listed are matched and offered. `platformIds(config)` returns every id the platforms
 use (extension gecko id, desktop app id, product, executable and artifact names, iOS bundle id, Android package, scheme,
 slug), so you can check them before a build. Build tools that need the config outside a bundler (Expo's
-`app.config.ts`, electron-builder) use `loadClipConfigSync()` from `@clip-wallet/config/node`, which evaluates the file
+`app.config.ts`, electron-builder) use `loadClipConfigSync()` from `@coldai/clip-wallet-config/node`, which evaluates the file
 in a child Node process (Node 22.18 or later).
 
 ## Networks

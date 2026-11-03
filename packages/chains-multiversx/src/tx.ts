@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { b64decode, b64encode, decodeAddress, fromHex, hex, utf8 } from "./util.js";
 

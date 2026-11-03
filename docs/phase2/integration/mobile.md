@@ -1,6 +1,6 @@
 # Integration: mobile stream (`p2/mobile`)
 
-New: `packages/engine` (`@clip-wallet/engine`), `apps/mobile` (`@clip-wallet/mobile`, Expo SDK 57 / React Native
+New: `packages/engine` (`@coldai/clip-wallet-engine`), `apps/mobile` (`@coldai/clip-wallet-mobile`, Expo SDK 57 / React Native
 0.86 / Hermes / New Architecture). Nothing in `apps/extension` was edited.
 
 ## Edits outside new files (all additive)
@@ -21,7 +21,7 @@ Vault defaults (hash-wasm, 64 MiB / t=3 / p=1, record format) are unchanged. If 
 
 No lines are needed in `wiring.ts`, `catalog.ts`, `inpage/index.ts`, `methods.ts` or `router.ts`.
 
-## `@clip-wallet/engine`
+## `@coldai/clip-wallet-engine`
 
 `WalletEngine` reimplements `apps/extension/src/background/service.ts` on injected seams:
 
@@ -37,14 +37,14 @@ No lines are needed in `wiring.ts`, `catalog.ts`, `inpage/index.ts`, `methods.ts
 | `shared/messages.ts` `Request` / `ResponseMap` | `EngineRequest` / `EngineResponseMap` (same schema, minus `devSimulateRequest`) |
 | `shared/storage.ts` `KV`, `MemoryKV` | `KV`, `MemoryKV`, `JsonKV` (any string store) |
 | `passkey-proxy.ts` `PasskeyCeremonies` | `PasskeyCeremonies` (randomness injected) |
-| `wiring.ts` `createDependencies` (real branch) | `@clip-wallet/engine/wiring` `createEngineDependencies({ config, vault, hashPayload, currency, walletConnect })` |
-| `shared/catalog.ts` | `@clip-wallet/engine/wiring` `walletNetworks`, `walletAssets`; `publicNetworks` in the root export |
+| `wiring.ts` `createDependencies` (real branch) | `@coldai/clip-wallet-engine/wiring` `createEngineDependencies({ config, vault, hashPayload, currency, walletConnect })` |
+| `shared/catalog.ts` | `@coldai/clip-wallet-engine/wiring` `walletNetworks`, `walletAssets`; `publicNetworks` in the root export |
 | `real.ts` adapters | `OneMaskConnector`, `WalletConnectAdapter`, `RoutePlannerAdapter`, `ReferencePriceFeed`, `NoNameResolver`, `KnownDappRegistry` |
 
 Additions: `handleUntrusted(msg)` (zod + dispatch), `attachDappPort(port, senderOrigin)`,
 `enrollPasskeyWith(password, prf)` / `unlockWithPasskeyWith(prf, credentialId?)` / `listPasskeys` /
 `removePasskey(s)` for PRF providers in the same JS context, `walletConnectEnabled`, and
-`createEngineClient(engine, { subscribe })`, an in-process `WalletClient` for `@clip-wallet/ui` screens.
+`createEngineClient(engine, { subscribe })`, an in-process `WalletClient` for `@coldai/clip-wallet-ui` screens.
 
 Two behaviour changes:
 1. `lock()` rejects approvals still waiting (`vault/locked`). The seed is wiped on lock, so they could not be signed anyway.
@@ -76,7 +76,7 @@ Two behaviour changes:
 | passkey unlock (WebAuthn PRF) | `background/device-key.ts`: a Face ID / Touch ID device key (Keychain `.biometryCurrentSet` / Keystore auth-required) as a PRF. `background/passkey.ts`: real passkeys via react-native-passkey PRF |
 | content script + runtime port | `browser/bridge.ts` + `browser/inpage-entry.ts` (1Mask inpage + content bridge in one injected bundle). The origin comes from the WebView's own URL |
 | approval popup window | approval sheet (RN `Modal`), `screens/Approval.tsx` |
-| `@clip-wallet/ui` DOM screens | RN screens with the same flows and copy. They reuse ui's tokens (`tokensFor`), `mergeBalances`, `formatFiat/Units`, `passwordStrength`, `pickConfirmIndexes`, `groupCollectibles`, `isWalletConnectUri`, `hueFor` and the `WalletClient` types |
+| `@coldai/clip-wallet-ui` DOM screens | RN screens with the same flows and copy. They reuse ui's tokens (`tokensFor`), `mergeBalances`, `formatFiat/Units`, `passwordStrength`, `pickConfirmIndexes`, `groupCollectibles`, `isWalletConnectUri`, `hueFor` and the `WalletClient` types |
 
 ## Notes for other streams
 

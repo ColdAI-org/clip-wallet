@@ -8,7 +8,7 @@
  *                           "wallet_sendCalls" on the request's chain); the host decodes every call.
  *   wallet_getCallsStatus   / wallet_showCallsStatus: the host's record, per origin (5730 for anything else).
  */
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import { evmChainId, findEvmNetwork, parseChainId, toHexChainId } from "../shared/networks.js";
 import {

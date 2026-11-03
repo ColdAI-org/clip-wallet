@@ -1,4 +1,4 @@
-import type { Account, ChainContext, Network } from "@clip-wallet/core";
+import type { Account, ChainContext, Network } from "@coldai/clip-wallet-core";
 import { networkById } from "../src/networks.js";
 
 /**

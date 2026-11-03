@@ -3,9 +3,9 @@
  * the extension bus (packages/extension-kit/src/shared/social-bus.ts) and the mobile engine; a fake in tests. Nothing here
  * carries key material: handle actions return the approval they queued on the normal approval path.
  *
- * View types come from @clip-wallet/social/views (type-only).
+ * View types come from @coldai/clip-wallet-social/views (type-only).
  */
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import type {
   AddressCheckView,
   ContactInput,
@@ -20,7 +20,7 @@ import type {
   PriceAlert,
   PriceAlertInput,
   QueuedApproval,
-} from "@clip-wallet/social/views";
+} from "@coldai/clip-wallet-social/views";
 
 export type {
   AddressCheckView,
@@ -39,7 +39,7 @@ export type {
   PriceAlert,
   PriceAlertInput,
   QueuedApproval,
-} from "@clip-wallet/social/views";
+} from "@coldai/clip-wallet-social/views";
 
 export interface SocialClient {
   contacts(): Promise<ContactsView>;

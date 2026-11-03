@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
-import { clusterOf } from "@clip-wallet/chains-solana";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
+import { clusterOf } from "@coldai/clip-wallet-chains-solana";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { randomId } from "../util.js";

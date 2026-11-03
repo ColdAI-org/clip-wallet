@@ -3,7 +3,7 @@
  * passing the hashes of exactly the SignablePayloads the chain module prepared. sign() consumes one hash.
  */
 import { sha256 } from "@noble/hashes/sha2.js";
-import type { SignablePayload } from "@clip-wallet/core";
+import type { SignablePayload } from "@coldai/clip-wallet-core";
 import { concat, toHex, utf8 } from "./bytes.js";
 
 /** Upper bound on approval lifetime regardless of what the caller asks for. */

@@ -3,7 +3,7 @@
  * read from https://mainnet-rpc.chainflip.io on 2026-10-06 with Metadata_metadata_at_version(15)), and payloads
  * shaped like the ones lp.chainflip.io hands an injectedWeb3 signer.
  */
-import type { Account } from "@clip-wallet/core";
+import type { Account } from "@coldai/clip-wallet-core";
 import { fromBufferToBase58 } from "@polkadot-api/substrate-bindings";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";

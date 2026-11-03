@@ -4,7 +4,7 @@ This wallet runs on **test networks only**. Real money needs every box below tic
 `clip.config.ts`:
 
 ```ts
-import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@clip-wallet/config";
+import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@coldai/clip-wallet-config";
 // …
 mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT },
 ```
@@ -30,7 +30,7 @@ Coding agents: never tick these boxes or turn mainnet on. Ask the owner.
 - [ ] Blockaid, if you use it, is reached through a proxy that adds the key; no partner key that grants spending or account access is in the bundle.
 
 ## Code and supply chain
-- [ ] The `@clip-wallet/*` packages are pinned to one release and `pnpm verify:provenance` passes for it.
+- [ ] The `@coldai/clip-wallet-*` packages are pinned to one release and `pnpm verify:provenance` passes for it.
 - [ ] Every change you made on top of the kit has been reviewed by someone other than its author (the kit's own audits don't cover your edits).
 - [ ] `pnpm harness`, `pnpm check-types` and `pnpm build` pass on the release commit, in CI.
 - [ ] Every build you ship is signed by you (docs/signing.md): the store-signed extension, Developer ID + notarized macOS and code-signed Windows apps, and store-signed iOS / Android apps.

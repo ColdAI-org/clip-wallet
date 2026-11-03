@@ -15,7 +15,7 @@
  *
  * @module
  */
-import { ClipError, msg } from "@clip-wallet/core";
+import { ClipError, msg } from "@coldai/clip-wallet-core";
 import {
   type Hex,
   decodeAbiParameters,

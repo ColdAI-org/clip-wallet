@@ -190,19 +190,19 @@ importers:
 
   apps/desktop:
     devDependencies:
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@clip-wallet/desktop-kit':
+      '@coldai/clip-wallet-desktop-kit':
         specifier: workspace:*
         version: link:../../packages/desktop-kit
-      '@clip-wallet/engine':
+      '@coldai/clip-wallet-engine':
         specifier: workspace:*
         version: link:../../packages/engine
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../../packages/link
-      '@clip-wallet/vault':
+      '@coldai/clip-wallet-vault':
         specifier: workspace:*
         version: link:../../packages/vault
       '@playwright/test':
@@ -253,139 +253,139 @@ importers:
       '@aptos-labs/wallet-adapter-react':
         specifier: 8.3.3
         version: 8.3.3(@aptos-labs/ts-sdk@5.2.1(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.3.0)(@wallet-standard/core@1.1.2)(debug@4.4.1(supports-color@10.2.2))(react@19.3.0)(supports-color@10.2.2)
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../../packages/1mask
-      '@clip-wallet/backup-client':
+      '@coldai/clip-wallet-backup-client':
         specifier: workspace:*
         version: link:../../packages/backup-client
-      '@clip-wallet/chains-algorand':
+      '@coldai/clip-wallet-chains-algorand':
         specifier: workspace:*
         version: link:../../packages/chains-algorand
-      '@clip-wallet/chains-antelope':
+      '@coldai/clip-wallet-chains-antelope':
         specifier: workspace:*
         version: link:../../packages/chains-antelope
-      '@clip-wallet/chains-aptos':
+      '@coldai/clip-wallet-chains-aptos':
         specifier: workspace:*
         version: link:../../packages/chains-aptos
-      '@clip-wallet/chains-bitcoin':
+      '@coldai/clip-wallet-chains-bitcoin':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoin
-      '@clip-wallet/chains-bitcoincash':
+      '@coldai/clip-wallet-chains-bitcoincash':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoincash
-      '@clip-wallet/chains-cardano':
+      '@coldai/clip-wallet-chains-cardano':
         specifier: workspace:*
         version: link:../../packages/chains-cardano
-      '@clip-wallet/chains-cosmos':
+      '@coldai/clip-wallet-chains-cosmos':
         specifier: workspace:*
         version: link:../../packages/chains-cosmos
-      '@clip-wallet/chains-evm':
+      '@coldai/clip-wallet-chains-evm':
         specifier: workspace:*
         version: link:../../packages/chains-evm
-      '@clip-wallet/chains-fuel':
+      '@coldai/clip-wallet-chains-fuel':
         specifier: workspace:*
         version: link:../../packages/chains-fuel
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../../packages/chains-hedera
-      '@clip-wallet/chains-icp':
+      '@coldai/clip-wallet-chains-icp':
         specifier: workspace:*
         version: link:../../packages/chains-icp
-      '@clip-wallet/chains-multiversx':
+      '@coldai/clip-wallet-chains-multiversx':
         specifier: workspace:*
         version: link:../../packages/chains-multiversx
-      '@clip-wallet/chains-near':
+      '@coldai/clip-wallet-chains-near':
         specifier: workspace:*
         version: link:../../packages/chains-near
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../../packages/chains-solana
-      '@clip-wallet/chains-stacks':
+      '@coldai/clip-wallet-chains-stacks':
         specifier: workspace:*
         version: link:../../packages/chains-stacks
-      '@clip-wallet/chains-starknet':
+      '@coldai/clip-wallet-chains-starknet':
         specifier: workspace:*
         version: link:../../packages/chains-starknet
-      '@clip-wallet/chains-stellar':
+      '@coldai/clip-wallet-chains-stellar':
         specifier: workspace:*
         version: link:../../packages/chains-stellar
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../../packages/chains-substrate
-      '@clip-wallet/chains-sui':
+      '@coldai/clip-wallet-chains-sui':
         specifier: workspace:*
         version: link:../../packages/chains-sui
-      '@clip-wallet/chains-tezos':
+      '@coldai/clip-wallet-chains-tezos':
         specifier: workspace:*
         version: link:../../packages/chains-tezos
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../../packages/chains-ton
-      '@clip-wallet/chains-tron':
+      '@coldai/clip-wallet-chains-tron':
         specifier: workspace:*
         version: link:../../packages/chains-tron
-      '@clip-wallet/chains-xrpl':
+      '@coldai/clip-wallet-chains-xrpl':
         specifier: workspace:*
         version: link:../../packages/chains-xrpl
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@clip-wallet/connect':
+      '@coldai/clip-wallet-connect':
         specifier: workspace:*
         version: link:../../packages/connect
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@clip-wallet/desktop-kit':
+      '@coldai/clip-wallet-desktop-kit':
         specifier: workspace:*
         version: link:../../packages/desktop-kit
-      '@clip-wallet/engine':
+      '@coldai/clip-wallet-engine':
         specifier: workspace:*
         version: link:../../packages/engine
-      '@clip-wallet/extension-kit':
+      '@coldai/clip-wallet-extension-kit':
         specifier: workspace:*
         version: link:../../packages/extension-kit
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../../packages/features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../../packages/hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
-      '@clip-wallet/kit-modules':
+      '@coldai/clip-wallet-kit-modules':
         specifier: workspace:*
         version: link:../../packages/kit-modules
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../../packages/link
-      '@clip-wallet/media-client':
+      '@coldai/clip-wallet-media-client':
         specifier: workspace:*
         version: link:../../packages/media-client
-      '@clip-wallet/mobile-kit':
+      '@coldai/clip-wallet-mobile-kit':
         specifier: workspace:*
         version: link:../../packages/mobile-kit
-      '@clip-wallet/names':
+      '@coldai/clip-wallet-names':
         specifier: workspace:*
         version: link:../../packages/names
-      '@clip-wallet/plugins':
+      '@coldai/clip-wallet-plugins':
         specifier: workspace:*
         version: link:../../packages/plugins
-      '@clip-wallet/route':
+      '@coldai/clip-wallet-route':
         specifier: workspace:*
         version: link:../../packages/route
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../../packages/security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../../packages/social
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@clip-wallet/vault':
+      '@coldai/clip-wallet-vault':
         specifier: workspace:*
         version: link:../../packages/vault
       '@creit.tech/stellar-wallets-kit':
@@ -532,10 +532,10 @@ importers:
 
   apps/extension:
     dependencies:
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@clip-wallet/extension-kit':
+      '@coldai/clip-wallet-extension-kit':
         specifier: workspace:*
         version: link:../../packages/extension-kit
       react:
@@ -557,85 +557,85 @@ importers:
       '@cardano-foundation/cardano-verify-datasignature':
         specifier: 1.0.11
         version: 1.0.11
-      '@clip-wallet/chains-algorand':
+      '@coldai/clip-wallet-chains-algorand':
         specifier: workspace:*
         version: link:../../packages/chains-algorand
-      '@clip-wallet/chains-antelope':
+      '@coldai/clip-wallet-chains-antelope':
         specifier: workspace:*
         version: link:../../packages/chains-antelope
-      '@clip-wallet/chains-aptos':
+      '@coldai/clip-wallet-chains-aptos':
         specifier: workspace:*
         version: link:../../packages/chains-aptos
-      '@clip-wallet/chains-bitcoin':
+      '@coldai/clip-wallet-chains-bitcoin':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoin
-      '@clip-wallet/chains-bitcoincash':
+      '@coldai/clip-wallet-chains-bitcoincash':
         specifier: workspace:*
         version: link:../../packages/chains-bitcoincash
-      '@clip-wallet/chains-cardano':
+      '@coldai/clip-wallet-chains-cardano':
         specifier: workspace:*
         version: link:../../packages/chains-cardano
-      '@clip-wallet/chains-cosmos':
+      '@coldai/clip-wallet-chains-cosmos':
         specifier: workspace:*
         version: link:../../packages/chains-cosmos
-      '@clip-wallet/chains-evm':
+      '@coldai/clip-wallet-chains-evm':
         specifier: workspace:*
         version: link:../../packages/chains-evm
-      '@clip-wallet/chains-fuel':
+      '@coldai/clip-wallet-chains-fuel':
         specifier: workspace:*
         version: link:../../packages/chains-fuel
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../../packages/chains-hedera
-      '@clip-wallet/chains-icp':
+      '@coldai/clip-wallet-chains-icp':
         specifier: workspace:*
         version: link:../../packages/chains-icp
-      '@clip-wallet/chains-multiversx':
+      '@coldai/clip-wallet-chains-multiversx':
         specifier: workspace:*
         version: link:../../packages/chains-multiversx
-      '@clip-wallet/chains-near':
+      '@coldai/clip-wallet-chains-near':
         specifier: workspace:*
         version: link:../../packages/chains-near
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../../packages/chains-solana
-      '@clip-wallet/chains-stacks':
+      '@coldai/clip-wallet-chains-stacks':
         specifier: workspace:*
         version: link:../../packages/chains-stacks
-      '@clip-wallet/chains-starknet':
+      '@coldai/clip-wallet-chains-starknet':
         specifier: workspace:*
         version: link:../../packages/chains-starknet
-      '@clip-wallet/chains-stellar':
+      '@coldai/clip-wallet-chains-stellar':
         specifier: workspace:*
         version: link:../../packages/chains-stellar
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../../packages/chains-substrate
-      '@clip-wallet/chains-sui':
+      '@coldai/clip-wallet-chains-sui':
         specifier: workspace:*
         version: link:../../packages/chains-sui
-      '@clip-wallet/chains-tezos':
+      '@coldai/clip-wallet-chains-tezos':
         specifier: workspace:*
         version: link:../../packages/chains-tezos
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../../packages/chains-ton
-      '@clip-wallet/chains-tron':
+      '@coldai/clip-wallet-chains-tron':
         specifier: workspace:*
         version: link:../../packages/chains-tron
-      '@clip-wallet/chains-xrpl':
+      '@coldai/clip-wallet-chains-xrpl':
         specifier: workspace:*
         version: link:../../packages/chains-xrpl
-      '@clip-wallet/connect':
+      '@coldai/clip-wallet-connect':
         specifier: workspace:*
         version: link:../../packages/connect
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@clip-wallet/kit-modules':
+      '@coldai/clip-wallet-kit-modules':
         specifier: workspace:*
         version: link:../../packages/kit-modules
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@cosmjs/amino':
@@ -827,7 +827,7 @@ importers:
       '@cardano-foundation/cardano-connect-with-wallet':
         specifier: 0.2.22
         version: 0.2.22(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.5.3(css-to-react-native@3.2.0)(react-dom@18.3.1(react@18.3.1))(react-native@0.86.3(@babel/core@7.29.7(supports-color@5.5.0))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@5.5.0))(react@18.3.1)(supports-color@5.5.0))(@types/react@19.3.0)(bufferutil@4.1.0)(react@18.3.1)(supports-color@5.5.0)(utf-8-validate@5.0.10))(react@18.3.1))
-      '@clip-wallet/kit-modules':
+      '@coldai/clip-wallet-kit-modules':
         specifier: workspace:*
         version: link:../../../../../packages/kit-modules
       '@creit.tech/stellar-wallets-kit':
@@ -960,10 +960,10 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@clip-wallet/mobile-kit':
+      '@coldai/clip-wallet-mobile-kit':
         specifier: workspace:*
         version: link:../../packages/mobile-kit
       '@ledgerhq/react-native-hw-transport-ble':
@@ -1075,7 +1075,7 @@ importers:
       '@aptos-labs/wallet-standard':
         specifier: ^2.0.0
         version: 2.0.0(@aptos-labs/ts-sdk@7.3.0)(@wallet-standard/core@1.1.2)
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@mysten/sui':
@@ -1130,7 +1130,7 @@ importers:
 
   packages/backup-client:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -1143,7 +1143,7 @@ importers:
 
   packages/chains-algorand:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1162,7 +1162,7 @@ importers:
 
   packages/chains-antelope:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1184,7 +1184,7 @@ importers:
       '@aptos-labs/ts-sdk':
         specifier: ^7.3.0
         version: 7.3.0
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1200,7 +1200,7 @@ importers:
 
   packages/chains-bitcoin:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1218,7 +1218,7 @@ importers:
 
   packages/chains-bitcoincash:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1234,7 +1234,7 @@ importers:
 
   packages/chains-cardano:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1249,7 +1249,7 @@ importers:
 
   packages/chains-cosmos:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1280,7 +1280,7 @@ importers:
 
   packages/chains-evm:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1296,7 +1296,7 @@ importers:
 
   packages/chains-fuel:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1312,7 +1312,7 @@ importers:
 
   packages/chains-hedera:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1334,7 +1334,7 @@ importers:
 
   packages/chains-icp:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1362,7 +1362,7 @@ importers:
 
   packages/chains-multiversx:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1381,7 +1381,7 @@ importers:
 
   packages/chains-near:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1396,7 +1396,7 @@ importers:
 
   packages/chains-solana:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1420,7 +1420,7 @@ importers:
 
   packages/chains-stacks:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1439,7 +1439,7 @@ importers:
 
   packages/chains-starknet:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       starknet:
@@ -1448,7 +1448,7 @@ importers:
 
   packages/chains-stellar:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1463,7 +1463,7 @@ importers:
 
   packages/chains-substrate:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/hashes':
@@ -1491,7 +1491,7 @@ importers:
 
   packages/chains-sui:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@mysten/sui':
@@ -1510,7 +1510,7 @@ importers:
 
   packages/chains-tezos:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1528,7 +1528,7 @@ importers:
 
   packages/chains-ton:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1556,7 +1556,7 @@ importers:
 
   packages/chains-tron:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1575,7 +1575,7 @@ importers:
 
   packages/chains-xrpl:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/curves':
@@ -1667,7 +1667,7 @@ importers:
 
   packages/create-clip-wallet:
     dependencies:
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
     devDependencies:
@@ -1683,43 +1683,43 @@ importers:
 
   packages/desktop-kit:
     dependencies:
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../1mask
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/engine':
+      '@coldai/clip-wallet-engine':
         specifier: workspace:*
         version: link:../engine
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../link
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../social
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../ui
-      '@clip-wallet/vault':
+      '@coldai/clip-wallet-vault':
         specifier: workspace:*
         version: link:../vault
       '@fontsource-variable/inter':
@@ -1783,112 +1783,112 @@ importers:
 
   packages/engine:
     dependencies:
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../1mask
-      '@clip-wallet/backup-client':
+      '@coldai/clip-wallet-backup-client':
         specifier: workspace:*
         version: link:../backup-client
-      '@clip-wallet/chains-algorand':
+      '@coldai/clip-wallet-chains-algorand':
         specifier: workspace:*
         version: link:../chains-algorand
-      '@clip-wallet/chains-antelope':
+      '@coldai/clip-wallet-chains-antelope':
         specifier: workspace:*
         version: link:../chains-antelope
-      '@clip-wallet/chains-aptos':
+      '@coldai/clip-wallet-chains-aptos':
         specifier: workspace:*
         version: link:../chains-aptos
-      '@clip-wallet/chains-bitcoin':
+      '@coldai/clip-wallet-chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
-      '@clip-wallet/chains-bitcoincash':
+      '@coldai/clip-wallet-chains-bitcoincash':
         specifier: workspace:*
         version: link:../chains-bitcoincash
-      '@clip-wallet/chains-cardano':
+      '@coldai/clip-wallet-chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
-      '@clip-wallet/chains-cosmos':
+      '@coldai/clip-wallet-chains-cosmos':
         specifier: workspace:*
         version: link:../chains-cosmos
-      '@clip-wallet/chains-evm':
+      '@coldai/clip-wallet-chains-evm':
         specifier: workspace:*
         version: link:../chains-evm
-      '@clip-wallet/chains-fuel':
+      '@coldai/clip-wallet-chains-fuel':
         specifier: workspace:*
         version: link:../chains-fuel
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
-      '@clip-wallet/chains-icp':
+      '@coldai/clip-wallet-chains-icp':
         specifier: workspace:*
         version: link:../chains-icp
-      '@clip-wallet/chains-multiversx':
+      '@coldai/clip-wallet-chains-multiversx':
         specifier: workspace:*
         version: link:../chains-multiversx
-      '@clip-wallet/chains-near':
+      '@coldai/clip-wallet-chains-near':
         specifier: workspace:*
         version: link:../chains-near
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
-      '@clip-wallet/chains-stacks':
+      '@coldai/clip-wallet-chains-stacks':
         specifier: workspace:*
         version: link:../chains-stacks
-      '@clip-wallet/chains-starknet':
+      '@coldai/clip-wallet-chains-starknet':
         specifier: workspace:*
         version: link:../chains-starknet
-      '@clip-wallet/chains-stellar':
+      '@coldai/clip-wallet-chains-stellar':
         specifier: workspace:*
         version: link:../chains-stellar
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../chains-substrate
-      '@clip-wallet/chains-sui':
+      '@coldai/clip-wallet-chains-sui':
         specifier: workspace:*
         version: link:../chains-sui
-      '@clip-wallet/chains-tezos':
+      '@coldai/clip-wallet-chains-tezos':
         specifier: workspace:*
         version: link:../chains-tezos
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
-      '@clip-wallet/chains-tron':
+      '@coldai/clip-wallet-chains-tron':
         specifier: workspace:*
         version: link:../chains-tron
-      '@clip-wallet/chains-xrpl':
+      '@coldai/clip-wallet-chains-xrpl':
         specifier: workspace:*
         version: link:../chains-xrpl
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/names':
+      '@coldai/clip-wallet-names':
         specifier: workspace:*
         version: link:../names
-      '@clip-wallet/plugins':
+      '@coldai/clip-wallet-plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@clip-wallet/route':
+      '@coldai/clip-wallet-route':
         specifier: workspace:*
         version: link:../route
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../social
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../ui
       '@noble/hashes':
@@ -1907,124 +1907,124 @@ importers:
 
   packages/extension-kit:
     dependencies:
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../1mask
-      '@clip-wallet/backup-client':
+      '@coldai/clip-wallet-backup-client':
         specifier: workspace:*
         version: link:../backup-client
-      '@clip-wallet/chains-algorand':
+      '@coldai/clip-wallet-chains-algorand':
         specifier: workspace:*
         version: link:../chains-algorand
-      '@clip-wallet/chains-antelope':
+      '@coldai/clip-wallet-chains-antelope':
         specifier: workspace:*
         version: link:../chains-antelope
-      '@clip-wallet/chains-aptos':
+      '@coldai/clip-wallet-chains-aptos':
         specifier: workspace:*
         version: link:../chains-aptos
-      '@clip-wallet/chains-bitcoin':
+      '@coldai/clip-wallet-chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
-      '@clip-wallet/chains-bitcoincash':
+      '@coldai/clip-wallet-chains-bitcoincash':
         specifier: workspace:*
         version: link:../chains-bitcoincash
-      '@clip-wallet/chains-cardano':
+      '@coldai/clip-wallet-chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
-      '@clip-wallet/chains-cosmos':
+      '@coldai/clip-wallet-chains-cosmos':
         specifier: workspace:*
         version: link:../chains-cosmos
-      '@clip-wallet/chains-evm':
+      '@coldai/clip-wallet-chains-evm':
         specifier: workspace:*
         version: link:../chains-evm
-      '@clip-wallet/chains-fuel':
+      '@coldai/clip-wallet-chains-fuel':
         specifier: workspace:*
         version: link:../chains-fuel
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
-      '@clip-wallet/chains-icp':
+      '@coldai/clip-wallet-chains-icp':
         specifier: workspace:*
         version: link:../chains-icp
-      '@clip-wallet/chains-multiversx':
+      '@coldai/clip-wallet-chains-multiversx':
         specifier: workspace:*
         version: link:../chains-multiversx
-      '@clip-wallet/chains-near':
+      '@coldai/clip-wallet-chains-near':
         specifier: workspace:*
         version: link:../chains-near
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
-      '@clip-wallet/chains-stacks':
+      '@coldai/clip-wallet-chains-stacks':
         specifier: workspace:*
         version: link:../chains-stacks
-      '@clip-wallet/chains-starknet':
+      '@coldai/clip-wallet-chains-starknet':
         specifier: workspace:*
         version: link:../chains-starknet
-      '@clip-wallet/chains-stellar':
+      '@coldai/clip-wallet-chains-stellar':
         specifier: workspace:*
         version: link:../chains-stellar
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../chains-substrate
-      '@clip-wallet/chains-sui':
+      '@coldai/clip-wallet-chains-sui':
         specifier: workspace:*
         version: link:../chains-sui
-      '@clip-wallet/chains-tezos':
+      '@coldai/clip-wallet-chains-tezos':
         specifier: workspace:*
         version: link:../chains-tezos
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
-      '@clip-wallet/chains-tron':
+      '@coldai/clip-wallet-chains-tron':
         specifier: workspace:*
         version: link:../chains-tron
-      '@clip-wallet/chains-xrpl':
+      '@coldai/clip-wallet-chains-xrpl':
         specifier: workspace:*
         version: link:../chains-xrpl
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/engine':
+      '@coldai/clip-wallet-engine':
         specifier: workspace:*
         version: link:../engine
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/kit-modules':
+      '@coldai/clip-wallet-kit-modules':
         specifier: workspace:*
         version: link:../kit-modules
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../link
-      '@clip-wallet/names':
+      '@coldai/clip-wallet-names':
         specifier: workspace:*
         version: link:../names
-      '@clip-wallet/plugins':
+      '@coldai/clip-wallet-plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@clip-wallet/route':
+      '@coldai/clip-wallet-route':
         specifier: workspace:*
         version: link:../route
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../social
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../ui
-      '@clip-wallet/vault':
+      '@coldai/clip-wallet-vault':
         specifier: workspace:*
         version: link:../vault
       '@fontsource-variable/inter':
@@ -2070,46 +2070,46 @@ importers:
 
   packages/features:
     dependencies:
-      '@clip-wallet/chains-algorand':
+      '@coldai/clip-wallet-chains-algorand':
         specifier: workspace:*
         version: link:../chains-algorand
-      '@clip-wallet/chains-aptos':
+      '@coldai/clip-wallet-chains-aptos':
         specifier: workspace:*
         version: link:../chains-aptos
-      '@clip-wallet/chains-cardano':
+      '@coldai/clip-wallet-chains-cardano':
         specifier: workspace:*
         version: link:../chains-cardano
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
-      '@clip-wallet/chains-near':
+      '@coldai/clip-wallet-chains-near':
         specifier: workspace:*
         version: link:../chains-near
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
-      '@clip-wallet/chains-starknet':
+      '@coldai/clip-wallet-chains-starknet':
         specifier: workspace:*
         version: link:../chains-starknet
-      '@clip-wallet/chains-stellar':
+      '@coldai/clip-wallet-chains-stellar':
         specifier: workspace:*
         version: link:../chains-stellar
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../chains-substrate
-      '@clip-wallet/chains-sui':
+      '@coldai/clip-wallet-chains-sui':
         specifier: workspace:*
         version: link:../chains-sui
-      '@clip-wallet/chains-tezos':
+      '@coldai/clip-wallet-chains-tezos':
         specifier: workspace:*
         version: link:../chains-tezos
-      '@clip-wallet/chains-ton':
+      '@coldai/clip-wallet-chains-ton':
         specifier: workspace:*
         version: link:../chains-ton
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/route':
+      '@coldai/clip-wallet-route':
         specifier: workspace:*
         version: link:../route
       '@solana-program/stake':
@@ -2140,7 +2140,7 @@ importers:
 
   packages/hardware:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@keystonehq/keystone-sdk':
@@ -2253,10 +2253,10 @@ importers:
       '@airgap/beacon-transport-postmessage':
         specifier: 4.8.0
         version: 4.8.0
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../1mask
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@near-js/crypto':
@@ -2277,7 +2277,7 @@ importers:
 
   packages/link:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/ciphers':
@@ -2311,46 +2311,46 @@ importers:
 
   packages/mobile-kit:
     dependencies:
-      '@clip-wallet/1mask':
+      '@coldai/clip-wallet-1mask':
         specifier: workspace:*
         version: link:../1mask
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/engine':
+      '@coldai/clip-wallet-engine':
         specifier: workspace:*
         version: link:../engine
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../link
-      '@clip-wallet/names':
+      '@coldai/clip-wallet-names':
         specifier: workspace:*
         version: link:../names
-      '@clip-wallet/plugins':
+      '@coldai/clip-wallet-plugins':
         specifier: workspace:*
         version: link:../plugins
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../social
-      '@clip-wallet/ui':
+      '@coldai/clip-wallet-ui':
         specifier: workspace:*
         version: link:../ui
-      '@clip-wallet/vault':
+      '@coldai/clip-wallet-vault':
         specifier: workspace:*
         version: link:../vault
       '@noble/hashes':
@@ -2501,7 +2501,7 @@ importers:
 
   packages/names:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       viem:
@@ -2520,7 +2520,7 @@ importers:
 
   packages/plugins:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/hashes':
@@ -2545,7 +2545,7 @@ importers:
 
   packages/route:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       viem:
@@ -2561,19 +2561,19 @@ importers:
 
   packages/security:
     dependencies:
-      '@clip-wallet/chains-evm':
+      '@coldai/clip-wallet-chains-evm':
         specifier: workspace:*
         version: link:../chains-evm
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
-      '@clip-wallet/chains-solana':
+      '@coldai/clip-wallet-chains-solana':
         specifier: workspace:*
         version: link:../chains-solana
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
       '@solana-program/token':
@@ -2601,16 +2601,16 @@ importers:
 
   packages/social:
     dependencies:
-      '@clip-wallet/chains-hedera':
+      '@coldai/clip-wallet-chains-hedera':
         specifier: workspace:*
         version: link:../chains-hedera
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/names':
+      '@coldai/clip-wallet-names':
         specifier: workspace:*
         version: link:../names
       viem:
@@ -2632,31 +2632,31 @@ importers:
 
   packages/ui:
     dependencies:
-      '@clip-wallet/config':
+      '@coldai/clip-wallet-config':
         specifier: workspace:*
         version: link:../config
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
-      '@clip-wallet/features':
+      '@coldai/clip-wallet-features':
         specifier: workspace:*
         version: link:../features
-      '@clip-wallet/hardware':
+      '@coldai/clip-wallet-hardware':
         specifier: workspace:*
         version: link:../hardware
-      '@clip-wallet/i18n':
+      '@coldai/clip-wallet-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../link
-      '@clip-wallet/media-client':
+      '@coldai/clip-wallet-media-client':
         specifier: workspace:*
         version: link:../media-client
-      '@clip-wallet/security':
+      '@coldai/clip-wallet-security':
         specifier: workspace:*
         version: link:../security
-      '@clip-wallet/social':
+      '@coldai/clip-wallet-social':
         specifier: workspace:*
         version: link:../social
       qrcode:
@@ -2699,7 +2699,7 @@ importers:
 
   packages/vault:
     dependencies:
-      '@clip-wallet/core':
+      '@coldai/clip-wallet-core':
         specifier: workspace:*
         version: link:../core
       '@noble/ciphers':
@@ -2739,40 +2739,40 @@ importers:
       '@bitauth/libauth':
         specifier: ^3.0.0
         version: 3.0.0
-      '@clip-wallet/chains-antelope':
+      '@coldai/clip-wallet-chains-antelope':
         specifier: workspace:*
         version: link:../chains-antelope
-      '@clip-wallet/chains-bitcoin':
+      '@coldai/clip-wallet-chains-bitcoin':
         specifier: workspace:*
         version: link:../chains-bitcoin
-      '@clip-wallet/chains-bitcoincash':
+      '@coldai/clip-wallet-chains-bitcoincash':
         specifier: workspace:*
         version: link:../chains-bitcoincash
-      '@clip-wallet/chains-cosmos':
+      '@coldai/clip-wallet-chains-cosmos':
         specifier: workspace:*
         version: link:../chains-cosmos
-      '@clip-wallet/chains-fuel':
+      '@coldai/clip-wallet-chains-fuel':
         specifier: workspace:*
         version: link:../chains-fuel
-      '@clip-wallet/chains-icp':
+      '@coldai/clip-wallet-chains-icp':
         specifier: workspace:*
         version: link:../chains-icp
-      '@clip-wallet/chains-multiversx':
+      '@coldai/clip-wallet-chains-multiversx':
         specifier: workspace:*
         version: link:../chains-multiversx
-      '@clip-wallet/chains-stacks':
+      '@coldai/clip-wallet-chains-stacks':
         specifier: workspace:*
         version: link:../chains-stacks
-      '@clip-wallet/chains-substrate':
+      '@coldai/clip-wallet-chains-substrate':
         specifier: workspace:*
         version: link:../chains-substrate
-      '@clip-wallet/chains-tron':
+      '@coldai/clip-wallet-chains-tron':
         specifier: workspace:*
         version: link:../chains-tron
-      '@clip-wallet/chains-xrpl':
+      '@coldai/clip-wallet-chains-xrpl':
         specifier: workspace:*
         version: link:../chains-xrpl
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../link
       '@cosmjs/amino':
@@ -2871,10 +2871,10 @@ importers:
 
   services/backup:
     dependencies:
-      '@clip-wallet/backup-client':
+      '@coldai/clip-wallet-backup-client':
         specifier: workspace:*
         version: link:../../packages/backup-client
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../../packages/link
     devDependencies:
@@ -2896,7 +2896,7 @@ importers:
 
   services/link-relay:
     dependencies:
-      '@clip-wallet/link':
+      '@coldai/clip-wallet-link':
         specifier: workspace:*
         version: link:../../packages/link
     devDependencies:
@@ -2921,7 +2921,7 @@ importers:
 
   services/media-proxy:
     dependencies:
-      '@clip-wallet/media-client':
+      '@coldai/clip-wallet-media-client':
         specifier: workspace:*
         version: link:../../packages/media-client
     devDependencies:

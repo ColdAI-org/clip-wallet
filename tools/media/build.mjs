@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Turns a README media run (apps/extension e2e/readme-media.spec.ts, `pnpm --filter @clip-wallet/extension media`)
+ * Turns a README media run (apps/extension e2e/readme-media.spec.ts, `pnpm --filter @coldai/clip-wallet-extension media`)
  * plus the committed e2e and desktop screenshots into docs/media:
  *
  *   stills     <name>-{light,dark}.webp       from <run>/stills (720 px wide, cwebp)

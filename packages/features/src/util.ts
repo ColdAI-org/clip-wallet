@@ -1,4 +1,4 @@
-import { ClipError, withoutTrailing } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
 
 /** Base units → "1,234.5" (no grouping beyond what toLocaleString gives, max `maxFraction` decimals). */
 export function formatUnits(amount: string | bigint, decimals: number, maxFraction = 6): string {

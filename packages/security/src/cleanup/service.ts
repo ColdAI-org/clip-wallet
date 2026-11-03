@@ -1,7 +1,7 @@
-import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance, say } from "@clip-wallet/core";
-import { looksLikeSpam } from "@clip-wallet/chains-evm";
-import { buildDissociate, mirrorFor, resolvePayer } from "@clip-wallet/chains-hedera";
-import { formatUnits, queueSteps, type Step } from "@clip-wallet/features";
+import { type ChainContext, ClipError, type Network, type Nft, type TokenBalance, say } from "@coldai/clip-wallet-core";
+import { looksLikeSpam } from "@coldai/clip-wallet-chains-evm";
+import { buildDissociate, mirrorFor, resolvePayer } from "@coldai/clip-wallet-chains-hedera";
+import { formatUnits, queueSteps, type Step } from "@coldai/clip-wallet-features";
 import { address, createNoopSigner } from "@solana/kit";
 import { getBurnCheckedInstruction, getCloseAccountInstruction } from "@solana-program/token";
 import type { SecurityHost } from "../host.js";

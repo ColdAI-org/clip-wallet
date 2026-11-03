@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, type Msg, type Warning, msg, say, titled } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type Msg, type Warning, msg, say, titled } from "@coldai/clip-wallet-core";
 import type { MultiversXClient, NetworkConfig } from "./api.js";
 import { EGLD_DECIMALS, EGLD_MULTI_ID, type TokenInfo, egldAsset, esdtAsset, isEsdtIdentifier, specFor, tickerOf } from "./networks.js";
 import { type Call, type Tx, parseCall } from "./tx.js";

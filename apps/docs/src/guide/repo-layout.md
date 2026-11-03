@@ -1,7 +1,7 @@
 # Repository layout
 
 Everything lives in one pnpm workspace: `packages/*`, `apps/*` and `services/*`. Every package under `packages/` is
-published to npm as `@clip-wallet/<name>` (plus `create-clip-wallet`), all at one version.
+published to npm as `@coldai/clip-wallet-<name>` (plus `create-clip-wallet`), all at one version.
 
 ## Packages
 
@@ -79,8 +79,8 @@ flowchart TB
   kit -. "background only" .-> vault
 ```
 
-`@clip-wallet/connect` depends on nothing in the workspace: it runs in dapps and speaks only public standards. The
-dotted lines are the only places allowed to import `@clip-wallet/vault` (see [Rules that never break](./rules.md)).
+`@coldai/clip-wallet-connect` depends on nothing in the workspace: it runs in dapps and speaks only public standards. The
+dotted lines are the only places allowed to import `@coldai/clip-wallet-vault` (see [Rules that never break](./rules.md)).
 
 ## Where the important things are
 

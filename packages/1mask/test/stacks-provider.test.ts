@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createStacksDispatcher, stacksInjectedAllowlist } from "../src/background/stacks.js";
 import { DEFAULT_IDENTITY } from "../src/shared/config.js";

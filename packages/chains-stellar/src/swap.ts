@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN, msg } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, WALLET_ORIGIN, msg } from "@coldai/clip-wallet-core";
 import { Account, type Asset, Operation, TransactionBuilder } from "@stellar/stellar-base";
 import { Horizon, type HorizonAccount } from "./horizon.js";
 import { type ClassicAsset, STELLAR_HORIZON, netOf, networkPassphrase, toStellarAsset } from "./networks.js";

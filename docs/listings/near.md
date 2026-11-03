@@ -10,7 +10,7 @@ supported during the transition (its README says so). Clip Wallet works with bot
 - NEAR Connect: no dApp change and no PR needed for the injected path. 1Mask answers NEAR Connect's
   `near-selector-ready` event with a `near-wallet-injected` wallet (`packages/1mask/src/inpage/near.ts`). A manifest PR only
   matters if we also want a sandboxed executor (for users without the extension) — not planned.
-- Wallet Selector: dApps add `setupClipWallet()` from `@clip-wallet/kit-modules/near`, or the module is upstreamed as
+- Wallet Selector: dApps add `setupClipWallet()` from `@coldai/clip-wallet-kit-modules/near`, or the module is upstreamed as
   `@near-wallet-selector/clip-wallet` (PR below).
 
 ## Prerequisites (from Wallet Selector CONTRIBUTING.md "Listing Criteria for Third Party Wallet")

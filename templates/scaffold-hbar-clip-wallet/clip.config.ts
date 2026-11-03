@@ -1,4 +1,4 @@
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 // Name, description, rdns, homepage, icon, app id and the extension's public key. `pnpm wallet:identity` writes this
 // file; edit it there, not here.
 import identity from "./wallet.identity.json" with { type: "json" };
@@ -6,7 +6,7 @@ import identity from "./wallet.identity.json" with { type: "json" };
 /**
  * The one config for every platform this wallet ships: the browser extension (packages/extension), the desktop app
  * (packages/desktop) and the phone app (packages/mobile). Each setting and its default is documented in
- * @clip-wallet/config (node_modules/@clip-wallet/config/README.md); invalid values fail every build in plain words.
+ * @coldai/clip-wallet-config (node_modules/@coldai/clip-wallet-config/README.md); invalid values fail every build in plain words.
  */
 export default defineConfig({
   ...identity,

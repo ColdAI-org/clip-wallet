@@ -1,4 +1,4 @@
-import type { DappRequest, DecodedRequest, Network, Warning } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest, Network, Warning } from "@coldai/clip-wallet-core";
 import type { Unavailable } from "../views.js";
 
 /** The Warning codes threat intel may raise (existing and Phase 2.5 additive ones). */

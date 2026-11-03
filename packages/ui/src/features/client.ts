@@ -3,7 +3,7 @@
  * the extension's message bus (docs/phase2/integration/features.md); a plain fake in tests. Nothing here
  * carries key material: every action returns the approval it queued on the normal approval path.
  *
- * View types come from @clip-wallet/features/views (type-only, no runtime import).
+ * View types come from @coldai/clip-wallet-features/views (type-only, no runtime import).
  */
 import type {
   FeaturedDappView,
@@ -16,7 +16,7 @@ import type {
   SwapQuoteView,
   TradeOfferView,
   TradeReviewView,
-} from "@clip-wallet/features/views";
+} from "@coldai/clip-wallet-features/views";
 
 export type {
   FeaturedDappView,
@@ -32,7 +32,7 @@ export type {
   TradeLegView,
   TradeOfferView,
   TradeReviewView,
-} from "@clip-wallet/features/views";
+} from "@coldai/clip-wallet-features/views";
 
 export type TradeLegInput = { assetKey: string; amount: string } | { nft: { tokenId: string; serial: string } };
 

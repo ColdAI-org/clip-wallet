@@ -1,5 +1,5 @@
-import type { ChainContext } from "@clip-wallet/core";
-import type { Step } from "@clip-wallet/features";
+import type { ChainContext } from "@coldai/clip-wallet-core";
+import type { Step } from "@coldai/clip-wallet-features";
 import type { GrantRisk, GrantView, Unavailable } from "../views.js";
 
 /** How to take a grant back. Built into a DappRequest on the normal approval path. */

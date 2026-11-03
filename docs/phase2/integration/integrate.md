@@ -9,9 +9,9 @@ merge needed no wiring: the extension's Receive only offers the BIP-84 address.
 | What | Where |
 |---|---|
 | Network/asset catalogue (14 families) | `packages/engine/src/catalog.ts`; `apps/extension/src/shared/catalog.ts` re-exports it |
-| Passkey backup, phrase flag, accounts, names | `packages/engine/src/platform.ts` (`@clip-wallet/engine/platform`); the extension re-exports it |
-| Feature host / CoinGecko feed | `packages/engine/src/features.ts` (`@clip-wallet/engine/features`); the extension re-exports it |
-| Feature request schemas only | `@clip-wallet/features/messages` (pages and the engine root don't pull in every provider) |
+| Passkey backup, phrase flag, accounts, names | `packages/engine/src/platform.ts` (`@coldai/clip-wallet-engine/platform`); the extension re-exports it |
+| Feature host / CoinGecko feed | `packages/engine/src/features.ts` (`@coldai/clip-wallet-engine/features`); the extension re-exports it |
+| Feature request schemas only | `@coldai/clip-wallet-features/messages` (pages and the engine root don't pull in every provider) |
 | Extension orchestration | `apps/extension/src/background/service.ts` (still its own; see "Extension vs engine") |
 | Mobile orchestration | `packages/engine/src/engine.ts` (`WalletEngine`) with the same changes ported |
 | Hosted services | `clip.config` `services.backupUrl` / `services.mediaProxyUrl` (new, optional, https). Unset = passkey backup hidden with a plain note; NFT media show placeholders |
@@ -91,7 +91,7 @@ the move recipe in `mobile.md` is done.
 MV3 service workers can't fetch code chunks: `import()` is forbidden in service workers, and WXT inlines it.
 WXT does emit `import()` as a lazy initialiser inside the one file, though, so code behind it is parsed but not
 evaluated until first use. That is used for:
-- The Ledger/Keystone signers (`@clip-wallet/hardware/core` is the light half).
+- The Ledger/Keystone signers (`@coldai/clip-wallet-hardware/core` is the light half).
 - The ten Phase 2 chain modules (`lazyChain` in `wiring.ts`; each package has a data-only `./networks` entry so
   the catalogue doesn't pull module code in).
 
@@ -102,7 +102,7 @@ loading). A Node profile shows compiling the 10 MB file is about half of that, s
 - Replace the Hedera SDK protobufs in chains-hedera: about 2 MB.
 - Drop `@walletconnect/pay` and dedupe zod and noble.
 
-The page chunk shrank because pages now import only `@clip-wallet/features/messages`.
+The page chunk shrank because pages now import only `@coldai/clip-wallet-features/messages`.
 
 ## Tests
 

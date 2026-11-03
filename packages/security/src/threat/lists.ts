@@ -1,7 +1,7 @@
-import type { FeatureHost } from "@clip-wallet/features";
+import type { FeatureHost } from "@coldai/clip-wallet-features";
 import { fetchJson } from "../util.js";
 import type { ProviderStatus, ThreatFinding, ThreatIntelProvider } from "./types.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 /**
  * Open phishing lists, downloaded whole and matched on the device. Verified 2026-10-03:

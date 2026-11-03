@@ -1,4 +1,4 @@
-import type { DecodedRequest } from "@clip-wallet/core";
+import type { DecodedRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { findShortfall, needsFromDecoded } from "../src/index.js";
 import { ETH_SEPOLIA, HBAR, PORTFOLIO, USDC_BASE, USDC_HEDERA } from "./fixtures.js";

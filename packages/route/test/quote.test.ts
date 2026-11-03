@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { MAINNET_VERIFIER_FAMILIES, RouteClient, isTestVerifier, testnetGraph } from "../src/index.js";
 import {

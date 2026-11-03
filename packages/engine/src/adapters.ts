@@ -2,16 +2,16 @@
  * Adapters from the real packages to the engine's seams (types.ts). Environment-agnostic: no chrome.*,
  * no DOM, no React Native. The host passes WalletConnect's storage/factory when its platform needs one.
  */
-import type { Family, Network } from "@clip-wallet/core";
-import { ClipError, knownMsg, recallMsg, msg } from "@clip-wallet/core";
-import type { ApprovalPlan, PlanStep, SessionView } from "@clip-wallet/ui";
-import type { ClipConfig } from "@clip-wallet/config";
-import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, N87_CHAIN_READ, N87_CONNECT_METHODS, type OneMaskRouter, type RouterPort } from "@clip-wallet/1mask/background";
-import { P2_CONNECT_METHODS } from "@clip-wallet/1mask/background/p2";
-import type { createStarknetModule } from "@clip-wallet/chains-starknet";
-import type { createTonModule } from "@clip-wallet/chains-ton";
-import type { WalletConnectWalletOptions } from "@clip-wallet/1mask/walletconnect";
-import { createRouteClient, findShortfall, type RouteClient, type SettleFunding } from "@clip-wallet/route";
+import type { Family, Network } from "@coldai/clip-wallet-core";
+import { ClipError, knownMsg, recallMsg, msg } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan, PlanStep, SessionView } from "@coldai/clip-wallet-ui";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { CARDANO_METHODS_ALLOWED, createOneMaskRouter, EVM_METHODS, N87_CHAIN_READ, N87_CONNECT_METHODS, type OneMaskRouter, type RouterPort } from "@coldai/clip-wallet-1mask/background";
+import { P2_CONNECT_METHODS } from "@coldai/clip-wallet-1mask/background/p2";
+import type { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import type { createTonModule } from "@coldai/clip-wallet-chains-ton";
+import type { WalletConnectWalletOptions } from "@coldai/clip-wallet-1mask/walletconnect";
+import { createRouteClient, findShortfall, type RouteClient, type SettleFunding } from "@coldai/clip-wallet-route";
 import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./types.js";
 
 /** Connect methods of every family's connector (same set as the extension's). */
@@ -89,7 +89,7 @@ export class OneMaskConnector implements DappConnector {
 
 /* ------------------------------------------------------------------ WalletConnect */
 
-type WcWallet = Awaited<ReturnType<typeof import("@clip-wallet/1mask/walletconnect")["createWalletConnectWallet"]>>;
+type WcWallet = Awaited<ReturnType<typeof import("@coldai/clip-wallet-1mask/walletconnect")["createWalletConnectWallet"]>>;
 
 export interface WalletConnectAdapterOptions {
   /** Reown project id. Empty/undefined = WalletConnect is switched off in this build, said plainly. */
@@ -101,8 +101,8 @@ export interface WalletConnectAdapterOptions {
   /** Platform storage etc. for @walletconnect/core (React Native passes nothing: react-native-compat handles it). */
   coreOptions?: Record<string, unknown>;
   walletKitFactory?: WalletConnectWalletOptions["walletKitFactory"];
-  /** Defaults to a dynamic import of @clip-wallet/1mask/walletconnect. */
-  load?: () => Promise<typeof import("@clip-wallet/1mask/walletconnect")>;
+  /** Defaults to a dynamic import of @coldai/clip-wallet-1mask/walletconnect. */
+  load?: () => Promise<typeof import("@coldai/clip-wallet-1mask/walletconnect")>;
 }
 
 export class WalletConnectAdapter implements WalletConnectBridge {
@@ -123,7 +123,7 @@ export class WalletConnectAdapter implements WalletConnectBridge {
     if (!projectId) {
       return Promise.reject(new ClipError("Connecting with a code isn't switched on in this build yet.", "walletconnect/no-project-id"));
     }
-    const load = this.o.load ?? (() => import("@clip-wallet/1mask/walletconnect"));
+    const load = this.o.load ?? (() => import("@coldai/clip-wallet-1mask/walletconnect"));
     this.wallet ??= load().then(({ createWalletConnectWallet }) =>
       createWalletConnectWallet({
         projectId,
@@ -231,7 +231,7 @@ const PLAIN_ETA: Record<Family, number> = {
   bitcoincash: 600,
 };
 
-/** CLPRouter funding through @clip-wallet/route. */
+/** CLPRouter funding through @coldai/clip-wallet-route. */
 export class RoutePlannerAdapter implements RoutePlanner {
   private client: RouteClient;
   constructor(

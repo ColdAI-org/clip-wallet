@@ -1,4 +1,4 @@
-import type { Account, ChainContext, DappRequest, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, DappRequest, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { hash } from "starknet";
 import { STARKNET_SEPOLIA, STRK_ADDRESS, ETH_ADDRESS } from "../src/index.js";
 import { fromHex, hex } from "../src/util.js";

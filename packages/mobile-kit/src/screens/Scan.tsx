@@ -5,10 +5,10 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { isWalletConnectUri, userMessageOf } from "@clip-wallet/ui";
+import { isWalletConnectUri, userMessageOf } from "@coldai/clip-wallet-ui";
 import { useWallet } from "../ui/context";
 import { tradeOfferFrom } from "../lib/deeplinks";
-import { parseOfferUri } from "@clip-wallet/link";
+import { parseOfferUri } from "@coldai/clip-wallet-link";
 import { Button, ErrorNote, Notice, Screen, T } from "../ui/kit";
 import { useMobileT } from "../i18n";
 

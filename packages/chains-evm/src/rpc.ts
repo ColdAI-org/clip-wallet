@@ -1,4 +1,4 @@
-import { ClipError, type Network } from "@clip-wallet/core";
+import { ClipError, type Network } from "@coldai/clip-wallet-core";
 
 /** A JSON-RPC error the node returned (the request reached a node; trying another URL will not help). */
 export class RpcError extends Error {

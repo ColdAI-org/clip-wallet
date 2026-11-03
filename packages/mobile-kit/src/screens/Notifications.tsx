@@ -5,7 +5,7 @@
  */
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { canonicalAmount, formatFiat, mergeBalances, relativeTime, type NotificationKind, type NotificationSettings, type PriceAlert } from "@clip-wallet/ui";
+import { canonicalAmount, formatFiat, mergeBalances, relativeTime, type NotificationKind, type NotificationSettings, type PriceAlert } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, Notice, Screen, Spinner, T, Toggle } from "../ui/kit";
 import { useMobileT, type MobileMessageId } from "../i18n";

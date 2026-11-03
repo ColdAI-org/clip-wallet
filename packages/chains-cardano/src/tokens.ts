@@ -2,7 +2,7 @@
  * Native asset metadata from Koios /asset_info: Cardano Token Registry (decimals, ticker), CIP-25 (label 721 in the
  * latest mint transaction's metadata) and CIP-68 (reference-token datum, labels 222 NFT / 333 FT / 444 RFT).
  */
-import type { AssetRef, Nft, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Nft, NetworkId } from "@coldai/clip-wallet-core";
 import type { Koios, KoiosAssetInfo } from "./koios.js";
 import { tokenAssetKey } from "./networks.js";
 import { cip68Label, displayAssetName, nameOf, policyOf } from "./value.js";

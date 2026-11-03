@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 export const DEFAULT_TIMEOUT_MS = 6000;
 

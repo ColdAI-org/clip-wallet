@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, msg, titled, type Msg } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, msg, titled, type Msg } from "@coldai/clip-wallet-core";
 import {
   type AnyRawTransaction,
   AccountAddress,

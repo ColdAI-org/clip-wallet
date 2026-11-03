@@ -1,11 +1,11 @@
 /// <reference path="./pako.d.ts" />
 /**
- * gunzip for plugin installs on React Native: Hermes has no DecompressionStream, so @clip-wallet/plugins takes this
+ * gunzip for plugin installs on React Native: Hermes has no DecompressionStream, so @coldai/clip-wallet-plugins takes this
  * through `NpmOptions.gunzip`. pako 3.0.2 `Inflate` (windowBits 16+15 = gzip wrapper), stopping as soon as the
  * output passes `maxBytes` (a 5 MB tarball could otherwise inflate to gigabytes).
  */
 import { Inflate } from "pako";
-import { InstallError } from "@clip-wallet/plugins";
+import { InstallError } from "@coldai/clip-wallet-plugins";
 
 export function gunzipCapped(bytes: Uint8Array, maxBytes: number): Uint8Array {
   const parts: Uint8Array[] = [];

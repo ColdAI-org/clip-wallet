@@ -1,9 +1,9 @@
 // The path every request takes in the background, reduced to its steps. The real code is WalletService in
-// @clip-wallet/extension-kit (and WalletEngine in @clip-wallet/engine), which also adds security checks, plugin
+// @coldai/clip-wallet-extension-kit (and WalletEngine in @coldai/clip-wallet-engine), which also adds security checks, plugin
 // notes, route planning and hardware wallets.
-import { ClipError, decodeFailureReason, sanitizeDecoded, type ChainContext, type ChainModule, type DappRequest, type DecodedRequest } from "@clip-wallet/core";
+import { ClipError, decodeFailureReason, sanitizeDecoded, type ChainContext, type ChainModule, type DappRequest, type DecodedRequest } from "@coldai/clip-wallet-core";
 // Type-only: only the background, the mobile and desktop hosts and onboarding may import the vault's code.
-import type { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
+import type { ClipVault, hashSignablePayload } from "@coldai/clip-wallet-vault";
 
 export async function handle(
   request: DappRequest,

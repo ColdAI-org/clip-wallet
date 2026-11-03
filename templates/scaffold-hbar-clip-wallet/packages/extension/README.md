@@ -1,7 +1,7 @@
 # The wallet extension
 
 Your wallet as a Manifest V3 browser extension, built with [WXT](https://wxt.dev) on
-[`@clip-wallet/extension-kit`](https://www.npmjs.com/package/@clip-wallet/extension-kit). The kit is the wallet
+[`@coldai/clip-wallet-extension-kit`](https://www.npmjs.com/package/@coldai/clip-wallet-extension-kit). The kit is the wallet
 (background, vault, approvals, security checks, 1Mask for 14 network families, the pages); this folder holds one-line
 entrypoints and the toolbar icons. Name, theme, networks, languages and services come from `../../clip.config.ts`, the
 config every platform of this wallet shares.

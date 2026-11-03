@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { RecordStore, openTransportReplayer } from "@ledgerhq/hw-transport-mocker";
-import type { SignablePayload } from "@clip-wallet/core";
+import type { SignablePayload } from "@coldai/clip-wallet-core";
 import { HardwareKeyring, LedgerSigner, type HardwareAccount, type HardwareSigner } from "../src/index.js";
 
 export const fixture = (name: string): string => readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)), "utf8");

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { isAddress } from "viem";
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import { CLIP_HANDLES_ABI, ClipHandlesBackend, MultiNameResolver, isValidHandle, looksLikeName, parseHandle, type HandleRecords, type HandlesReader } from "../src/index.js";
 
 const ALICE = "0x9858EfFD232B4033E47d90003D41EC34EcaEda94";

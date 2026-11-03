@@ -1,4 +1,4 @@
-# @clip-wallet/chains-multiversx
+# @coldai/clip-wallet-chains-multiversx
 
 MultiversX `ChainModule` for Clip Wallet. It builds, decodes and dry-runs EGLD and ESDT transactions, and it never
 touches keys. `prepare()` returns the exact bytes a MultiversX ed25519 signature covers. `finalize()` checks the vault's

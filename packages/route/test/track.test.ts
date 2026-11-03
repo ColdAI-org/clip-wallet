@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { RouteClient, RouteStatusClient, describeRoute, settleOnHedera, trackRoute, type RouteStatusResponse } from "../src/index.js";
 import { formatUnits, parseUnits, usdToUnits } from "../src/format.js";

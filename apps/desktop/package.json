@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/desktop",
+  "name": "@coldai/clip-wallet-desktop",
   "productName": "Clip Wallet",
   "version": "0.1.0",
   "description": "Clip Wallet for macOS, Windows and Linux, with a built-in dapp browser. Test networks only.",
@@ -18,10 +18,10 @@
   "type": "module",
   "main": "out/main/index.mjs",
   "scripts": {
-    "build": "pnpm --filter @clip-wallet/desktop-kit inpage && NODE_OPTIONS=--conditions=development electron-vite build",
-    "dev": "pnpm --filter @clip-wallet/desktop-kit inpage && NODE_OPTIONS=--conditions=development electron-vite dev",
+    "build": "pnpm --filter @coldai/clip-wallet-desktop-kit inpage && NODE_OPTIONS=--conditions=development electron-vite build",
+    "dev": "pnpm --filter @coldai/clip-wallet-desktop-kit inpage && NODE_OPTIONS=--conditions=development electron-vite dev",
     "start": "electron .",
-    "typecheck": "pnpm --filter @clip-wallet/desktop-kit inpage && tsc -p tsconfig.json --noEmit",
+    "typecheck": "pnpm --filter @coldai/clip-wallet-desktop-kit inpage && tsc -p tsconfig.json --noEmit",
     "test": "echo \"apps/desktop: unit tests live in packages/desktop-kit; pnpm e2e drives this build\"",
     "e2e": "pnpm build && NODE_OPTIONS=--conditions=development playwright test",
     "dist:mac": "pnpm build && NODE_OPTIONS=--conditions=development electron-builder --mac --config electron-builder.config.cjs",
@@ -30,11 +30,11 @@
     "dist:dir": "pnpm build && NODE_OPTIONS=--conditions=development electron-builder --dir --config electron-builder.config.cjs"
   },
   "devDependencies": {
-    "@clip-wallet/config": "workspace:*",
-    "@clip-wallet/desktop-kit": "workspace:*",
-    "@clip-wallet/engine": "workspace:*",
-    "@clip-wallet/link": "workspace:*",
-    "@clip-wallet/vault": "workspace:*",
+    "@coldai/clip-wallet-config": "workspace:*",
+    "@coldai/clip-wallet-desktop-kit": "workspace:*",
+    "@coldai/clip-wallet-engine": "workspace:*",
+    "@coldai/clip-wallet-link": "workspace:*",
+    "@coldai/clip-wallet-vault": "workspace:*",
     "@playwright/test": "^1.64.1",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",

@@ -2,7 +2,7 @@
  * Notification text in every shipped language. Bundled (it is small) because the background shows notices
  * without a page open.
  */
-import { createTranslator, type LocaleCode, type TFunction, type Translation } from "@clip-wallet/i18n";
+import { createTranslator, type LocaleCode, type TFunction, type Translation } from "@coldai/clip-wallet-i18n";
 import en from "./locales/en.js";
 import de from "./locales/de.js";
 import fr from "./locales/fr.js";

@@ -1,4 +1,4 @@
-import type { AssetRef, ChainContext, DappRequest, DecodedRequest, Network, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, ChainContext, DappRequest, DecodedRequest, Network, TokenBalance } from "@coldai/clip-wallet-core";
 
 /**
  * What the feature services need from the wallet background. The extension's WalletService implements it

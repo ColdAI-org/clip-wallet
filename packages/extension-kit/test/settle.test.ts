@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, it } from "vitest";
 import { resetMockSettleCredits } from "../src/background/mocks/mock-settle";
-import type { ApprovalView } from "@clip-wallet/ui";
+import type { ApprovalView } from "@coldai/clip-wallet-ui";
 import { makeService, PASSWORD } from "./helpers";
 
 async function ready() {

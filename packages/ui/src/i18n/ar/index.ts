@@ -17,7 +17,7 @@
  *   Brand, product, device and network names and asset symbols (Secure Trade, WalletConnect, Ledger, Keystone,
  *   Face ID, ETH…) stay in Latin script, verbatim.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

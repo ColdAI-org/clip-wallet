@@ -18,8 +18,8 @@ import * as Device from "expo-device";
 import { getRandomBytes } from "expo-crypto";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { ClipError } from "@clip-wallet/core";
-import type { PrfProvider } from "@clip-wallet/engine";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { PrfProvider } from "@coldai/clip-wallet-engine";
 import { APP } from "../env";
 
 const SERVICE = `${APP.config.rdns}.devicekey`;

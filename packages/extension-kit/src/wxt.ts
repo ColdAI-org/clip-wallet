@@ -3,7 +3,7 @@
  *
  *   // wxt.config.ts
  *   import { defineConfig } from "wxt";
- *   import { clipWallet } from "@clip-wallet/extension-kit/wxt";
+ *   import { clipWallet } from "@coldai/clip-wallet-extension-kit/wxt";
  *   import clipConfig from "./clip.config";
  *   export default defineConfig(clipWallet({ config: clipConfig }));
  *
@@ -30,13 +30,13 @@ import {
   walletKey,
   type ClipConfig,
   type ClipConfigInput,
-} from "@clip-wallet/config";
-import { createTonModule } from "@clip-wallet/chains-ton";
-import { walletNetworks } from "@clip-wallet/engine/catalog";
-import { isReviewedFeeReceiver } from "@clip-wallet/features/sodax-fee";
-import { SANDBOX_CSP, SANDBOX_PAGE } from "@clip-wallet/plugins";
-import { SETTLE_DEPLOYMENTS } from "@clip-wallet/route";
-import { assertSecurityFloor, type SecurityConfig } from "@clip-wallet/security";
+} from "@coldai/clip-wallet-config";
+import { createTonModule } from "@coldai/clip-wallet-chains-ton";
+import { walletNetworks } from "@coldai/clip-wallet-engine/catalog";
+import { isReviewedFeeReceiver } from "@coldai/clip-wallet-features/sodax-fee";
+import { SANDBOX_CSP, SANDBOX_PAGE } from "@coldai/clip-wallet-plugins";
+import { SETTLE_DEPLOYMENTS } from "@coldai/clip-wallet-route";
+import { assertSecurityFloor, type SecurityConfig } from "@coldai/clip-wallet-security";
 import type { UserConfig } from "wxt";
 import { extensionIdFromDigest, passkeyBridgeUrl } from "./identity";
 
@@ -144,14 +144,14 @@ export function sodaxFor(config: ClipConfig, env: Record<string, string | undefi
 }
 
 /**
- * The mainnet checklist's SODAX item that needs @clip-wallet/features: the fee receiver is on the reviewed list
+ * The mainnet checklist's SODAX item that needs @coldai/clip-wallet-features: the fee receiver is on the reviewed list
  * (src/swap/sodax-fee-receivers.json). mainnetProblems() covers the rest (both set, the server over https, an address).
  */
 export function sodaxProblems(env: Record<string, string | undefined>): string[] {
   const receiver = env[SODAX_FEE_RECEIVER_ENV];
   if (!receiver || !/^0x[0-9a-fA-F]{40}$/.test(receiver) || isReviewedFeeReceiver(receiver)) return [];
   return [
-    `${SODAX_FEE_RECEIVER_ENV}: ${receiver} isn't on the reviewed list of fee receivers (@clip-wallet/features src/swap/sodax-fee-receivers.json); add it there in a reviewed commit, or unset both SODAX settings`,
+    `${SODAX_FEE_RECEIVER_ENV}: ${receiver} isn't on the reviewed list of fee receivers (@coldai/clip-wallet-features src/swap/sodax-fee-receivers.json); add it there in a reviewed commit, or unset both SODAX settings`,
   ];
 }
 

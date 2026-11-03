@@ -2,7 +2,7 @@
 
 A chain module teaches Clip Wallet one family of networks. This page builds a complete one, step by step, for
 **Example Ledger**: a made-up account-based ed25519 network with a small JSON-RPC API. Everything on this page compiles
-against the real `@clip-wallet/core`, and the docs' test suite runs the module: it decodes, prepares, refuses a bad
+against the real `@coldai/clip-wallet-core`, and the docs' test suite runs the module: it decodes, prepares, refuses a bad
 signature and reads balances.
 
 ::: tip Adding a network to an existing family?
@@ -27,7 +27,7 @@ checks the signature and sends.
 
 ## 1. The package and the family
 
-1. Create `packages/chains-<family>` with a `package.json` that depends on `@clip-wallet/core` (never the vault) and a
+1. Create `packages/chains-<family>` with a `package.json` that depends on `@coldai/clip-wallet-core` (never the vault) and a
    `tsconfig.json` copied from another chain package. Run `node tools/release/normalize-manifests.mjs` to give it the
    published manifest shape.
 2. Add the family to `Family` and `FAMILIES` in `packages/core/src/index.ts` (additive), and to `NETWORK_FAMILIES` in

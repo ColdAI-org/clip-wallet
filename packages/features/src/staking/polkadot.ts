@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, msg, titled, say } from "@coldai/clip-wallet-core";
 import {
   type Connection,
   Enum,
@@ -15,7 +15,7 @@ import {
   spendableNative,
   storageEntries,
   substrateModule,
-} from "@clip-wallet/chains-substrate";
+} from "@coldai/clip-wallet-chains-substrate";
 import type { StakeOptionView, StakePositionView } from "../views.js";
 import { formatUnits, percent } from "../util.js";
 import type { StakeActionParams, StakeBuild, StakingProvider } from "./types.js";

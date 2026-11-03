@@ -1,5 +1,5 @@
 /**
- * The desktop app is @clip-wallet/desktop-kit; this project is the brand. clipDesktop() builds the electron-vite config
+ * The desktop app is @coldai/clip-wallet-desktop-kit; this project is the brand. clipDesktop() builds the electron-vite config
  * from the wallet's one clip.config.ts (at the project root, shared with the extension and the phone app): identity,
  * the resolved config for the main process and the pages, the native-messaging host, and the mainnet checklist.
  *
@@ -9,7 +9,7 @@
  *   CLIP_UPDATES=1                  auto-update from GitHub releases (signed builds only; see ../../docs/signing.md)
  */
 import { defineConfig } from "electron-vite";
-import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
+import { clipDesktop } from "@coldai/clip-wallet-desktop-kit/electron-vite";
 import clipConfig from "../../clip.config";
 
 // electron-vite's progress line needs a TTY; plain no-ops keep CI and piped builds working.

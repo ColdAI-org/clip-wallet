@@ -1,11 +1,11 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { OnApplicationComplete, encodeAddress, encodeUnsignedSimulateTransaction, msgpackRawDecode, msgpackRawEncode } from "algosdk";
 import { type Algod, AlgodError, plainAlgorandError } from "./algod.js";
 import { type AsaInfo, asaAsset, asaInfo } from "./assets.js";
 import { algoAsset } from "./networks.js";
 import type { Item, Normalized } from "./txn.js";
 import { abs, big, formatUnits, hex, short, textOf } from "./util.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 export interface Line {
   label: string;

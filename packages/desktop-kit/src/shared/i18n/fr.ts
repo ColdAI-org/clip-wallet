@@ -1,5 +1,5 @@
 /** French (same glossary as packages/ui/src/i18n/fr: « tu », portefeuille, déverrouiller / verrouiller). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const fr: Translation<DesktopMessages> = {

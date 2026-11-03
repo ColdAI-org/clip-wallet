@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/ui": patch
-"@clip-wallet/mobile-kit": patch
+"@coldai/clip-wallet-ui": patch
+"@coldai/clip-wallet-mobile-kit": patch
 ---
 
 Approval screens hide "blind-signing" warnings only when the request is blocked as unreadable, where the blocked notice

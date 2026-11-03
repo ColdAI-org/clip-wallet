@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { canonicalAmount, parseUnits, userMessageOf, type StakeAssetView, type StakePositionView } from "@clip-wallet/ui";
+import { canonicalAmount, parseUnits, userMessageOf, type StakeAssetView, type StakePositionView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, Choices, Empty, ErrorNote, Field, Row, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT, type MobileMessageId } from "../i18n";

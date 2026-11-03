@@ -1,4 +1,4 @@
-# @clip-wallet/media-client
+# @coldai/clip-wallet-media-client
 
 Decides what an untrusted NFT media URL may become. Shared by the wallet UI (to build proxy URLs) and the media proxy
 service (to re-validate them), so both sides agree. Pure functions, no I/O.
@@ -14,13 +14,13 @@ service (to re-validate them), so both sides agree. Pure functions, no I/O.
 ## Install
 
 ```sh
-npm i @clip-wallet/media-client
+npm i @coldai/clip-wallet-media-client
 ```
 
 ## Example
 
 ```ts
-import { mediaProxyUrl } from "@clip-wallet/media-client";
+import { mediaProxyUrl } from "@coldai/clip-wallet-media-client";
 
 // null = show a placeholder and fetch nothing.
 const media = mediaProxyUrl("https://media.example.com", "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/1.png");
@@ -37,7 +37,7 @@ Without a configured proxy (`services.mediaProxyUrl` in clip.config.ts) the wall
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

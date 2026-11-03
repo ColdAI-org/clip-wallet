@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOCALE_CODES, checkTranslation } from "@clip-wallet/i18n";
+import { LOCALE_CODES, checkTranslation } from "@coldai/clip-wallet-i18n";
 import { NOTIFICATION_CATALOGS, notificationText } from "../src/index.js";
 import en from "../src/notifications/locales/en.js";
 

@@ -1,4 +1,4 @@
-# @clip-wallet/chains-sui
+# @coldai/clip-wallet-chains-sui
 
 The Sui `ChainModule` for Clip Wallet. It builds, decodes and dry-runs transactions but never touches keys. `prepare()` returns the 32-byte digest the
 vault signs (ed25519), and `finalize()` serializes the signature, then executes the transaction or returns it.
@@ -11,14 +11,14 @@ Built on `@mysten/sui` 2.33 for BCS, `TransactionDataBuilder`, `Transaction.buil
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-sui @clip-wallet/core
+npm i @coldai/clip-wallet-chains-sui @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createSuiModule, SUI_TESTNET } from "@clip-wallet/chains-sui";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createSuiModule, SUI_TESTNET } from "@coldai/clip-wallet-chains-sui";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createSuiModule();
@@ -109,7 +109,7 @@ sender must be this account, and the input `chain` must match the request's netw
 
 ## Wallet-built DeFi transactions (`src/defi.ts`)
 
-Used by `@clip-wallet/features` (Sui staking, Aftermath swaps). Pure building and parsing with `@mysten/sui`: no keys, no network.
+Used by `@coldai/clip-wallet-features` (Sui staking, Aftermath swaps). Pure building and parsing with `@mysten/sui`: no keys, no network.
 Each builder returns Wallet Standard transaction JSON, which `sui:signAndExecuteTransaction` resolves and builds as above.
 
 - `buildStakeTransaction({ sender, validator, amount })`: `SplitCoins(gas, amount)` then `0x3::sui_system::request_add_stake(0x5, coin,
@@ -139,7 +139,7 @@ Each builder returns Wallet Standard transaction JSON, which `sui:signAndExecute
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

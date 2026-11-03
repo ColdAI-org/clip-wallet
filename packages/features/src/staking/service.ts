@@ -1,4 +1,4 @@
-import { ClipError, type Network, say, recallMsg, knownMsg } from "@clip-wallet/core";
+import { ClipError, type Network, say, recallMsg, knownMsg } from "@coldai/clip-wallet-core";
 import type { FeatureHost } from "../host.js";
 import { queueSteps } from "../steps.js";
 import { parseUnits } from "../util.js";

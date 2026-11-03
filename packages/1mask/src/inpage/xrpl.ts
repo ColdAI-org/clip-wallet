@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { IdentifierArray, Wallet, WalletAccount } from "@wallet-standard/base";
 import {
   StandardConnect,

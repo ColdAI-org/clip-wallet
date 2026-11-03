@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 /** Mirror node REST API (https://docs.hedera.com/hedera/sdks-and-apis/rest-api). Read-only. */
 

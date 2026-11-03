@@ -2,7 +2,7 @@
 
 Three smaller packages round out the wallet. None of them holds keys.
 
-## Social (`@clip-wallet/social`)
+## Social (`@coldai/clip-wallet-social`)
 
 Background services for the people side of a wallet. Hosts build a `SocialService`; screens use its views over the
 message bus.
@@ -16,7 +16,7 @@ message bus.
   turns them on, never at install.
 - **Discover.** Market data for the assets the person holds or watches.
 
-## Names (`@clip-wallet/names`)
+## Names (`@coldai/clip-wallet-names`)
 
 Turns a name into an address and the network it implies, so Send's "network matters" question knows where a name
 points: ENS (`alice.eth`), SNS (`alice.sol`), Hedera names (`alice.hbar`), Clip handles, and names that a Clip Plugin
@@ -27,7 +27,7 @@ resolves. Read-only.
 A name may publish different addresses per network (ENS per-chain records, a handle per family); the background uses
 the one for the network it sends on.
 
-## Hardware (`@clip-wallet/hardware`)
+## Hardware (`@coldai/clip-wallet-hardware`)
 
 Accounts that live on a hardware wallet. The key never enters Clip: it stores public keys and paths, the device signs,
 and every signature is checked against the exact bytes the person approved before it is used.

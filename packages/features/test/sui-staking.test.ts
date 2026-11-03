@@ -1,5 +1,5 @@
-import type { Account, ChainContext } from "@clip-wallet/core";
-import { SUI_TESTNET, inspectTransaction, normalizeSuiAddress, pureAddressOf, pureU64Of } from "@clip-wallet/chains-sui";
+import type { Account, ChainContext } from "@coldai/clip-wallet-core";
+import { SUI_TESTNET, inspectTransaction, normalizeSuiAddress, pureAddressOf, pureU64Of } from "@coldai/clip-wallet-chains-sui";
 import { describe, expect, it } from "vitest";
 import { SuiStaking, rankSuiValidators, suiBaseApy, suiRewards } from "../src/staking/sui.js";
 import { ME_SUI, SUI_PUBKEY } from "./sui-fixtures.js";

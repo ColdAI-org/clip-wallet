@@ -1,4 +1,4 @@
-# @clip-wallet/chains-evm
+# @coldai/clip-wallet-chains-evm
 
 The EVM `ChainModule` for Clip Wallet: Ethereum, Base, Arbitrum, Optimism, Hedera's EVM (chain 296/295) and any chain by
 id. It decodes transactions, permits and typed data into plain words (`DecodedRequest`), simulates (`eth_simulateV1`),
@@ -13,14 +13,14 @@ in `src/tokens.ts`, where look-alikes are marked spam. Unlimited approvals and p
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-evm @clip-wallet/core
+npm i @coldai/clip-wallet-chains-evm @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createEvmModule, EVM_TESTNETS } from "@clip-wallet/chains-evm";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createEvmModule, EVM_TESTNETS } from "@coldai/clip-wallet-chains-evm";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createEvmModule();
@@ -42,7 +42,7 @@ console.log(network.id, network.testnet); // a CAIP-2 id, true
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

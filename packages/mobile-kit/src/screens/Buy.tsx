@@ -6,11 +6,11 @@
  */
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import { userMessageOf, type OnRampView } from "@clip-wallet/ui";
+import { userMessageOf, type OnRampView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { AssetIcon, Button, Card, Empty, ErrorNote, Field, Screen, Spinner, T } from "../ui/kit";
 import { IconChevron } from "../ui/icons";
-import { canonicalAmount } from "@clip-wallet/ui";
+import { canonicalAmount } from "@coldai/clip-wallet-ui";
 import { useMobileT } from "../i18n";
 
 export function Buy(props: { assetKey?: string }) {

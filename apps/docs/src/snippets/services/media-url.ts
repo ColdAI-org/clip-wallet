@@ -1,5 +1,5 @@
 // What the wallet UI puts in <img src>: the proxy URL, or null (show a placeholder, fetch nothing).
-import { mediaProxyUrl } from "@clip-wallet/media-client";
+import { mediaProxyUrl } from "@coldai/clip-wallet-media-client";
 
 const proxy = "https://media.acme.example"; // services.mediaProxyUrl in clip.config.ts
 

@@ -2,7 +2,7 @@
  * Expo's app config for a Clip Wallet phone app, from clip.config.ts (https://docs.expo.dev/workflow/configuration/):
  *
  *   // app.config.ts
- *   import { expoConfig } from "@clip-wallet/mobile-kit/expo";
+ *   import { expoConfig } from "@coldai/clip-wallet-mobile-kit/expo";
  *   export default () => expoConfig({ configFile: "../../clip.config.ts", root: __dirname });
  *
  * Name, slug, deep-link scheme, iOS bundle id and Android package come from platformIds(config); the icons and the
@@ -18,8 +18,8 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { isMainnetEnabled, platformIds, type ClipConfig } from "@clip-wallet/config";
-import { buildEnv, loadClipConfigSync, resolveBuildConfig } from "@clip-wallet/config/node";
+import { isMainnetEnabled, platformIds, type ClipConfig } from "@coldai/clip-wallet-config";
+import { buildEnv, loadClipConfigSync, resolveBuildConfig } from "@coldai/clip-wallet-config/node";
 
 /** The asset files a mobile project carries (rendered from the one logo by create-clip-wallet). */
 export const MOBILE_ASSETS = {

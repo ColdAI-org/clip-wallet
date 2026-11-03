@@ -1,5 +1,5 @@
-import type { AssetRef, ChainContext, DappRequest } from "@clip-wallet/core";
-import { formatUnits, type Step } from "@clip-wallet/features";
+import type { AssetRef, ChainContext, DappRequest } from "@coldai/clip-wallet-core";
+import { formatUnits, type Step } from "@coldai/clip-wallet-features";
 import {
   decodeFunctionData,
   decodeFunctionResult,
@@ -16,7 +16,7 @@ import {
 import { spenderName } from "../labels.js";
 import { JsonRpcError, fetchJson, mapLimit, randomId, rpcCall, shortAddress } from "../util.js";
 import { type ApprovalScanner, type Grant, type RevokeSpec, type ScanOptions, type ScanResult, grantId, risksFor } from "./types.js";
-import { msg, titled, say } from "@clip-wallet/core";
+import { msg, titled, say } from "@coldai/clip-wallet-core";
 
 /**
  * EVM standing permissions.

@@ -1,10 +1,10 @@
-# @clip-wallet/link — one wallet on every platform
+# @coldai/clip-wallet-link — one wallet on every platform
 
 Settings sync, a phone or Clip Desktop as the signer for the browser extension, moving a wallet to another device,
 and "continue elsewhere". Used by the extension service worker (`packages/extension-kit/src/background/link.ts`), the mobile
 app (`apps/mobile/src/background/link.ts`) and Clip Desktop (wiring: `docs/r1/integration/connect.md`).
 
-**This package holds no seed and no private key.** X25519 and Ed25519 run in `@clip-wallet/vault`
+**This package holds no seed and no private key.** X25519 and Ed25519 run in `@coldai/clip-wallet-vault`
 (`packages/vault/src/link.ts`); this package receives only derived keys and handles through the vault API
 (`LinkVault`: `syncKeys()`, `pairingKey()`, `exportToDevice()`, `importFromDevice()`). `pnpm harness` enforces it.
 
@@ -14,12 +14,12 @@ app (`apps/mobile/src/background/link.ts`) and Clip Desktop (wiring: `docs/r1/in
 | `pairing/` | QR offer, commit-reveal X25519 + 6-digit SAS + key confirmation (`pairing.ts`), encrypted sessions (`session.ts`) |
 | `relay/` | `services/link-relay` protocol and the WebSocket channel |
 | `remote/` | remote-signer RPC: extension side (`client.ts`, `host.ts` wraps 1Mask's DappHost), key-holder side (`server.ts`) |
-| `native/` | native-messaging framing, host manifests and install paths per browser/OS, the extension's port channel; `node.ts` = host program + desktop socket server (Node only, `@clip-wallet/link/node`) |
+| `native/` | native-messaging framing, host manifests and install paths per browser/OS, the extension's port channel; `node.ts` = host program + desktop socket server (Node only, `@coldai/clip-wallet-link/node`) |
 | `transfer/` | add this wallet to another device |
 | `handoff/` | `clipwallet://browse?url=…&h=…` |
 | `service/` | `LinkService` (all of the above for a host), bus messages (`LINK_REQUESTS`), views |
 
-Tests: `pnpm --filter @clip-wallet/link test` (44, no keys: test doubles stand in for X25519/Ed25519), plus real
+Tests: `pnpm --filter @coldai/clip-wallet-link test` (44, no keys: test doubles stand in for X25519/Ed25519), plus real
 crypto end to end in `packages/vault/test/link.test.ts` (sync KAT on the public BIP-39 vector, X25519 pairing,
 wallet transfer, MITM), `services/backup/test/sync.test.ts` (D1, offline-signed fixtures) and
 `services/link-relay/test/relay.test.ts` (Durable Object in workerd, a pairing through it).
@@ -29,13 +29,13 @@ wallet transfer, MITM), `services/backup/test/sync.test.ts` (D1, offline-signed 
 ## Install
 
 ```sh
-npm i @clip-wallet/link
+npm i @coldai/clip-wallet-link
 ```
 
 ## Example
 
 ```ts
-import { isLinkRequest, type LinkService } from "@clip-wallet/link";
+import { isLinkRequest, type LinkService } from "@coldai/clip-wallet-link";
 
 // In the wallet's background: the screens' linked-device messages go to the LinkService.
 export function routeLink(link: LinkService, message: { type: string }) {
@@ -43,8 +43,8 @@ export function routeLink(link: LinkService, message: { type: string }) {
 }
 ```
 
-Clip Desktop and native messaging: `@clip-wallet/link/node` (host program, desktop socket server) and
-`@clip-wallet/link/native` (host manifests and install paths per browser and OS).
+Clip Desktop and native messaging: `@coldai/clip-wallet-link/node` (host program, desktop socket server) and
+`@coldai/clip-wallet-link/native` (host manifests and install paths per browser and OS).
 
 ## Documentation
 
@@ -163,7 +163,7 @@ reconnecting role replaces its old socket and its stale queued frames are droppe
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

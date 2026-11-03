@@ -1,6 +1,6 @@
 /**
  * Phase 2.5: Clip Plugins in the UI ↔ background contract. Optional until wired
- * (docs/phase25/integration/extensibility.md). Views are structurally @clip-wallet/plugins' registry views,
+ * (docs/phase25/integration/extensibility.md). Views are structurally @coldai/clip-wallet-plugins' registry views,
  * restated so the UI needs no new dependency.
  */
 import type { WalletClient } from "../client";

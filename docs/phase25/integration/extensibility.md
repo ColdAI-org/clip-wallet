@@ -2,8 +2,8 @@
 
 Three pieces:
 
-1. **Clip Plugins**: new package `@clip-wallet/plugins` (the MetaMask Snaps idea, narrower).
-2. **Google / Apple sign-in** for passkey backups: `services/backup`, `@clip-wallet/backup-client`, the engine and the UI.
+1. **Clip Plugins**: new package `@coldai/clip-wallet-plugins` (the MetaMask Snaps idea, narrower).
+2. **Google / Apple sign-in** for passkey backups: `services/backup`, `@coldai/clip-wallet-backup-client`, the engine and the UI.
 3. **"Trade & earn" in Explore**: curated, verified dapps for regulated products, reached only through 1Mask or WalletConnect.
 
 What is already in the tree:
@@ -47,7 +47,7 @@ Small edits made directly, all additive:
 ### 1a. `apps/extension/wxt.config.ts` (manifest)
 
 ```ts
-import { SANDBOX_CSP } from "@clip-wallet/plugins";
+import { SANDBOX_CSP } from "@coldai/clip-wallet-plugins";
 // …
 const csp = "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src 'self'";   // was frame-src 'none': the offscreen host frames the sandbox page (same extension origin only)
 return {
@@ -66,14 +66,14 @@ Firefox doesn't support the manifest `sandbox` key or `chrome.offscreen`. For Fi
 - `packages/plugins/extension/plugin-sandbox.html` → `apps/extension/src/entrypoints/plugin-sandbox/index.html`
 - `packages/plugins/extension/plugin-host.ts` → `apps/extension/src/entrypoints/plugin-host/main.ts`, plus an `index.html` containing `<script type="module" src="./main.ts"></script>`
 
-Add `"@clip-wallet/plugins": "workspace:*"` to `apps/extension/package.json`.
+Add `"@coldai/clip-wallet-plugins": "workspace:*"` to `apps/extension/package.json`.
 
 ### 1c. Background (`apps/extension/src/background/wiring.ts` / `service.ts`)
 
 New file `apps/extension/src/background/plugins.ts` (so `service.ts` only gets the hooks below):
 
 ```ts
-import { PluginRegistry, PluginsService, type HostBridgeRequest, type InstalledPlugin, type PluginInsight, type InsightInput, type PluginNameResult } from "@clip-wallet/plugins";
+import { PluginRegistry, PluginsService, type HostBridgeRequest, type InstalledPlugin, type PluginInsight, type InsightInput, type PluginNameResult } from "@coldai/clip-wallet-plugins";
 
 const HOST_URL = "plugin-host.html";
 async function ensureHost() {
@@ -126,14 +126,14 @@ const insights = decoded.blind ? [] : await this.plugins.insights(toInsightInput
 decoded = withPluginInsights(decoded, insights);
 ```
 
-(`toInsightInput` and `withPluginInsights` come from `@clip-wallet/plugins`.) Plugins are not asked about blind requests.
+(`toInsightInput` and `withPluginInsights` come from `@coldai/clip-wallet-plugins`.) Plugins are not asked about blind requests.
 
 Plugin notifications arrive as `{ type: "pluginNotification", pluginName, from, text }` from the host document. Show them with `chrome.notifications.create({ title: `${pluginName} (plugin)`, message: text })`, which needs the `notifications` permission, or as an in-wallet notice. They are already rate-limited (3 an hour, 10 a day) by the host.
 
 Names: in `wiring.ts`, pass the plugin backend last (built-ins always win):
 
 ```ts
-import { EnsBackend, HnsBackend, MultiNameResolver, PluginBackend, SnsBackend } from "@clip-wallet/names";
+import { EnsBackend, HnsBackend, MultiNameResolver, PluginBackend, SnsBackend } from "@coldai/clip-wallet-names";
 names: new MultiNameResolver({ networks }, [
   new EnsBackend({ networks }), new SnsBackend({}), new HnsBackend({ ledger: hasHederaTestnet ? "testnet" : "mainnet" }),
   new PluginBackend((n) => plugins.resolveName(n), () => plugins.suffixes()),
@@ -147,7 +147,7 @@ Send must show `resolved.via.from` ("from <plugin>") next to a plugin-resolved a
 Add to the request union:
 
 ```ts
-...PluginsRequestSchema.options,      // from @clip-wallet/plugins
+...PluginsRequestSchema.options,      // from @coldai/clip-wallet-plugins
 ```
 
 Add to `ResponseMap`:
@@ -179,10 +179,10 @@ Mobile (`apps/mobile`): plugins run in hidden, network-less WebView sandboxes (S
 
 Server: `services/backup/src/oidc.ts` + `migrations/0002_oidc.sql`. Setup, secrets and commands: `docs/phase25/deploy.md` → "Google / Apple sign-in". Client: `BackupClient.providers()`, `startSocialSignIn(provider, returnTo)`, `completeSocialSignIn(returnedUrl, pending)`.
 
-Background, using the new `packages/engine/src/social-signin.ts` (export `@clip-wallet/engine/social-signin`):
+Background, using the new `packages/engine/src/social-signin.ts` (export `@coldai/clip-wallet-engine/social-signin`):
 
 ```ts
-import { SocialSignInService } from "@clip-wallet/engine/social-signin";
+import { SocialSignInService } from "@coldai/clip-wallet-engine/social-signin";
 // constructor
 this.social = new SocialSignInService({
   backup: deps.backup,                                   // same factory as PlatformService
@@ -247,9 +247,9 @@ The perps note reads "Leveraged trading can lose everything you put in, fast" ra
 
 | Package | Command | New tests |
 |---|---|---|
-| plugins | `pnpm --filter @clip-wallet/plugins test` | 44: isolation under real SES (13), install/manifest/schema/registry (29), example plugin (2) |
-| services/backup | `pnpm --filter @clip-wallet/service-backup test` | 22 OIDC tests (46 total), mocked token/JWKS endpoints, ID tokens signed offline (`test/oidc-fixtures.ts`) |
-| backup-client | `pnpm --filter @clip-wallet/backup-client test` | 3 |
+| plugins | `pnpm --filter @coldai/clip-wallet-plugins test` | 44: isolation under real SES (13), install/manifest/schema/registry (29), example plugin (2) |
+| services/backup | `pnpm --filter @coldai/clip-wallet-service-backup test` | 22 OIDC tests (46 total), mocked token/JWKS endpoints, ID tokens signed offline (`test/oidc-fixtures.ts`) |
+| backup-client | `pnpm --filter @coldai/clip-wallet-backup-client test` | 3 |
 | engine | `test/social-signin.test.ts` | 3 |
 | names | `PluginBackend` | 2 |
 | features | Trade & earn | 2 |

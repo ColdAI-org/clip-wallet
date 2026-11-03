@@ -2,7 +2,7 @@
 /**
  * Store packages for the testnet build:
  *
- *   pnpm --filter @clip-wallet/extension package          (builds, then zips)
+ *   pnpm --filter @coldai/clip-wallet-extension package          (builds, then zips)
  *   node apps/extension/scripts/package.mjs --no-build    (zips existing .output/)
  *
  * Writes apps/extension/release/:

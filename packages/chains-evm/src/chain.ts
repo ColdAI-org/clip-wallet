@@ -1,5 +1,5 @@
 /** Read helpers on top of rpc(): token metadata, fee estimation, gas. */
-import type { AssetRef, ChainContext } from "@clip-wallet/core";
+import type { AssetRef, ChainContext } from "@coldai/clip-wallet-core";
 import { type Hex, decodeFunctionResult, encodeFunctionData, erc20Abi, hexToBigInt, parseAbi, toHex, zeroAddress } from "viem";
 import { specFor } from "./networks.js";
 import { RpcError, rpc } from "./rpc.js";

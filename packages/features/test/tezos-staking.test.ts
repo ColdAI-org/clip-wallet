@@ -1,5 +1,5 @@
-import { TEZOS_SHADOWNET } from "@clip-wallet/chains-tezos";
-import type { DappRequest } from "@clip-wallet/core";
+import { TEZOS_SHADOWNET } from "@coldai/clip-wallet-chains-tezos";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { TezosStaking, bakerChoice, rankBakers, type TzktBaker } from "../src/staking/tezos.js";
 import { mockFetch, type Route } from "./helpers.js";

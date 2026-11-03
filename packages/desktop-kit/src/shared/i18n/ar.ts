@@ -2,7 +2,7 @@
  * Arabic (same glossary as packages/ui/src/i18n/ar: محفظة, فتح القفل / قفل). Every interpolated value sits in a
  * First Strong Isolate … Pop Directional Isolate pair (U+2068 … U+2069) so Latin site and file names keep their order.
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const ar: Translation<DesktopMessages> = {

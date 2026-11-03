@@ -4,7 +4,7 @@
  *
  * min-UTxO (Babbage/Conway): coinsPerUTxOByte × (160 + serialized output size).
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { CborMap, CborTag, type CborValue, encode } from "./cbor.js";
 import type { KoiosUtxo, ProtocolParams } from "./koios.js";
 import { type Value, addValue, cloneValue, covers, emptyValue, encodeValue } from "./value.js";

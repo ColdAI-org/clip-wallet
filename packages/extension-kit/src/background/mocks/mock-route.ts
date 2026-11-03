@@ -1,10 +1,10 @@
-import { isWalletOrigin } from "@clip-wallet/core";
+import { isWalletOrigin } from "@coldai/clip-wallet-core";
 /**
- * MOCK route planner. The real one is @clip-wallet/route (findShortfall + RouteClient.quote); this mock
+ * MOCK route planner. The real one is @coldai/clip-wallet-route (findShortfall + RouteClient.quote); this mock
  * mirrors its plain-language output: where the money comes from, funding moves, sponsored gas, ETA.
  */
-import type { ApprovalPlan, PlanStep } from "@clip-wallet/ui";
-import { findShortfall, type SettleFunding } from "@clip-wallet/route";
+import type { ApprovalPlan, PlanStep } from "@coldai/clip-wallet-ui";
+import { findShortfall, type SettleFunding } from "@coldai/clip-wallet-route";
 import type { RoutePlanner } from "../wiring";
 import { settleFixture } from "./mock-settle";
 

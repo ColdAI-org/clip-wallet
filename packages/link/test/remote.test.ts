@@ -1,6 +1,6 @@
 /** Remote signer over an encrypted session: the extension asks, the key-holding device approves and answers. */
 import { describe, expect, it, vi } from "vitest";
-import { ClipError, type Account, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type Account, type DappRequest } from "@coldai/clip-wallet-core";
 import { memoryChannelPair } from "../src/pairing/channel.js";
 import { openSession } from "../src/pairing/session.js";
 import { RemoteSigner } from "../src/remote/client.js";

@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/link": patch
+"@coldai/clip-wallet-link": patch
 "create-clip-wallet": patch
 ---
 

@@ -10,7 +10,7 @@
  */
 import { NativeModules } from "react-native";
 import { argon2idAsync } from "@noble/hashes/argon2.js";
-import type { Argon2idFn } from "@clip-wallet/vault";
+import type { Argon2idFn } from "@coldai/clip-wallet-vault";
 
 function toHex(b: Uint8Array): string {
   let s = "";

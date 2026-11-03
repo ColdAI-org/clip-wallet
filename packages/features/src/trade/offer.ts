@@ -1,4 +1,4 @@
-import { ClipError, withoutTrailing } from "@clip-wallet/core";
+import { ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
 import { b64urlDecode, b64urlEncode } from "../util.js";
 
 /** One side of a trade, as carried in a share link. Amounts in base units. */

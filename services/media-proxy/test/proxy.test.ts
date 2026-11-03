@@ -1,6 +1,6 @@
 import { env, exports as workerExports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { mediaProxyUrl, normaliseMediaSource } from "@clip-wallet/media-client";
+import { mediaProxyUrl, normaliseMediaSource } from "@coldai/clip-wallet-media-client";
 import { createProxy, upstreamUrl, type Env } from "../src/index";
 
 const E = env as unknown as Env;

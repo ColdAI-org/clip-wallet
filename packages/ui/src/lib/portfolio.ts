@@ -1,4 +1,4 @@
-import type { NetworkId, TokenBalance } from "@clip-wallet/core";
+import type { NetworkId, TokenBalance } from "@coldai/clip-wallet-core";
 
 /** One row on Home: the same asset from the same issuer, summed across every network. */
 export interface MergedAsset {

@@ -1,8 +1,8 @@
 /** The UI renders background text (Msg) in the person's language, with the module's English as the fallback. */
 import { describe, expect, it } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import { loadBgMessages, msg, type Warning } from "@clip-wallet/core";
-import { formatMsg } from "@clip-wallet/i18n";
+import { loadBgMessages, msg, type Warning } from "@coldai/clip-wallet-core";
+import { formatMsg } from "@coldai/clip-wallet-i18n";
 import { Warnings } from "../src/components";
 import { userMessageOf } from "../src/client";
 import { renderUi } from "./render";

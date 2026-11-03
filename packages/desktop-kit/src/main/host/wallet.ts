@@ -1,27 +1,27 @@
 /**
- * The desktop "background": builds the vault and the shared @clip-wallet/engine in the main process, on Node
+ * The desktop "background": builds the vault and the shared @coldai/clip-wallet-engine in the main process, on Node
  * storage, crypto, timers and fetch. This folder is the only place in apps/desktop allowed to import
- * @clip-wallet/vault (tools/harness/check.mjs), like apps/extension/src/background and apps/mobile/src/background.
+ * @coldai/clip-wallet-vault (tools/harness/check.mjs), like apps/extension/src/background and apps/mobile/src/background.
  *
  * Renderers never get the engine: they send zod-checked messages over IPC (ipc.ts → handle()) and receive
  * "changed" events. Dapps never reach it either: 1Mask requests come through browser/onemask-relay.ts with the
  * origin set from the browser process.
  */
 import { randomBytes, randomUUID } from "node:crypto";
-import { ClipVault, hashSignablePayload } from "@clip-wallet/vault";
-import { ClipError } from "@clip-wallet/core";
-import { WalletEngine, b64url, fromB64url, publicNetworks, type KV } from "@clip-wallet/engine";
-import { createEngineDependencies } from "@clip-wallet/engine/wiring";
-import { createFeatureHost, createFeatures } from "@clip-wallet/engine/features";
-import { EngineHardware, type EngineKeystone, type EngineLedger } from "@clip-wallet/engine/hardware";
-import { createSocial } from "@clip-wallet/engine/social";
-import { HardwareKeyring, KeystoneBridge, type HardwareStorage } from "@clip-wallet/hardware/core";
-import type { KeystoneSigner, LedgerSigner, TransportFactory } from "@clip-wallet/hardware";
-import { COINGECKO_IDS } from "@clip-wallet/features";
-import { RecipientLog, SecurityService } from "@clip-wallet/security";
-import type { Notifier } from "@clip-wallet/social";
-import type { RouterPort } from "@clip-wallet/1mask/background";
-import { LINK_LOCKED_OK, LinkRequest, isLinkRequest, withRemoteSigner, type LinkService } from "@clip-wallet/link";
+import { ClipVault, hashSignablePayload } from "@coldai/clip-wallet-vault";
+import { ClipError } from "@coldai/clip-wallet-core";
+import { WalletEngine, b64url, fromB64url, publicNetworks, type KV } from "@coldai/clip-wallet-engine";
+import { createEngineDependencies } from "@coldai/clip-wallet-engine/wiring";
+import { createFeatureHost, createFeatures } from "@coldai/clip-wallet-engine/features";
+import { EngineHardware, type EngineKeystone, type EngineLedger } from "@coldai/clip-wallet-engine/hardware";
+import { createSocial } from "@coldai/clip-wallet-engine/social";
+import { HardwareKeyring, KeystoneBridge, type HardwareStorage } from "@coldai/clip-wallet-hardware/core";
+import type { KeystoneSigner, LedgerSigner, TransportFactory } from "@coldai/clip-wallet-hardware";
+import { COINGECKO_IDS } from "@coldai/clip-wallet-features";
+import { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
+import type { Notifier } from "@coldai/clip-wallet-social";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
+import { LINK_LOCKED_OK, LinkRequest, isLinkRequest, withRemoteSigner, type LinkService } from "@coldai/clip-wallet-link";
 import { DESKTOP } from "../../shared/app-config";
 import { FileKV, SafeVaultStorage, storagePaths, type SafeStorageLike, type StorageProtection } from "../storage";
 import { TouchIdPrf } from "../biometric";
@@ -182,8 +182,8 @@ export function createDesktopWallet(env: DesktopHostEnv): DesktopWallet {
   const hwStorage: HardwareStorage = { get: (k) => kv.get<string>(k), set: (k, v) => kv.set(k, v) };
   const bitcoinNetwork = DESKTOP.config.mainnet ? "mainnet" : "testnet";
   const keystoneBridge = new KeystoneBridge(() => env.broadcast());
-  let hwMod: Promise<typeof import("@clip-wallet/hardware")> | undefined;
-  const loadHw = () => (hwMod ??= import("@clip-wallet/hardware"));
+  let hwMod: Promise<typeof import("@coldai/clip-wallet-hardware")> | undefined;
+  const loadHw = () => (hwMod ??= import("@coldai/clip-wallet-hardware"));
   let ledgerP: Promise<LedgerSigner> | undefined;
   let keystoneP: Promise<KeystoneSigner> | undefined;
   const led = () => (ledgerP ??= loadHw().then((m) => new m.LedgerSigner({ bitcoinNetwork, transport: env.hidTransport, deviceName: "Ledger" })));

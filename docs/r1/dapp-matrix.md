@@ -17,8 +17,8 @@ L3 skips while the account holds less than its minimum. L4 then declines the sam
 [dapp-matrix-funding.md](dapp-matrix-funding.md).
 
 ```bash
-pnpm --filter @clip-wallet/extension matrix                # builds (WalletConnect on if the id is set), runs all
-pnpm --filter @clip-wallet/extension matrix -- -g cardano  # one family
+pnpm --filter @coldai/clip-wallet-extension matrix                # builds (WalletConnect on if the id is set), runs all
+pnpm --filter @coldai/clip-wallet-extension matrix -- -g cardano  # one family
 node scripts/dapp-matrix-balances.mjs --watch              # see faucet funds land, then rerun
 ```
 
@@ -67,7 +67,7 @@ Tezos's first operation (reveal + transfer)
 
 1. The MetaMask test dapp enables its sign and send buttons only when `provider.isMetaMask` is true (its
    `isMetaMaskInstalled()`). Clip deliberately doesn't impersonate MetaMask, so the wagmi row covers those levels.
-2. Needs `WALLETCONNECT_PROJECT_ID` in `.env.dapp-matrix`. Then `pnpm --filter @clip-wallet/extension matrix` builds
+2. Needs `WALLETCONNECT_PROJECT_ID` in `.env.dapp-matrix`. Then `pnpm --filter @coldai/clip-wallet-extension matrix` builds
    the wallet with `CLIP_WALLETCONNECT_PROJECT_ID` and runs the row. Until then it skips with that message. The
    Hedera account is funded (0.0.10872693).
 3. Bitcoin's decode lists the 546-sat output to yourself as "Change back to you". That is true, but it reads as change
@@ -79,7 +79,7 @@ Screenshots: `apps/extension/e2e/shots/matrix/` (`<family>-sign.png`, `<family>-
 ## networks87 rows (2026-10-06)
 
 The families added for the remaining CLPR networks ([networks87.md](networks87.md)), same levels and rules, run with
-`pnpm --filter @clip-wallet/extension matrix -- -g "matrix: (cosmos|tron|stacks|fuel|xrpl|chainflip|multiversx)"`.
+`pnpm --filter @coldai/clip-wallet-extension matrix -- -g "matrix: (cosmos|tron|stacks|fuel|xrpl|chainflip|multiversx)"`.
 The existing rows were re-run in the same session with no change (all previous passes still pass).
 
 | Family | Testnet | Dapp library / discovery | L1 connect | L2 sign | L3 send (tx) | L4 approval |
@@ -130,10 +130,10 @@ The page is served on `https://matrix-dapp.example` so 1Mask injects, and it tal
 | Substrate | `@polkadot/extension-dapp` + `@polkadot/api` (`transferKeepAlive` with the extension's signer) |
 | Starknet | get-starknet-core v4 + starknet.js (SNIP-12, STRK `transfer`) |
 | TON | `@tonconnect/sdk` injected JS bridge (`isWalletInjected` + `connect({ jsBridgeKey })`), `signData`, `sendTransaction` |
-| NEAR | Wallet Selector v10 + `@clip-wallet/kit-modules/near` |
+| NEAR | Wallet Selector v10 + `@coldai/clip-wallet-kit-modules/near` |
 | Stellar | Stellar Wallets Kit module API (`ClipWalletModule`) + stellar-base + Horizon |
 | Tezos | Beacon `DAppClient`. Beacon's modal does list Clip (found by its postMessage ping), but in beacon-ui 4.8.0 clicking an unlisted Chromium extension does nothing: "Use Extension" is offered only for listed or Firefox ids. So the page answers `PAIR_INIT` itself and posts the same pairing message that button posts. Getting into Beacon's extension list (the listing draft exists) makes the stock modal work. |
-| Algorand | `@txnlab/use-wallet` v5 + `@clip-wallet/kit-modules/algorand` + algosdk |
+| Algorand | `@txnlab/use-wallet` v5 + `@coldai/clip-wallet-kit-modules/algorand` + algosdk |
 
 ## Wallet bugs found and fixed
 
@@ -153,7 +153,7 @@ the existing e2e (compat included).
    - Test: `packages/engine/test/engine.test.ts`.
 3. **The module's reason was thrown away when it couldn't decode a request.** An unfunded Bitcoin, Sui, Aptos or NEAR
    account showed only "Unreadable request … Signing something you can't read can empty your wallet".
-   - Fix: `decodeFailureReason()` in `@clip-wallet/core`. The request stays blocked, and a ClipError's plain-words
+   - Fix: `decodeFailureReason()` in `@coldai/clip-wallet-core`. The request stays blocked, and a ClipError's plain-words
      reason ("You don't have enough BTC…") is now shown.
    - Tests: `packages/extension-kit/test/decode-failure.test.ts`, `packages/engine/test/engine.test.ts`.
 4. **Self-transfers decoded with no amount or recipient.**

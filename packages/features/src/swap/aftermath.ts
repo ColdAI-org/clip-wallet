@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@coldai/clip-wallet-core";
 import {
   SuiGraphQL,
   type TransactionData,
@@ -9,7 +9,7 @@ import {
   pureU64Of,
   suiNetworkOf,
   transactionFromKind,
-} from "@clip-wallet/chains-sui";
+} from "@coldai/clip-wallet-chains-sui";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { randomId } from "../util.js";

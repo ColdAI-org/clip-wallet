@@ -1,5 +1,5 @@
-import type { Account, ChainContext, TokenBalance } from "@clip-wallet/core";
-import { STELLAR_TESTNET, USDC_ISSUERS, classicAsset, createStellarModule, parseStellarTransaction, xlmAsset } from "@clip-wallet/chains-stellar";
+import type { Account, ChainContext, TokenBalance } from "@coldai/clip-wallet-core";
+import { STELLAR_TESTNET, USDC_ISSUERS, classicAsset, createStellarModule, parseStellarTransaction, xlmAsset } from "@coldai/clip-wallet-chains-stellar";
 import { describe, expect, it } from "vitest";
 import { refineDecoded } from "../src/steps.js";
 import { SwapService } from "../src/swap/service.js";
@@ -117,7 +117,7 @@ describe("Stellar DEX path payments", () => {
     expect(steps).toHaveLength(1);
     expect(steps[0]!.title).toBe("Add USDC and swap XLM for USDC");
     expect(steps[0]!.lines).toContainEqual({ label: "Also", value: "Adds USDC to your account first. That sets aside 0.5 XLM of your balance while USDC is in your account." });
-    const request = await (steps[0]!.request as () => Promise<import("@clip-wallet/core").DappRequest>)();
+    const request = await (steps[0]!.request as () => Promise<import("@coldai/clip-wallet-core").DappRequest>)();
     expect(request).toMatchObject({ family: "stellar", networkId: NET, method: "stellar_signAndSubmitXDR", params: { address: ME, networkPassphrase: "Test SDF Network ; September 2015" } });
 
     const tx = parseStellarTransaction((request.params as { xdr: string }).xdr, NET) as unknown as {

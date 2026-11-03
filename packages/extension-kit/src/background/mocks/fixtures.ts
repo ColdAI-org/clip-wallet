@@ -1,6 +1,6 @@
 /** MOCK fixtures: realistic testnet balances, collectibles, activity, prices, names and dapps. */
-import type { Nft, TokenBalance } from "@clip-wallet/core";
-import type { ActivityEntry } from "@clip-wallet/ui";
+import type { Nft, TokenBalance } from "@coldai/clip-wallet-core";
+import type { ActivityEntry } from "@coldai/clip-wallet-ui";
 import type { NameResolver, PriceFeed } from "../wiring";
 import { MOCK_NETWORKS, NET, USDC, USDC_E } from "./networks";
 

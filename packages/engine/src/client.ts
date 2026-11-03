@@ -1,12 +1,12 @@
 /**
  * In-process WalletClient over the engine (React Native, tests). Same contract the extension's pages use
- * over the message bus, so screens written against @clip-wallet/ui's WalletClient work unchanged.
+ * over the message bus, so screens written against @coldai/clip-wallet-ui's WalletClient work unchanged.
  * Requests still go through the zod schema: the UI is trusted code, but the check costs nothing and keeps
  * both hosts identical.
  */
-import type { FeaturesClient, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@clip-wallet/ui";
-import { createSocialClient } from "@clip-wallet/ui";
-import { ClipError } from "@clip-wallet/core";
+import type { FeaturesClient, PluginsClient, SecurityClient, SocialClient, WalletClient } from "@coldai/clip-wallet-ui";
+import { createSocialClient } from "@coldai/clip-wallet-ui";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { WalletEngine } from "./engine.js";
 
 export function createEngineClient(engine: WalletEngine, opts: { subscribe(cb: () => void): () => void }): WalletClient {

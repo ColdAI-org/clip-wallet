@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
-import { mergeBalances } from "@clip-wallet/ui";
+import { mergeBalances } from "@coldai/clip-wallet-ui";
 import { onNotificationTap } from "../background/notifications";
 import { useWallet } from "./context";
 import { noticeTarget } from "../lib/notice-routes";

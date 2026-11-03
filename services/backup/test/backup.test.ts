@@ -1,7 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports as workerExports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vitest";
-import { BackupClient, BLOB_MAX_BYTES, BLOB_MIN_BYTES, b64url, tokenFromLink } from "@clip-wallet/backup-client";
+import { BackupClient, BLOB_MAX_BYTES, BLOB_MIN_BYTES, b64url, tokenFromLink } from "@coldai/clip-wallet-backup-client";
 import { createApp, MemoryEmailSender, ResendEmailSender, type Env } from "../src/index";
 
 const E = env as unknown as Env & { TEST_MIGRATIONS: D1Migration[] };

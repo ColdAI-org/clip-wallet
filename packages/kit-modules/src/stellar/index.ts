@@ -3,7 +3,7 @@
  *
  *   import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
  *   import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
- *   import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+ *   import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
  *   StellarWalletsKit.init({ modules: [...defaultModules(), new ClipWalletModule()] });
  *
  * It wraps the SEP-43 provider 1Mask injects at `window.clipwallet.stellar`

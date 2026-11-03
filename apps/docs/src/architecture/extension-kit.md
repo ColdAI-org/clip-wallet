@@ -1,6 +1,6 @@
 # Extension kit
 
-`@clip-wallet/extension-kit` is the whole browser extension as a library for [WXT](https://wxt.dev): the background
+`@coldai/clip-wallet-extension-kit` is the whole browser extension as a library for [WXT](https://wxt.dev): the background
 (vault, approvals, security checks), the pages, 1Mask for every family and the build wiring. A wallet project,
 Clip Wallet's own `apps/extension` included, keeps only its identity, its `wxt.config.ts` and one-line entrypoints.
 
@@ -11,7 +11,7 @@ flowchart LR
     WXT["wxt.config.ts<br/>clipWallet({ config })"]
     EP["entrypoints<br/>one line each"]
   end
-  subgraph Kit["@clip-wallet/extension-kit"]
+  subgraph Kit["@coldai/clip-wallet-extension-kit"]
     B["/background<br/>startBackground()"]
     C["/content<br/>startContentBridge()"]
     I["/inpage<br/>installInpage()"]
@@ -29,20 +29,20 @@ flowchart LR
 
 | Entrypoint | Import | Runs in |
 | --- | --- | --- |
-| background | `startBackground()` from `@clip-wallet/extension-kit/background` | service worker (Chrome), event page (Firefox) |
+| background | `startBackground()` from `@coldai/clip-wallet-extension-kit/background` | service worker (Chrome), event page (Firefox) |
 | content | `startContentBridge()`, `CONTENT_MATCHES` from `/content` | content script, ISOLATED world |
 | inpage | `installInpage()`, `CONTENT_MATCHES` from `/inpage` | content script, MAIN world |
 | popup, tab | `mountWallet("popup" \| "tab")` from `/pages` | extension pages |
 | approval | `mountApprovalWindow()` from `/pages` | a popup window |
 | plugin host | `startPluginHost()` from `/plugin-host` | offscreen document |
-| plugin sandbox | `import "@clip-wallet/extension-kit/plugin-sandbox"` | MV3 sandbox page |
+| plugin sandbox | `import "@coldai/clip-wallet-extension-kit/plugin-sandbox"` | MV3 sandbox page |
 
 `CONTENT_MATCHES` is `https://*/*` plus `http://localhost/*` and `http://127.0.0.1/*`, so dapps you run locally get
 1Mask too. Ready-made entrypoints are on [Build and ship](../kit/build-and-ship.md).
 
 ## What `clipWallet()` does at build time
 
-`clipWallet({ config, root?, env?, mocks? })` from `@clip-wallet/extension-kit/wxt` returns the WXT configuration:
+`clipWallet({ config, root?, env?, mocks? })` from `@coldai/clip-wallet-extension-kit/wxt` returns the WXT configuration:
 
 - **Identity.** The manifest's name, description and `key` (which fixes the extension id) come from `clip.config.ts`;
   so do the EIP-6963 and Wallet Standard name, icon and rdns, the `window.<wallet key>` global for NEAR, Stellar and

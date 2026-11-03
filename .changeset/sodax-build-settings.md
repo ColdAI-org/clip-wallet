@@ -1,7 +1,7 @@
 ---
-"@clip-wallet/config": minor
-"@clip-wallet/extension-kit": minor
-"@clip-wallet/features": patch
+"@coldai/clip-wallet-config": minor
+"@coldai/clip-wallet-extension-kit": minor
+"@coldai/clip-wallet-features": patch
 ---
 
 SODAX swaps are set up from the build environment only, with no defaults: `CLIP_SODAX_SERVER_URL` (an ExClip server

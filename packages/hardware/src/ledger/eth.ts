@@ -5,7 +5,7 @@
  */
 import Eth, { ledgerService } from "@ledgerhq/hw-app-eth";
 import type Transport from "@ledgerhq/hw-transport";
-import type { SignablePayload, Signature } from "@clip-wallet/core";
+import type { SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { hashDomain, hashStruct, hashTypedData, type TypedDataDefinition } from "viem";
 import { concat, equal, fromHex, toHex, utf8 } from "../bytes.js";

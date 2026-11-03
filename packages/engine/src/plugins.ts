@@ -9,7 +9,7 @@
  *
  * @module
  */
-import type { InsightInput, PluginInsight, PluginsService } from "@clip-wallet/plugins";
+import type { InsightInput, PluginInsight, PluginsService } from "@coldai/clip-wallet-plugins";
 
 export interface EnginePlugins {
   readonly service: Pick<PluginsService, "handles" | "handle">;

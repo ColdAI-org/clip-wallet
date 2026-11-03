@@ -1,5 +1,5 @@
-import type { AssetRef, DecodedRequest, TokenBalance } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { AssetRef, DecodedRequest, TokenBalance } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { Need, Shortfall } from "./types.js";
 
 function sameAsset(a: AssetRef, b: AssetRef): boolean {

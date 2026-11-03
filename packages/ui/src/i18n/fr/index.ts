@@ -18,7 +18,7 @@
  *   Activity → Activité, Explore → Explorer, Discover → Découvrir, Home → Accueil.
  * Typography: U+202F before ? ! ; and U+00A0 before : and % and inside « », decimal comma in examples (0,5).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

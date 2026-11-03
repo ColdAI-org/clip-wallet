@@ -1,6 +1,6 @@
 /** Origin binding of 1Mask requests: the origin comes from the browser process's frame, never from the message. */
 import { describe, expect, it } from "vitest";
-import type { RouterPort } from "@clip-wallet/1mask/background";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 import { OneMaskRelay, frameOrigin, type RelayFrame, type RelaySender } from "../src/main/browser/onemask-relay";
 
 function frame(url: string, o: Partial<RelayFrame> = {}): RelayFrame & { sent: unknown[] } {

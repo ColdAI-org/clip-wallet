@@ -2,8 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { LOCALE_CODES, checkTranslation, parseMessage } from "@clip-wallet/i18n";
-import { APPROVAL_NOTE_CODES } from "@clip-wallet/security";
+import { LOCALE_CODES, checkTranslation, parseMessage } from "@coldai/clip-wallet-i18n";
+import { APPROVAL_NOTE_CODES } from "@coldai/clip-wallet-security";
 import { en } from "../src/i18n/en";
 import { MOBILE_CATALOGS } from "../src/i18n";
 import { noteText } from "../src/lib/security-text";

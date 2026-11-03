@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { Asset, type Operation, type Transaction, TransactionBuilder } from "@stellar/stellar-base";
 import { describe, expect, it } from "vitest";
 import { STELLAR_TESTNET, USDC_ISSUERS, buildPathSwap, checkPathSwap, classicAsset, createStellarModule, networkPassphrase, xlmAsset } from "../src/index.js";

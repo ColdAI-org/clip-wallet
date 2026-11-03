@@ -5,15 +5,15 @@
  *
  * The phone listens on the relay only while the app is in the foreground (no push in this release): the extension
  * waits up to 2 minutes for the phone to answer and says "Open Clip on your phone". Lives in src/background
- * because the LinkService is handed the vault (harness: only this folder may import @clip-wallet/vault).
+ * because the LinkService is handed the vault (harness: only this folder may import @coldai/clip-wallet-vault).
  */
 import { AppState, type AppStateStatus } from "react-native";
 import * as Device from "expo-device";
-import type { Family } from "@clip-wallet/core";
-import type { WalletEngine, KV } from "@clip-wallet/engine";
-import { LinkService, contactsSource, walletSources, type LinkVault } from "@clip-wallet/link";
-import { CONTACTS_KEY, encryptedContactStore } from "@clip-wallet/social/contacts";
-import { createLinkClient, type LinkClient } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import type { WalletEngine, KV } from "@coldai/clip-wallet-engine";
+import { LinkService, contactsSource, walletSources, type LinkVault } from "@coldai/clip-wallet-link";
+import { CONTACTS_KEY, encryptedContactStore } from "@coldai/clip-wallet-social/contacts";
+import { createLinkClient, type LinkClient } from "@coldai/clip-wallet-ui";
 
 const SYNC_EVERY_MS = 5 * 60_000;
 

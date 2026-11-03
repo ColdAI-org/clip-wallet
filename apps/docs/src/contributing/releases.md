@@ -1,6 +1,6 @@
 # Changesets and releases
 
-All published packages (`@clip-wallet/*` and `create-clip-wallet`) move together at **one version**, so a kit-built
+All published packages (`@coldai/clip-wallet-*` and `create-clip-wallet`) move together at **one version**, so a kit-built
 wallet pins one version of the kit. They are released **only by CI**, never from a laptop.
 
 ## Every change to a published package needs a changeset
@@ -12,7 +12,7 @@ pnpm changeset
 Pick the packages, pick patch, minor or major, and write one plain sentence for the changelog. The changeset goes in
 `.changeset/` with your change. (While all packages are `fixed` together, any changeset bumps them all.)
 
-`@clip-wallet/core` only grows: add optional fields, never rename or remove one in a minor version.
+`@coldai/clip-wallet-core` only grows: add optional fields, never rename or remove one in a minor version.
 
 ## How a release happens
 

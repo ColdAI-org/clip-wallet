@@ -3,7 +3,7 @@
  *
  *   // entrypoints/background.ts
  *   import { defineBackground } from "wxt/utils/define-background";
- *   import { startBackground } from "@clip-wallet/extension-kit/background";
+ *   import { startBackground } from "@coldai/clip-wallet-extension-kit/background";
  *   export default defineBackground({ type: { firefox: "module" }, main: () => startBackground() });
  *
  * (Firefox: an ES-module event page, so the background stays under addons-linter's 5 MB parse limit.)

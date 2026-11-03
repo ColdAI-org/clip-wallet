@@ -1,4 +1,4 @@
-# @clip-wallet/config
+# @coldai/clip-wallet-config
 
 The typed schema for `clip.config.ts`, the one file a wallet maker edits, for every platform the wallet ships (browser
 extension, desktop app, phone app): identity (name, description, rdns, homepage, icon, extension key, app ids,
@@ -13,14 +13,14 @@ WalletConnect, passkeys, optional hosted services, and the mainnet switch.
 ## Install
 
 ```sh
-npm i @clip-wallet/config
+npm i @coldai/clip-wallet-config
 ```
 
 ## Example
 
 ```ts
 // clip.config.ts
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 
 export default defineConfig({
   name: "Acme Wallet",
@@ -49,7 +49,7 @@ Platform settings, all optional:
 | `fees`, `usage` | `{ enabled: false }` | reserved for Clip Cloud's hosted mode; accepted, never acted on by the kit |
 
 `platformIds(config)` returns every id the platforms use (extension gecko id, desktop app id, product, executable and
-artifact names, iOS bundle id, Android package, scheme, slug). `@clip-wallet/config/node` has `loadClipConfigSync(file)`
+artifact names, iOS bundle id, Android package, scheme, slug). `@coldai/clip-wallet-config/node` has `loadClipConfigSync(file)`
 (evaluates a clip.config.ts in a child Node process: Node 22.18+, for Expo's app.config.ts and electron-builder) and the
 build-environment helpers the kits share (`buildEnv`, `resolveBuildConfig`, `iconDataUri`, `openChecklistItems`).
 
@@ -65,7 +65,7 @@ Helpers: `validateConfig`, `walletKey`, `rdnsDomain`, `enabledFamilies`, `includ
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

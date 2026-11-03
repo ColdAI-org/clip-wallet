@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { ContactEdit } from "./ContactEdit";
 import { Contacts } from "./Contacts";
 import { HandleScreen } from "./Handle";

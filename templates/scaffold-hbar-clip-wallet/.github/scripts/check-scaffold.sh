@@ -48,7 +48,7 @@ cfg=clip.config.ts
 cp "$cfg" "$cfg.orig"
 # sed -i.bak works with both GNU and BSD sed.
 sed -i.bak -e 's/^  mainnet: false,$/  mainnet: { enabled: true, acknowledged: MAINNET_ACKNOWLEDGEMENT },/' \
-  -e 's/^import { defineConfig } from "@clip-wallet\/config";$/import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@clip-wallet\/config";/' "$cfg"
+  -e 's/^import { defineConfig } from "@coldai\/clip-wallet-config";$/import { MAINNET_ACKNOWLEDGEMENT, defineConfig } from "@coldai\/clip-wallet-config";/' "$cfg"
 grep -q 'mainnet: { enabled: true' "$cfg" || fail "couldn't switch mainnet on for the check"
 if pnpm harness >/dev/null 2>&1; then fail "the harness accepted mainnet with an open checklist"; fi
 if pnpm extension:build >/dev/null 2>&1; then fail "the build accepted mainnet with a placeholder identity"; fi

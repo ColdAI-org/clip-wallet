@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/service-media-proxy",
+  "name": "@coldai/clip-wallet-service-media-proxy",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     "dev": "wrangler dev --local"
   },
   "dependencies": {
-    "@clip-wallet/media-client": "workspace:*"
+    "@coldai/clip-wallet-media-client": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.23.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/chains-icp",
+  "name": "@coldai/clip-wallet-chains-icp",
   "version": "0.1.0",
   "description": "Internet Computer (ICP) ChainModule for Clip Wallet: builds and decodes ledger transfers in plain words; never touches keys",
   "keywords": [
@@ -69,7 +69,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",
     "@scure/base": "2.4.0"

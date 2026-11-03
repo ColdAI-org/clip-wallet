@@ -1,7 +1,7 @@
 /**
  * Translation QA checks that go beyond `checkTranslation` (same ids, variables, tags): plural categories,
  * rendering with every plausible value, bidi isolation for right-to-left languages, and glossary
- * consistency. Test-only: import from "@clip-wallet/i18n/qa", never from app code.
+ * consistency. Test-only: import from "@coldai/clip-wallet-i18n/qa", never from app code.
  */
 import { formatMessage, parseMessage, type MessageValues } from "../message.js";
 import type { CatalogProblem, Messages } from "../translator.js";

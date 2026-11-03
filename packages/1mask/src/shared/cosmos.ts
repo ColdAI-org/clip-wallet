@@ -1,10 +1,10 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { METHOD_WS_STATE } from "./protocol.js";
 
 /**
  * Wire methods and public chain facts for the Keplr-compatible Cosmos provider (inpage/cosmos.ts,
  * background/cosmos.ts). The signing method names are chains-cosmos `COSMOS_METHODS`, so the background hands them
- * to the module unchanged. The chain table repeats what @clip-wallet/chains-cosmos/networks ships (1Mask doesn't
+ * to the module unchanged. The chain table repeats what @coldai/clip-wallet-chains-cosmos/networks ships (1Mask doesn't
  * depend on chain packages); chains-cosmos's tests check the two agree.
  */
 

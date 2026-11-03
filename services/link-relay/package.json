@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/service-link-relay",
+  "name": "@coldai/clip-wallet-service-link-relay",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     "dev": "wrangler dev --local"
   },
   "dependencies": {
-    "@clip-wallet/link": "workspace:*"
+    "@coldai/clip-wallet-link": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.23.0",

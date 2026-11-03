@@ -9,7 +9,7 @@ read the [Code of Conduct](repo:CODE_OF_CONDUCT.md) first. For security issues, 
 ```sh
 pnpm install --frozen-lockfile
 pnpm typecheck && pnpm test && pnpm harness            # always
-pnpm --filter @clip-wallet/extension e2e               # if you touched the extension or a shared package
+pnpm --filter @coldai/clip-wallet-extension e2e               # if you touched the extension or a shared package
 pnpm pack-all && pnpm kit:e2e                          # if you touched packaging, create-clip-wallet or templates/
 scripts/repro-check.sh                                 # if you touched the build (needs Docker)
 actionlint                                             # if you touched .github/workflows

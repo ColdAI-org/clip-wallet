@@ -1,6 +1,6 @@
 # Architecture overview
 
-Clip Wallet is a set of small packages with one contract between them (`@clip-wallet/core`) and three hosts that put
+Clip Wallet is a set of small packages with one contract between them (`@coldai/clip-wallet-core`) and three hosts that put
 them together: the browser extension, the phone app and the desktop app. This page is the map; the pages after it
 follow one piece each.
 
@@ -19,7 +19,7 @@ flowchart TB
       S --> SEC["security · features · social<br/>route · plugins"]
       S --> V[("vault<br/>the only place keys exist")]
     end
-    UI["popup and approval window<br/>@clip-wallet/ui"]
+    UI["popup and approval window<br/>@coldai/clip-wallet-ui"]
   end
   IP -- "window.postMessage" --> CS -- "runtime port" --> R
   S -- "DecodedRequest" --> UI -- "approve / reject" --> S
@@ -27,9 +27,9 @@ flowchart TB
   WC["WalletConnect relay"] --> R
 ```
 
-The phone and desktop apps run the same pieces through `@clip-wallet/engine`: the in-app browser injects the same 1Mask
+The phone and desktop apps run the same pieces through `@coldai/clip-wallet-engine`: the in-app browser injects the same 1Mask
 bundle, the host (React Native background, Electron main process) builds the vault and hands it to the engine, and the
-screens are the same `@clip-wallet/ui` (desktop) or their React Native versions (mobile).
+screens are the same `@coldai/clip-wallet-ui` (desktop) or their React Native versions (mobile).
 
 ## Layers
 

@@ -7,8 +7,8 @@
  */
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { VaultStorage } from "@clip-wallet/vault";
-import { JsonKV, type KV } from "@clip-wallet/engine";
+import type { VaultStorage } from "@coldai/clip-wallet-vault";
+import { JsonKV, type KV } from "@coldai/clip-wallet-engine";
 import { APP } from "../env";
 
 const SECURE_OPTS: SecureStore.SecureStoreOptions = {

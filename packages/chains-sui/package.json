@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/chains-sui",
+  "name": "@coldai/clip-wallet-chains-sui",
   "version": "0.1.0",
   "description": "Sui ChainModule for Clip Wallet: builds and decodes transactions in plain words; never touches keys",
   "keywords": [
@@ -68,7 +68,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@mysten/sui": "^2.33.2",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0"

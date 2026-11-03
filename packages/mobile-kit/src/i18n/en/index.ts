@@ -1,6 +1,6 @@
 /**
  * The mobile app's English catalog (ids "m.<namespace>.<name>"). Shared wording with the extension lives in
- * @clip-wallet/ui's catalog; the phone has its own screens, so its own strings.
+ * @coldai/clip-wallet-ui's catalog; the phone has its own screens, so its own strings.
  */
 import common from "./common";
 import onboarding from "./onboarding";

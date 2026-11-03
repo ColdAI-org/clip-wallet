@@ -7,7 +7,7 @@
  * Alternatively the source can send its passkey-backup ciphertext (already encrypted under the passkey's PRF);
  * the new device then restores it with that passkey. Nothing here logs anything.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { b64url, fromB64url } from "../bytes.js";
 import type { LinkVault, SealedBoxLike } from "../keys.js";
 import { nextFrame, type Channel } from "../pairing/channel.js";

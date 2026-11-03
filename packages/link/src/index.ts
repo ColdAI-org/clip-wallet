@@ -1,11 +1,11 @@
 /**
- * @clip-wallet/link: one wallet on every platform.
+ * @coldai/clip-wallet-link: one wallet on every platform.
  *   - settings sync (end-to-end encrypted, per-record LWW with vector clocks)       sync/
  *   - pairing with QR / one-time code + 6-digit SAS, encrypted sessions            pairing/
  *   - a phone or Clip Desktop as the signer for the extension                       remote/, relay/, native/
  *   - adding this wallet to another device                                           transfer/
  *   - continue a dapp on another device                                              handoff/
- * Holds no seed or private key: X25519 / Ed25519 run in @clip-wallet/vault (LinkVault). Threat model: README.md.
+ * Holds no seed or private key: X25519 / Ed25519 run in @coldai/clip-wallet-vault (LinkVault). Threat model: README.md.
  *
  * @module
  */

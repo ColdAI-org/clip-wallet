@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/chains-stellar": patch
+"@coldai/clip-wallet-chains-stellar": patch
 ---
 
 SEP-43 `signAuthEntry` approvals always carry a warning: danger when the authorized call tree can move or approve

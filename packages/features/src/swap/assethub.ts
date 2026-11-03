@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, msg, titled } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type Network, msg, titled } from "@coldai/clip-wallet-core";
 import {
   type Connection,
   type SubstrateModule,
@@ -11,7 +11,7 @@ import {
   specOf,
   spendableNative,
   substrateModule,
-} from "@clip-wallet/chains-substrate";
+} from "@coldai/clip-wallet-chains-substrate";
 import type { Step } from "../steps.js";
 import { formatUnits } from "../util.js";
 import type { Unavailable } from "../views.js";

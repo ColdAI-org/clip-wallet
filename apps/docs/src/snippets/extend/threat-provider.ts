@@ -1,5 +1,5 @@
 // A scam-check source: implement ThreatIntelProvider and say exactly what leaves the device.
-import type { ThreatFinding, ThreatIntelProvider, TxCheckInput } from "@clip-wallet/security";
+import type { ThreatFinding, ThreatIntelProvider, TxCheckInput } from "@coldai/clip-wallet-security";
 
 /** Flags sites on a list you download once a day. Matching runs on the device. */
 export function createExampleListProvider(fetchList: () => Promise<string[]>): ThreatIntelProvider {

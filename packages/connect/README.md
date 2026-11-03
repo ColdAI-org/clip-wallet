@@ -1,4 +1,4 @@
-# @clip-wallet/connect (Clip Connect)
+# @coldai/clip-wallet-connect (Clip Connect)
 
 Connect a dapp to Clip Wallet, or to any other wallet, in one call. Clip Connect is the dapp-side half of Clip
 Wallet: open source, wallet-agnostic, and built only on public standards (EIP-1193, EIP-6963, EIP-5792, ERC-7682,
@@ -24,13 +24,13 @@ for its extras.
 ## Install
 
 ```sh
-npm i @clip-wallet/connect
+npm i @coldai/clip-wallet-connect
 ```
 
 ## Example
 
 ```ts
-import { connect } from "@clip-wallet/connect";
+import { connect } from "@coldai/clip-wallet-connect";
 
 const wallet = await connect({ chains: [84532, 11155111] }); // Base Sepolia, Ethereum Sepolia
 console.log(wallet.wallet.name, wallet.accounts); // "Clip Wallet", ["eip155:84532:0x…"]
@@ -44,7 +44,7 @@ console.log(status);
 ### React
 
 ```tsx
-import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@clip-wallet/connect/react";
+import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@coldai/clip-wallet-connect/react";
 
 function Checkout() {
   const { connection, connect } = useClipConnect();
@@ -70,7 +70,7 @@ export const App = () => (
 ```ts
 import { createConfig, http } from "@wagmi/core";
 import { baseSepolia } from "@wagmi/core/chains";
-import { clipConnect } from "@clip-wallet/connect/wagmi";
+import { clipConnect } from "@coldai/clip-wallet-connect/wagmi";
 
 export const config = createConfig({ chains: [baseSepolia], transports: { [baseSepolia.id]: http() }, connectors: [clipConnect()] });
 ```
@@ -81,7 +81,7 @@ another announced wallet, then to `window.ethereum`. wagmi's EIP-6963 discovery 
 ### Solana wallet adapter
 
 ```ts
-import { clipSolanaAdapter } from "@clip-wallet/connect/solana";
+import { clipSolanaAdapter } from "@coldai/clip-wallet-connect/solana";
 
 export const adapter = clipSolanaAdapter(); // StandardWalletAdapter for Clip, else another Solana wallet, else null
 ```
@@ -157,7 +157,7 @@ Clip Wallet's side, in more detail:
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

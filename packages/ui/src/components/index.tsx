@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import QRCode from "qrcode";
-import type { Nft } from "@clip-wallet/core";
-import type { Warning } from "@clip-wallet/core";
+import type { Nft } from "@coldai/clip-wallet-core";
+import type { Warning } from "@coldai/clip-wallet-core";
 import { hueFor, proxyMedia } from "../lib/media";
 import { useRouter, useUi } from "../context";
 import { IconAlert, IconBack, IconClock, IconCompass, IconGear, IconGrid, IconHome } from "./icons";

@@ -1,5 +1,5 @@
 // A new EVM network is one entry in EVM_NETWORK_SPECS (packages/chains-evm/src/networks.ts), plus a registry test.
-import { CURATED_TOKENS, looksLikeSpam, toNetwork, type EvmNetworkSpec } from "@clip-wallet/chains-evm";
+import { CURATED_TOKENS, looksLikeSpam, toNetwork, type EvmNetworkSpec } from "@coldai/clip-wallet-chains-evm";
 
 export const exampleSepolia: EvmNetworkSpec = {
   slug: "example-sepolia", // what "evm:example-sepolia" in clip.config.ts matches

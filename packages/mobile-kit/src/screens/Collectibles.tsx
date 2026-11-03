@@ -1,11 +1,11 @@
 /**
- * Collectibles grouped by collection (@clip-wallet/ui groupCollectibles). NFT media is untrusted: like the
+ * Collectibles grouped by collection (@coldai/clip-wallet-ui groupCollectibles). NFT media is untrusted: like the
  * extension, nothing is fetched unless a media proxy is configured (none yet), so tiles are drawn locally.
  */
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import type { Nft } from "@clip-wallet/core";
-import { groupCollectibles, hueFor, userMessageOf } from "@clip-wallet/ui";
+import type { Nft } from "@coldai/clip-wallet-core";
+import { groupCollectibles, hueFor, userMessageOf } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Card, Chip, Empty, ErrorNote, Row, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT } from "../i18n";

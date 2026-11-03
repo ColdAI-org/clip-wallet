@@ -4,7 +4,7 @@ The 87 networks are `NETWORKS` in coldai-clpr-landing `artifacts/coldai-web/src/
 CLPR verifier code in ColdAI's pull requests to LFDT-CLPR). The coverage below is computed from the wallet's own
 catalogue, not written by hand: `packages/engine/test/networks87.test.ts` maps each CLPR network to the mainnet(s) in
 `walletNetworks()` with every family on, fails if anything but the two networks below is missing, and prints the table
-(`pnpm --filter @clip-wallet/engine exec vitest run test/networks87.test.ts`).
+(`pnpm --filter @coldai/clip-wallet-engine exec vitest run test/networks87.test.ts`).
 
 ## Result
 
@@ -145,7 +145,7 @@ TronWeb, WharfKit, MultiversX sdk-core, @dfinity/identity-secp256k1, @stacks/wal
 module's paths and addresses are checked against the vault. Chain modules serialize transactions by hand
 (protobuf, XRPL binary codec, Antelope ABI, SIP-005, Fuel tx format, CBOR/Candid, CashAddr/BIP-143 with FORKID) and
 are cross-checked byte for byte against the official SDKs, which are devDependencies only; each module's runtime
-dependencies are `@clip-wallet/core`, `@noble/*` and `@scure/base`.
+dependencies are `@coldai/clip-wallet-core`, `@noble/*` and `@scure/base`.
 
 ## Networks without a self-custodial wallet model
 

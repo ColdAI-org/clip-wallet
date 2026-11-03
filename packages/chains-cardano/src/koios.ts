@@ -2,7 +2,7 @@
  * Koios REST client (https://api.koios.rest, OpenAPI koiosapi.yaml). Public tier: no API key.
  * Only the endpoints the module needs; responses are validated loosely and turned into plain errors.
  */
-import { ClipError, includesInOrder } from "@clip-wallet/core";
+import { ClipError, includesInOrder } from "@coldai/clip-wallet-core";
 import { hex } from "./util.js";
 
 export interface KoiosAsset {

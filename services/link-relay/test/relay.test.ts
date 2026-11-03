@@ -7,7 +7,7 @@
 import { exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { RelayChannel, contextFromOffer, newOffer, openSession, pair, type PairingKeyHandle, type WebSocketLike } from "@clip-wallet/link";
+import { RelayChannel, contextFromOffer, newOffer, openSession, pair, type PairingKeyHandle, type WebSocketLike } from "@coldai/clip-wallet-link";
 
 const worker = (exports as unknown as { default: { fetch(req: Request): Promise<Response> } }).default;
 const ID = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

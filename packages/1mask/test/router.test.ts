@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it, vi } from "vitest";
 import { createMemoryPermissionStore, createOneMaskRouter, type OneMaskRouterOptions } from "../src/background/index.js";
 import { ACCOUNTS, BTC_ADDR, EVM_ADDR, NETWORKS, SOL_ADDR, portPair, tick } from "./helpers.js";

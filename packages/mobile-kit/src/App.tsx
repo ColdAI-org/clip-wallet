@@ -3,7 +3,7 @@ import { ActivityIndicator, Modal, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import type { ApprovalView } from "@clip-wallet/ui";
+import type { ApprovalView } from "@coldai/clip-wallet-ui";
 import type { MobileWallet } from "./background/host";
 import { WalletProvider, useWallet, type Route } from "./ui/context";
 import { Onboarding, Unlock } from "./screens/Onboarding";

@@ -1,17 +1,17 @@
 # r1/clip-connect: integration (EIP-5792, ERC-7682, Clip Connect)
 
 Stream: the Wallet Call API (EIP-5792) with auxiliary funds (ERC-7682) in 1Mask and over WalletConnect, the
-dapp-side SDK `@clip-wallet/connect` (Clip Connect), and a compatibility suite that proves dapps that don't know Clip
+dapp-side SDK `@coldai/clip-wallet-connect` (Clip Connect), and a compatibility suite that proves dapps that don't know Clip
 see no difference. Guarantees and suite: [docs/compat.md](../../compat.md). SDK: `packages/connect/README.md`.
 
 ## New
 
 | Path | What |
 |---|---|
-| `packages/connect` | `@clip-wallet/connect`: `connect()`, `pay()`, `balances()`, `request()`, CAIP helpers. `./react`, `./wagmi` and `./solana` adapters. No `@clip-wallet/*` dependency (tested). |
+| `packages/connect` | `@coldai/clip-wallet-connect`: `connect()`, `pay()`, `balances()`, `request()`, CAIP helpers. `./react`, `./wagmi` and `./solana` adapters. No `@coldai/clip-wallet-*` dependency (tested). |
 | `packages/1mask/src/shared/calls.ts` | EIP-5792 / ERC-7682 wire types, error codes, `parseSendCalls`, `CallsHost` |
 | `packages/1mask/src/background/eip5792.ts` | router dispatch for the four methods |
-| `packages/engine/src/calls-batch.ts` (`@clip-wallet/engine/calls-batch`) | split / merge / plan for a batch, status store (24 h, per origin), sequential run |
+| `packages/engine/src/calls-batch.ts` (`@coldai/clip-wallet-engine/calls-batch`) | split / merge / plan for a batch, status store (24 h, per origin), sequential run |
 | `packages/route/src/auxiliary-funds.ts` | `auxiliaryFundsFor()` and `settleSourceNetworks()`: the static ERC-7682 advertisement |
 | `packages/extension-kit/src/background/calls.ts` | `BackgroundCalls`: the extension's `CallsHost` (receipts, Activity, wallet UI) |
 | `apps/extension/e2e/compat.spec.ts`, `e2e/compat/*` | compat suite plus snapshots recorded on main 830794e |
@@ -56,16 +56,16 @@ All edits are additive.
   - the batch notice in `Approval.tsx` (`approval.batch.sequential`, 12 locales)
   - the `send-calls` simulator button
 - **`tools/release`**:
-  - `normalize-manifests.mjs`: the `@clip-wallet/connect` description, keywords and optional peers.
+  - `normalize-manifests.mjs`: the `@coldai/clip-wallet-connect` description, keywords and optional peers.
   - `sync-template.mjs`: also pins the template's `packages/nextjs` kit dependencies.
 - **`apps/extension/package.json`**: dev dependencies for the compat suite (dapp-side libraries, esbuild) and
-  `@clip-wallet/connect`.
+  `@coldai/clip-wallet-connect`.
 - **`pnpm-workspace.yaml`**: `allowBuilds: '@reown/appkit': false` (its postinstall is only a version notice).
 
 ## Not wired (follow-ups)
 
 - **Mobile engine** (`packages/engine/src/engine.ts`, `apps/mobile`). The shared module is ready
-  (`@clip-wallet/engine/calls-batch`). Wiring takes the same ~60 lines as the extension's service: the batch branch
+  (`@coldai/clip-wallet-engine/calls-batch`). Wiring takes the same ~60 lines as the extension's service: the batch branch
   in `enqueueTransaction`, `approveBatch`, a `CallsHost`, and passing `calls` to the engine's `OneMaskConnector` and
   `WalletConnectAdapter`. Until then, mobile WalletConnect sessions don't offer the methods, which is unchanged
   behaviour.

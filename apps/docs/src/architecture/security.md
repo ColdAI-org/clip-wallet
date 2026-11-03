@@ -1,6 +1,6 @@
 # Security services
 
-`@clip-wallet/security` holds the checks people expect from a modern wallet, as background services with no keys:
+`@coldai/clip-wallet-security` holds the checks people expect from a modern wallet, as background services with no keys:
 scam detection, app permissions (see and revoke standing approvals) and spam cleanup. Every action it takes, such as
 a revoke, is an ordinary `DappRequest` on the normal approval path. The screens live in `packages/ui/src/security/`.
 

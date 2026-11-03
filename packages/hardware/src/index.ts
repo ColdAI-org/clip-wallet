@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/hardware — accounts that live on a Ledger (WebHID) or a Keystone (QR, air-gapped).
+ * @coldai/clip-wallet-hardware — accounts that live on a Ledger (WebHID) or a Keystone (QR, air-gapped).
  * No key material ever enters the extension: devices sign, this package checks every signature
  * against the approved bytes and the account's public key.
  *

@@ -1,4 +1,4 @@
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import type { ExposedAccount } from "../shared/protocol.js";
 import { STACKS_CHAINS, STACKS_INJECTED, STACKS_SIGNING_METHODS, stacksAddressOn, stacksNetworkName } from "../shared/stacks.js";

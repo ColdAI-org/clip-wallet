@@ -14,7 +14,7 @@
  * @module
  */
 import { contextBridge, ipcRenderer } from "electron";
-import { createContentBridge, type RuntimePort } from "@clip-wallet/1mask/content";
+import { createContentBridge, type RuntimePort } from "@coldai/clip-wallet-1mask/content";
 import { CH, type OneMaskBoot } from "../shared/ipc";
 import { inpageMain } from "./inpage.generated";
 

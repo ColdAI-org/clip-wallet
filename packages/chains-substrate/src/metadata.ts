@@ -3,7 +3,7 @@
  * turned into dynamic codecs with @polkadot-api/metadata-builders. Metadata V15 is requested through the
  * `Metadata_metadata_at_version` runtime API; nodes without it fall back to `state_getMetadata` (V14).
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { type MetadataLookup, getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders";
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import { Bytes, Option, decAnyMetadata, unifyMetadata } from "@polkadot-api/substrate-bindings";

@@ -1,4 +1,4 @@
-# @clip-wallet/chains-icp
+# @coldai/clip-wallet-chains-icp
 
 Internet Computer `ChainModule` for Clip Wallet: it sends ICP, ckBTC, ckUSDC and ckETH and never touches keys. It
 implements the small part of the IC HTTPS interface it needs by hand: CBOR, request ids, signed envelopes, query and

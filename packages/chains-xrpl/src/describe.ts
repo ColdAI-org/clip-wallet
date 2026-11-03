@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, type NetworkId, type Warning, say } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, type NetworkId, type Warning, say } from "@coldai/clip-wallet-core";
 import { currencyName, tokenAsset, xrpAsset } from "./networks.js";
 import type { AccountRoot, Reserves, Rpc } from "./rpc.js";
 import { decimalToUnits, formatUnits, isObj, short, textOfHex } from "./util.js";

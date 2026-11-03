@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { hexToNumber, isHex } from "viem";
 import type { Hex } from "viem";
 import { withoutTrailingSlashes } from "./url.js";

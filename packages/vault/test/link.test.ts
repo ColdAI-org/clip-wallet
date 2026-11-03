@@ -1,7 +1,7 @@
 /**
  * Clip Link key material with REAL crypto (the only place in the repo where it runs end to end):
  * the sync key (KAT on the public BIP-39 vector, re-derived independently with node:crypto HKDF), its domain-
- * restricted signer, X25519 pairing, moving a wallet between two vaults over @clip-wallet/link, and a man in the
+ * restricted signer, X25519 pairing, moving a wallet between two vaults over @coldai/clip-wallet-link, and a man in the
  * middle on the relay.
  */
 import { hkdfSync } from "node:crypto";
@@ -20,7 +20,7 @@ import {
   receiveWallet,
   sendWallet,
   type LinkKV,
-} from "@clip-wallet/link";
+} from "@coldai/clip-wallet-link";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { ClipVault, MemoryStorage } from "../src/index.js";
 

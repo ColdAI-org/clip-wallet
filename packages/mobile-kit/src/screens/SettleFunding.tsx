@@ -4,7 +4,7 @@
  * and the one-tap claim when it's late. Every sentence comes from the "m.settle" catalog.
  */
 import { View } from "react-native";
-import { formatLocale, formatUnits, readyInMessage, type SettleAmountView, type SettleFundingView } from "@clip-wallet/ui";
+import { formatLocale, formatUnits, readyInMessage, type SettleAmountView, type SettleFundingView } from "@coldai/clip-wallet-ui";
 import { useWallet } from "../ui/context";
 import { Button, Notice, T } from "../ui/kit";
 import { useMobileT, type MobileMessageId } from "../i18n";

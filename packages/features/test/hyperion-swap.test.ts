@@ -1,5 +1,5 @@
-import type { Account, AssetRef, ChainContext, DappRequest } from "@clip-wallet/core";
-import { APTOS_DEVNET, APTOS_MAINNET, APTOS_TESTNET, type EntryAbi, bcsAddress, bcsAddressVector, bcsU64, createAptosModule, decodeEntryPayload, encodeEntryPayload } from "@clip-wallet/chains-aptos";
+import type { Account, AssetRef, ChainContext, DappRequest } from "@coldai/clip-wallet-core";
+import { APTOS_DEVNET, APTOS_MAINNET, APTOS_TESTNET, type EntryAbi, bcsAddress, bcsAddressVector, bcsU64, createAptosModule, decodeEntryPayload, encodeEntryPayload } from "@coldai/clip-wallet-chains-aptos";
 import { describe, expect, it } from "vitest";
 import { HYPERION, HyperionSwap } from "../src/swap/hyperion.js";
 import { mockFetch } from "./helpers.js";

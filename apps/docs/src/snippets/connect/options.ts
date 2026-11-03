@@ -1,4 +1,4 @@
-import { connect, type ConnectOptions } from "@clip-wallet/connect";
+import { connect, type ConnectOptions } from "@coldai/clip-wallet-connect";
 
 const options: ConnectOptions = {
   // Which wallet to prefer when several are installed. Default: Clip Wallet. Kit-built wallets announce their own.

@@ -5,7 +5,7 @@
  * then so is the whole plan. Layouts: Uniswap universal-router contracts/libraries/Commands.sol and
  * contracts/base/Dispatcher.sol.
  */
-import { msg, titled, warning, type ChainContext, type DecodedRequest, type Msg, type Warning } from "@clip-wallet/core";
+import { msg, titled, warning, type ChainContext, type DecodedRequest, type Msg, type Warning } from "@coldai/clip-wallet-core";
 import { type Hex, decodeAbiParameters, hexToBytes, isAddressEqual, parseAbiParameters, zeroAddress } from "viem";
 import { tokenMeta } from "./chain.js";
 import { formatAmount, safeChecksum, shortAddress } from "./format.js";

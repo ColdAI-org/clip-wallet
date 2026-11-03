@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Nft } from "@clip-wallet/core";
+import type { Nft } from "@coldai/clip-wallet-core";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";
 import { CopyButton, Empty, ErrorNote, NftMedia, Row, Screen, Spinner } from "../components";

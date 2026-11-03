@@ -1,6 +1,6 @@
 import { connect, createConfig, http } from "@wagmi/core";
 import { baseSepolia } from "@wagmi/core/chains";
-import { clipConnect } from "@clip-wallet/connect/wagmi";
+import { clipConnect } from "@coldai/clip-wallet-connect/wagmi";
 
 export const config = createConfig({
   chains: [baseSepolia],

@@ -6,7 +6,7 @@ export type { Cell as TonCell } from "@ton/core";
 
 /**
  * Message bodies for wallet-built DeFi actions (Clip Wallet features: STON.fi swaps, Tonstakers liquid staking).
- * Built here so `@clip-wallet/features` never needs @ton/core, and parsed back with the same SDK so tests and
+ * Built here so `@coldai/clip-wallet-features` never needs @ton/core, and parsed back with the same SDK so tests and
  * `Step.verify` check the real bytes. Pure data in and out: addresses as strings, amounts as bigint, cells as
  * base64 BoC.
  *

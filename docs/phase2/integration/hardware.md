@@ -2,14 +2,14 @@
 
 New in this branch (no wiring yet):
 
-- `packages/hardware` (`@clip-wallet/hardware`): `HardwareKeyring`, `LedgerSigner`, `KeystoneSigner`,
-  `KeystoneBridge`, and the browser half `@clip-wallet/hardware/qr` (camera, animated UR, Ledger USB permission).
+- `packages/hardware` (`@coldai/clip-wallet-hardware`): `HardwareKeyring`, `LedgerSigner`, `KeystoneSigner`,
+  `KeystoneBridge`, and the browser half `@coldai/clip-wallet-hardware/qr` (camera, animated UR, Ledger USB permission).
   See its README.
 - `packages/ui/src/hardware/*`: `ConnectHardware`, `HardwareSettings`, `HardwareApprovalGate`
   (`LedgerConfirm`, `KeystoneExchangeScreen`), `UrScanner`, `AnimatedQr`, the `HardwareClient` interface.
   Tests: `packages/ui/test/hardware.test.tsx`.
 - `packages/core/src/index.ts`: additive `SignablePayload.raw?: RawSignable` (+ `RawFormat`, `RawSignable`).
-- `packages/ui/package.json`: dependency `@clip-wallet/hardware` (the screens import only `@clip-wallet/hardware/qr`).
+- `packages/ui/package.json`: dependency `@coldai/clip-wallet-hardware` (the screens import only `@coldai/clip-wallet-hardware/qr`).
 
 The steps below are for the integration step. Apply them in order; each block says the file and where.
 
@@ -20,7 +20,7 @@ The steps below are for the integration step. Apply them in order; each block sa
 `apps/extension/package.json`, `dependencies`:
 
 ```json
-"@clip-wallet/hardware": "workspace:*",
+"@coldai/clip-wallet-hardware": "workspace:*",
 "buffer": "^6.0.3",
 ```
 
@@ -67,7 +67,7 @@ reached through `openFullTab` from the popup.
 Imports:
 
 ```ts
-import { HardwareKeyring, KeystoneBridge, KeystoneSigner, LedgerSigner, type HardwareStorage } from "@clip-wallet/hardware";
+import { HardwareKeyring, KeystoneBridge, KeystoneSigner, LedgerSigner, type HardwareStorage } from "@coldai/clip-wallet-hardware";
 ```
 
 `Dependencies` (add):
@@ -135,7 +135,7 @@ Inside the `z.discriminatedUnion("type", [ ... ])` list:
   z.object({ type: z.literal("hwCancel"), id }),
 ```
 
-`ResponseMap` (types from `@clip-wallet/ui`: `import type { HardwareAccountView, HardwareFamilyView } from "@clip-wallet/ui";`):
+`ResponseMap` (types from `@coldai/clip-wallet-ui`: `import type { HardwareAccountView, HardwareFamilyView } from "@coldai/clip-wallet-ui";`):
 
 ```ts
   hwLedgerAccounts: HardwareAccountView[];
@@ -155,9 +155,9 @@ Inside the `z.discriminatedUnion("type", [ ... ])` list:
 Imports:
 
 ```ts
-import type { Signature, SignablePayload } from "@clip-wallet/core";
-import { HardwareErrors, urFromJson, type HardwareAccount, type HardwareFamily } from "@clip-wallet/hardware";
-import type { HardwareAccountView } from "@clip-wallet/ui";
+import type { Signature, SignablePayload } from "@coldai/clip-wallet-core";
+import { HardwareErrors, urFromJson, type HardwareAccount, type HardwareFamily } from "@coldai/clip-wallet-hardware";
+import type { HardwareAccountView } from "@coldai/clip-wallet-ui";
 ```
 
 `K` (add): `activeHw: "clip/hardware/active",`
@@ -351,7 +351,7 @@ Note: `afterUnlock()` derives vault accounts, so these flows assume the phrase w
 ### 5b. Page-side clients: new file `apps/extension/src/shared/hardware-client.ts`
 
 ```ts
-import type { HardwareApprovalClient, HardwareClient } from "@clip-wallet/ui";
+import type { HardwareApprovalClient, HardwareClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { BusError } from "./bus";
 import { Envelope, type Request, type RequestType, type ResponseMap } from "./messages";

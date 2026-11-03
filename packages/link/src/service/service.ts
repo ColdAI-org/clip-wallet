@@ -3,7 +3,7 @@
  * the mobile app). It holds no seed or private key: pairing keys, sync signing and wallet transfer go through the
  * vault's APIs (LinkVault); this service keeps only derived link secrets of paired devices and public data.
  */
-import { ClipError, type Family } from "@clip-wallet/core";
+import { ClipError, type Family } from "@coldai/clip-wallet-core";
 import { b64url, fromB64url, hkdf32, randomBytes } from "../bytes.js";
 import type { LinkVault } from "../keys.js";
 import { nextFrame, type BaseChannel, type Channel } from "../pairing/channel.js";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defineConfig, enabledFamilies } from "@clip-wallet/config";
+import { defineConfig, enabledFamilies } from "@coldai/clip-wallet-config";
 import { walletAssets, walletNetworks } from "../src/shared/catalog";
 import { RoutePlannerAdapter, ReferencePriceFeed } from "../src/background/real";
 import config from "./clip.config";

@@ -7,7 +7,7 @@
  *    we never pass the tweak scalar itself (it would be hashed twice).
  * Legacy P2PKH and nested P2SH-P2WPKH inputs are not signed in v1.
  */
-import { ClipError, type Account, type ChildAddress, type Network } from "@clip-wallet/core";
+import { ClipError, type Account, type ChildAddress, type Network } from "@coldai/clip-wallet-core";
 import { base64, hex } from "@scure/base";
 import { SigHash, Transaction } from "@scure/btc-signer";
 import { equalBytes } from "@scure/btc-signer/utils.js";

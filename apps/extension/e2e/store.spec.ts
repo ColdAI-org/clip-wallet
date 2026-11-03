@@ -1,6 +1,6 @@
 /**
  * Store screenshots (Chrome Web Store / Edge / AMO): the e2e fixture flows captured at 2x, framed at 1280x800
- * with one plain caption each. Only runs with STORE_SHOTS=1 (`pnpm --filter @clip-wallet/extension store:shots`):
+ * with one plain caption each. Only runs with STORE_SHOTS=1 (`pnpm --filter @coldai/clip-wallet-extension store:shots`):
  * the normal e2e run already covers these flows.
  *
  * Chrome Web Store: 1280x800 or 640x400, at least 1, at most 5 (https://developer.chrome.com/docs/webstore/images).

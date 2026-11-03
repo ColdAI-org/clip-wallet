@@ -1,4 +1,4 @@
-import { ClipError, includesInOrder } from "@clip-wallet/core";
+import { ClipError, includesInOrder } from "@coldai/clip-wallet-core";
 
 export class RpcError extends Error {
   constructor(

@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Cosmos SDK networks Clip Wallet ships, by key family (each ecosystem's wallets derive at the chain's own SLIP-44

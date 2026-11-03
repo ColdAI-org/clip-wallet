@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/chains-substrate": patch
+"@coldai/clip-wallet-chains-substrate": patch
 ---
 
 A payload built for a runtime version the wallet can't load is shown as unreadable (blind, danger) instead of being

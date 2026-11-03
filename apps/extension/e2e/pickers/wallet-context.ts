@@ -137,8 +137,8 @@ export function saveRow(file: string, r: Row) {
 /** Why the Hedera WalletConnect picker can't run: no project id in .env.dapp-matrix, or a wallet built without it. */
 export function walletConnectSkip(): string | null {
   const id = walletConnectProjectId();
-  if (!id) return "WALLETCONNECT_PROJECT_ID is not set in .env.dapp-matrix: the Hedera DAppConnector / HashConnect path needs a real WalletConnect project id (then run `pnpm --filter @clip-wallet/extension pickers`, which builds the wallet with it).";
+  if (!id) return "WALLETCONNECT_PROJECT_ID is not set in .env.dapp-matrix: the Hedera DAppConnector / HashConnect path needs a real WalletConnect project id (then run `pnpm --filter @coldai/clip-wallet-extension pickers`, which builds the wallet with it).";
   const bundles = readdirSync(EXT, { recursive: true }).filter((f) => String(f).endsWith(".js"));
   const built = bundles.some((f) => readFileSync(path.join(EXT, String(f)), "utf8").includes(id));
-  return built ? null : `This build (${EXT}) has WalletConnect off: rebuild with \`pnpm --filter @clip-wallet/extension pickers\` so CLIP_WALLETCONNECT_PROJECT_ID is set.`;
+  return built ? null : `This build (${EXT}) has WalletConnect off: rebuild with \`pnpm --filter @coldai/clip-wallet-extension pickers\` so CLIP_WALLETCONNECT_PROJECT_ID is set.`;
 }

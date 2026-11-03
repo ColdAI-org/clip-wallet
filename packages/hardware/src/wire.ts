@@ -3,7 +3,7 @@
  * the device (chrome.runtime messages are JSON: a Uint8Array would arrive as a plain object).
  * Public data only: payloads, accounts, signatures.
  */
-import type { Signature, SignatureScheme } from "@clip-wallet/core";
+import type { Signature, SignatureScheme } from "@coldai/clip-wallet-core";
 import { fromHex, toHex } from "./bytes.js";
 
 const U8 = "$u8";

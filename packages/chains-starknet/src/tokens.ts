@@ -1,4 +1,4 @@
-import type { AssetRef, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, NetworkId } from "@coldai/clip-wallet-core";
 import { hash, shortString } from "starknet";
 import { ETH_ADDRESS, STRK_ADDRESS, chainOf, strkAsset, type StarknetChain } from "./networks.js";
 import type { StarknetRpc } from "./rpc.js";

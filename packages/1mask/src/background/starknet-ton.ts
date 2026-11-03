@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network, NetworkId } from "@clip-wallet/core";
+import type { DappRequest, Family, Network, NetworkId } from "@coldai/clip-wallet-core";
 import { ProviderRpcError, rpcError } from "../shared/errors.js";
 import type { ExposedAccount, OneMaskEvent } from "../shared/protocol.js";
 

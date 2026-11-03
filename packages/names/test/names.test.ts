@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import { toCoinType } from "viem/ens";
 import { EnsBackend, HnsBackend, MultiNameResolver, SnsBackend, looksLikeName, type EnsClient } from "../src/index.js";
 

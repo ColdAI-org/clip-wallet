@@ -1,5 +1,5 @@
-import type { ChainContext, DappRequest, Network } from "@clip-wallet/core";
-import { ProtocolsHash, TezosRpc, buildOperation, createTezosModule, parseForged, type PartialTezosOperation, type TezosOperation } from "@clip-wallet/chains-tezos";
+import type { ChainContext, DappRequest, Network } from "@coldai/clip-wallet-core";
+import { ProtocolsHash, TezosRpc, buildOperation, createTezosModule, parseForged, type PartialTezosOperation, type TezosOperation } from "@coldai/clip-wallet-chains-tezos";
 import { expect } from "vitest";
 import type { Route } from "./helpers.js";
 

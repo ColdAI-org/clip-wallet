@@ -7,7 +7,7 @@
  * handles aren't switched on. Every record is checked with the family's own address rules (ChainModule.isAddress,
  * passed in as `isAddress`) before it is returned; anything else is dropped.
  */
-import { ClipError, FAMILIES, type Family, type Network, type NetworkId } from "@clip-wallet/core";
+import { ClipError, FAMILIES, type Family, type Network, type NetworkId } from "@coldai/clip-wallet-core";
 import { createPublicClient, http, isAddress as isEvmAddress, getAddress, type Address } from "viem";
 import { hedera, hederaTestnet } from "viem/chains";
 import type { Backend, ResolvedName } from "./types.js";

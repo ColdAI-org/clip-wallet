@@ -20,14 +20,14 @@ human or AI, must pass.
 6. **Testnet by default.** Mainnet needs the checklist object in `clip.config.ts`, and a mainnet build needs everything
    `mainnetProblems()` asks for.
 7. **The security floor is not configurable.** Open phishing lists, decode-before-approve, new-contract and
-   look-alike checks are always on. `@clip-wallet/security` refuses a mainnet config below the floor.
+   look-alike checks are always on. `@coldai/clip-wallet-security` refuses a mainnet config below the floor.
 8. **Kit-built wallets announce their own identity.** Nothing in the kit may hard-code "Clip Wallet" or Clip's rdns
    where the wallet's own name belongs.
 9. **Packages are released by CI only**, with changesets and npm provenance. Never publish by hand.
 
 ## Who may import the vault
 
-Type-only imports (`import type { ClipVault } from "@clip-wallet/vault"`) are fine anywhere. Code imports are allowed
+Type-only imports (`import type { ClipVault } from "@coldai/clip-wallet-vault"`) are fine anywhere. Code imports are allowed
 only in:
 
 - `packages/vault` itself;
@@ -46,7 +46,7 @@ Each failure names a file and line and says what to do in a plain sentence.
 | Check | Fails when |
 | --- | --- |
 | `key-material-outside-vault` | a file outside `packages/vault` imports a key library or uses a private-key API |
-| `vault-import-not-allowed` | `@clip-wallet/vault` is imported (not type-only) outside the places above |
+| `vault-import-not-allowed` | `@coldai/clip-wallet-vault` is imported (not type-only) outside the places above |
 | `chain-module-imports-vault` | a chain module imports or depends on the vault, tests included |
 | `logs-secret` | `console.*` prints something named like a phrase, mnemonic, seed, private key or secret |
 | `phrase-literal` | a string that is a BIP-39 phrase appears outside `packages/vault/test` |

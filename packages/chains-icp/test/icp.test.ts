@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { Cbor, lookup_path, requestIdOf } from "@dfinity/agent";
 import { IDL } from "@dfinity/candid";
 import { Secp256k1PublicKey } from "@dfinity/identity-secp256k1";

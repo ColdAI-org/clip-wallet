@@ -6,9 +6,9 @@
  *
  * The device code is loaded only when a job arrives (see devices.ts).
  */
-import type { DappRequest, DecodedRequest, SignablePayload } from "@clip-wallet/core";
-import { fromWire, signatureToWire, type HardwareAccount, type HardwareKind, type HardwareSigner, type PendingExchangeView } from "@clip-wallet/hardware/core";
-import type { ApprovalView, WalletClient } from "@clip-wallet/ui";
+import type { DappRequest, DecodedRequest, SignablePayload } from "@coldai/clip-wallet-core";
+import { fromWire, signatureToWire, type HardwareAccount, type HardwareKind, type HardwareSigner, type PendingExchangeView } from "@coldai/clip-wallet-hardware/core";
+import type { ApprovalView, WalletClient } from "@coldai/clip-wallet-ui";
 import type { HardwareSignJob } from "../../shared/hardware-job";
 import type { Request } from "../../shared/messages";
 

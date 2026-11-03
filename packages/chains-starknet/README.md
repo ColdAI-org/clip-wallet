@@ -1,4 +1,4 @@
-# @clip-wallet/chains-starknet
+# @coldai/clip-wallet-chains-starknet
 
 Starknet `ChainModule` for Clip Wallet. It builds, decodes, simulates and broadcasts, but it never touches keys.
 `prepare()` returns the transaction hash (or SNIP-12 message hash) as a 32-byte `stark-ecdsa` payload. The vault
@@ -13,14 +13,14 @@ module uses it for hashing, calldata, typed data and verification only. JSON-RPC
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-starknet @clip-wallet/core
+npm i @coldai/clip-wallet-chains-starknet @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createStarknetModule, STARKNET_SEPOLIA } from "@clip-wallet/chains-starknet";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createStarknetModule, STARKNET_SEPOLIA } from "@coldai/clip-wallet-chains-starknet";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createStarknetModule();
@@ -64,7 +64,7 @@ All symbols and decimals were checked on-chain.
 
 ## Account
 
-- **Default: OpenZeppelin account, class `0x0540d7f5…f8e688` (v0.17.0).** This is the class `@clip-wallet/vault`
+- **Default: OpenZeppelin account, class `0x0540d7f5…f8e688` (v0.17.0).** This is the class `@coldai/clip-wallet-vault`
   uses for its default Starknet address (`STARKNET_OZ_ACCOUNT_CLASS_HASH`), so module and vault addresses match.
   A test cross-checks them.
 - Why OpenZeppelin:
@@ -139,7 +139,7 @@ keys, and Starkscan is gone. Plug one in with the `nfts` option.
 
 ## AVNU helpers (`src/avnu.ts`)
 
-For wallet-built AVNU swaps in `@clip-wallet/features`:
+For wallet-built AVNU swaps in `@coldai/clip-wallet-features`:
 - `AVNU_EXCHANGE`: Exchange contract per network, from the avnu-labs/avnu-contracts-v2 README (mainnet
   `0x0427…3b0f`, Sepolia `0x02c5…e7c2`), read 2026-10-03.
 - `parseMultiRouteSwap(calldata)`: reads the fixed head of `multi_route_swap` (`src/exchange.cairo`): sell token and
@@ -159,7 +159,7 @@ For wallet-built AVNU swaps in `@clip-wallet/features`:
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

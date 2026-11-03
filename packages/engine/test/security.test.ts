@@ -1,7 +1,7 @@
 /** Security stream wiring in the engine (mobile): approval refine with the send's recipient, the sec* bus, social sign-in off. */
 import { describe, expect, it, vi } from "vitest";
-import type { DecodedRequest, Warning } from "@clip-wallet/core";
-import { RecipientLog } from "@clip-wallet/security";
+import type { DecodedRequest, Warning } from "@coldai/clip-wallet-core";
+import { RecipientLog } from "@coldai/clip-wallet-security";
 import { WalletEngine } from "../src/engine.js";
 import { MemoryKV } from "../src/kv.js";
 import { createEngineClient } from "../src/client.js";

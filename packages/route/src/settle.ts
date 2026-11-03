@@ -1,5 +1,5 @@
-import type { AssetRef, DappRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError, say } from "@clip-wallet/core";
+import type { AssetRef, DappRequest, NetworkId } from "@coldai/clip-wallet-core";
+import { ClipError, say } from "@coldai/clip-wallet-core";
 import { decodeEventLog, decodeFunctionResult, encodeEventTopics, encodeFunctionData, getAddress, isAddress, keccak256 } from "viem";
 import type { Address, Hex } from "viem";
 import { hederaRecipientToEvm } from "./client.js";

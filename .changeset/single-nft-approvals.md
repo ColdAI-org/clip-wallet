@@ -1,8 +1,8 @@
 ---
-"@clip-wallet/security": patch
-"@clip-wallet/chains-evm": patch
-"@clip-wallet/ui": patch
-"@clip-wallet/mobile-kit": patch
+"@coldai/clip-wallet-security": patch
+"@coldai/clip-wallet-chains-evm": patch
+"@coldai/clip-wallet-ui": patch
+"@coldai/clip-wallet-mobile-kit": patch
 ---
 
 App permissions now list single-NFT ERC-721 approvals (`approve(spender, tokenId)`) while `getApproved` still names

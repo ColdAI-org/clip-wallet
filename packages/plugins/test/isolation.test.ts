@@ -107,7 +107,7 @@ describe("a plugin can't reach the extension, storage, the vault or the network"
   it("dynamic import() is refused at load time", async () => {
     const { factory } = memoryChannels(ses);
     const host = new PluginHost({ channels: factory });
-    const src = `module.exports.onTransaction = async () => { const m = await import("@clip-wallet/vault"); return {}; };`;
+    const src = `module.exports.onTransaction = async () => { const m = await import("@coldai/clip-wallet-vault"); return {}; };`;
     await expect(host.start(installed(src, { transactionInsight: true }))).rejects.toBeInstanceOf(PluginError);
   });
 

@@ -6,7 +6,7 @@
  *  - `toInsightInput`: what a plugin is shown of a DecodedRequest (title, lines, balance changes, network,
  *    origin, the account's public address). Never the raw payload, keys or anything from the vault.
  */
-import type { DecodedRequest } from "@clip-wallet/core";
+import type { DecodedRequest } from "@coldai/clip-wallet-core";
 import { z } from "zod";
 import type { InstalledPlugin, PluginHost, PluginInsight, PluginNameResult } from "./host.js";
 import type { InsightInput } from "./messages.js";

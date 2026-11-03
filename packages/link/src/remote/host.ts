@@ -6,11 +6,11 @@
  * Wiring (extension background, before service.start()):
  *   deps.dapps = withRemoteSigner(deps.dapps, link.remoteHost)  — see docs/r1/integration/connect.md
  */
-import type { Account, DappRequest, Family, Warning } from "@clip-wallet/core";
+import type { Account, DappRequest, Family, Warning } from "@coldai/clip-wallet-core";
 import type { LinkKV } from "../sync/client.js";
 import type { RemoteSigner } from "./client.js";
 
-/** Structural copy of @clip-wallet/engine's DappHost (kept here so link doesn't depend on the engine). */
+/** Structural copy of @coldai/clip-wallet-engine's DappHost (kept here so link doesn't depend on the engine). */
 export interface DappHostLike {
   approveConnect(p: { origin: string; family: Family; networkId: string; via: "injected" | "walletconnect"; name?: string; iconUrl?: string; warnings?: Warning[] }): Promise<boolean>;
   request(req: DappRequest, dapp?: { name?: string; iconUrl?: string; warnings?: Warning[] }): Promise<unknown>;
@@ -23,7 +23,7 @@ export interface DappHostLike {
   isUnlocked(): Promise<boolean>;
   cancel(requestId: string): void;
   isKnownScam?(origin: string): boolean;
-  /** EIP-5792 Wallet Call API host (@clip-wallet/1mask CallsHost), passed through while this device signs. */
+  /** EIP-5792 Wallet Call API host (@coldai/clip-wallet-1mask CallsHost), passed through while this device signs. */
   calls?: { enabled?(): boolean; auxiliaryFunds(networkIds: string[]): unknown; status(origin: string, id: string): Promise<unknown>; show(origin: string, id: string): Promise<boolean> };
 }
 

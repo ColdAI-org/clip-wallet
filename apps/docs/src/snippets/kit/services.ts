@@ -1,4 +1,4 @@
-import { defineConfig } from "@clip-wallet/config";
+import { defineConfig } from "@coldai/clip-wallet-config";
 
 export default defineConfig({
   name: "Acme Wallet",

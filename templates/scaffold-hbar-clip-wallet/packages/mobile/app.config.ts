@@ -1,4 +1,4 @@
-import { expoConfig } from "@clip-wallet/mobile-kit/expo";
+import { expoConfig } from "@coldai/clip-wallet-mobile-kit/expo";
 
 /**
  * Expo's app config from the wallet's one clip.config.ts (at the project root, shared with the extension and the

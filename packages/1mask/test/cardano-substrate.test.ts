@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it, vi } from "vitest";
 import {
   CARDANO_METHODS_ALLOWED,

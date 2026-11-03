@@ -1,4 +1,4 @@
-# @clip-wallet/mobile-kit
+# @coldai/clip-wallet-mobile-kit
 
 The Clip Wallet phone app (Expo / React Native: iOS, Android) as a library. A wallet project keeps its identity
 (`clip.config.ts`, `assets/`), `app.config.ts`, `metro.config.js` and a three-line `index.ts`; the screens, the vault and
@@ -10,7 +10,7 @@ Clip Plugins, Ledger over Bluetooth and Keystone, linked devices and notificatio
 ## Install
 
 ```sh
-npx expo install @clip-wallet/mobile-kit @clip-wallet/config
+npx expo install @coldai/clip-wallet-mobile-kit @coldai/clip-wallet-config
 ```
 
 Then add the native modules listed in this package's `peerDependencies` (Expo autolinking only links what the app
@@ -20,21 +20,21 @@ depends on).
 
 ```ts
 // index.ts
-import "@clip-wallet/mobile-kit/polyfills"; // first
-import { registerClipWallet } from "@clip-wallet/mobile-kit";
+import "@coldai/clip-wallet-mobile-kit/polyfills"; // first
+import { registerClipWallet } from "@coldai/clip-wallet-mobile-kit";
 registerClipWallet({ icon: require("./assets/icon.png") });
 ```
 
 ```ts
 // app.config.ts
-import { expoConfig } from "@clip-wallet/mobile-kit/expo";
+import { expoConfig } from "@coldai/clip-wallet-mobile-kit/expo";
 export default () => expoConfig({ configFile: "../../clip.config.ts", root: __dirname });
 ```
 
 ```js
 // metro.config.js
 const { getDefaultConfig } = require("expo/metro-config");
-const { withClipWallet } = require("@clip-wallet/mobile-kit/metro");
+const { withClipWallet } = require("@coldai/clip-wallet-mobile-kit/metro");
 module.exports = withClipWallet(getDefaultConfig(__dirname), { configFile: "../../clip.config.ts", root: __dirname });
 ```
 
@@ -71,7 +71,7 @@ this package's `peerDependencies`. Node 22.18 or newer (the helpers read clip.co
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

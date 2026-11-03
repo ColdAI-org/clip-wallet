@@ -6,7 +6,7 @@
 
 - [ ] Every commit is signed off (`git commit -s`, [DCO](../CONTRIBUTING.md#developer-certificate-of-origin-dco))
 - [ ] `pnpm typecheck && pnpm test && pnpm harness` pass
-- [ ] Extension or a shared package touched: `pnpm --filter @clip-wallet/extension e2e` passes
+- [ ] Extension or a shared package touched: `pnpm --filter @coldai/clip-wallet-extension e2e` passes
 - [ ] `packages/*` changed: a changeset (`pnpm changeset`)
 - [ ] User-facing text goes through i18n in every shipped language
 - [ ] The wallet contacts something new: privacy policy, in-app disclosure and store listing updated

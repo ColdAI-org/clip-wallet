@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError } from "@clip-wallet/core";
+import { type ChainContext, ClipError } from "@coldai/clip-wallet-core";
 
 /**
  * rippled JSON-RPC over `ctx.fetch` (https://xrpl.org/docs/references/http-websocket-apis): POST { method,

@@ -1,4 +1,4 @@
-/** Settings → Linked devices on the phone (r1/connect), ids "m.link.*". Shares wording with @clip-wallet/ui's "link" namespace. */
+/** Settings → Linked devices on the phone (r1/connect), ids "m.link.*". Shares wording with @coldai/clip-wallet-ui's "link" namespace. */
 export default {
   "m.link.title": "Linked devices",
   "m.link.online": "Connected",

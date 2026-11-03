@@ -15,7 +15,7 @@
  * @module
  */
 import { z } from "zod";
-import { ClipError, type Account, type DappRequest, type DecodedRequest, type Family, type Signature, type SignablePayload } from "@clip-wallet/core";
+import { ClipError, type Account, type DappRequest, type DecodedRequest, type Family, type Signature, type SignablePayload } from "@coldai/clip-wallet-core";
 import {
   HardwareErrors,
   urFromJson,
@@ -26,8 +26,8 @@ import {
   type KeystoneBridge,
   type KeystoneSigner,
   type PathStyle,
-} from "@clip-wallet/hardware/core";
-import type { ApprovalView, HardwareAccountView, HardwareApprovalClient, HardwareClient, HardwareFamilyView } from "@clip-wallet/ui";
+} from "@coldai/clip-wallet-hardware/core";
+import type { ApprovalView, HardwareAccountView, HardwareApprovalClient, HardwareClient, HardwareFamilyView } from "@coldai/clip-wallet-ui";
 import type { KV } from "./kv.js";
 
 export const HARDWARE_KEYS = { active: "clip/hardware/active" } as const;

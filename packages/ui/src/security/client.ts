@@ -2,7 +2,7 @@
  * Settings → Security's door to the background (permission revoker, spam cleanup, scam protection).
  * Implemented over the extension's message bus (docs/phase25/integration/security.md); a plain fake in tests.
  * Nothing here carries key material: revokes and cleanups return the approval they queued on the normal
- * approval path. View types come from @clip-wallet/security/views (type-only).
+ * approval path. View types come from @coldai/clip-wallet-security/views (type-only).
  */
 import type {
   ApprovalsOverviewView,
@@ -11,7 +11,7 @@ import type {
   SecurityRunResult,
   SiteCheckView,
   ThreatProviderStatusView,
-} from "@clip-wallet/security/views";
+} from "@coldai/clip-wallet-security/views";
 
 export type {
   ApprovalsOverviewView,
@@ -24,7 +24,7 @@ export type {
   SecurityRunResult,
   SiteCheckView,
   ThreatProviderStatusView,
-} from "@clip-wallet/security/views";
+} from "@coldai/clip-wallet-security/views";
 
 export interface SecurityClient {
   approvalsScan(): Promise<ApprovalsOverviewView>;

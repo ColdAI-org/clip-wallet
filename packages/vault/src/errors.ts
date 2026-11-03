@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 /** Error codes the vault throws. `userMessage` is safe to show; it never contains key material. */
 export const VaultErrors = {

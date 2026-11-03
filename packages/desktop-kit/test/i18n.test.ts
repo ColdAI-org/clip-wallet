@@ -3,9 +3,9 @@
  * keeps the shared glossary, and Arabic isolates every interpolated value (same QA as the UI and mobile catalogs).
  */
 import { describe, expect, it } from "vitest";
-import { LOCALE_CODES, checkTranslation, parseMessage } from "@clip-wallet/i18n";
-import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@clip-wallet/i18n/qa";
-import { PROTECTED_TERMS } from "@clip-wallet/ui";
+import { LOCALE_CODES, checkTranslation, parseMessage } from "@coldai/clip-wallet-i18n";
+import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@coldai/clip-wallet-i18n/qa";
+import { PROTECTED_TERMS } from "@coldai/clip-wallet-ui";
 import { DESKTOP_CATALOGS, DESKTOP_EN, desktopT } from "../src/shared/i18n";
 
 describe("desktop translation QA", () => {

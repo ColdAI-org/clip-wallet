@@ -18,7 +18,7 @@
  *   No article directly before {symbol} ("i"/"gli"/"l'" depends on the symbol): use "i tuoi {symbol}", "in {symbol}" or none.
  *   Informal "tu"; decimal examples use a comma (0,5).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

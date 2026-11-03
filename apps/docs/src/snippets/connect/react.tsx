@@ -1,4 +1,4 @@
-import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@clip-wallet/connect/react";
+import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@coldai/clip-wallet-connect/react";
 
 function Checkout() {
   const { connection, connect, status, error } = useClipConnect();

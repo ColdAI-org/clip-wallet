@@ -1,6 +1,6 @@
 /**
- * @clip-wallet/connect: Clip Connect, the dapp side. Wallet-agnostic: finds Clip Wallet first and any other wallet
- * after it, through public standards only. Adapters: @clip-wallet/connect/react, /wagmi, /solana.
+ * @coldai/clip-wallet-connect: Clip Connect, the dapp side. Wallet-agnostic: finds Clip Wallet first and any other wallet
+ * after it, through public standards only. Adapters: @coldai/clip-wallet-connect/react, /wagmi, /solana.
  *
  * @module
  */

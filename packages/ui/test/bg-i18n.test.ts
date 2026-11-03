@@ -1,6 +1,6 @@
 /**
  * Background text (approval titles, labels, warnings, errors, activity, steps) in every language: the "bg.*"
- * catalog in @clip-wallet/core and how the UI renders it.
+ * catalog in @coldai/clip-wallet-core and how the UI renders it.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -29,9 +29,9 @@ import {
   type BgTranslation,
   type DecodedRequest,
   type Warning,
-} from "@clip-wallet/core";
-import { LOCALE_CODES, checkTranslation, formatMsg, parseMessage } from "@clip-wallet/i18n";
-import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@clip-wallet/i18n/qa";
+} from "@coldai/clip-wallet-core";
+import { LOCALE_CODES, checkTranslation, formatMsg, parseMessage } from "@coldai/clip-wallet-i18n";
+import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@coldai/clip-wallet-i18n/qa";
 import { PROTECTED_TERMS } from "../src/i18n";
 
 const EN = BG_MESSAGES as Record<string, string>;

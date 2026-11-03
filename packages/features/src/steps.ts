@@ -1,4 +1,4 @@
-import { knownMsg, recallMsg, type DappRequest, type DecodedRequest, type Msg, type Warning } from "@clip-wallet/core";
+import { knownMsg, recallMsg, type DappRequest, type DecodedRequest, type Msg, type Warning } from "@coldai/clip-wallet-core";
 import type { FeatureHost } from "./host.js";
 import type { QueuedApprovals } from "./views.js";
 

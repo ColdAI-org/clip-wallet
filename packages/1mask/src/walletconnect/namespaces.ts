@@ -1,4 +1,4 @@
-import type { Family, Network } from "@clip-wallet/core";
+import type { Family, Network } from "@coldai/clip-wallet-core";
 import { HEDERA_METHODS } from "../background/methods.js";
 import { BCH_WC, bchAddressOn, bchNetworkForWcChain } from "../shared/bitcoincash.js";
 import { P2_WC_NAMESPACE_FAMILY, P2_WC_SUPPORTED_EVENTS, P2_WC_SUPPORTED_METHODS, type P2WcNamespaceKey } from "./p2-namespaces.js";

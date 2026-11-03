@@ -6,7 +6,7 @@
  * digest the user approved is exactly what gets broadcast. It is kept in memory per module instance,
  * keyed by request id, and dropped after finalize(). Use one module instance per wallet session.
  */
-import { ClipError, type AssetRef, type ChainContext, type ChainModule, type DappRequest, type Network, type Signature, type SignablePayload, msg } from "@clip-wallet/core";
+import { ClipError, type AssetRef, type ChainContext, type ChainModule, type DappRequest, type Network, type Signature, type SignablePayload, msg } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import {
   type Hex,

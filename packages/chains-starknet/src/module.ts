@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, type Msg } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, type Msg } from "@coldai/clip-wallet-core";
 import { hash, transaction } from "starknet";
 import { ARGENT_ACCOUNT_CLASS_HASH, type AccountClass, type AccountKind, DEFAULT_ACCOUNT_CLASS, deploymentData, isDeployed, isStarknetAddress, starkKeyX, verifyStark, type DeploymentData } from "./account.js";
 import {

@@ -1,5 +1,5 @@
 /** Hindi (same glossary as packages/ui/src/i18n/hi: वॉलेट, अनलॉक / लॉक, "आप"). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const hi: Translation<DesktopMessages> = {

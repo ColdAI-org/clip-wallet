@@ -9,14 +9,14 @@
  *                   exactly as apps/extension/src/background/link.ts builds it.
  *
  * Its vault is EMPTY: the extension in signer mode holds no wallet; the vault only makes the ephemeral X25519 pairing
- * keys (packages/vault pairingKey(), which works empty). That is why this file may import @clip-wallet/vault
+ * keys (packages/vault pairingKey(), which works empty). That is why this file may import @coldai/clip-wallet-vault
  * (tools/harness allowlist); no phrase or private key exists on this side.
  */
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { ClipVault, MemoryStorage } from "@clip-wallet/vault";
-import { MemoryKV } from "@clip-wallet/engine";
-import { FrameDecoder, LinkService, NativePortChannel, encodeFrame, installTarget, nativeHostName, type HostManifest, type NativePortLike } from "@clip-wallet/link";
+import { ClipVault, MemoryStorage } from "@coldai/clip-wallet-vault";
+import { MemoryKV } from "@coldai/clip-wallet-engine";
+import { FrameDecoder, LinkService, NativePortChannel, encodeFrame, installTarget, nativeHostName, type HostManifest, type NativePortLike } from "@coldai/clip-wallet-link";
 
 export interface MockExtension {
   link: LinkService;

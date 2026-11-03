@@ -1,7 +1,7 @@
 /**
  * WebAuthn side of passkey unlock, using the PRF extension.
  *
- * `PasskeyPrf` is structurally identical to @clip-wallet/vault's interface: the vault picks a random
+ * `PasskeyPrf` is structurally identical to @coldai/clip-wallet-vault's interface: the vault picks a random
  * per-credential `prfInput`, calls `enroll(prfInput)` / `evaluate(credentialId, prfInput)`, and derives
  * its wrapping key from the PRF output. The vault lives in the background service worker, which can't
  * run WebAuthn, so the background implements PasskeyPrf as a proxy that hands each call to a page
@@ -15,7 +15,7 @@
  *  - Older browsers can use the web-bridge page on a configured origin.
  */
 
-import { withoutTrailing } from "@clip-wallet/core";
+import { withoutTrailing } from "@coldai/clip-wallet-core";
 import type { UiMessageId } from "../i18n/en";
 
 export interface PasskeyPrf {

@@ -1,5 +1,5 @@
 import "./buffer.js";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { type Address, beginCell } from "@ton/core";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { cellFromB64 } from "./payload.js";

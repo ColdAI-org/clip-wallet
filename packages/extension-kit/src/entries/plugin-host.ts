@@ -6,7 +6,7 @@
  *
  * @module
  */
-import { HostBridgeServer, PluginHost, iframeChannelFactory, type HostBridgeRequest } from "@clip-wallet/plugins";
+import { HostBridgeServer, PluginHost, iframeChannelFactory, type HostBridgeRequest } from "@coldai/clip-wallet-plugins";
 
 declare const chrome: {
   runtime: {

@@ -21,7 +21,7 @@
  * `blockscout` is the Blockscout instance root (its `/api/v2/stats` answered on 2026-10-03); it becomes
  * `Network.indexerUrl` as `${blockscout}/api/v2`.
  */
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 
 export interface EvmNetworkSpec {
   slug: string;

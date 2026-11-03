@@ -1,8 +1,8 @@
 // SODAX swaps (docs/features/sodax-swaps.md) only reach networks the wallet carries: every spoke in the features
 // package must be one of the EVM mainnets in chains-evm, never a test network and never Hedera's EVM.
 import { describe, expect, it } from "vitest";
-import { EVM_NETWORKS, HEDERA_EVM_NETWORKS } from "@clip-wallet/chains-evm";
-import { SODAX_SPOKES } from "@clip-wallet/features";
+import { EVM_NETWORKS, HEDERA_EVM_NETWORKS } from "@coldai/clip-wallet-chains-evm";
+import { SODAX_SPOKES } from "@coldai/clip-wallet-features";
 
 describe("SODAX spokes", () => {
   it("are EVM mainnets the wallet carries", () => {

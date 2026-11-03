@@ -1,5 +1,5 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say, withoutTrailing } from "@clip-wallet/core";
-import { MIN_DELEGATION_OCTAS, delegationPayload } from "@clip-wallet/chains-aptos";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled, say, withoutTrailing } from "@coldai/clip-wallet-core";
+import { MIN_DELEGATION_OCTAS, delegationPayload } from "@coldai/clip-wallet-chains-aptos";
 import { fetchJson } from "../http.js";
 import { formatUnits, percent, randomId, shortAddress } from "../util.js";
 import type { StakeOptionView, StakePositionView } from "../views.js";

@@ -3,36 +3,36 @@
  *
  *   dependency         real (default build)                                  fixture mode (CLIP_MOCKS=1)
  *   -----------------  ----------------------------------------------------  ---------------------------
- *   vault              @clip-wallet/vault ClipVault                          same (always real)
- *   chain modules      @clip-wallet/chains-* (all 26 families)               mocks/mock-chains.ts
+ *   vault              @coldai/clip-wallet-vault ClipVault                          same (always real)
+ *   chain modules      @coldai/clip-wallet-chains-* (all 26 families)               mocks/mock-chains.ts
  *   networks/assets    chain packages via shared/catalog.ts + clip.config    mocks/networks.ts
- *   1Mask (injected)   @clip-wallet/1mask/background router (real.ts)        same router over the fixture networks
- *   WalletConnect      @clip-wallet/1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
- *   route (funding)    @clip-wallet/route RouteClient (real.ts)              mocks/mock-route.ts
+ *   1Mask (injected)   @coldai/clip-wallet-1mask/background router (real.ts)        same router over the fixture networks
+ *   WalletConnect      @coldai/clip-wallet-1mask/walletconnect (real.ts)            mocks/mock-dapps.ts
+ *   route (funding)    @coldai/clip-wallet-route RouteClient (real.ts)              mocks/mock-route.ts
  *   prices             CoinGecko feed (features.ts)                          mocks/fixtures.ts
- *   names              @clip-wallet/names (ENS / SNS / Hedera names)         mocks/fixtures.ts
- *   backup service     @clip-wallet/backup-client if services.backupUrl set  none
+ *   names              @coldai/clip-wallet-names (ENS / SNS / Hedera names)         mocks/fixtures.ts
+ *   backup service     @coldai/clip-wallet-backup-client if services.backupUrl set  none
  *   dapp registry      curated list (real.ts)                                same
  *
  * Fixture mode drives the UI with realistic balances, collectibles and dapp requests (dev simulator in
  * Settings) for screenshots and UI work. One chain-module instance per family lives for the background's
  * lifetime: modules keep prepare→finalize state keyed by request id.
  */
-import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, TokenBalance, Warning } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
-import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@clip-wallet/ui";
-import type { ClipConfig } from "@clip-wallet/config";
-import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@clip-wallet/vault";
-import { createEvmModule } from "@clip-wallet/chains-evm";
-import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
-import { SettleFunding, settleClientFor, settleSourceNetworks } from "@clip-wallet/route";
-import { isMainnetEnabled } from "@clip-wallet/config";
-import { createSolanaModule } from "@clip-wallet/chains-solana";
-import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-import type { CardanoModule } from "@clip-wallet/chains-cardano";
-import type { createStarknetModule } from "@clip-wallet/chains-starknet";
-import type { createTonModule } from "@clip-wallet/chains-ton";
-import type { RouterPort } from "@clip-wallet/1mask/background";
+import type { Account, AssetRef, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, TokenBalance, Warning } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { ActivityEntry, ApprovalPlan, DappInfo, SessionView } from "@coldai/clip-wallet-ui";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { ClipVault, type PasskeyInfo, type PasskeyPrf } from "@coldai/clip-wallet-vault";
+import { createEvmModule } from "@coldai/clip-wallet-chains-evm";
+import { MIRROR_NODE_URLS, createHederaModule, type HederaModule } from "@coldai/clip-wallet-chains-hedera";
+import { SettleFunding, settleClientFor, settleSourceNetworks } from "@coldai/clip-wallet-route";
+import { isMainnetEnabled } from "@coldai/clip-wallet-config";
+import { createSolanaModule } from "@coldai/clip-wallet-chains-solana";
+import { createBitcoinModule } from "@coldai/clip-wallet-chains-bitcoin";
+import type { CardanoModule } from "@coldai/clip-wallet-chains-cardano";
+import type { createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import type { createTonModule } from "@coldai/clip-wallet-chains-ton";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 import type { KV } from "../shared/storage";
 import { vaultStorageOf } from "../shared/storage";
 import { dappRequestNetworks, walletAssets, walletNetworks } from "../shared/catalog";
@@ -49,10 +49,10 @@ import {
   WalletConnectAdapter,
 } from "./real";
 import { createPriceFeed } from "./features";
-import { BackupClient } from "@clip-wallet/backup-client";
-import { HardwareKeyring, type HardwareStorage } from "@clip-wallet/hardware/core";
-import { MultiNameResolver, PluginBackend } from "@clip-wallet/names";
-import type { PluginNameResult } from "@clip-wallet/plugins";
+import { BackupClient } from "@coldai/clip-wallet-backup-client";
+import { HardwareKeyring, type HardwareStorage } from "@coldai/clip-wallet-hardware/core";
+import { MultiNameResolver, PluginBackend } from "@coldai/clip-wallet-names";
+import type { PluginNameResult } from "@coldai/clip-wallet-plugins";
 import { BACKUP_SERVICE_URL } from "../app-settings";
 
 /** The vault surface the background uses: core's Vault plus ClipVault's extras. */
@@ -132,7 +132,7 @@ export interface DappHost {
   /** A site on a loaded phishing list (security stream). Sync: WalletConnect's Verify check calls it. */
   isKnownScam?(origin: string): boolean;
   /** EIP-5792 Wallet Call API + ERC-7682 auxiliary funds (./calls.ts). Absent = the methods stay unsupported. */
-  calls?: import("@clip-wallet/1mask").CallsHost;
+  calls?: import("@coldai/clip-wallet-1mask").CallsHost;
 }
 
 /** 1Mask background router (inpage/content ports). */
@@ -209,7 +209,7 @@ export interface Dependencies {
    */
   requestNetworks?: Network[];
   /** Paying through a bonded Connector (settle on Hedera): the same instance the route planner quotes with. Null = off. */
-  settleFunding?: import("@clip-wallet/route").SettleFunding | null;
+  settleFunding?: import("@coldai/clip-wallet-route").SettleFunding | null;
   /** ERC-7682: networks auxiliary funds can come from (settle on Hedera's deposit networks). Empty/absent = not advertised. */
   auxiliaryFundsSources?: string[];
   /**
@@ -280,7 +280,7 @@ export interface WiringOptions {
   /** Bundled icon URL for WalletConnect metadata. */
   iconUrl: string;
   /** Partner keys for features (from build env; never committed). */
-  features?: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
+  features?: import("@coldai/clip-wallet-features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** Tests pass cheap Argon2 params; production uses the vault's defaults. */
   vaultOptions?: Partial<ConstructorParameters<typeof ClipVault>[0]>;
 }
@@ -330,33 +330,33 @@ export function createDependencies(opts: WiringOptions): Dependencies {
   const hedera: HederaModule = createHederaModule();
   // OpenZeppelin v0.17.0 = the vault's default Starknet address; TON v5r1 = the vault's default wallet.
   // Algorand must match the vault's algorandScheme (default ARC-52 BIP32-Ed25519).
-  const starknet = lazyChain("starknet", "stark", () => import("@clip-wallet/chains-starknet").then((m) => m.createStarknetModule()));
-  const ton = lazyChain("ton", "ed25519", () => import("@clip-wallet/chains-ton").then((m) => m.createTonModule()));
-  const cardano = lazyChain("cardano", "bip32-ed25519", () => import("@clip-wallet/chains-cardano").then((m) => m.createCardanoModule() as CardanoModule));
+  const starknet = lazyChain("starknet", "stark", () => import("@coldai/clip-wallet-chains-starknet").then((m) => m.createStarknetModule()));
+  const ton = lazyChain("ton", "ed25519", () => import("@coldai/clip-wallet-chains-ton").then((m) => m.createTonModule()));
+  const cardano = lazyChain("cardano", "bip32-ed25519", () => import("@coldai/clip-wallet-chains-cardano").then((m) => m.createCardanoModule() as CardanoModule));
   const lazy = {
-    sui: lazyChain("sui", "ed25519", () => import("@clip-wallet/chains-sui").then((m) => m.createSuiModule())),
-    aptos: lazyChain("aptos", "ed25519", () => import("@clip-wallet/chains-aptos").then((m) => m.createAptosModule())),
-    near: lazyChain("near", "ed25519", () => import("@clip-wallet/chains-near").then((m) => m.createNearModule())),
-    stellar: lazyChain("stellar", "ed25519", () => import("@clip-wallet/chains-stellar").then((m) => m.createStellarModule())),
-    tezos: lazyChain("tezos", "ed25519", () => import("@clip-wallet/chains-tezos").then((m) => m.createTezosModule())),
-    algorand: lazyChain("algorand", "bip32-ed25519", () => import("@clip-wallet/chains-algorand").then((m) => m.createAlgorandModule())),
+    sui: lazyChain("sui", "ed25519", () => import("@coldai/clip-wallet-chains-sui").then((m) => m.createSuiModule())),
+    aptos: lazyChain("aptos", "ed25519", () => import("@coldai/clip-wallet-chains-aptos").then((m) => m.createAptosModule())),
+    near: lazyChain("near", "ed25519", () => import("@coldai/clip-wallet-chains-near").then((m) => m.createNearModule())),
+    stellar: lazyChain("stellar", "ed25519", () => import("@coldai/clip-wallet-chains-stellar").then((m) => m.createStellarModule())),
+    tezos: lazyChain("tezos", "ed25519", () => import("@coldai/clip-wallet-chains-tezos").then((m) => m.createTezosModule())),
+    algorand: lazyChain("algorand", "bip32-ed25519", () => import("@coldai/clip-wallet-chains-algorand").then((m) => m.createAlgorandModule())),
     cardano,
-    substrate: lazyChain("substrate", "sr25519", () => import("@clip-wallet/chains-substrate").then((m) => m.createSubstrateModule())),
+    substrate: lazyChain("substrate", "sr25519", () => import("@coldai/clip-wallet-chains-substrate").then((m) => m.createSubstrateModule())),
     starknet,
     ton,
     // networks87: each loads on first use like the Phase 2 families.
-    cosmos: lazyChain("cosmos", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "cosmos" }))),
-    provenance: lazyChain("provenance", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "provenance" }))),
-    thorchain: lazyChain("thorchain", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "thorchain" }))),
-    initia: lazyChain("initia", "secp256k1", () => import("@clip-wallet/chains-cosmos").then((m) => m.createCosmosModule({ family: "initia" }))),
-    tron: lazyChain("tron", "secp256k1", () => import("@clip-wallet/chains-tron").then((m) => m.createTronModule())),
-    multiversx: lazyChain("multiversx", "ed25519", () => import("@clip-wallet/chains-multiversx").then((m) => m.createMultiversXModule())),
-    icp: lazyChain("icp", "secp256k1", () => import("@clip-wallet/chains-icp").then((m) => m.createIcpModule())),
-    stacks: lazyChain("stacks", "secp256k1", () => import("@clip-wallet/chains-stacks").then((m) => m.createStacksModule())),
-    fuel: lazyChain("fuel", "secp256k1", () => import("@clip-wallet/chains-fuel").then((m) => m.createFuelModule())),
-    xrpl: lazyChain("xrpl", "secp256k1", () => import("@clip-wallet/chains-xrpl").then((m) => m.createXrplModule())),
-    antelope: lazyChain("antelope", "secp256k1", () => import("@clip-wallet/chains-antelope").then((m) => m.createAntelopeModule())),
-    bitcoincash: lazyChain("bitcoincash", "secp256k1", () => import("@clip-wallet/chains-bitcoincash").then((m) => m.createBitcoinCashModule())),
+    cosmos: lazyChain("cosmos", "secp256k1", () => import("@coldai/clip-wallet-chains-cosmos").then((m) => m.createCosmosModule({ family: "cosmos" }))),
+    provenance: lazyChain("provenance", "secp256k1", () => import("@coldai/clip-wallet-chains-cosmos").then((m) => m.createCosmosModule({ family: "provenance" }))),
+    thorchain: lazyChain("thorchain", "secp256k1", () => import("@coldai/clip-wallet-chains-cosmos").then((m) => m.createCosmosModule({ family: "thorchain" }))),
+    initia: lazyChain("initia", "secp256k1", () => import("@coldai/clip-wallet-chains-cosmos").then((m) => m.createCosmosModule({ family: "initia" }))),
+    tron: lazyChain("tron", "secp256k1", () => import("@coldai/clip-wallet-chains-tron").then((m) => m.createTronModule())),
+    multiversx: lazyChain("multiversx", "ed25519", () => import("@coldai/clip-wallet-chains-multiversx").then((m) => m.createMultiversXModule())),
+    icp: lazyChain("icp", "secp256k1", () => import("@coldai/clip-wallet-chains-icp").then((m) => m.createIcpModule())),
+    stacks: lazyChain("stacks", "secp256k1", () => import("@coldai/clip-wallet-chains-stacks").then((m) => m.createStacksModule())),
+    fuel: lazyChain("fuel", "secp256k1", () => import("@coldai/clip-wallet-chains-fuel").then((m) => m.createFuelModule())),
+    xrpl: lazyChain("xrpl", "secp256k1", () => import("@coldai/clip-wallet-chains-xrpl").then((m) => m.createXrplModule())),
+    antelope: lazyChain("antelope", "secp256k1", () => import("@coldai/clip-wallet-chains-antelope").then((m) => m.createAntelopeModule())),
+    bitcoincash: lazyChain("bitcoincash", "secp256k1", () => import("@coldai/clip-wallet-chains-bitcoincash").then((m) => m.createBitcoinCashModule())),
   };
   const prices = createPriceFeed(opts.kv, opts.features?.coingeckoDemoKey);
   const eager = { evm: createEvmModule(), hedera, solana: createSolanaModule(), bitcoin: createBitcoinModule() };

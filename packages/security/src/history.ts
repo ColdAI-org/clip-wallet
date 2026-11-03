@@ -1,4 +1,4 @@
-import type { FeatureHost } from "@clip-wallet/features";
+import type { FeatureHost } from "@coldai/clip-wallet-features";
 import type { HistoryEntry } from "./host.js";
 
 const KEY = "security/sent-to";

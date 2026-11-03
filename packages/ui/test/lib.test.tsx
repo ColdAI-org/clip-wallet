@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
-import type { Nft } from "@clip-wallet/core";
+import type { Nft } from "@coldai/clip-wallet-core";
 import { mergeBalances } from "../src/lib/portfolio";
 import { formatUnits, parseUnits, readyIn } from "../src/lib/format";
 import { normaliseMediaUrl, proxyMedia } from "../src/lib/media";
@@ -188,8 +188,8 @@ describe("WebAuthnPasskeyPrf", () => {
   });
 });
 
-describe("theme tokens from @clip-wallet/config", async () => {
-  const { defineConfig } = await import("@clip-wallet/config");
+describe("theme tokens from @coldai/clip-wallet-config", async () => {
+  const { defineConfig } = await import("@coldai/clip-wallet-config");
   const { tokensFor } = await import("../src/theme/tokens");
   const { defaultClipConfig } = await import("../src/theme/config");
   it("defaults to ColdAI orange with white button text and Inter", () => {

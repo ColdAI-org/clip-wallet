@@ -1,4 +1,4 @@
-import { connect } from "@clip-wallet/connect";
+import { connect } from "@coldai/clip-wallet-connect";
 
 // Base Sepolia and Ethereum Sepolia. Clip Wallet first; any other wallet if Clip isn't installed.
 const wallet = await connect({ chains: [84532, 11155111] });

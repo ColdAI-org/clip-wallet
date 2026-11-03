@@ -45,8 +45,8 @@ with addresses and signatures reduced to their shapes), and compares both with a
 Passing means "identical before and after".
 
 ```sh
-pnpm --filter @clip-wallet/extension build
-pnpm --filter @clip-wallet/extension exec playwright test e2e/compat.spec.ts
+pnpm --filter @coldai/clip-wallet-extension build
+pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/compat.spec.ts
 ```
 
 ## When a change must alter the wire

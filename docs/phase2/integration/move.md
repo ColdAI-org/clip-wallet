@@ -2,8 +2,8 @@
 
 New in this stream (no edits needed to merge them):
 
-- `packages/chains-sui` (`@clip-wallet/chains-sui`): `createSuiModule()`, `SUI_NETWORKS` (`sui:testnet`, `sui:devnet`, `sui:mainnet`), `USDC_COIN_TYPES`, `coinAssetKey`.
-- `packages/chains-aptos` (`@clip-wallet/chains-aptos`): `createAptosModule()`, `APTOS_NETWORKS` (`aptos:2` testnet, `aptos:devnet`, `aptos:1` mainnet), `USDC_METADATA`, `assetKey`.
+- `packages/chains-sui` (`@coldai/clip-wallet-chains-sui`): `createSuiModule()`, `SUI_NETWORKS` (`sui:testnet`, `sui:devnet`, `sui:mainnet`), `USDC_COIN_TYPES`, `coinAssetKey`.
+- `packages/chains-aptos` (`@coldai/clip-wallet-chains-aptos`): `createAptosModule()`, `APTOS_NETWORKS` (`aptos:2` testnet, `aptos:devnet`, `aptos:1` mainnet), `USDC_METADATA`, `assetKey`.
 - `packages/1mask/src/inpage/sui.ts`: `ClipSuiWallet` (Sui Wallet Standard), `SUI_FEATURES`, `SUI_SIGNING_METHODS`, `suiChain`.
 - `packages/1mask/src/inpage/aptos.ts`: `ClipAptosWallet` (AIP-62), `APTOS_FEATURES`, `APTOS_*_METHODS`, `METHOD_APTOS_NETWORK` (`"1mask_getNetwork"`), `aptosChain`, `toWireArg`.
 - `packages/1mask/test/move-wallets.test.ts`: tests for both connectors against an in-memory transport.
@@ -32,20 +32,20 @@ index ff51076..714762f 100644
 --- a/apps/extension/package.json
 +++ b/apps/extension/package.json
 @@ -21,6 +21,8 @@
-     "@clip-wallet/chains-evm": "workspace:*",
-     "@clip-wallet/chains-hedera": "workspace:*",
-     "@clip-wallet/chains-solana": "workspace:*",
-+    "@clip-wallet/chains-sui": "workspace:*",
-+    "@clip-wallet/chains-aptos": "workspace:*",
-     "@clip-wallet/config": "workspace:*",
-     "@clip-wallet/core": "workspace:*",
-     "@clip-wallet/route": "workspace:*",
+     "@coldai/clip-wallet-chains-evm": "workspace:*",
+     "@coldai/clip-wallet-chains-hedera": "workspace:*",
+     "@coldai/clip-wallet-chains-solana": "workspace:*",
++    "@coldai/clip-wallet-chains-sui": "workspace:*",
++    "@coldai/clip-wallet-chains-aptos": "workspace:*",
+     "@coldai/clip-wallet-config": "workspace:*",
+     "@coldai/clip-wallet-core": "workspace:*",
+     "@coldai/clip-wallet-route": "workspace:*",
 diff --git a/apps/extension/src/background/real.ts b/apps/extension/src/background/real.ts
 index e363218..1d71185 100644
 --- a/apps/extension/src/background/real.ts
 +++ b/apps/extension/src/background/real.ts
 @@ -9,7 +9,7 @@ import { createOneMaskRouter, EVM_METHODS, type OneMaskRouter, type RouterPort }
- import { createRouteClient, findShortfall, type RouteClient } from "@clip-wallet/route";
+ import { createRouteClient, findShortfall, type RouteClient } from "@coldai/clip-wallet-route";
  import type { DappConnector, DappHost, DappRegistry, NameResolver, PriceFeed, RoutePlanner, WalletConnectBridge } from "./wiring";
  
 -const CONNECT_METHODS = new Set<string>(["eth_requestAccounts", "wallet_requestPermissions", "standard:connect", "bitcoin:connect"]);
@@ -60,7 +60,7 @@ index e363218..1d71185 100644
 -const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600 };
 +const PLAIN_ETA: Partial<Record<Family, number>> = { evm: 12, hedera: 4, solana: 2, bitcoin: 600, sui: 1, aptos: 1 };
  
- /** CLPRouter funding through @clip-wallet/route. Phase 1 routes pay on Hedera from EVM networks. */
+ /** CLPRouter funding through @coldai/clip-wallet-route. Phase 1 routes pay on Hedera from EVM networks. */
  export class RoutePlannerAdapter implements RoutePlanner {
 diff --git a/apps/extension/src/background/service.ts b/apps/extension/src/background/service.ts
 index 3a37a67..ab8dae6 100644
@@ -88,13 +88,13 @@ diff --git a/apps/extension/src/background/wiring.ts b/apps/extension/src/backgr
 index 9c6e13d..10bcf8d 100644
 --- a/apps/extension/src/background/wiring.ts
 +++ b/apps/extension/src/background/wiring.ts
-@@ -25,6 +25,8 @@ import { createEvmModule } from "@clip-wallet/chains-evm";
- import { createHederaModule, type HederaModule } from "@clip-wallet/chains-hedera";
- import { createSolanaModule } from "@clip-wallet/chains-solana";
- import { createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-+import { createSuiModule } from "@clip-wallet/chains-sui";
-+import { createAptosModule } from "@clip-wallet/chains-aptos";
- import type { RouterPort } from "@clip-wallet/1mask/background";
+@@ -25,6 +25,8 @@ import { createEvmModule } from "@coldai/clip-wallet-chains-evm";
+ import { createHederaModule, type HederaModule } from "@coldai/clip-wallet-chains-hedera";
+ import { createSolanaModule } from "@coldai/clip-wallet-chains-solana";
+ import { createBitcoinModule } from "@coldai/clip-wallet-chains-bitcoin";
++import { createSuiModule } from "@coldai/clip-wallet-chains-sui";
++import { createAptosModule } from "@coldai/clip-wallet-chains-aptos";
+ import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
  import type { KV } from "../shared/storage";
  import { vaultStorageOf } from "../shared/storage";
 @@ -199,7 +201,7 @@ export function createDependencies(opts: WiringOptions): Dependencies {
@@ -111,11 +111,11 @@ index 44c230c..0fdc83a 100644
 --- a/apps/extension/src/shared/catalog.ts
 +++ b/apps/extension/src/shared/catalog.ts
 @@ -10,6 +10,8 @@ type CuratedToken = (typeof CURATED_TOKENS)[number];
- import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@clip-wallet/chains-hedera";
- import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@clip-wallet/chains-solana";
- import { BITCOIN_NETWORKS } from "@clip-wallet/chains-bitcoin";
-+import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@clip-wallet/chains-sui";
-+import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@clip-wallet/chains-aptos";
+ import { HEDERA_MAINNET, HEDERA_TESTNET, USDC_TOKEN_IDS, ledgerOf, tokenAssetKey as htsKey } from "@coldai/clip-wallet-chains-hedera";
+ import { SOLANA_DEVNET, SOLANA_MAINNET, USDC_MINTS, tokenAssetKey as splKey } from "@coldai/clip-wallet-chains-solana";
+ import { BITCOIN_NETWORKS } from "@coldai/clip-wallet-chains-bitcoin";
++import { SUI_MAINNET, SUI_TESTNET, USDC_COIN_TYPES, coinAssetKey as suiKey } from "@coldai/clip-wallet-chains-sui";
++import { APTOS_MAINNET, APTOS_TESTNET, USDC_METADATA, assetKey as aptosKey } from "@coldai/clip-wallet-chains-aptos";
  
  /** Same mapping as chains-evm's (unexported) curatedAsset(). */
  function curatedAsset(t: CuratedToken): AssetRef {
@@ -150,7 +150,7 @@ index 39ea071..ead0022 100644
 --- a/packages/1mask/src/background/methods.ts
 +++ b/packages/1mask/src/background/methods.ts
 @@ -1,5 +1,7 @@
- import type { Family } from "@clip-wallet/core";
+ import type { Family } from "@coldai/clip-wallet-core";
  import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
 +import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS } from "../inpage/aptos.js";
 +import { SUI_SIGNING_METHODS } from "../inpage/sui.js";
@@ -371,7 +371,7 @@ index 60675f2..249cf28 100644
 Add as `packages/1mask/test/move-e2e.test.ts` once the diff is in. It drives both in-page wallets through the real router:
 
 ```ts
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { ClipAptosWallet } from "../src/inpage/aptos.js";
 import { ClipSuiWallet } from "../src/inpage/sui.js";

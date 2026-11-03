@@ -1,11 +1,11 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { bcs } from "@mysten/sui/bcs";
 import type { TransactionData } from "@mysten/sui/transactions";
 import { normalizeStructTag, normalizeSuiAddress } from "@mysten/sui/utils";
 import { type CoinMeta, type SimEffects, type SuiGraphQL, GraphQLError, Q, plainSuiError } from "./graphql.js";
 import { SUI_TYPE, coinAssetKey, suiAsset } from "./networks.js";
 import { b64decode, b64encode, formatUnits, short } from "./util.js";
-import { say } from "@clip-wallet/core";
+import { say } from "@coldai/clip-wallet-core";
 
 export interface Described {
   title: string;

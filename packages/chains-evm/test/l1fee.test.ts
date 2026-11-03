@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { decodeFunctionData, encodeAbiParameters, numberToHex, parseTransaction } from "viem";
 import * as viemChains from "viem/chains";
 import { describe, expect, it } from "vitest";

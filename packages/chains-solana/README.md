@@ -1,4 +1,4 @@
-# @clip-wallet/chains-solana
+# @coldai/clip-wallet-chains-solana
 
 Solana `ChainModule` for Clip Wallet. Builds, decodes and simulates. It never touches keys: `prepare()` returns
 the message bytes for the vault to sign (ed25519), and `finalize()` puts the signatures in place and sends.
@@ -13,14 +13,14 @@ maintained SDK, and the Wallet Standard features only exchange raw bytes, so the
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-solana @clip-wallet/core
+npm i @coldai/clip-wallet-chains-solana @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createSolanaModule, SOLANA_DEVNET } from "@clip-wallet/chains-solana";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createSolanaModule, SOLANA_DEVNET } from "@coldai/clip-wallet-chains-solana";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createSolanaModule();
@@ -154,7 +154,7 @@ devnet checks (balances, and a simulation of an unfunded payer).
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

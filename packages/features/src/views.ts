@@ -3,12 +3,12 @@
  * message bus as JSON. Speaks in assets and apps: `networkId` is carried for the network chip and
  * Advanced mode only, never as the main way to tell things apart.
  *
- * Type-only module with no runtime imports, so `packages/ui` can import it (`@clip-wallet/features/views`)
+ * Type-only module with no runtime imports, so `packages/ui` can import it (`@coldai/clip-wallet-features/views`)
  * without pulling in chain SDKs.
  *
  * @module
  */
-import type { BalanceChange, Family, Msg, NetworkId, Warning } from "@clip-wallet/core";
+import type { BalanceChange, Family, Msg, NetworkId, Warning } from "@coldai/clip-wallet-core";
 
 /** "Not available" in plain words. `code` is stable for tests and analytics. */
 export interface Unavailable {

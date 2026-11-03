@@ -8,7 +8,7 @@
  *
  * Tied to the seed, not the password, so changePassword and passkeys leave it alone.
  */
-import { FAMILIES, type Family } from "@clip-wallet/core";
+import { FAMILIES, type Family } from "@coldai/clip-wallet-core";
 import { fromUtf8, utf8, wipe } from "./bytes.js";
 import { hkdf32, open, seal, type SealedBox } from "./crypto.js";
 

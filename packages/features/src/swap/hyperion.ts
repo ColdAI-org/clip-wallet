@@ -1,5 +1,5 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@clip-wallet/core";
-import { aptosNetworkOf } from "@clip-wallet/chains-aptos";
+import { type AssetRef, type ChainContext, ClipError, type Network, WALLET_ORIGIN, msg, titled, withoutTrailing } from "@coldai/clip-wallet-core";
+import { aptosNetworkOf } from "@coldai/clip-wallet-chains-aptos";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { randomId } from "../util.js";

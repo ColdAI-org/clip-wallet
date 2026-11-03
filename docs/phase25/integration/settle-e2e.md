@@ -12,7 +12,7 @@ Builds on `settle-client.md` (the `SettleClient`); this file lists what is wired
    Connectors, keeps the verified quote and returns `plan.funding` (`SettleFundingView`, numbers and names only,
    no English). Approve is no longer blocked by "Moving money … isn't switched on" in that case.
 2. **One approval** (`SettleFundingRun`, `packages/engine/src/settle-funding.ts`, export
-   `@clip-wallet/engine/settle-funding`). The first Approve builds the exact-amount `approve` + `SettleDeposit.deposit`
+   `@coldai/clip-wallet-engine/settle-funding`). The first Approve builds the exact-amount `approve` + `SettleDeposit.deposit`
    requests (`SettleFunding.order` → `SettleClient.createOrder`) and sends each through the host's normal path
    (`sendInternal`: chain-module decode must be readable with no danger warning, `prepare`, vault
    `registerApproval` under `<approvalId>:settle:<n>`, sign, `finalize`). The approve must be mined before the

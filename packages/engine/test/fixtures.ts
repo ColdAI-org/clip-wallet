@@ -3,9 +3,9 @@
  * "abandon … about" test account and returns a constant 65-byte placeholder signature (never verified here;
  * chain-level signature checks live in packages/chains-* with offline-precomputed fixtures).
  */
-import type { Account, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, Signature, SignablePayload } from "@clip-wallet/core";
-import { ClipError, WALLET_ORIGIN } from "@clip-wallet/core";
-import type { RouterPort } from "@clip-wallet/1mask/background";
+import type { Account, ChainContext, ChainModule, DappRequest, DecodedRequest, Family, Network, Signature, SignablePayload } from "@coldai/clip-wallet-core";
+import { ClipError, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 import { KnownDappRegistry, NoNameResolver, OneMaskConnector, ReferencePriceFeed } from "../src/adapters.js";
 import type { Dependencies, EngineEnv, PrfProvider, WalletConnectBridge, WalletVault } from "../src/types.js";
 

@@ -6,7 +6,7 @@ it.
 
 ## Invisible and direction-changing characters
 
-`displaySafe()` in `@clip-wallet/core` removes every Unicode format character (category Cf, such as U+202E RIGHT-TO-LEFT
+`displaySafe()` in `@coldai/clip-wallet-core` removes every Unicode format character (category Cf, such as U+202E RIGHT-TO-LEFT
 OVERRIDE, zero-width spaces and the byte-order mark) and every control character except line breaks and tabs, plus the
 line and paragraph separators. `sanitizeDecoded()` applies it to every human-readable string of a decoded request (the
 title, every line, asset names and symbols in balance changes and the fee, every warning) after every check has run and

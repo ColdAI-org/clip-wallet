@@ -7,7 +7,7 @@
  *
  * `rpcUrls` are Esplora-compatible REST bases (mempool.space / blockstream.info), tried in order.
  */
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 import { NETWORK, TEST_NETWORK } from "@scure/btc-signer";
 
 export const BITCOIN_MAINNET = "bip122:000000000019d6689c085ae165831e93";

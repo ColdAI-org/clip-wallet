@@ -1,8 +1,8 @@
 /**
- * @clip-wallet/core — the shared contract between packages.
+ * @coldai/clip-wallet-core — the shared contract between packages.
  *
  * Rules every package follows (enforced by tools/harness):
- *  - Only @clip-wallet/vault touches seed phrases or private keys.
+ *  - Only @coldai/clip-wallet-vault touches seed phrases or private keys.
  *  - Chain modules build and decode; they hand the vault a SignablePayload and get back signatures.
  *  - Every dapp request is decoded into a DecodedRequest before the user approves it.
  *  - Networks are invisible in the default UI: anything user-facing speaks in assets and apps;
@@ -250,7 +250,7 @@ export interface Signature {
   publicKey: string;
 }
 
-/** The only interface to key material. Implemented by @clip-wallet/vault. */
+/** The only interface to key material. Implemented by @coldai/clip-wallet-vault. */
 export interface Vault {
   status(): Promise<"empty" | "locked" | "unlocked">;
   /** Creates a new phrase; it is shown once via revealPhrase during onboarding. */
@@ -353,7 +353,7 @@ export interface ChainContext {
   changeAddresses?: ChildAddress[];
 }
 
-/** One sandboxed module per network family. Never imports @clip-wallet/vault. */
+/** One sandboxed module per network family. Never imports @coldai/clip-wallet-vault. */
 export interface ChainModule {
   family: Family;
   curve: Curve;

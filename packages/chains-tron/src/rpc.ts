@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError } from "@clip-wallet/core";
+import { type ChainContext, ClipError } from "@coldai/clip-wallet-core";
 import { big, fromHex, hex } from "./util.js";
 import type { RefBlock } from "./tx.js";
 

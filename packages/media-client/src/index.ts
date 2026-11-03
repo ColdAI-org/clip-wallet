@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/media-client — the one place that decides what an untrusted NFT media URL may become.
+ * @coldai/clip-wallet-media-client — the one place that decides what an untrusted NFT media URL may become.
  *
  * Shared by the UI (to build proxy URLs) and services/media-proxy (to re-validate them), so both sides
  * agree on what is allowed. Pure functions, no I/O.

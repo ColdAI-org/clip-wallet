@@ -1,5 +1,5 @@
 /** Japanese (same glossary as packages/ui/src/i18n/ja: ウォレット, ロック解除, です・ます調). */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { DesktopMessages } from "./en";
 
 const ja: Translation<DesktopMessages> = {

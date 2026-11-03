@@ -5,7 +5,7 @@
  * Plugins run in sandboxed iframes inside THIS document, never in the approval popup, so a plugin that hangs can
  * only freeze this document; the background's own timeout then closes it (chrome.offscreen.closeDocument).
  */
-import { HostBridgeServer, PluginHost, iframeChannelFactory, type HostBridgeRequest } from "@clip-wallet/plugins";
+import { HostBridgeServer, PluginHost, iframeChannelFactory, type HostBridgeRequest } from "@coldai/clip-wallet-plugins";
 
 declare const chrome: {
   runtime: {

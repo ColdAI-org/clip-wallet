@@ -1,6 +1,6 @@
 /** Clip Plugins on the engine (mobile): notes ride beside the decode, never for blind requests; plugin bus needs unlock; Advanced re-syncs. */
 import { describe, expect, it, vi } from "vitest";
-import { PluginRegistry, PluginsService, type InsightInput, type PluginInsight } from "@clip-wallet/plugins";
+import { PluginRegistry, PluginsService, type InsightInput, type PluginInsight } from "@coldai/clip-wallet-plugins";
 import { WalletEngine } from "../src/engine.js";
 import { MemoryKV } from "../src/kv.js";
 import { createEnginePluginsClient } from "../src/client.js";

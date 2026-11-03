@@ -16,7 +16,7 @@ import {
   msg,
   say,
   titled,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { GatewayError, MultiversXClient, type NetworkConfig, plainMultiversXError } from "./api.js";

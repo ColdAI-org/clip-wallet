@@ -1,12 +1,12 @@
 /**
  * MOCK "settle on Hedera" Connector + order book for fixture builds (CLIP_MOCKS=1). It answers like
- * @clip-wallet/route's SettleClient (verified quotes, the real approve + deposit encoding, order states, claim) on a
+ * @coldai/clip-wallet-route's SettleClient (verified quotes, the real approve + deposit encoding, order states, claim) on a
  * timeline, so the dev simulator's "settle" and "settle-late" requests run the real host flow
- * (@clip-wallet/engine/settle-funding) without any network. Nothing here signs; the vault signs the requests.
+ * (@coldai/clip-wallet-engine/settle-funding) without any network. Nothing here signs; the vault signs the requests.
  */
-import type { AssetRef, DappRequest, Network } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
-import { HEDERA_EVM_NETWORKS } from "@clip-wallet/chains-evm";
+import type { AssetRef, DappRequest, Network } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
+import { HEDERA_EVM_NETWORKS } from "@coldai/clip-wallet-chains-evm";
 import {
   SETTLE_ORDER_BOOK_ABI,
   addressToBytes32,
@@ -21,7 +21,7 @@ import {
   type SettleOnHederaClient,
   type SettleOrder,
   type SettleQuote,
-} from "@clip-wallet/route";
+} from "@coldai/clip-wallet-route";
 import { encodeFunctionData, getAddress, type Hex } from "viem";
 import { MOCK_BALANCES } from "./fixtures";
 

@@ -10,13 +10,13 @@
  *
  * @module
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import type { KV } from "./kv.js";
 import { PLATFORM_KEYS } from "./platform.js";
 
 export type SocialProvider = "google" | "apple";
 
-/** Structural match for @clip-wallet/backup-client's BackupClient (social sign-in part). */
+/** Structural match for @coldai/clip-wallet-backup-client's BackupClient (social sign-in part). */
 export interface SocialBackupClientLike {
   session: { token: string; expiresAt: number } | null;
   providers(): Promise<{ email: boolean; google: boolean; apple: boolean }>;

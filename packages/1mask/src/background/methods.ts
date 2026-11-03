@@ -1,4 +1,4 @@
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { METHOD_PROVIDER_STATE, METHOD_WS_STATE } from "../shared/protocol.js";
 import { APTOS_CONNECT_METHODS, APTOS_LOCAL_METHODS, APTOS_SIGNING_METHODS, SUI_SIGNING_METHODS } from "../shared/move-methods.js";
 import { p2InjectedAllowlist } from "./p2-families.js";

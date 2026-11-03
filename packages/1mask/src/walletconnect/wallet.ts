@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network, Warning } from "@clip-wallet/core";
+import type { DappRequest, Family, Network, Warning } from "@coldai/clip-wallet-core";
 import { randomId } from "../shared/bytes.js";
 import { RpcErrorCode, toRpcErrorShape } from "../shared/errors.js";
 import { parseChainId, toHexChainId } from "../shared/networks.js";

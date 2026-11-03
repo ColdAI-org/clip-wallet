@@ -11,7 +11,7 @@
  * CheckSpecVersion, CheckTxVersion, CheckGenesis. Extensions whose types are empty encode nothing. Unknown
  * extensions encode as None (Option) / false (bool) when their type allows it; anything else is refused.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { blake2b } from "@noble/hashes/blake2.js";
 import { compact, getSs58AddressInfo, u32 } from "@polkadot-api/substrate-bindings";
 import type { Runtime } from "./metadata.js";

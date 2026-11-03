@@ -9,9 +9,9 @@ It is also three things for developers:
 - **A wallet your dapp already supports.** Clip answers each ecosystem's own wallet standard (EIP-1193 and EIP-6963,
   the Wallet Standard, CIP-30, `injectedWeb3`, TON Connect and more), so dapps find it with no Clip-specific code.
   See [Clip works with your dapp](../dapps/).
-- **A dapp SDK, Clip Connect.** `@clip-wallet/connect` gives a dapp one `connect()` for any wallet and a `pay()` that
+- **A dapp SDK, Clip Connect.** `@coldai/clip-wallet-connect` gives a dapp one `connect()` for any wallet and a `pay()` that
   lets a capable wallet bring money in from the user's other networks. See [Clip Connect](../connect/).
-- **A kit.** The `@clip-wallet/*` packages, `@clip-wallet/extension-kit` and `create-clip-wallet` let anyone ship a
+- **A kit.** The `@coldai/clip-wallet-*` packages, `@coldai/clip-wallet-extension-kit` and `create-clip-wallet` let anyone ship a
   wallet of their own on the same code, under their own name. See [Launch your own wallet](../kit/).
 
 ::: warning Pre-release: test networks only

@@ -1,4 +1,4 @@
-import { ConfigError, defineConfig, validateConfig } from "@clip-wallet/config";
+import { ConfigError, defineConfig, validateConfig } from "@coldai/clip-wallet-config";
 
 // validateConfig() never throws: it returns plain sentences, one per problem.
 const result = validateConfig({ name: "Acme Wallet", rdns: "Acme", theme: { accent: "#FFFFFF" }, networks: ["evm:*", "dogecoin"] });

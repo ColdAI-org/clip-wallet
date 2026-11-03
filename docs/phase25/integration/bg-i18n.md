@@ -51,7 +51,7 @@ a nested Msg through `attachMsgs`).
 
 ## UI
 
-`useBgText()` (`packages/ui/src/i18n/bg.tsx`, exported from `@clip-wallet/ui`): `title(d)`, `label(l)`,
+`useBgText()` (`packages/ui/src/i18n/bg.tsx`, exported from `@coldai/clip-wallet-ui`): `title(d)`, `label(l)`,
 `value(l)`, `warning(w)`, `error(e)`, `msg(m, fallback)`. `userMessageOf(e)` uses the provider's current
 renderer, so every error note translates without per-screen changes. Mobile wraps its provider the same way.
 

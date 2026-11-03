@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { type Hex, bytesToHex, hashMessage, hexToBytes, recoverMessageAddress } from "viem";
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";

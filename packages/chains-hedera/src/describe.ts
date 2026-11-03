@@ -1,4 +1,4 @@
-import type { AssetRef, BalanceChange, NetworkId, Warning } from "@clip-wallet/core";
+import type { AssetRef, BalanceChange, NetworkId, Warning } from "@coldai/clip-wallet-core";
 import { longZeroToAccountId } from "./address.js";
 import { accountEvm, accountIdString, entityIdString, timestampDate } from "./ids.js";
 import type { Mirror, MirrorToken } from "./mirror.js";
@@ -24,7 +24,7 @@ import {
 } from "./proto/hapi.js";
 import { bodyFromSchedulable } from "./tx.js";
 import { abs, formatUnits, hex, joinWords } from "./util.js";
-import { msg, titled, warning, withFallback, titleMsgOf, finalMsg, type Msg, say } from "@clip-wallet/core";
+import { msg, titled, warning, withFallback, titleMsgOf, finalMsg, type Msg, say } from "@coldai/clip-wallet-core";
 
 export interface Line {
   label: string;

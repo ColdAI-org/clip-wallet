@@ -1,7 +1,7 @@
 # Clip Wallet: store listing (testnet build)
 
 Copy and answers for the Chrome Web Store, Microsoft Edge Add-ons and addons.mozilla.org (AMO). Nothing has been
-submitted. Every answer below describes the testnet build that `pnpm --filter @clip-wallet/extension package`
+submitted. Every answer below describes the testnet build that `pnpm --filter @coldai/clip-wallet-extension package`
 produces (`apps/extension/release/`); re-check it whenever `wxt.config.ts` (the manifest) changes.
 
 ## Basics
@@ -68,7 +68,7 @@ same text.
 
 ## Screenshots and graphics
 
-Rendered from the e2e fixture flows (`pnpm --filter @clip-wallet/extension store:shots`) and the brand sources
+Rendered from the e2e fixture flows (`pnpm --filter @coldai/clip-wallet-extension store:shots`) and the brand sources
 (`node tools/brand/render.mjs`). All five screenshots are 1280x800, the size Chrome, Edge and AMO accept.
 
 | File | Use |

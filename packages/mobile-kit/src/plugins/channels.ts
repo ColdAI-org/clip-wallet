@@ -1,13 +1,13 @@
 /**
  * Channels from the in-app PluginHost to one hidden WebView per plugin (the mobile counterpart of
- * `iframeChannelFactory` in @clip-wallet/plugins). Pure: the React side (PluginSandboxes.tsx) renders a WebView for
+ * `iframeChannelFactory` in @coldai/clip-wallet-plugins). Pure: the React side (PluginSandboxes.tsx) renders a WebView for
  * every frame here, attaches its `postMessage`, and feeds `onMessage` back through `receive`.
  *
  *  - Messages to a sandbox wait in a queue until its page says "booted".
  *  - A frame accepts messages only through its own key, from about:blank, and only schema-valid ones (protocol.ts).
  *  - `destroy()` removes the frame, which unmounts the WebView: its page (and any loop it is stuck in) is gone.
  */
-import type { Channel, ChannelFactory, HostToSandbox } from "@clip-wallet/plugins";
+import type { Channel, ChannelFactory, HostToSandbox } from "@coldai/clip-wallet-plugins";
 import { decodeFromSandbox, encodeForSandbox } from "./protocol";
 
 export interface SandboxFrame {

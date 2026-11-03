@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/ui": minor
-"@clip-wallet/mobile-kit": patch
+"@coldai/clip-wallet-ui": minor
+"@coldai/clip-wallet-mobile-kit": patch
 ---
 
 `Row` takes `hintTone="strong"` for a hint someone decides on: it is drawn in `--clip-text-2`, AA 4.5:1 on every

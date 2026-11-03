@@ -1,10 +1,10 @@
 /**
- * Page-side LinkClient over the wallet bus (LINK_REQUESTS from @clip-wallet/link, merged into shared/messages.ts).
+ * Page-side LinkClient over the wallet bus (LINK_REQUESTS from @coldai/clip-wallet-link, merged into shared/messages.ts).
  * New file from the r1/connect stream. Two things only a page can do happen here: asking for the optional
  * "nativeMessaging" permission from the click on "Use Clip Desktop", and reading the active tab for "Continue
  * this page on your phone" (activeTab, granted when the person opens the popup).
  */
-import { createLinkClient, type LinkClient } from "@clip-wallet/ui";
+import { createLinkClient, type LinkClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { CHANGE_EVENT, Envelope } from "./messages";
 

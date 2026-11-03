@@ -3,8 +3,8 @@
  * browser: the page message bus, the auto-lock alarm, the approval window and the passkey web bridge.
  */
 import { browser } from "wxt/browser";
-import { ClipError } from "@clip-wallet/core";
-import { PORT_NAME } from "@clip-wallet/1mask/background";
+import { ClipError } from "@coldai/clip-wallet-core";
+import { PORT_NAME } from "@coldai/clip-wallet-1mask/background";
 import config from "../config";
 import { PASSKEY_BRIDGE_URL, passkeyRpId } from "../app-settings";
 import { CHANGE_EVENT, Request, type Envelope } from "../shared/messages";
@@ -14,9 +14,9 @@ import { WalletService, type Env } from "./service";
 import { createFeatureHost, createFeatures } from "./features";
 import { withFixtureFeatures } from "./mocks/mock-features";
 import { chromeNotifier, startSocial } from "./social";
-import { COINGECKO_IDS } from "@clip-wallet/features";
-import { RecipientLog, SecurityService } from "@clip-wallet/security";
-import { isLinkRequest, withRemoteSigner } from "@clip-wallet/link";
+import { COINGECKO_IDS } from "@coldai/clip-wallet-features";
+import { RecipientLog, SecurityService } from "@coldai/clip-wallet-security";
+import { isLinkRequest, withRemoteSigner } from "@coldai/clip-wallet-link";
 import { handleLink, startLink } from "./link";
 import type {} from "../globals";
 

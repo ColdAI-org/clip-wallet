@@ -1,6 +1,6 @@
 /** LinkService end to end: extension ⇄ phone over a (fake) relay, extension ⇄ Clip Desktop over a native channel. */
 import { describe, expect, it, vi } from "vitest";
-import type { Account, DappRequest } from "@clip-wallet/core";
+import type { Account, DappRequest } from "@coldai/clip-wallet-core";
 import { LinkService } from "../src/service/service.js";
 import { memoryChannelPair, type BaseChannel } from "../src/pairing/channel.js";
 import { remoteDappHost, type DappHostLike } from "../src/remote/host.js";

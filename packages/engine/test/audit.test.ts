@@ -3,8 +3,8 @@
  *  1MASK-02  disconnecting one family of a site in the wallet revokes only that family.
  */
 import { describe, expect, it } from "vitest";
-import type { Network } from "@clip-wallet/core";
-import { createMemoryPermissionStore } from "@clip-wallet/1mask/background";
+import type { Network } from "@coldai/clip-wallet-core";
+import { createMemoryPermissionStore } from "@coldai/clip-wallet-1mask/background";
 import { OneMaskConnector } from "../src/adapters.js";
 
 const asset = (key: string, networkId: string) => ({ key, symbol: key.toUpperCase(), name: key, decimals: 18, networkId });

@@ -6,7 +6,7 @@
  * 2026-10-03); testnet USDC shares the "usdc" key (a build runs testnets or mainnet, never both). Bridged copies (USDC.e) get "usdc.e" and bridged=true.
  * Unknown tokens get a key unique to their contract, so they are never merged with anything.
  */
-import type { AssetRef, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, NetworkId } from "@coldai/clip-wallet-core";
 import { getAddress } from "viem";
 
 export interface CuratedToken {

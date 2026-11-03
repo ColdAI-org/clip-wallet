@@ -1,7 +1,7 @@
 /**
  * Device errors in plain words. Raw status words never reach the user; they ride along as `cause`.
  */
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 
 export type LedgerAppName = "Ethereum" | "Solana" | "Bitcoin Test" | "Bitcoin" | "Hedera";
 

@@ -1,6 +1,6 @@
 import { AccountAllowanceApproveTransaction, Transaction } from "@hiero-ledger/sdk";
-import { FAMILIES, type Family, type Network } from "@clip-wallet/core";
-import { refineDecoded } from "@clip-wallet/features";
+import { FAMILIES, type Family, type Network } from "@coldai/clip-wallet-core";
+import { refineDecoded } from "@coldai/clip-wallet-features";
 import { getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
 import { decodeFunctionData, encodeFunctionResult, erc20Abi, pad, parseAbi, toFunctionSelector, zeroAddress, type Hex } from "viem";
 import { describe, expect, it } from "vitest";

@@ -1,5 +1,5 @@
-import type { Account, AssetRef, ChainContext, DappRequest, TokenBalance } from "@clip-wallet/core";
-import { ALGORAND_MAINNET, ALGORAND_TESTNET, algoAsset, createAlgorandModule, decodeTxn } from "@clip-wallet/chains-algorand";
+import type { Account, AssetRef, ChainContext, DappRequest, TokenBalance } from "@coldai/clip-wallet-core";
+import { ALGORAND_MAINNET, ALGORAND_TESTNET, algoAsset, createAlgorandModule, decodeTxn } from "@coldai/clip-wallet-chains-algorand";
 import { describe, expect, it } from "vitest";
 import { SwapService } from "../src/swap/service.js";
 import { TINYMAN_V2_VALIDATOR, TinymanSwap, fixedInputSwap, tinymanPoolAddress } from "../src/swap/tinyman.js";

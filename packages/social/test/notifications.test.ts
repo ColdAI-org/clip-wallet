@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Account, ChainModule, Network } from "@clip-wallet/core";
+import type { Account, ChainModule, Network } from "@coldai/clip-wallet-core";
 import { NotificationWatcher, publicSnapshot, type Notice, type Snapshot } from "../src/index.js";
 import { MapKV } from "./helpers.js";
 

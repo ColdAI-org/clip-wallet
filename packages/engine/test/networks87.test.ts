@@ -5,11 +5,11 @@
  * Source of the 87: coldai-clpr-landing artifacts/coldai-web/src/data/clpr-data.ts NETWORKS (2026-10-06), copied
  * here as slugs and names so this test runs inside the wallet repo.
  *
- *   pnpm --filter @clip-wallet/engine exec vitest run test/networks87.test.ts   (prints the table)
+ *   pnpm --filter @coldai/clip-wallet-engine exec vitest run test/networks87.test.ts   (prints the table)
  */
 import { describe, expect, it } from "vitest";
-import type { Network } from "@clip-wallet/core";
-import { NETWORK_FAMILIES } from "@clip-wallet/config";
+import type { Network } from "@coldai/clip-wallet-core";
+import { NETWORK_FAMILIES } from "@coldai/clip-wallet-config";
 import { walletNetworks } from "../src/catalog.js";
 
 /** Every family, mainnet on: the full catalogue. */

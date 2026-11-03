@@ -3,7 +3,7 @@
  * paired device and waits; the person approves (or rejects) on the device that holds the keys. While it waits
  * the extension can show what that device decoded ("Waiting for your phone: Send 10 USDC to 0x12…ab").
  */
-import { ClipError, type Account, type DappRequest, type Family } from "@clip-wallet/core";
+import { ClipError, type Account, type DappRequest, type Family } from "@coldai/clip-wallet-core";
 import type { SecureSession } from "../pairing/session.js";
 import { FromSigner, type PublicAccount } from "./protocol.js";
 

@@ -6,7 +6,7 @@
  */
 import type Transport from "@ledgerhq/hw-transport";
 import { AppClient, DefaultWalletPolicy } from "ledger-bitcoin";
-import type { SignablePayload, Signature } from "@clip-wallet/core";
+import type { SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { derToCompact, withDerivations } from "../bitcoin.js";
 import { HardwareErrors } from "../errors.js";
 import type { HardwareAccount } from "../types.js";

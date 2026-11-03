@@ -11,7 +11,7 @@
  * OP Mainnet, Base, Ink, Soneium, Unichain, World Chain, Fraxtal, BOB, Blast, MegaETH, and the OP Sepolia /
  * Base Sepolia testnets. test/l1fee.test.ts checks this list against viem so it can't drift silently.
  */
-import type { ChainContext } from "@clip-wallet/core";
+import type { ChainContext } from "@coldai/clip-wallet-core";
 import { type Hex, decodeFunctionResult, encodeFunctionData, parseAbi, parseGwei, serializeTransaction } from "viem";
 import { rpc } from "./rpc.js";
 

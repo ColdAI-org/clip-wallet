@@ -1,9 +1,9 @@
 /**
  * Page-side SecurityClient over the wallet bus (Settings → Security: permissions, spam cleanup, scam protection).
- * Messages are SECURITY_REQUESTS from @clip-wallet/security, merged into shared/messages.ts.
+ * Messages are SECURITY_REQUESTS from @coldai/clip-wallet-security, merged into shared/messages.ts.
  */
-import type { SecurityRequest, SecurityResponseMap } from "@clip-wallet/security/messages";
-import type { SecurityClient } from "@clip-wallet/ui";
+import type { SecurityRequest, SecurityResponseMap } from "@coldai/clip-wallet-security/messages";
+import type { SecurityClient } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { Envelope } from "./messages";
 

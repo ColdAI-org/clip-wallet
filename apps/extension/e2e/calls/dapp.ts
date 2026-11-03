@@ -1,5 +1,5 @@
-/** A dapp built on Clip Connect (@clip-wallet/connect): connect, read capabilities, pay 25 USDC on Base Sepolia. */
-import { connect, type ClipConnection, type PayResult } from "@clip-wallet/connect";
+/** A dapp built on Clip Connect (@coldai/clip-wallet-connect): connect, read capabilities, pay 25 USDC on Base Sepolia. */
+import { connect, type ClipConnection, type PayResult } from "@coldai/clip-wallet-connect";
 
 const SHOP = "0x00000000000000000000000000000000c0ffee01";
 let c: ClipConnection | undefined;

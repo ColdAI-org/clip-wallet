@@ -1,5 +1,5 @@
-import type { Account, ChainContext, Network } from "@clip-wallet/core";
-import { NEAR_MAINNET, NEAR_TESTNET } from "@clip-wallet/chains-near";
+import type { Account, ChainContext, Network } from "@coldai/clip-wallet-core";
+import { NEAR_MAINNET, NEAR_TESTNET } from "@coldai/clip-wallet-chains-near";
 
 /**
  * Public key / implicit account of the chains-near test fixture (packages/chains-near/test/signatures.ts FIX.me,

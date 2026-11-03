@@ -140,7 +140,7 @@ export function tonV5R1AccountHash(publicKey: Uint8Array, network: Network2): Ui
 /**
  * v4r2 subwallet id: the standard one (698983191 + workchain, Trust Wallet / Tonkeeper) on mainnet; elsewhere it is
  * bound to the network (XOR its global_id), because v4r2 signs no network: with one id on both networks a testnet
- * transfer could be replayed on mainnet (audit CHAIN-L). Same rule as @clip-wallet/chains-ton `v4WalletId`.
+ * transfer could be replayed on mainnet (audit CHAIN-L). Same rule as @coldai/clip-wallet-chains-ton `v4WalletId`.
  */
 export function tonV4R2WalletId(network: Network2 = "mainnet", workchain = 0): number {
   const standard = TON_V4_DEFAULT_WALLET_ID + workchain;

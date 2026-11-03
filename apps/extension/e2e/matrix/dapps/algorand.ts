@@ -1,10 +1,10 @@
 /**
- * Algorand (testnet): TxnLab use-wallet v5 WalletManager with Clip's adapter (@clip-wallet/kit-modules/algorand, the
+ * Algorand (testnet): TxnLab use-wallet v5 WalletManager with Clip's adapter (@coldai/clip-wallet-kit-modules/algorand, the
  * documented third-party adapter path), connect, and a 1-microAlgo payment to yourself built with algosdk, signed
  * with signTransactions and sent to algod. use-wallet has no message signing (ARC-60 is a draft).
  */
 import { WalletManager, NetworkId } from "@txnlab/use-wallet";
-import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+import { clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
 import algosdk from "algosdk";
 import { expose } from "../dapp-kit";
 
@@ -13,7 +13,7 @@ const manager = new WalletManager({ wallets: [clipWallet()], defaultNetwork: Net
 let address = "";
 
 expose({
-  info: { dapp: "@txnlab/use-wallet v5 + @clip-wallet/kit-modules/algorand + algosdk in a local page, TestNet", why: "use-wallet is what Algorand dapps (and the use-wallet examples) use; a local page avoids the example's build" },
+  info: { dapp: "@txnlab/use-wallet v5 + @coldai/clip-wallet-kit-modules/algorand + algosdk in a local page, TestNet", why: "use-wallet is what Algorand dapps (and the use-wallet examples) use; a local page avoids the example's build" },
   steps: {
     connect: async () => {
       const w = manager.getWallet("clip-wallet" as never)!;

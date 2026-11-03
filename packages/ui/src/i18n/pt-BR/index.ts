@@ -20,7 +20,7 @@
  *   Discover → Descobrir, Explore → Explorar, Home → Início, unreadable request → solicitação ilegível,
  *   Try again → Tentar de novo (in sentences: "tente de novo"). Decimal examples use a comma (0,5).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { UiMessages } from "../en";
 import common from "./common";
 import settings from "./settings";

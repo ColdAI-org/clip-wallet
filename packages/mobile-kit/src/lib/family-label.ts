@@ -1,6 +1,6 @@
 /** "Ethereum-style (ETH, USDC, Base, Arbitrum…)", in the user's language; bare network names stay as they are. */
-import type { Family } from "@clip-wallet/core";
-import { FAMILY_LABEL } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import { FAMILY_LABEL } from "@coldai/clip-wallet-ui";
 import type { MobileMessageId } from "../i18n";
 
 const IDS: Partial<Record<Family, MobileMessageId>> = {

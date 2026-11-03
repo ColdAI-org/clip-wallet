@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network, msg, titled } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest, type Network, msg, titled } from "@coldai/clip-wallet-core";
 import {
   type CpmmState,
   LIQUIDITY_BAKING,
@@ -11,7 +11,7 @@ import {
   spendPermissionOps,
   tezosSendRequest,
   tokenRef,
-} from "@clip-wallet/chains-tezos";
+} from "@coldai/clip-wallet-chains-tezos";
 import type { Step } from "../steps.js";
 import { formatUnits } from "../util.js";
 import type { Unavailable } from "../views.js";

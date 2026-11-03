@@ -4,7 +4,7 @@
  *  APPR-02  the account that signs is the account the approval screen was built for.
  */
 import { describe, expect, it, vi } from "vitest";
-import { displaySafe, sanitizeDecoded, unverifiedOrigin, type DecodedRequest, type Signature } from "@clip-wallet/core";
+import { displaySafe, sanitizeDecoded, unverifiedOrigin, type DecodedRequest, type Signature } from "@coldai/clip-wallet-core";
 import { makeService, PASSWORD } from "./helpers";
 
 async function ready() {

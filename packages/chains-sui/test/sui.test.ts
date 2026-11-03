@@ -1,4 +1,4 @@
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { bcs } from "@mysten/sui/bcs";
 import { messageWithIntent } from "@mysten/sui/cryptography";
 import { Transaction, TransactionDataBuilder } from "@mysten/sui/transactions";

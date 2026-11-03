@@ -5,8 +5,8 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
-import type { Family } from "@clip-wallet/core";
-import type { ContactAddress } from "@clip-wallet/ui";
+import type { Family } from "@coldai/clip-wallet-core";
+import type { ContactAddress } from "@coldai/clip-wallet-ui";
 import { useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, LinkButton, Notice, Screen, Spinner, T } from "../ui/kit";
 import { useMobileT } from "../i18n";

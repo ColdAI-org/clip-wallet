@@ -449,7 +449,7 @@
   "near-clip": {
     "id": "near-clip",
     "ecosystem": "NEAR",
-    "picker": "NEAR Wallet Selector 10.1.4 modal-ui + @clip-wallet/kit-modules/near",
+    "picker": "NEAR Wallet Selector 10.1.4 modal-ui + @coldai/clip-wallet-kit-modules/near",
     "kind": "stock-ui",
     "notes": [],
     "shots": [
@@ -458,7 +458,7 @@
     "at": "2026-10-05T16:27:14.978Z",
     "detail": {
       "library": "@near-wallet-selector/modal-ui 10.1.4",
-      "config": "modules: MyNearWallet, Meteor, @clip-wallet/kit-modules/near",
+      "config": "modules: MyNearWallet, Meteor, @coldai/clip-wallet-kit-modules/near",
       "name": "Clip Wallet",
       "icon": {
         "ok": true,
@@ -501,7 +501,7 @@
   "stellar-clip": {
     "id": "stellar-clip",
     "ecosystem": "Stellar",
-    "picker": "Stellar Wallets Kit 2.7.0 + @clip-wallet/kit-modules/stellar ClipWalletModule",
+    "picker": "Stellar Wallets Kit 2.7.0 + @coldai/clip-wallet-kit-modules/stellar ClipWalletModule",
     "kind": "stock-ui",
     "notes": [],
     "shots": [
@@ -553,7 +553,7 @@
   "algorand-clip": {
     "id": "algorand-clip",
     "ecosystem": "Algorand",
-    "picker": "use-wallet-ui-react 1.2.1 WalletButton + @clip-wallet/kit-modules/algorand clipWallet()",
+    "picker": "use-wallet-ui-react 1.2.1 WalletButton + @coldai/clip-wallet-kit-modules/algorand clipWallet()",
     "kind": "stock-ui",
     "notes": [],
     "shots": [
@@ -671,7 +671,7 @@
     "picker": "@hashgraph/hedera-wallet-connect 2.1.3 DAppConnector extension discovery (HashConnect v3 path)",
     "kind": "stock-ui",
     "notes": [
-      "WALLETCONNECT_PROJECT_ID is not set in .env.dapp-matrix: the Hedera DAppConnector / HashConnect path needs a real WalletConnect project id (then run `pnpm --filter @clip-wallet/extension pickers`, which builds the wallet with it)."
+      "WALLETCONNECT_PROJECT_ID is not set in .env.dapp-matrix: the Hedera DAppConnector / HashConnect path needs a real WalletConnect project id (then run `pnpm --filter @coldai/clip-wallet-extension pickers`, which builds the wallet with it)."
     ],
     "shots": [],
     "at": "2026-10-05T16:23:49.472Z",

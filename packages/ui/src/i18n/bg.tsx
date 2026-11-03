@@ -1,13 +1,13 @@
 /**
  * Background text (approval titles, line labels, warnings, errors, activity, step titles) in the person's
- * language. The background sends English plus a structured Msg (@clip-wallet/core); this renders the Msg
- * through the background catalog (@clip-wallet/core BG_LOCALE_LOADERS, lazily loaded per language). English,
+ * language. The background sends English plus a structured Msg (@coldai/clip-wallet-core); this renders the Msg
+ * through the background catalog (@coldai/clip-wallet-core BG_LOCALE_LOADERS, lazily loaded per language). English,
  * a language still loading, or an id without a translation show the module's exact English.
  */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { errorMsg, lineLabelMsg, lineValueMsg, loadBgMessages, titleMsgOf, warningMsg, type BgTranslation, type Msg, type Warning } from "@clip-wallet/core";
-import { formatMsg } from "@clip-wallet/i18n";
-import { useLocale } from "@clip-wallet/i18n/react";
+import { errorMsg, lineLabelMsg, lineValueMsg, loadBgMessages, titleMsgOf, warningMsg, type BgTranslation, type Msg, type Warning } from "@coldai/clip-wallet-core";
+import { formatMsg } from "@coldai/clip-wallet-i18n";
+import { useLocale } from "@coldai/clip-wallet-i18n/react";
 
 export interface BgText {
   locale: string;

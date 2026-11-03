@@ -1,5 +1,5 @@
 /** Background error codes from the social stream, shown in the user's language (others: the English userMessage). */
-import { userMessageOf } from "@clip-wallet/ui";
+import { userMessageOf } from "@coldai/clip-wallet-ui";
 import type { MobileMessageId } from "../i18n";
 
 const BY_CODE: Record<string, MobileMessageId> = {

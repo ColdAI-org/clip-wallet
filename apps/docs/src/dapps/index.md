@@ -24,9 +24,9 @@ libraries against every build to prove it. See [Compatibility promise](../connec
 | Polkadot SDK | `injectedWeb3` | `@polkadot/extension-dapp`, polkadot.js apps | [Polkadot](./polkadot.md) |
 | Starknet | get-starknet v4 | get-starknet; starknetkit with one connector | [Starknet](./starknet.md) |
 | TON | TON Connect JS bridge | `@tonconnect/sdk`; `@tonconnect/ui` with one list entry | [TON Connect](./ton.md) |
-| NEAR | NEAR Connect; Wallet Selector module | NEAR Connect; Wallet Selector with `@clip-wallet/kit-modules/near` | [NEAR](./near.md) |
-| Stellar | SEP-43 | Stellar Wallets Kit with `@clip-wallet/kit-modules/stellar` | [Stellar](./stellar.md) |
-| Algorand | ARC-1 | use-wallet with `@clip-wallet/kit-modules/algorand` | [Algorand](./algorand.md) |
+| NEAR | NEAR Connect; Wallet Selector module | NEAR Connect; Wallet Selector with `@coldai/clip-wallet-kit-modules/near` | [NEAR](./near.md) |
+| Stellar | SEP-43 | Stellar Wallets Kit with `@coldai/clip-wallet-kit-modules/stellar` | [Stellar](./stellar.md) |
+| Algorand | ARC-1 | use-wallet with `@coldai/clip-wallet-kit-modules/algorand` | [Algorand](./algorand.md) |
 | Tezos | Beacon (TZIP-10) | Beacon finds Clip; its modal needs a listing to connect | [Tezos](./tezos.md) |
 | Cosmos SDK (Osmosis, dYdX, ZIGChain, Provenance, THORChain, Initia) | Keplr-compatible API at `window.clipwallet.cosmos` | cosmjs and Keplr-style dapps, passing Clip's object instead of `window.keplr` | [Cosmos](./cosmos.md) |
 | TRON | TIP-1193 + TIP-6963 | TIP-6963 discovery; TronWeb for building transactions | [TRON](./tron.md) |

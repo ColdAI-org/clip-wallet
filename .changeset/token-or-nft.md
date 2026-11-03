@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/chains-evm": patch
-"@clip-wallet/core": patch
+"@coldai/clip-wallet-chains-evm": patch
+"@coldai/clip-wallet-core": patch
 ---
 
 `transfer`, `transferFrom` and `approve` on a contract that isn't curated no longer read as a token amount just

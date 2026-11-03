@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { COSMOS_METHODS_ALLOWED, cosmosInjectedAllowlist, createCosmosDispatcher, type CosmosRouterInternals } from "../src/background/cosmos.js";
 import { installCosmosProvider } from "../src/inpage/cosmos.js";

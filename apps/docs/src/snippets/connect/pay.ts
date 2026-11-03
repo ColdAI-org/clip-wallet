@@ -1,4 +1,4 @@
-import { connect, type PayResult } from "@clip-wallet/connect";
+import { connect, type PayResult } from "@coldai/clip-wallet-connect";
 
 const wallet = await connect({ chains: [84532, 11155111] });
 

@@ -19,10 +19,10 @@
  *
  * @module
  */
-import type { AssetRef, BalanceChange, DappRequest, DecodedRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError, msg } from "@clip-wallet/core";
-import type { ApprovalPlan, PlanStep } from "@clip-wallet/ui";
-import { CallsErrorCode, MAX_CALLS, NATIVE_ASSET_ADDRESS, callsError, type CallsReceipt, type CallsStatus, type Hex, type SendCallsParams, type SendCallsResult } from "@clip-wallet/1mask";
+import type { AssetRef, BalanceChange, DappRequest, DecodedRequest, NetworkId } from "@coldai/clip-wallet-core";
+import { ClipError, msg } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan, PlanStep } from "@coldai/clip-wallet-ui";
+import { CallsErrorCode, MAX_CALLS, NATIVE_ASSET_ADDRESS, callsError, type CallsReceipt, type CallsStatus, type Hex, type SendCallsParams, type SendCallsResult } from "@coldai/clip-wallet-1mask";
 
 export const SEND_CALLS = "wallet_sendCalls";
 

@@ -172,7 +172,7 @@ const trust: Item[] = [
 
 function apiItems(): Item[] {
   const file = fileURLToPath(new URL("../src/reference/api/typedoc-sidebar.json", import.meta.url));
-  if (!existsSync(file)) return [{ text: "Run pnpm --filter docs gen", link: "/reference/" }];
+  if (!existsSync(file)) return [{ text: "Run pnpm --filter @coldai/clip-wallet-docs gen", link: "/reference/" }];
   return JSON.parse(readFileSync(file, "utf8")) as Item[];
 }
 

@@ -1,4 +1,4 @@
-import { HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+import { HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
 import { decodeFunctionData, encodeFunctionResult, erc20Abi } from "viem";
 import { describe, expect, it } from "vitest";
 import { FACTORY_ABI, NPM_ABI } from "../src/lp/abi.js";

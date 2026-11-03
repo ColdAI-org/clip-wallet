@@ -1,5 +1,5 @@
-import type { AssetRef, DappRequest, NetworkId } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
+import type { AssetRef, DappRequest, NetworkId } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import { SettleClient } from "./settle.js";
 import type { SettleQuoteJson } from "./settle-quote.js";
 

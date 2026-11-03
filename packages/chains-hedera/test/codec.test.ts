@@ -3,7 +3,7 @@
  * the other tests): every transaction the wallet builds must be byte-identical to what the SDK writes for the
  * same transaction id and nodes, and everything the wallet reads must agree with the SDK's own decoding.
  */
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { proto } from "@hiero-ledger/proto";
 import {
   AccountAllowanceApproveTransaction,

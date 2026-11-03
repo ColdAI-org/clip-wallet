@@ -1,10 +1,10 @@
 /** Shared bootstrap for the wallet and approval windows (same packages/ui screens as the extension). */
 import "./globals";
 import "@fontsource-variable/inter";
-import "@clip-wallet/ui/styles.css";
+import "@coldai/clip-wallet-ui/styles.css";
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { ApprovalWindowApp, WalletApp, type UiOptions } from "@clip-wallet/ui";
+import { ApprovalWindowApp, WalletApp, type UiOptions } from "@coldai/clip-wallet-ui";
 import { DESKTOP } from "../../shared/app-config";
 import { createFeaturesClient, createHardwareClient, createLinkBridgeClient, createSecurityClient, createSocialBridgeClient, createWalletClient, desktopInfo, touchIdFactory } from "./clients";
 import { desktop } from "./bridge";

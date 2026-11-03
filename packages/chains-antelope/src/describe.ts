@@ -1,4 +1,4 @@
-import { type BalanceChange, type NetworkId, type Warning, say } from "@clip-wallet/core";
+import { type BalanceChange, type NetworkId, type Warning, say } from "@coldai/clip-wallet-core";
 import { type Abi, AbiError, TOKEN_ABI, decodeActionData, isTokenTransfer } from "./abi.js";
 import { fromHex, parseAsset } from "./bytes.js";
 import { assetFor, knownTokens } from "./networks.js";

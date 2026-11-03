@@ -1,4 +1,4 @@
-import type { AssetRef, ClipError, DappRequest, DecodedRequest, Network } from "@clip-wallet/core";
+import type { AssetRef, ClipError, DappRequest, DecodedRequest, Network } from "@coldai/clip-wallet-core";
 import {
   decodeFunctionData,
   encodeAbiParameters,

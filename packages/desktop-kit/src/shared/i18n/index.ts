@@ -2,7 +2,7 @@
  * Desktop translations, shared by the main process (menus, native dialogs) and the browser toolbar renderer.
  * Bundled: the catalogs are small and the main process needs them synchronously.
  */
-import { createTranslator, resolveLocale, type Catalogs, type LocaleCode, type LocalePref, type TFunction } from "@clip-wallet/i18n";
+import { createTranslator, resolveLocale, type Catalogs, type LocaleCode, type LocalePref, type TFunction } from "@coldai/clip-wallet-i18n";
 import { en, type DesktopMessages } from "./en";
 import de from "./de";
 import fr from "./fr";

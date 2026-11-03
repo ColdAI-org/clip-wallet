@@ -9,7 +9,7 @@
  */
 import { useState } from "react";
 import { Platform, Pressable, Share, View } from "react-native";
-import { canonicalAmount, formatUnits, relativeTime, userMessageOf, type TradeLegInput, type TradeOfferView, type TradeReviewView } from "@clip-wallet/ui";
+import { canonicalAmount, formatUnits, relativeTime, userMessageOf, type TradeLegInput, type TradeOfferView, type TradeReviewView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, CopyButton, Empty, ErrorNote, Field, Notice, Pills, Qr, Row, Screen, Spinner, Steps, T, Warnings } from "../ui/kit";
 import { IconShare } from "../ui/icons";

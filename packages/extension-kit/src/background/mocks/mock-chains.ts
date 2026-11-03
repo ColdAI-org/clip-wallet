@@ -1,6 +1,6 @@
 /**
  * MOCK ChainModules (one per family) with fixture balances/NFTs and a tiny but real decoder for the
- * requests the dev simulator and Send produce. Replaced by @clip-wallet/chains-* at merge (wiring.ts).
+ * requests the dev simulator and Send produce. Replaced by @coldai/clip-wallet-chains-* at merge (wiring.ts).
  * Never imports the vault (AGENTS rule 2).
  */
 import type {
@@ -16,9 +16,9 @@ import type {
   SignablePayload,
   TokenBalance,
   Warning,
-} from "@clip-wallet/core";
-import { ClipError, FAMILIES, WALLET_ORIGIN, isWalletOrigin } from "@clip-wallet/core";
-import { SETTLE_DEPOSIT_ABI, SETTLE_DEPOSIT_SELECTOR } from "@clip-wallet/route";
+} from "@coldai/clip-wallet-core";
+import { ClipError, FAMILIES, WALLET_ORIGIN, isWalletOrigin } from "@coldai/clip-wallet-core";
+import { SETTLE_DEPOSIT_ABI, SETTLE_DEPOSIT_SELECTOR } from "@coldai/clip-wallet-route";
 import { decodeFunctionData, toFunctionSelector } from "viem";
 import { MOCK_BALANCES, MOCK_NFTS } from "./fixtures";
 import { knownAssets, MOCK_NETWORKS } from "./networks";

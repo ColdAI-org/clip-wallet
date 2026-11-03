@@ -1,11 +1,11 @@
 /**
- * Settings → Linked devices' door to the background (LinkService in @clip-wallet/link). Implemented over the
+ * Settings → Linked devices' door to the background (LinkService in @coldai/clip-wallet-link). Implemented over the
  * extension bus and in-process on mobile; a plain fake in tests. Nothing here carries key material: pairing
  * codes are public, passwords go straight to the vault for one transfer. Views are type-only imports.
  */
-import type { HandoffView, LinkStatusView, PairingView } from "@clip-wallet/link/views";
+import type { HandoffView, LinkStatusView, PairingView } from "@coldai/clip-wallet-link/views";
 
-export type { HandoffView, LinkStatusView, LinkedDeviceView, PairingView, PairingState, SignerModeView, SyncStatusView, WaitingRequestView } from "@clip-wallet/link/views";
+export type { HandoffView, LinkStatusView, LinkedDeviceView, PairingView, PairingState, SignerModeView, SyncStatusView, WaitingRequestView } from "@coldai/clip-wallet-link/views";
 
 /** Clip Desktop: which browsers can reach this app over native messaging (manifests registered for this user). */
 export interface BrowserConnectorView {

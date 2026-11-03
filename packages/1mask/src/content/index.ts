@@ -1,5 +1,5 @@
 /**
- * @clip-wallet/1mask/content — content-script bridge (ISOLATED world).
+ * @coldai/clip-wallet-1mask/content — content-script bridge (ISOLATED world).
  *
  * page --postMessage--> [this] --RuntimePort--> background
  *

@@ -1,7 +1,7 @@
 import { HardwareApprovalGate } from "../hardware/HardwareApprovalGate";
 import { useHardwareOptional } from "../hardware/context";
 import { useId, useState } from "react";
-import { finalMsg, knownMsg, lineLabelMsg, type BalanceChange } from "@clip-wallet/core";
+import { finalMsg, knownMsg, lineLabelMsg, type BalanceChange } from "@coldai/clip-wallet-core";
 import type { ApprovalView } from "../client";
 import { userMessageOf } from "../client";
 import { useUi } from "../context";

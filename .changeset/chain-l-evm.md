@@ -1,6 +1,6 @@
 ---
-"@clip-wallet/chains-evm": patch
-"@clip-wallet/core": patch
+"@coldai/clip-wallet-chains-evm": patch
+"@coldai/clip-wallet-core": patch
 ---
 
 EVM: a transaction with 1–3 bytes of call data is decoded as a call (unreadable without a selector), not shown as a

@@ -1,16 +1,16 @@
 ---
-"@clip-wallet/1mask": minor
-"@clip-wallet/engine": patch
-"@clip-wallet/extension-kit": patch
-"@clip-wallet/core": minor
-"@clip-wallet/ui": patch
-"@clip-wallet/chains-solana": patch
-"@clip-wallet/chains-aptos": patch
-"@clip-wallet/chains-near": patch
-"@clip-wallet/chains-sui": patch
-"@clip-wallet/chains-cardano": patch
-"@clip-wallet/chains-hedera": patch
-"@clip-wallet/chains-stellar": patch
+"@coldai/clip-wallet-1mask": minor
+"@coldai/clip-wallet-engine": patch
+"@coldai/clip-wallet-extension-kit": patch
+"@coldai/clip-wallet-core": minor
+"@coldai/clip-wallet-ui": patch
+"@coldai/clip-wallet-chains-solana": patch
+"@coldai/clip-wallet-chains-aptos": patch
+"@coldai/clip-wallet-chains-near": patch
+"@coldai/clip-wallet-chains-sui": patch
+"@coldai/clip-wallet-chains-cardano": patch
+"@coldai/clip-wallet-chains-hedera": patch
+"@coldai/clip-wallet-chains-stellar": patch
 ---
 
 Fixes found by the testnet dapp matrix (docs/r1/dapp-matrix.md):

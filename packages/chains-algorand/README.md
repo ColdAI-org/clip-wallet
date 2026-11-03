@@ -1,4 +1,4 @@
-# @clip-wallet/chains-algorand
+# @coldai/clip-wallet-chains-algorand
 
 Algorand `ChainModule` for Clip Wallet. It builds, decodes and simulates transactions. It never touches keys:
 `prepare()` returns the bytes for the vault to sign (ed25519 over `"TX" || msgpack(txn)`), and `finalize()` checks
@@ -14,14 +14,14 @@ so tests mock HTTP. Big integers in algod JSON (asset totals up to 2^64-1) are p
 ## Install
 
 ```sh
-npm i @clip-wallet/chains-algorand @clip-wallet/core
+npm i @coldai/clip-wallet-chains-algorand @coldai/clip-wallet-core
 ```
 
 ## Example
 
 ```ts
-import type { ChainModule } from "@clip-wallet/core";
-import { createAlgorandModule, ALGORAND_TESTNET } from "@clip-wallet/chains-algorand";
+import type { ChainModule } from "@coldai/clip-wallet-core";
+import { createAlgorandModule, ALGORAND_TESTNET } from "@coldai/clip-wallet-chains-algorand";
 
 // A wallet's background holds one module per family; it never gives the module a key.
 const module: ChainModule = createAlgorandModule();
@@ -220,7 +220,7 @@ or when it's a fractional ARC-3 NFT (total = 10^decimals, with an ARC-3 / ARC-19
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

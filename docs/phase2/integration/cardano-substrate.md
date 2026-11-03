@@ -151,8 +151,8 @@ Then add `"cardano", "substrate"` to `networks` in `apps/extension/clip.config.t
 Add to `dependencies`:
 
 ```json
-    "@clip-wallet/chains-cardano": "workspace:*",
-    "@clip-wallet/chains-substrate": "workspace:*",
+    "@coldai/clip-wallet-chains-cardano": "workspace:*",
+    "@coldai/clip-wallet-chains-substrate": "workspace:*",
 ```
 
 ## 8. `apps/extension/src/shared/catalog.ts`
@@ -160,8 +160,8 @@ Add to `dependencies`:
 Add the imports:
 
 ```ts
-import { CARDANO_NETWORKS } from "@clip-wallet/chains-cardano";
-import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@clip-wallet/chains-substrate";
+import { CARDANO_NETWORKS } from "@coldai/clip-wallet-chains-cardano";
+import { SUBSTRATE_NETWORKS, SUBSTRATE_SPECS, caip2Of } from "@coldai/clip-wallet-chains-substrate";
 ```
 
 In `walletNetworks`, add to the `all` array (after the Bitcoin line):
@@ -185,8 +185,8 @@ In `walletAssets`, inside the `for (const n of networks)` loop, add the curated 
 Add the imports:
 
 ```ts
-import { createCardanoModule } from "@clip-wallet/chains-cardano";
-import { createSubstrateModule } from "@clip-wallet/chains-substrate";
+import { createCardanoModule } from "@coldai/clip-wallet-chains-cardano";
+import { createSubstrateModule } from "@coldai/clip-wallet-chains-substrate";
 ```
 
 Replace the real-build `chains:` line in `createDependencies`:
@@ -207,7 +207,7 @@ Add to the `DappHost` interface (after `rpc(...)`). This is the CIP-30 read path
 Add the import:
 
 ```ts
-import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@clip-wallet/chains-cardano";
+import { CARDANO_READ_METHODS, type CardanoModule, type CardanoReadMethod } from "@coldai/clip-wallet-chains-cardano";
 ```
 
 Add this method next to `async rpc(...)`:
@@ -231,7 +231,7 @@ The vault already signs Cardano with `derivationSubPath` (payment unset, stake `
 Add the import:
 
 ```ts
-import { CARDANO_METHODS_ALLOWED } from "@clip-wallet/1mask/background";
+import { CARDANO_METHODS_ALLOWED } from "@coldai/clip-wallet-1mask/background";
 ```
 
 Replace `CONNECT_METHODS`:

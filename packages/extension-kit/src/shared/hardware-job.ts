@@ -2,12 +2,12 @@
  * Shapes shared by the background and the pages for hardware accounts. Device I/O runs in the pages
  * (WebHID and the camera need one); the background keeps approvals and verifies every signature.
  */
-import type { HardwareAccount, HardwareKind } from "@clip-wallet/hardware/core";
-import type { HardwareAccountView } from "@clip-wallet/ui";
+import type { HardwareAccount, HardwareKind } from "@coldai/clip-wallet-hardware/core";
+import type { HardwareAccountView } from "@coldai/clip-wallet-ui";
 
 /**
  * One payload the background wants a device to sign, as the approval window reads it (`hwSignJobs`).
- * `payload`, `account`, `request` and `decoded` are in the wire form of @clip-wallet/hardware (toWire).
+ * `payload`, `account`, `request` and `decoded` are in the wire form of @coldai/clip-wallet-hardware (toWire).
  * The window answers with `hwSignResult` (a signature the background verifies against its own copy of
  * the payload) or `hwSignFailed`.
  */

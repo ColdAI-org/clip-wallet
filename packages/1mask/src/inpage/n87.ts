@@ -8,7 +8,7 @@
  * Families without a verifiable third-party wallet standard (ICP, Antelope; Bitcoin Cash is reached over WalletConnect wc2-bch-bcr) are send and
  * receive only (see docs/r1/networks87.md).
  */
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { WalletIdentity } from "../shared/config.js";
 import type { InjectedOptions } from "./injected-base.js";
 import { installCosmosProvider, type ClipCosmosProvider } from "./cosmos.js";

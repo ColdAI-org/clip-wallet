@@ -2,7 +2,7 @@
  * Read helpers for wallet features built on this module (nomination-pool staking, AssetConversion swaps). Reads
  * only; every transaction still goes through `buildCall` → `substrate_signAndSubmit` → decode → approval.
  */
-import { type ChainContext, ClipError } from "@clip-wallet/core";
+import { type ChainContext, ClipError } from "@coldai/clip-wallet-core";
 import { Enum, fromBufferToBase58 } from "@polkadot-api/substrate-bindings";
 import { constantOf, readStorage } from "./chain.js";
 import { isChainflip, readFlipAccount } from "./chainflip.js";

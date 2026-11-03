@@ -6,30 +6,30 @@
  * Used by matrix.spec.ts (skip broadcast levels until funded, confirm broadcasts) and by
  * scripts/dapp-matrix-balances.mjs (prints balances so you can see when funding has landed). Public data only.
  */
-import type { Account, ChainModule, Family, Network } from "@clip-wallet/core";
-import { EVM_NETWORKS, HEDERA_EVM_NETWORKS, createEvmModule } from "@clip-wallet/chains-evm";
-import { HEDERA_TESTNET, createHederaModule } from "@clip-wallet/chains-hedera";
-import { SOLANA_DEVNET, createSolanaModule } from "@clip-wallet/chains-solana";
-import { BITCOIN_NETWORKS, BITCOIN_TESTNET4, createBitcoinModule } from "@clip-wallet/chains-bitcoin";
-import { SUI_TESTNET, createSuiModule } from "@clip-wallet/chains-sui";
-import { APTOS_TESTNET, createAptosModule } from "@clip-wallet/chains-aptos";
-import { CARDANO_PREPROD, addressToBech32, baseAddress, createCardanoModule, meOf } from "@clip-wallet/chains-cardano";
-import { SUBSTRATE_NETWORKS, createSubstrateModule } from "@clip-wallet/chains-substrate";
-import { STARKNET_SEPOLIA, createStarknetModule } from "@clip-wallet/chains-starknet";
-import { TON_TESTNET, createTonModule } from "@clip-wallet/chains-ton";
-import { NEAR_TESTNET, createNearModule } from "@clip-wallet/chains-near";
-import { STELLAR_TESTNET, createStellarModule } from "@clip-wallet/chains-stellar";
-import { TEZOS_SHADOWNET, createTezosModule } from "@clip-wallet/chains-tezos";
-import { ALGORAND_TESTNET, createAlgorandModule } from "@clip-wallet/chains-algorand";
-import { INITIA_TESTNET, OSMOSIS_TESTNET, PROVENANCE_TESTNET, createCosmosModule } from "@clip-wallet/chains-cosmos";
-import { TRON_NILE, createTronModule } from "@clip-wallet/chains-tron";
-import { STACKS_TESTNET, createStacksModule } from "@clip-wallet/chains-stacks";
-import { FUEL_TESTNET, createFuelModule } from "@clip-wallet/chains-fuel";
-import { BCH_CHIPNET, createBitcoinCashModule } from "@clip-wallet/chains-bitcoincash";
-import { MULTIVERSX_DEVNET, createMultiversXModule } from "@clip-wallet/chains-multiversx";
-import { ICP_TEST, createIcpModule } from "@clip-wallet/chains-icp";
-import { XRPL_TESTNET, createXrplModule } from "@clip-wallet/chains-xrpl";
-import { JUNGLE4, createAntelopeModule } from "@clip-wallet/chains-antelope";
+import type { Account, ChainModule, Family, Network } from "@coldai/clip-wallet-core";
+import { EVM_NETWORKS, HEDERA_EVM_NETWORKS, createEvmModule } from "@coldai/clip-wallet-chains-evm";
+import { HEDERA_TESTNET, createHederaModule } from "@coldai/clip-wallet-chains-hedera";
+import { SOLANA_DEVNET, createSolanaModule } from "@coldai/clip-wallet-chains-solana";
+import { BITCOIN_NETWORKS, BITCOIN_TESTNET4, createBitcoinModule } from "@coldai/clip-wallet-chains-bitcoin";
+import { SUI_TESTNET, createSuiModule } from "@coldai/clip-wallet-chains-sui";
+import { APTOS_TESTNET, createAptosModule } from "@coldai/clip-wallet-chains-aptos";
+import { CARDANO_PREPROD, addressToBech32, baseAddress, createCardanoModule, meOf } from "@coldai/clip-wallet-chains-cardano";
+import { SUBSTRATE_NETWORKS, createSubstrateModule } from "@coldai/clip-wallet-chains-substrate";
+import { STARKNET_SEPOLIA, createStarknetModule } from "@coldai/clip-wallet-chains-starknet";
+import { TON_TESTNET, createTonModule } from "@coldai/clip-wallet-chains-ton";
+import { NEAR_TESTNET, createNearModule } from "@coldai/clip-wallet-chains-near";
+import { STELLAR_TESTNET, createStellarModule } from "@coldai/clip-wallet-chains-stellar";
+import { TEZOS_SHADOWNET, createTezosModule } from "@coldai/clip-wallet-chains-tezos";
+import { ALGORAND_TESTNET, createAlgorandModule } from "@coldai/clip-wallet-chains-algorand";
+import { INITIA_TESTNET, OSMOSIS_TESTNET, PROVENANCE_TESTNET, createCosmosModule } from "@coldai/clip-wallet-chains-cosmos";
+import { TRON_NILE, createTronModule } from "@coldai/clip-wallet-chains-tron";
+import { STACKS_TESTNET, createStacksModule } from "@coldai/clip-wallet-chains-stacks";
+import { FUEL_TESTNET, createFuelModule } from "@coldai/clip-wallet-chains-fuel";
+import { BCH_CHIPNET, createBitcoinCashModule } from "@coldai/clip-wallet-chains-bitcoincash";
+import { MULTIVERSX_DEVNET, createMultiversXModule } from "@coldai/clip-wallet-chains-multiversx";
+import { ICP_TEST, createIcpModule } from "@coldai/clip-wallet-chains-icp";
+import { XRPL_TESTNET, createXrplModule } from "@coldai/clip-wallet-chains-xrpl";
+import { JUNGLE4, createAntelopeModule } from "@coldai/clip-wallet-chains-antelope";
 import ADDRESSES from "./addresses.json" with { type: "json" };
 
 export type MatrixFamily = Exclude<Family, never>;

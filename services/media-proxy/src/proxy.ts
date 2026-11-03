@@ -1,7 +1,7 @@
 /**
  * GET /v1/media?src=<canonical source>&kind=image|video
  *
- *  1. Re-validate the source with @clip-wallet/media-client (same rules the UI used).
+ *  1. Re-validate the source with @coldai/clip-wallet-media-client (same rules the UI used).
  *  2. Fetch it (ipfs:// and ar:// through the configured gateways), following at most 3 redirects by hand and
  *     re-validating every hop, so a redirect can't reach a private address or a disallowed scheme.
  *  3. Sniff the first bytes; only PNG/JPEG/GIF/WebP/AVIF/SVG/MP4/WebM pass, and the kind must match.
@@ -18,7 +18,7 @@ import {
   normaliseMediaSource,
   parseProxyQuery,
   sniffMediaType,
-} from "@clip-wallet/media-client";
+} from "@coldai/clip-wallet-media-client";
 
 export interface Env {
   IPFS_GATEWAY?: string;

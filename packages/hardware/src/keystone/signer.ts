@@ -8,7 +8,7 @@
  * the approval window to do the showing and scanning.
  */
 import type * as KeystoneModule from "@keystonehq/keystone-sdk";
-import type { DappRequest, DecodedRequest, Signature, SignablePayload } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest, Signature, SignablePayload } from "@coldai/clip-wallet-core";
 import { base58 } from "@scure/base";
 import { derivePublic, encodeXpub, publicNode, XPUB_VERSIONS, type PublicNode } from "../bip32pub.js";
 import { partialSigFrom, psbtKey, psbtPayloads, segwitAddress, withDerivations } from "../bitcoin.js";

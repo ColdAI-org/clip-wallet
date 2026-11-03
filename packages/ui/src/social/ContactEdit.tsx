@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { useRouter } from "../context";
 import { Button, ErrorNote, Field, Screen, Spinner } from "../components";
 import { useUiT } from "../i18n";

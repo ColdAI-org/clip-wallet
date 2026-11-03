@@ -2,7 +2,7 @@
  * Clip Wallet for TxnLab use-wallet v5 (@txnlab/use-wallet), as a wallet adapter:
  *
  *   import { WalletManager } from "@txnlab/use-wallet";
- *   import { clipWallet } from "@clip-wallet/kit-modules/algorand";
+ *   import { clipWallet } from "@coldai/clip-wallet-kit-modules/algorand";
  *   new WalletManager({ wallets: [clipWallet()], defaultNetwork: "testnet" });
  *
  * In v5 every wallet is an adapter package exporting a factory that returns a `WalletAdapterConfig`

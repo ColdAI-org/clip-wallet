@@ -1,4 +1,4 @@
-# @clip-wallet/chains-stacks
+# @coldai/clip-wallet-chains-stacks
 
 Stacks `ChainModule` for Clip Wallet. It builds and decodes Stacks transactions in plain words and never touches
 keys. `prepare()` returns the 32-byte digest the account's key signs; `finalize()` checks the vault's signature with
@@ -99,7 +99,7 @@ tenure-change payloads, unknown post-condition types) is `blind: true` and can't
 - Contract deploys: the name, Clarity version and code, with a caution.
 - Sponsored: the fee line says who pays.
 
-## 1Mask (`@clip-wallet/1mask`)
+## 1Mask (`@coldai/clip-wallet-1mask`)
 
 `inpage/stacks.ts` puts a SIP-030 provider on `window.clipwallet.stacks` (`request(method, params)` resolving a
 JSON-RPC 2.0 response, `listen("stx_accountChange", …)`) and registers it with WBIP-004: it pushes

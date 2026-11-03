@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import {
   ALGORAND_INJECTED,

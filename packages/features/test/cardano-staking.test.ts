@@ -1,5 +1,5 @@
-import { CARDANO_METHODS, parseTransaction, poolIdToHex } from "@clip-wallet/chains-cardano";
-import type { DappRequest } from "@clip-wallet/core";
+import { CARDANO_METHODS, parseTransaction, poolIdToHex } from "@coldai/clip-wallet-chains-cardano";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { CLAIM_CHOICES, CardanoStaking, networkRate, poolApy, rankPools } from "../src/staking/cardano.js";
 import type { Route } from "./helpers.js";

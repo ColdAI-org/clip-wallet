@@ -1,4 +1,4 @@
-import { unverifiedOrigin, type Warning } from "@clip-wallet/core";
+import { unverifiedOrigin, type Warning } from "@coldai/clip-wallet-core";
 
 /** Shape of WalletConnect's Verify API context (`@walletconnect/types` Verify.Context). */
 export interface VerifyContextLike {

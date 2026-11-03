@@ -2,7 +2,7 @@
 
 All of this is already applied on `p25/stake-swap`. It is listed here because some edits touch shared files.
 Checked with `pnpm install && pnpm -r typecheck && pnpm -r test && pnpm harness` and the extension e2e
-(`pnpm --filter @clip-wallet/extension e2e`, 7/7).
+(`pnpm --filter @coldai/clip-wallet-extension e2e`, 7/7).
 
 ## 1. Provider registration (packages/features only)
 

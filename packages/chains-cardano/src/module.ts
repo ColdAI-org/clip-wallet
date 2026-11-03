@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, type Msg } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, msg, titled, type Msg } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
   type Credential,

@@ -3,7 +3,7 @@
  * Before signing it re-reads the account's public key from the device (silently), so a different
  * Ledger, or the same Ledger with another passphrase, fails with "wrong device" instead of a bad signature.
  */
-import type { Signature, SignablePayload } from "@clip-wallet/core";
+import type { Signature, SignablePayload } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { base58 } from "@scure/base";
 import { decodeXpub, derivePublic, fingerprintOf } from "../bip32pub.js";

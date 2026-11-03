@@ -17,7 +17,7 @@ import {
   msg,
   say,
   titled,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { fuelAddressFromPublicKey, isFuelAddress } from "./address.js";
 import { amountText, analyze, describeFlows, readReceipts, sendLines, simulationFailed, transferTitle, type Analysis, type Simulated } from "./describe.js";

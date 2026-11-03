@@ -2,7 +2,7 @@
 
 When a dapp asks for money the person holds on another network, most wallets just fail. Clip finds what's missing and
 offers a way to fund it, on [CLPRouter](https://github.com/ColdAI-org/clprouter) over
-[CLPR](https://github.com/LFDT-CLPR). `@clip-wallet/route` holds all of it. Nothing in the package signs: it builds
+[CLPR](https://github.com/LFDT-CLPR). `@coldai/clip-wallet-route` holds all of it. Nothing in the package signs: it builds
 `DappRequest`s that go through the normal decode and approval.
 
 ::: info Where this is today

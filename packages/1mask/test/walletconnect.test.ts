@@ -1,4 +1,4 @@
-import { isWalletOrigin, type DappRequest, type Family } from "@clip-wallet/core";
+import { isWalletOrigin, type DappRequest, type Family } from "@coldai/clip-wallet-core";
 import { describe, expect, it, vi } from "vitest";
 import {
   assessVerify,

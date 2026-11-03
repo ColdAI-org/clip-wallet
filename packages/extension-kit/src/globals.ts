@@ -2,7 +2,7 @@
  * Build-time globals (defined by clipWallet() in src/wxt.ts) and the WXT types the kit uses. A module, not a .d.ts,
  * so the declarations travel with every file that uses them: `import type {} from "<path>/globals";`.
  */
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 
 // WXT generates these per project (.wxt/types); the kit is built outside a WXT project, so it declares what it uses.
 declare module "wxt/browser" {
@@ -34,9 +34,9 @@ declare global {
   /** EIP-6963 / Wallet Standard identity from clip.config. */
   const __CLIP_IDENTITY__: { name: string; icon: `data:image/svg+xml;base64,${string}`; rdns: string };
   /** Feature partner keys and switches (wxt.config.ts FEATURES). */
-  const __CLIP_SECURITY__: import("@clip-wallet/security").SecurityConfig;
-  const __CLIP_FEATURES__: import("@clip-wallet/features").FeaturesConfig & { coingeckoDemoKey?: string };
+  const __CLIP_SECURITY__: import("@coldai/clip-wallet-security").SecurityConfig;
+  const __CLIP_FEATURES__: import("@coldai/clip-wallet-features").FeaturesConfig & { coingeckoDemoKey?: string };
   /** TON Connect JS bridge settings for 1Mask (wxt.config.ts TON_CONNECT). */
-  const __CLIP_TON_CONNECT__: NonNullable<import("@clip-wallet/1mask/inpage").InpageConfig["tonConnect"]>;
+  const __CLIP_TON_CONNECT__: NonNullable<import("@coldai/clip-wallet-1mask/inpage").InpageConfig["tonConnect"]>;
 }
 export {};

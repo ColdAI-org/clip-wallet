@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 import { DiscoverService, heuristicVerdict, supportedChains, type TokenRiskSource } from "../src/index.js";
 import { MapKV, routes } from "./helpers.js";
 import trending from "./fixtures/coingecko-trending.json";

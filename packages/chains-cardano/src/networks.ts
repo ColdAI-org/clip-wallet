@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /**
  * Cardano networks. CAIP-2 ids use the CIP-34 form `cip34:<NetworkId>-<NetworkMagic>` (CIP-0034 registry.json;

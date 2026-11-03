@@ -23,6 +23,13 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
   wallets (`docs/features/sodax-kit-split.md`); a fee clause in the draft terms of use and the swap server in the
   draft privacy policy (both awaiting legal review); store listing text for a mainnet build with SODAX swaps.
 
+### Changed
+
+- **Package names:** the kit's packages are published as `@coldai/clip-wallet-<name>`. Every `@clip-wallet/<name>`
+  becomes `@coldai/clip-wallet-<name>`, for example `@clip-wallet/core` → `@coldai/clip-wallet-core`, in imports,
+  `pnpm --filter` names and the Scaffold-HBAR template's pins. `create-clip-wallet` is unchanged
+  (`npx create-clip-wallet`).
+
 ## [0.1.0] - 2026-10-31 (testnet preview)
 
 First public preview. **Test networks only.** No external audit.

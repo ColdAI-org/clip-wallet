@@ -21,7 +21,7 @@
  * https://appleid.apple.com/.well-known/openid-configuration,
  * https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens.
  */
-import { sha256b64url } from "@clip-wallet/backup-client/protocol";
+import { sha256b64url } from "@coldai/clip-wallet-backup-client/protocol";
 import { HttpError, hmacHex, randomToken, safeEqual, sha256Hex, withoutTrailingSlashes } from "./util.js";
 
 export type Provider = "google" | "apple";

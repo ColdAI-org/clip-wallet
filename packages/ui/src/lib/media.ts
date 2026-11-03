@@ -6,7 +6,7 @@
  *  - referrerPolicy="no-referrer"; links in metadata are shown as text, never auto-opened.
  */
 
-import { mediaProxyUrl } from "@clip-wallet/media-client";
+import { mediaProxyUrl } from "@coldai/clip-wallet-media-client";
 
 export type MediaKind = "image" | "video";
 
@@ -35,7 +35,7 @@ export function normaliseMediaUrl(raw: string | undefined): string | null {
 
 /**
  * Untrusted media goes only through the media proxy (services/media-proxy), using the shared URL contract
- * from @clip-wallet/media-client: `${proxyBase}/v1/media?src=<canonical>&kind=image|video`. Without a proxy
+ * from @coldai/clip-wallet-media-client: `${proxyBase}/v1/media?src=<canonical>&kind=image|video`. Without a proxy
  * base this returns null, so nothing remote is fetched and placeholders are drawn.
  */
 export function proxyMedia(raw: string | undefined, proxyBase: string | undefined): ProxiedMedia | null {

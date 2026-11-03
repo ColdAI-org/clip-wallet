@@ -56,7 +56,7 @@
     "postpack": "node scripts/bundle-template.mjs --clean"
   },
   "dependencies": {
-    "@clip-wallet/config": "workspace:*"
+    "@coldai/clip-wallet-config": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

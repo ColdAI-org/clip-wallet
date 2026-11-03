@@ -3,7 +3,7 @@
  * ChainContext; coins on them are signed with SignablePayload.derivationSubPath. Public data only; the
  * change-input signature in signatures.ts was produced offline.
  */
-import type { ChainContext, ChildAddress, Signature } from "@clip-wallet/core";
+import type { ChainContext, ChildAddress, Signature } from "@coldai/clip-wallet-core";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { Transaction, p2wpkh } from "@scure/btc-signer";

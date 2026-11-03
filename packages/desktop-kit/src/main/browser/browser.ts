@@ -21,7 +21,7 @@
 import { BaseWindow, WebContentsView, dialog, session, type Session, type WebContents } from "electron";
 import { CH, type ChromeState, type DistributiveOmit, type PromptView, type TabView } from "../../shared/ipc";
 import type { DesktopMessageId } from "../../shared/i18n";
-import type { MessageValues } from "@clip-wallet/i18n";
+import type { MessageValues } from "@coldai/clip-wallet-i18n";
 import type { OneMaskRelay } from "./onemask-relay";
 import { displayHost, isNavigable, normalizeInput, partitionFor, promptFor, webOrigin } from "./url-policy";
 import { stripAppTokens } from "./browser-ua";

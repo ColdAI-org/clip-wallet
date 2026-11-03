@@ -7,9 +7,9 @@
  * The page shares this JS world, so NOTHING here is trusted by the app: the native side ignores any origin
  * the page could set and uses the WebView's own navigation URL instead (bridge.ts).
  */
-import { installOneMask } from "@clip-wallet/1mask/inpage";
-import { createContentBridge, type RuntimePort } from "@clip-wallet/1mask/content";
-import type { InpageConfig } from "@clip-wallet/1mask";
+import { installOneMask } from "@coldai/clip-wallet-1mask/inpage";
+import { createContentBridge, type RuntimePort } from "@coldai/clip-wallet-1mask/content";
+import type { InpageConfig } from "@coldai/clip-wallet-1mask";
 
 interface Boot {
   channel: string;

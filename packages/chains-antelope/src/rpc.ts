@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Msg, msg } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Msg, msg } from "@coldai/clip-wallet-core";
 import type { Abi } from "./abi.js";
 import { bytesEqual, parsePublicKey } from "./bytes.js";
 import type { AntelopeNetSpec } from "./networks.js";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Account, ChainContext, DappRequest, DecodedRequest } from "@clip-wallet/core";
-import { HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
-import { ClipHandlesBackend, type HandleRecords, type HandlesReader } from "@clip-wallet/names";
+import type { Account, ChainContext, DappRequest, DecodedRequest } from "@coldai/clip-wallet-core";
+import { HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
+import { ClipHandlesBackend, type HandleRecords, type HandlesReader } from "@coldai/clip-wallet-names";
 import { isAddress } from "viem";
 import { SocialService, buildHandleRequest, handleCalldata, refineHandleRequest, type Notice } from "../src/index.js";
 import { MapKV } from "./helpers.js";

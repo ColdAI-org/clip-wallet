@@ -2,7 +2,7 @@
  * decode(): DappRequest → DecodedRequest in plain words.
  * Titles never contain raw method names; fees are an amount of the network's native asset.
  */
-import { ClipError, labelled, msg, titled, warning, type AssetRef, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@clip-wallet/core";
+import { ClipError, labelled, msg, titled, warning, type AssetRef, type BalanceChange, type BgMessageId, type ChainContext, type DappRequest, type DecodedRequest, type Warning, say } from "@coldai/clip-wallet-core";
 import {
   type AbiFunction,
   type Hex,

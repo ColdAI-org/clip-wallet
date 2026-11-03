@@ -3,8 +3,8 @@
  * on "Connect a hardware wallet", the Keystone QR answers, cancelling a device step. The background stores
  * the accounts the user picks and verifies every signature (hardware-host.ts).
  */
-import { HardwareErrors, type HardwareAccount } from "@clip-wallet/hardware/core";
-import type { FullHardwareClient, HardwareAccountView } from "@clip-wallet/ui";
+import { HardwareErrors, type HardwareAccount } from "@coldai/clip-wallet-hardware/core";
+import type { FullHardwareClient, HardwareAccountView } from "@coldai/clip-wallet-ui";
 import { browser } from "wxt/browser";
 import { BusError } from "../../shared/bus";
 import { hardwareAccountView } from "../../shared/hardware-job";

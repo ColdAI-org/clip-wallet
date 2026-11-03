@@ -1,4 +1,4 @@
-import { type AssetRef, type BalanceChange, ClipError, type Msg, type NetworkId, type Warning, msg, titled } from "@clip-wallet/core";
+import { type AssetRef, type BalanceChange, ClipError, type Msg, type NetworkId, type Warning, msg, titled } from "@coldai/clip-wallet-core";
 import { decodeString, decodeTrc20, decodeUint, isUnlimited } from "./abi.js";
 import { encodeAddress, sameAddress } from "./address.js";
 import { trxAsset, usdtAsset } from "./networks.js";

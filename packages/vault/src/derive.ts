@@ -8,7 +8,7 @@ import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import * as sr25519 from "@scure/sr25519";
 import * as stark from "@scure/starknet";
-import type { Curve, Family } from "@clip-wallet/core";
+import type { Curve, Family } from "@coldai/clip-wallet-core";
 import { fromHex, utf8, wipe } from "./bytes.js";
 import { slip10Derive } from "./slip10.js";
 import { deriveArc52, deriveXPrv, xprvPublicKey } from "./bip32ed25519.js";

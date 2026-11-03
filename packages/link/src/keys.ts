@@ -1,5 +1,5 @@
 /**
- * What @clip-wallet/link needs from the vault, restated structurally so this package never imports the vault
+ * What @coldai/clip-wallet-link needs from the vault, restated structurally so this package never imports the vault
  * (harness: only the vault touches seeds and private keys). ClipVault satisfies `LinkVault`.
  */
 

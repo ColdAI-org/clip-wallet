@@ -25,7 +25,7 @@ import {
   type PluginKV,
   type PluginNameResult,
   type PluginNotification,
-} from "@clip-wallet/plugins";
+} from "@coldai/clip-wallet-plugins";
 
 export const INSIGHT_TIMEOUT_MS = 2000;
 export const SYNC_TIMEOUT_MS = 10_000;

@@ -1,7 +1,7 @@
 /**
- * @clip-wallet/config — the schema for `clip.config.ts`.
+ * @coldai/clip-wallet-config — the schema for `clip.config.ts`.
  *
- *   import { defineConfig } from "@clip-wallet/config";
+ *   import { defineConfig } from "@coldai/clip-wallet-config";
  *   export default defineConfig({ name: "My Wallet", rdns: "com.example.wallet", theme: { accent: "#4F46E5" } });
  *
  * Everything but `name` and `rdns` has a default. Testnet by default: mainnet needs an explicit checklist object, and
@@ -26,7 +26,7 @@ export const WALLETCONNECT_ENV = "CLIP_WALLETCONNECT_PROJECT_ID";
 export const SODAX_SERVER_ENV = "CLIP_SODAX_SERVER_URL";
 export const SODAX_FEE_RECEIVER_ENV = "CLIP_SODAX_FEE_RECEIVER";
 
-/** Same order as @clip-wallet/core FAMILIES (config has no runtime dependency on core). */
+/** Same order as @coldai/clip-wallet-core FAMILIES (config has no runtime dependency on core). */
 export const NETWORK_FAMILIES = [
   "evm",
   "hedera",
@@ -58,7 +58,7 @@ export const NETWORK_FAMILIES = [
 export const ROUTE_MODES = ["balanced", "cheapest", "fastest", "reliable", "greenest"] as const;
 export const TRUST_TIERS = ["attested", "committee", "light-client", "validity-proof"] as const;
 export const HARDWARE = ["ledger", "keystone"] as const;
-/** The languages the wallet ships (BCP 47), same order as @clip-wallet/i18n LOCALE_CODES (config has no runtime dependency on i18n). */
+/** The languages the wallet ships (BCP 47), same order as @coldai/clip-wallet-i18n LOCALE_CODES (config has no runtime dependency on i18n). */
 export const LANGUAGES = ["en", "de", "fr", "es", "pt-BR", "it", "tr", "ja", "ko", "zh-Hans", "ar", "hi"] as const;
 export type Language = (typeof LANGUAGES)[number];
 
@@ -132,7 +132,7 @@ const mainnetChecklist = z
     enabled: z.literal(true, "set enabled: true (or use mainnet: false)"),
     acknowledged: z.literal(
       MAINNET_ACKNOWLEDGEMENT,
-      "copy MAINNET_ACKNOWLEDGEMENT from @clip-wallet/config word for word after completing the checklist",
+      "copy MAINNET_ACKNOWLEDGEMENT from @coldai/clip-wallet-config word for word after completing the checklist",
     ),
   })
   .strict();
@@ -200,7 +200,7 @@ export const clipConfigSchema = z
         mode: z.enum(ROUTE_MODES, `use one of: ${ROUTE_MODES.join(", ")}`).default("balanced"),
         filters: routeFilters.default({}),
         /**
-         * Phase 3 "settle on Hedera": when a deployment is known (@clip-wallet/route SETTLE_DEPLOYMENTS), a payment that
+         * Phase 3 "settle on Hedera": when a deployment is known (@coldai/clip-wallet-route SETTLE_DEPLOYMENTS), a payment that
          * needs money from another network also asks bonded Connectors for a quote and lists the best one in the
          * approval's Details. Off by default.
          */
@@ -407,7 +407,7 @@ export function mainnetProblems(config: ClipConfig, env: Record<string, string |
   if (!config.walletConnect.projectId && !env[WALLETCONNECT_ENV]) out.push(`walletConnect: set ${WALLETCONNECT_ENV} to your own WalletConnect Cloud project id`);
   if (/^https?:\/\//.test(config.icon)) out.push("icon: ship the icon inside the extension (./icon.svg or ./icon.png), not from a URL");
   // SODAX swaps are optional; a build that turns them on sets both. The extension build also checks the receiver
-  // against the reviewed list (@clip-wallet/features/sodax-fee), which this package can't see.
+  // against the reviewed list (@coldai/clip-wallet-features/sodax-fee), which this package can't see.
   const sodaxServer = env[SODAX_SERVER_ENV];
   const sodaxReceiver = env[SODAX_FEE_RECEIVER_ENV];
   if (sodaxServer || sodaxReceiver) {

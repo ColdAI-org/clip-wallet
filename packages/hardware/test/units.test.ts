@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import QRCode from "qrcode";
-import type { SignablePayload } from "@clip-wallet/core";
+import type { SignablePayload } from "@coldai/clip-wallet-core";
 import {
   HardwareApprovals,
   MAX_APPROVAL_TTL_MS,

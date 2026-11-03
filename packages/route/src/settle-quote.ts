@@ -1,4 +1,4 @@
-import type { DappRequest, NetworkId } from "@clip-wallet/core";
+import type { DappRequest, NetworkId } from "@coldai/clip-wallet-core";
 import {
   encodeFunctionData,
   erc20Abi,

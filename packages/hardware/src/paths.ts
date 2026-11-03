@@ -3,7 +3,7 @@
  * (packages/vault/src/derive.ts), so the same recovery phrase on a device shows the same accounts.
  * See README "Derivation paths" for where Ledger Live and other wallets differ.
  */
-import type { Curve } from "@clip-wallet/core";
+import type { Curve } from "@coldai/clip-wallet-core";
 import type { HardwareFamily, PathStyle } from "./types.js";
 
 export interface PathOptions {

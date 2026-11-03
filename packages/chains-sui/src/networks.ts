@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 import { normalizeStructTag } from "@mysten/sui/utils";
 
 /**

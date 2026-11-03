@@ -3,7 +3,7 @@
  *
  *   // electron.vite.config.ts
  *   import { defineConfig } from "electron-vite";
- *   import { clipDesktop } from "@clip-wallet/desktop-kit/electron-vite";
+ *   import { clipDesktop } from "@coldai/clip-wallet-desktop-kit/electron-vite";
  *   import clipConfig from "../../clip.config";
  *   export default defineConfig(clipDesktop({ config: clipConfig, root: import.meta.dirname, configDir: "../.." }));
  *
@@ -25,9 +25,9 @@ import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import type { ClipConfig } from "@clip-wallet/config";
-import { buildEnv, iconDataUri, resolveBuildConfig } from "@clip-wallet/config/node";
-import { walletCsp } from "@clip-wallet/desktop-kit/csp";
+import type { ClipConfig } from "@coldai/clip-wallet-config";
+import { buildEnv, iconDataUri, resolveBuildConfig } from "@coldai/clip-wallet-config/node";
+import { walletCsp } from "@coldai/clip-wallet-desktop-kit/csp";
 
 /** The virtual module the kit's main process, preloads and pages import the resolved clip.config from. */
 export const CONFIG_MODULE = "virtual:clip-wallet/config";
@@ -81,7 +81,7 @@ export async function buildNativeHost(root: string, outFile = join(root, "out", 
   const req = createRequire(join(root, "package.json"));
   let entry: string;
   try {
-    entry = req.resolve("@clip-wallet/desktop-kit/native-host");
+    entry = req.resolve("@coldai/clip-wallet-desktop-kit/native-host");
   } catch {
     // The kit itself (its own tests, or a project that links it): the entry next to this file.
     const here = dirname(fileURLToPath(import.meta.url));

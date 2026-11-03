@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import type { RecipientResolution } from "../client";
 import { userMessageOf } from "../client";
 import { useAsync, useRouter, useUi } from "../context";

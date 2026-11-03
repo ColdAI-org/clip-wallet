@@ -7,9 +7,9 @@
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { finalMsg, knownMsg, type BalanceChange } from "@clip-wallet/core";
-import type { Family } from "@clip-wallet/core";
-import { formatFiat, formatUnits, hueFor, readyInMessage, useBgText, userMessageOf, type ApprovalView, type PluginInsightView, formatLocale } from "@clip-wallet/ui";
+import { finalMsg, knownMsg, type BalanceChange } from "@coldai/clip-wallet-core";
+import type { Family } from "@coldai/clip-wallet-core";
+import { formatFiat, formatUnits, hueFor, readyInMessage, useBgText, userMessageOf, type ApprovalView, type PluginInsightView, formatLocale } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, Chip, ErrorNote, Notice, Row, T, Toggle, Warnings } from "../ui/kit";
 import { IconAlert, IconChevron, IconShield } from "../ui/icons";

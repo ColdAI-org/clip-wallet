@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, type Msg } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, type ChainModule, ClipError, type DappRequest, type DecodedRequest, type Network, type Nft, type Signature, type SignablePayload, type TokenBalance, type Warning, WALLET_ORIGIN, msg, titled, type Msg } from "@coldai/clip-wallet-core";
 import { Enum, fromBufferToBase58, u32 } from "@polkadot-api/substrate-bindings";
 import { verify as sr25519Verify } from "@scure/sr25519";
 import { readStorage, runtimeCall, storageKeys } from "./chain.js";

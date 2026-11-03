@@ -6,7 +6,7 @@
  * signing needs the permission and an approval; every Substrate signing request must name a connected account
  * (compared by public key, so any SS58 prefix works).
  */
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import { METHOD_WS_STATE, type ExposedAccount } from "../shared/protocol.js";
 

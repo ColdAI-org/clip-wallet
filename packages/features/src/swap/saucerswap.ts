@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type Network, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type Network, msg, titled } from "@coldai/clip-wallet-core";
 import {
   buildAssociate,
   contractCallDraft,
@@ -10,7 +10,7 @@ import {
   resolvePayer,
   tokenAllowanceDraft,
   type HederaLedger,
-} from "@clip-wallet/chains-hedera";
+} from "@coldai/clip-wallet-chains-hedera";
 import { decodeFunctionResult, encodeFunctionData, encodePacked, parseAbi, type Hex } from "viem";
 import { mirrorCall } from "../http.js";
 import type { Step } from "../steps.js";

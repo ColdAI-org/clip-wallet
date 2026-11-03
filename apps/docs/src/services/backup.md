@@ -44,7 +44,7 @@ All under `/v1`. Responses are JSON, `no-store`, `nosniff`, with a `default-src 
 | `POST /v1/sync/push` | signed request | push records (compare-and-set; conflicts come back) |
 | `DELETE /v1/sync` | signed request | delete everything stored for this sync key |
 
-Wallets use it through `@clip-wallet/backup-client`:
+Wallets use it through `@coldai/clip-wallet-backup-client`:
 
 <<< @/snippets/services/backup-client.ts
 

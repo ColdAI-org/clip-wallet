@@ -4,7 +4,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { AnimatedUr, UrCollector, WrongUrType, startQrScanner, urFromJson, urToJson, type QrScanner, type UrJson } from "@clip-wallet/hardware/qr";
+import { AnimatedUr, UrCollector, WrongUrType, startQrScanner, urFromJson, urToJson, type QrScanner, type UrJson } from "@coldai/clip-wallet-hardware/qr";
 import { userMessageOf } from "../client";
 import { ErrorNote, Spinner } from "../components";
 import { useUiT } from "../i18n";

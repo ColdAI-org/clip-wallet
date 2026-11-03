@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/chains-starknet": patch
+"@coldai/clip-wallet-chains-starknet": patch
 ---
 
 SNIP-12 typed data without a domain `chainId` is refused (starknet/network-mismatch). The generic view shows the

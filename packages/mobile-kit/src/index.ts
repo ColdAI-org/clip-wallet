@@ -1,15 +1,15 @@
 /**
- * @clip-wallet/mobile-kit: the Clip Wallet phone app (Expo / React Native: iOS, Android) as a library. A wallet project
+ * @coldai/clip-wallet-mobile-kit: the Clip Wallet phone app (Expo / React Native: iOS, Android) as a library. A wallet project
  * keeps clip.config.ts, its icons, app.config.ts, metro.config.js and a three-line index.ts; the screens, the vault and
  * engine host, the in-app dapp browser with 1Mask, Clip Plugins, hardware wallets and linked devices come from here.
  *
  *   // index.ts
- *   import "@clip-wallet/mobile-kit/polyfills";          // first: crypto, TextEncoder, URL, Buffer
- *   import { registerClipWallet } from "@clip-wallet/mobile-kit";
+ *   import "@coldai/clip-wallet-mobile-kit/polyfills";          // first: crypto, TextEncoder, URL, Buffer
+ *   import { registerClipWallet } from "@coldai/clip-wallet-mobile-kit";
  *   registerClipWallet({ icon: require("./assets/icon.png") });
  *
- *   "@clip-wallet/mobile-kit/expo"    expoConfig({ configFile }): app.config.ts from clip.config.ts (Node)
- *   "@clip-wallet/mobile-kit/metro"   withClipWallet(metroConfig, { configFile }): Metro wiring (Node, CommonJS)
+ *   "@coldai/clip-wallet-mobile-kit/expo"    expoConfig({ configFile }): app.config.ts from clip.config.ts (Node)
+ *   "@coldai/clip-wallet-mobile-kit/metro"   withClipWallet(metroConfig, { configFile }): Metro wiring (Node, CommonJS)
  *
  * @module
  */

@@ -12,7 +12,7 @@
 import { createHash, generateKeyPairSync } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, extname, join } from "node:path";
-import { CLIP_WALLET_RDNS, WALLETCONNECT_ENV, validateConfig, walletKey } from "@clip-wallet/config";
+import { CLIP_WALLET_RDNS, WALLETCONNECT_ENV, validateConfig, walletKey } from "@coldai/clip-wallet-config";
 import { renderIcons } from "./icons.mjs";
 import { writeListings } from "./listings.mjs";
 import { readIfThere } from "./template.mjs";
@@ -262,12 +262,12 @@ export function listOf(root, field) {
   return m ? [...String(m[1]).matchAll(/"([^"]+)"/g)].map((x) => String(x[1])) : undefined;
 }
 
-/** The @clip-wallet/* version the project pins. @param {string} root */
+/** The @coldai/clip-wallet-* version the project pins. @param {string} root */
 export function kitVersion(root) {
   for (const f of ["package.json", ...Object.values(PLATFORM_DIRS).map((d) => join(d, "package.json"))]) {
     if (!existsSync(join(root, f))) continue;
     const pkg = JSON.parse(readFileSync(join(root, f), "utf8"));
-    const v = Object.entries({ ...pkg.dependencies, ...pkg.devDependencies }).find(([n]) => n.startsWith("@clip-wallet/"))?.[1];
+    const v = Object.entries({ ...pkg.dependencies, ...pkg.devDependencies }).find(([n]) => n.startsWith("@coldai/clip-wallet-"))?.[1];
     if (v) return String(v);
   }
   return "0.0.0";

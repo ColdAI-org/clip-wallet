@@ -74,7 +74,7 @@ export function fakeVault(p: { label?: string; state?: "empty" | "locked" | "unl
     pairingKey: () => fakePairingKey(`${p.label ?? "v"}-${++n}`),
     async exportToDevice(password, _id, peer, th) {
       if (password !== (p.password ?? "pw-12345678")) {
-        const { ClipError } = await import("@clip-wallet/core");
+        const { ClipError } = await import("@coldai/clip-wallet-core");
         throw new ClipError("That password didn't work. Check it and try again.", "vault/wrong-password");
       }
       v.exported++;

@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/mobile-kit": patch
+"@coldai/clip-wallet-mobile-kit": patch
 ---
 
 The in-app browser escapes `<`, `>`, line and paragraph separators and control characters in the values it writes into

@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * Clip Connect demo (@clip-wallet/connect): one connect() that prefers this project's wallet and falls back to any
+ * Clip Connect demo (@coldai/clip-wallet-connect): one connect() that prefers this project's wallet and falls back to any
  * other wallet, accounts as CAIP-10, EIP-5792 capabilities, balances by asset key and pay() that uses the wallet's
  * auxiliary funds (ERC-7682) when it has them. The app never picks a network: pay() does.
  */
 import { useState } from "react";
-import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@clip-wallet/connect/react";
+import { ClipConnectProvider, useBalances, useClipConnect, usePay } from "@coldai/clip-wallet-connect/react";
 import type { NextPage } from "next";
 import { hederaTestnet } from "viem/chains";
 import scaffoldConfig from "~~/scaffold.config";

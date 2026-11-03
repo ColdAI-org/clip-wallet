@@ -1,3 +1,3 @@
-import { mountWallet } from "@clip-wallet/desktop-kit/renderer";
+import { mountWallet } from "@coldai/clip-wallet-desktop-kit/renderer";
 
 void mountWallet();

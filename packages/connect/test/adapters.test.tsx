@@ -104,12 +104,12 @@ describe("Solana wallet-adapter wrapper", () => {
 });
 
 describe("package hygiene", () => {
-  it("depends on no wallet internals: no @clip-wallet/* dependency, no import of them in src", () => {
+  it("depends on no wallet internals: no @coldai/clip-wallet-* dependency, no import of them in src", () => {
     const pkg = JSON.parse(readFileSync(path.join(here, "../package.json"), "utf8"));
     const deps = { ...pkg.dependencies, ...pkg.peerDependencies };
-    expect(Object.keys(deps).filter((d) => d.startsWith("@clip-wallet/"))).toEqual([]);
+    expect(Object.keys(deps).filter((d) => d.startsWith("@coldai/clip-wallet-"))).toEqual([]);
     for (const f of ["index.ts", "connect.ts", "discovery.ts", "assets.ts", "caip.ts", "react.tsx", "wagmi.ts", "solana.ts"]) {
-      expect(readFileSync(path.join(here, "../src", f), "utf8"), f).not.toMatch(/from "@clip-wallet\//);
+      expect(readFileSync(path.join(here, "../src", f), "utf8"), f).not.toMatch(/from "@coldai\/clip-wallet-/);
     }
   });
 

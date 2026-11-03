@@ -1,5 +1,5 @@
 /** Small JSON key-value store. chrome.storage.local in the extension, a Map in tests. */
-import type { VaultStorage } from "@clip-wallet/vault";
+import type { VaultStorage } from "@coldai/clip-wallet-vault";
 
 export interface KV {
   get<T>(key: string): Promise<T | undefined>;

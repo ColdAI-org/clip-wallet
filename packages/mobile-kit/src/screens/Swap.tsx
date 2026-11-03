@@ -3,7 +3,7 @@
  * The wallet finds where; a network only shows in Advanced mode.
  */
 import { useMemo, useState } from "react";
-import { canonicalAmount, formatUnits, mergeBalances, userMessageOf, type SwapQuoteView } from "@clip-wallet/ui";
+import { canonicalAmount, formatUnits, mergeBalances, userMessageOf, type SwapQuoteView } from "@coldai/clip-wallet-ui";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, Notice, Pills, Row, Screen, Spinner, Steps, T, Warnings } from "../ui/kit";
 import { useFormat, useMobileT } from "../i18n";

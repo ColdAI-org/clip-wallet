@@ -1,14 +1,14 @@
 /**
  * EIP-5792 Wallet Call API + ERC-7682 auxiliary funds, background side (the CallsHost 1Mask and WalletConnect ask).
- * The batch logic itself is shared with the mobile engine (@clip-wallet/engine/calls-batch); this file binds it to
+ * The batch logic itself is shared with the mobile engine (@coldai/clip-wallet-engine/calls-batch); this file binds it to
  * the extension: storage, RPC receipts, the vault-signing send the service provides, Activity and the wallet UI.
  */
-import type { AssetRef, DappRequest, DecodedRequest, Network, NetworkId } from "@clip-wallet/core";
-import { msg } from "@clip-wallet/core";
-import type { ActivityEntry } from "@clip-wallet/ui";
-import type { AuxiliaryFundsCapability, CallsHost, CallsReceipt, CallsStatus, SendCallsResult } from "@clip-wallet/1mask";
-import { auxiliaryFundsFor } from "@clip-wallet/route";
-import { CallsBatchRun, CallsBatchStore, callsReceipt, type BatchRecord, type BatchStoreKV } from "@clip-wallet/engine/calls-batch";
+import type { AssetRef, DappRequest, DecodedRequest, Network, NetworkId } from "@coldai/clip-wallet-core";
+import { msg } from "@coldai/clip-wallet-core";
+import type { ActivityEntry } from "@coldai/clip-wallet-ui";
+import type { AuxiliaryFundsCapability, CallsHost, CallsReceipt, CallsStatus, SendCallsResult } from "@coldai/clip-wallet-1mask";
+import { auxiliaryFundsFor } from "@coldai/clip-wallet-route";
+import { CallsBatchRun, CallsBatchStore, callsReceipt, type BatchRecord, type BatchStoreKV } from "@coldai/clip-wallet-engine/calls-batch";
 
 export interface BackgroundCallsOptions {
   kv: BatchStoreKV;

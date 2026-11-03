@@ -1,6 +1,6 @@
-import { HEDERA_TESTNET, SIGN_TRANSACTION_BYTES } from "@clip-wallet/chains-hedera";
+import { HEDERA_TESTNET, SIGN_TRANSACTION_BYTES } from "@coldai/clip-wallet-chains-hedera";
 import { ScheduleCreateTransaction, Transaction, TransferTransaction } from "@hiero-ledger/sdk";
-import type { DecodedRequest } from "@clip-wallet/core";
+import type { DecodedRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { decodeOffer, encodeOffer, type OfferPayload } from "../src/trade/offer.js";
 import { SecureTradeService, mirrorTxId } from "../src/trade/service.js";

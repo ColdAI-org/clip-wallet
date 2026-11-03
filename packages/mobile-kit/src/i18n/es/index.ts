@@ -20,7 +20,7 @@
  *   asset symbols, network names, CoinGecko, DEX Screener.
  *   Devices are masculine (el dispositivo): un Ledger, tu Keystone, desbloquéalo, en él. Example decimals use a comma (0,5).
  */
-import type { Translation } from "@clip-wallet/i18n";
+import type { Translation } from "@coldai/clip-wallet-i18n";
 import type { MobileMessages } from "../en";
 import common from "./common";
 import onboarding from "./onboarding";

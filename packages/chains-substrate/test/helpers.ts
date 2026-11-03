@@ -1,4 +1,4 @@
-import type { Account, ChainContext, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { Binary, Bytes, Enum, Option, fromBufferToBase58 } from "@polkadot-api/substrate-bindings";
 import { verify } from "@scure/sr25519";
 import { readFileSync } from "node:fs";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FAMILIES, type Family } from "@clip-wallet/core";
+import { FAMILIES, type Family } from "@coldai/clip-wallet-core";
 import type { DiscoverFeed } from "./discover/service.js";
 import type { NotificationSettings, PriceAlert } from "./notifications/types.js";
 import type { AddressCheckView, ContactMatchView, ContactView, ContactsView, HandleLookupView, HandleView, QueuedApproval } from "./views.js";

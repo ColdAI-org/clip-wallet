@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createFuelDispatcher, fuelInjectedAllowlist, type FuelRouterInternals } from "../src/background/fuel.js";
 import { ClipFuelConnector, FUEL_CONNECTOR_EVENT, fuelWireMessage, installFuelConnector } from "../src/inpage/fuel.js";

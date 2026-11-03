@@ -78,7 +78,7 @@ finds the chain module for the request's family and calls `decode(request, ctx)`
 
 If the module can't read the request, it either returns `blind: true` or throws. A throw also makes the request blind,
 and if it was a `ClipError` its plain-words reason ("You don't have enough BTC…") is attached as a warning
-(`decodeFailureReason()` in `@clip-wallet/core`), so the person isn't told only "can't read this".
+(`decodeFailureReason()` in `@coldai/clip-wallet-core`), so the person isn't told only "can't read this".
 
 Then other services **refine** the decode, never replacing the module's warnings:
 
@@ -103,7 +103,7 @@ More in [Sanitising what you see](../security/sanitization.md).
 
 ## 4. Plan, then ask
 
-If the request needs money the person holds somewhere else, `@clip-wallet/route` finds the shortfall and plans a way
+If the request needs money the person holds somewhere else, `@coldai/clip-wallet-route` finds the shortfall and plans a way
 to fund it (see [Route and settle](./route-settle.md)). Blind requests are never planned.
 
 The approval window shows the decoded request in plain words. The network appears only as a small chip, where it

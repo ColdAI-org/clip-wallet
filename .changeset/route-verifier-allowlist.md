@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/route": patch
+"@coldai/clip-wallet-route": patch
 ---
 
 Mainnet routes use only verifier families on the new `MAINNET_VERIFIER_FAMILIES` allowlist (exact match, today

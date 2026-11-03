@@ -1,4 +1,4 @@
-# @clip-wallet/hardware
+# @coldai/clip-wallet-hardware
 
 Accounts that live on a hardware wallet. The key never enters the extension: Clip Wallet stores public keys
 and paths, a device signs, and every signature is checked against the exact bytes the user approved before it
@@ -22,7 +22,7 @@ HardwareKeyring.acceptSignature(own payload,  <--- signature (wire form) <------
 module.finalize(signatures)
 ```
 
-The background imports only `@clip-wallet/hardware/core` (no device SDKs). A host that can drive the device
+The background imports only `@coldai/clip-wallet-hardware/core` (no device SDKs). A host that can drive the device
 itself can still use `HardwareKeyring.sign(payload, ctx)` with `signers`, which does the same checks in one call.
 Whatever the page sends back, only a signature over the approved bytes by the account's key is accepted, once:
 the page names the job it answers, never the payload.
@@ -32,17 +32,17 @@ the page names the job it answers, never the payload.
 ## Install
 
 ```sh
-npm i @clip-wallet/hardware
+npm i @coldai/clip-wallet-hardware
 ```
 
 ## Example
 
-The background imports only `@clip-wallet/hardware/core` (no device SDKs); the page that drives the device uses the root
-export or `@clip-wallet/hardware/qr`.
+The background imports only `@coldai/clip-wallet-hardware/core` (no device SDKs); the page that drives the device uses the root
+export or `@coldai/clip-wallet-hardware/qr`.
 
 ```ts
-import { HardwareKeyring } from "@clip-wallet/hardware/core";
-import type { Signature, SignablePayload } from "@clip-wallet/core";
+import { HardwareKeyring } from "@coldai/clip-wallet-hardware/core";
+import type { Signature, SignablePayload } from "@coldai/clip-wallet-core";
 
 // The background keeps its own copy of what was approved; a signature from the page is accepted only if it verifies
 // over those bytes with the account's key, once.
@@ -68,7 +68,7 @@ export async function accept(keyring: HardwareKeyring, approvalId: string, paylo
 | `LedgerSigner` | `new LedgerSigner({ transport?, bitcoinNetwork?, ethResolver?, ethLoadConfig? })` |
 | `KeystoneSigner` | `new KeystoneSigner({ channel, storage, bitcoinNetwork? })`, `importSync(ur)`, `syncs()`, `forget(fingerprint)` |
 | `KeystoneQrChannel` | what the UI implements: `exchange({ request: AnimatedUr, expect, title, requestContext }) → UR` |
-| `@clip-wallet/hardware/qr` | browser-only half for pages: `AnimatedUr`, `UrCollector`, `startQrScanner`, `decodeImageData`, `urToJson` / `urFromJson` (no device SDKs) |
+| `@coldai/clip-wallet-hardware/qr` | browser-only half for pages: `AnimatedUr`, `UrCollector`, `startQrScanner`, `decodeImageData`, `urToJson` / `urFromJson` (no device SDKs) |
 | `HardwareErrors`, `ledgerError` | every failure as a `ClipError` with plain words |
 | `decodeXpub`, `deriveChild`, `encodeXpub` | BIP-32 **public** derivation only (Keystone xpubs, Ledger Bitcoin xpubs) |
 
@@ -80,7 +80,7 @@ Hedera apps can't report one, so there it is HASH160 of that app's account-0 pub
 
 ## `SignablePayload.raw`
 
-Devices show and sign the full message, never a bare digest. `@clip-wallet/core` gained an optional
+Devices show and sign the full message, never a bare digest. `@coldai/clip-wallet-core` gained an optional
 `SignablePayload.raw?: { format, bytes, inputIndex?, chainId? }` (additive; the vault ignores it). The keyring
 hashes `raw` into the approval, and each signer checks that `raw` produces `bytes` before the device sees it:
 
@@ -164,11 +164,11 @@ Ledger Live layouts appear only in Advanced mode ("Use Ledger Live's accounts").
 - `@keystonehq/bc-ur-registry-eth` imports `hdkey`, which `require`s Node's `crypto` and `stream` for code paths we
   never call: alias both to an empty module in the bundler. With that, `esbuild --platform=browser` bundles the
   package (≈3 MB minified, biggest parts viem, @noble/curves, @bitcoinerlab/miniscript from ledger-bitcoin, the
-  Keystone SDK). `@clip-wallet/hardware/qr` alone is ≈360 KB.
+  Keystone SDK). `@coldai/clip-wallet-hardware/qr` alone is ≈360 KB.
 
 ## Tests and fixtures (no device, no keys)
 
-`pnpm --filter @clip-wallet/hardware test`
+`pnpm --filter @coldai/clip-wallet-hardware test`
 
 - `test/fixtures/ledger-*.apdus`: APDU sessions (`@ledgerhq/hw-transport-mocker` RecordStore format) recorded
   by driving this package's `LedgerSigner` against the real Ledger apps running in Speculos
@@ -199,7 +199,7 @@ Ledger Live layouts appear only in Advanced mode ("Use Ledger Live's accounts").
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

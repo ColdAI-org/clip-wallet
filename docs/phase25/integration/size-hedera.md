@@ -1,6 +1,6 @@
 # size-hedera: Hedera without the Hiero SDK
 
-`@clip-wallet/chains-hedera` no longer loads `@hiero-ledger/sdk` or `@hiero-ledger/proto` at runtime. Both are
+`@coldai/clip-wallet-chains-hedera` no longer loads `@hiero-ledger/sdk` or `@hiero-ledger/proto` at runtime. Both are
 devDependencies now, used only by its tests to prove the new code produces the same bytes. Details are in
 `packages/chains-hedera/README.md` ("Submitting", "Protobuf codec", "Tests").
 

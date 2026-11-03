@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest, WALLET_ORIGIN } from "@clip-wallet/core";
+import { ClipError, type DappRequest, WALLET_ORIGIN } from "@coldai/clip-wallet-core";
 import { encodeMessage, hashMessage, verifyMessageSignatureRsv } from "@stacks/encryption";
 import {
   AuthType,

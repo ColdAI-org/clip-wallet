@@ -1,6 +1,6 @@
 # Integration: mobile parity (`r1/mobile-parity`)
 
-The phone gets the extension's Settings → Security screens and Clip Plugins. Everything runs on `@clip-wallet/engine`.
+The phone gets the extension's Settings → Security screens and Clip Plugins. Everything runs on `@coldai/clip-wallet-engine`.
 Nothing in `apps/extension`, `packages/ui`, `packages/1mask`, `packages/config` or `packages/vault` changed.
 
 ## Shared files touched
@@ -11,7 +11,7 @@ Nothing in `apps/extension`, `packages/ui`, `packages/1mask`, `packages/config` 
 | `packages/engine/src/types.ts` | `NameResolver.serviceFor?` (optional; `MultiNameResolver` already has it) |
 | `packages/engine/src/wiring.ts` | `EngineWiringOptions.extraNames?` → `MultiNameResolver({ …, extra })` |
 | `packages/engine/src/client.ts`, `index.ts` | `createEngineSecurityClient`, `createEnginePluginsClient`, `EnginePlugins` type |
-| `packages/engine/src/plugins.ts` (new), `package.json` | `EnginePlugins` interface; dependency `@clip-wallet/plugins`; export `./plugins` |
+| `packages/engine/src/plugins.ts` (new), `package.json` | `EnginePlugins` interface; dependency `@coldai/clip-wallet-plugins`; export `./plugins` |
 | `packages/plugins/src/npm.ts`, `package.json` | Hermes-safe install (see "Plugins package" below); dependency `@noble/hashes` |
 
 ### `engine.ts` hooks
@@ -85,7 +85,7 @@ Hermes has no `crypto.subtle` and no `DecompressionStream`. The `fast-text-encod
 
 ### Dependencies (apps/mobile)
 
-`@clip-wallet/plugins`, `@clip-wallet/names`, `ses` 2.3.0 (bundled only into the sandbox page, never into the
+`@coldai/clip-wallet-plugins`, `@coldai/clip-wallet-names`, `ses` 2.3.0 (bundled only into the sandbox page, never into the
 Hermes bundle), and `pako` 2.2.0 (already in the lockfile through the Keystone SDK).
 
 ## Tests

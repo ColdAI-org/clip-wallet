@@ -1,5 +1,5 @@
 // The backup service only ever stores the passkey-encrypted blob the vault made. It can't open it.
-import { BackupClient } from "@clip-wallet/backup-client";
+import { BackupClient } from "@coldai/clip-wallet-backup-client";
 
 const backup = new BackupClient({ baseUrl: "https://backup.acme.example" }); // services.backupUrl
 

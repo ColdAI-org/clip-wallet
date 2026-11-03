@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
-import { isWalletConnectUri, relativeTime, userMessageOf, type Prefs } from "@clip-wallet/ui";
-import { localeInfo, offeredLocales, resolveLocale, type LocalePref } from "@clip-wallet/i18n";
+import { isWalletConnectUri, relativeTime, userMessageOf, type Prefs } from "@coldai/clip-wallet-ui";
+import { localeInfo, offeredLocales, resolveLocale, type LocalePref } from "@coldai/clip-wallet-i18n";
 import { useAsync, useWallet } from "../ui/context";
 import { Button, Card, ErrorNote, Field, MenuItem, Notice, Row, Screen, T, Toggle } from "../ui/kit";
 import { APP } from "../env";
-import { useT } from "@clip-wallet/i18n/react";
-import { PRIVACY_CATALOGS } from "@clip-wallet/ui";
+import { useT } from "@coldai/clip-wallet-i18n/react";
+import { PRIVACY_CATALOGS } from "@coldai/clip-wallet-ui";
 import { useMobileT } from "../i18n";
 import { deviceLanguages } from "../i18n/device";
 

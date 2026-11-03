@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/media-client": patch
+"@coldai/clip-wallet-media-client": patch
 ---
 
 `isBlockedHost()` parses the host with the WHATWG URL parser (new `parseHost()`) and compares addresses by range and

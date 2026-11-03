@@ -1,5 +1,5 @@
 /**
- * React Native versions of @clip-wallet/ui's components (Button, Screen, Card, Row, Chip, Field, Toggle,
+ * React Native versions of @coldai/clip-wallet-ui's components (Button, Screen, Card, Row, Chip, Field, Toggle,
  * Warnings, ErrorNote, Spinner, Empty, AssetIcon, Qr, CopyButton). Same names, same copy, same tokens.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -8,8 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Rect } from "react-native-svg";
 import QRCode from "qrcode";
 import * as Clipboard from "expo-clipboard";
-import type { Warning } from "@clip-wallet/core";
-import { hueFor, useBgText } from "@clip-wallet/ui";
+import type { Warning } from "@coldai/clip-wallet-core";
+import { hueFor, useBgText } from "@coldai/clip-wallet-ui";
 import { TABS, useWallet, type Route } from "./context";
 import { IconAlert, IconBack, IconCheck, IconChevron, IconClock, IconCompass, IconGear, IconGlobe, IconGrid, IconHome } from "./icons";
 import { useMobileT, type MobileMessageId } from "../i18n";

@@ -1,4 +1,4 @@
-/** Mobile copy of @clip-wallet/ui's "plugins" namespace (Settings → Advanced → Plugins), ids "m.plugins.*". Keep the wording in step with it. */
+/** Mobile copy of @coldai/clip-wallet-ui's "plugins" namespace (Settings → Advanced → Plugins), ids "m.plugins.*". Keep the wording in step with it. */
 export default {
   "m.plugins.title": "Plugins",
   "m.plugins.unavailable": "Plugins aren't available in this version",

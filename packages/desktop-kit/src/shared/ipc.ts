@@ -43,7 +43,7 @@ export type WalletCall = z.infer<typeof WalletCall>;
 
 export const Envelope = z.union([
   z.object({ ok: z.literal(true), data: z.unknown().optional() }),
-  // `msg`: the translatable form of the error (ClipError.msg, @clip-wallet/core); the UI checks it before use.
+  // `msg`: the translatable form of the error (ClipError.msg, @coldai/clip-wallet-core); the UI checks it before use.
   z.object({ ok: z.literal(false), error: z.object({ userMessage: z.string(), code: z.string(), msg: z.unknown().optional() }) }),
 ]);
 export type Envelope = z.infer<typeof Envelope>;

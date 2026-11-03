@@ -1,4 +1,4 @@
-import type { AssetRef, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, Network, NetworkId } from "@coldai/clip-wallet-core";
 
 /** `url` without trailing slashes (a scan, not a regex: linear on any input). */
 function withoutTrailingSlashes(url: string): string {
@@ -13,7 +13,7 @@ function withoutTrailingSlashes(url: string): string {
  *   hedera:mainnet ↔ EVM 295, hedera:testnet ↔ 296, hedera:previewnet ↔ 297 (hedera:devnet = local node, 298).
  *
  * Hedera's EVM (eip155:295 / eip155:296 / eip155:297 via the JSON-RPC relay) is NOT handled here: EVM-style
- * requests (eth_sendTransaction etc.) go through @clip-wallet/chains-evm. The same secp256k1 key gives the same
+ * requests (eth_sendTransaction etc.) go through @coldai/clip-wallet-chains-evm. The same secp256k1 key gives the same
  * 0x address on both sides, which is the account's EVM alias here.
  *
  * `rpcUrls` is empty on purpose: Hedera transactions go to consensus nodes over gRPC-Web (`GRPC_WEB_NODES` below);

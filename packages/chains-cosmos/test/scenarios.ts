@@ -1,4 +1,4 @@
-import type { ChainContext, DappRequest, Network } from "@clip-wallet/core";
+import type { ChainContext, DappRequest, Network } from "@coldai/clip-wallet-core";
 import { createCosmosModule, COSMOS_METHODS } from "../src/module.js";
 import { INITIA_TESTNET, OSMOSIS_TESTNET, PROVENANCE_TESTNET, THORCHAIN_MAINNET, nativeAsset, specOf } from "../src/networks.js";
 import { SIGN_MODE_DIRECT, TYPE, encodeAuthInfo, encodeMsgSend, encodePubKey, encodeTxBody } from "../src/proto.js";

@@ -12,9 +12,9 @@ git-excluded `.env.dapp-matrix`, never logged or captured), public testnets only
 - **Part 2, hosted dapps** (`apps/extension/e2e/hosted-dapps.spec.ts`): real public testnet dapps loaded by URL.
 
 ```bash
-pnpm --filter @clip-wallet/extension pickers                                  # builds the wallet, runs both parts
-pnpm --filter @clip-wallet/extension pickers -- -g "ton|near"                 # some pickers
-pnpm --filter @clip-wallet/extension pickers -- e2e/hosted-dapps.spec.ts      # part 2 only
+pnpm --filter @coldai/clip-wallet-extension pickers                                  # builds the wallet, runs both parts
+pnpm --filter @coldai/clip-wallet-extension pickers -- -g "ton|near"                 # some pickers
+pnpm --filter @coldai/clip-wallet-extension pickers -- e2e/hosted-dapps.spec.ts      # part 2 only
 ```
 
 Like the matrix it is left out of the default `pnpm e2e` (`DAPP_MATRIX=1` turns it on). `PICKER_DEBUG=<dir>` saves
@@ -60,11 +60,11 @@ listed.
 | Starknet | same, connectors + `new InjectedConnector({ options: { id: "clipwallet" } })` (no name, no icon) | **yes** | yes (taken from `window.starknet_clipwallet`) | yes | yes | yes (`neverAsk`) | |
 | Bitcoin | sats-connect 4.2.1 selector (`@sats-connect/ui`) | no (expected) | – | – | – | – | The only stock Bitcoin picker. It lists sats-connect's built-in adapters (`DefaultAdaptersInfo`); it reads neither the Wallet Standard (where Clip's `bitcoin:*` and `sats-connect:` provider are) nor WBIP-004 `btc_providers`. **Needs a listing.** |
 | NEAR | Wallet Selector 10.1.4 `modal-ui`, stock modules (MyNearWallet, Meteor) | no (expected) | – | – | – | – | Lists only the modules the dapp passes. |
-| NEAR | same + `@clip-wallet/kit-modules/near` | **yes** | yes | yes | yes | yes | |
+| NEAR | same + `@coldai/clip-wallet-kit-modules/near` | **yes** | yes | yes | yes | yes | |
 | Stellar | Stellar Wallets Kit 2.7.0 button + modal, `defaultModules()` | no (expected) | – | – | – | – | Lists only its modules. |
 | Stellar | same + `ClipWalletModule` | **yes** | yes | yes | yes | yes | |
 | Algorand | use-wallet-ui-react 1.2.1 `WalletButton`, Pera/Defly/Exodus | no (expected) | – | – | – | – | use-wallet v5 lists only the adapters passed. |
-| Algorand | same + `clipWallet()` from `@clip-wallet/kit-modules/algorand` | **yes** | yes | yes | yes | yes | |
+| Algorand | same + `clipWallet()` from `@coldai/clip-wallet-kit-modules/algorand` | **yes** | yes | yes | yes | yes | |
 | TON | `@tonconnect/ui` 3.0.2 modal, stock ("View all wallets" opened) | no (expected) | – | – | – | – | Only the official wallets list. **Needs a listing.** |
 | TON | same, `walletsListConfiguration.includeWallets` with Clip's draft entry (`jsBridgeKey: "clipwallet"`) | **yes** ("Installed") | yes | yes | yes | yes (`restoreConnection`) | |
 | Tezos | Beacon 4.8.1 pairing modal (`requestPermissions`), "Show more" opened | **yes** | yes | **no** (known) | n/a | n/a | Current behaviour, unchanged: Clip is listed (it answers Beacon's postMessage ping), but clicking it does nothing usable. Beacon UI builds discovered extensions with `key = id` and only offers "Use Extension" when the wallet has a `firefoxId` (a key containing "firefox") or is in its extension list (`useConnect.tsx`, `utils/wallets.ts` in beacon-ui 4.8.0); for Clip it shows the install path. The test fails if this ever starts connecting. **Needs a listing** (or a Beacon UI fix). |
@@ -111,7 +111,7 @@ Solana example (and SIWS), EIP-191 on AppKit Lab.
    pnpm's hoisting. Adding the picker libraries made pnpm hoist `bip174` 3, which has no such export, and the extension
    build failed.
    - Fix: a `packageExtensions` entry in `pnpm-workspace.yaml` declares the `bip174 ^2.1.1` it was written against.
-   - Regression check: the extension build itself (`pnpm --filter @clip-wallet/extension build`).
+   - Regression check: the extension build itself (`pnpm --filter @coldai/clip-wallet-extension build`).
 3. **Flaky unit test.** In `packages/1mask/test/inpage-hedera.test.ts`, the discovery answer goes through two
    postMessage hops, and a fixed 10 ms wait failed under a loaded `pnpm -r test`. It also fails on main. The test now
    waits for the answer.
@@ -138,7 +138,7 @@ exact entries. Nothing has been submitted: they wait for the public release (Chr
 | --- | --- | --- | --- |
 | TON Connect (`@tonconnect/ui`, every TON dapp) | Wallets-list entry: `app_name: "clipwallet"`, JS bridge key `clipwallet`, `platforms: ["chrome"]`, a 288×288 PNG icon URL | PR appending to `wallets-v2.json` in github.com/ton-connect/wallets-list (validated against `wallets-v2.schema.json`); mainnet builds only | `docs/listings/ton-connect.md` |
 | Beacon (every Tezos dapp) | `tezosExtensionList` entry keyed by the Chrome extension id | PR to github.com/airgap-it/beacon-sdk, `scripts/blockchains/tezos.ts` (+ logo in `assets/logos/`); or a beacon-ui change offering "Use Extension" for any discovered extension | `docs/listings/tezos.md` |
-| NEAR Wallet Selector | The `@clip-wallet/kit-modules/near` module as a selector package | PR to github.com/near/wallet-selector. NEAR Connect needs no listing: 1Mask answers its discovery. | `docs/listings/near.md` |
+| NEAR Wallet Selector | The `@coldai/clip-wallet-kit-modules/near` module as a selector package | PR to github.com/near/wallet-selector. NEAR Connect needs no listing: 1Mask answers its discovery. | `docs/listings/near.md` |
 | Stellar Wallets Kit | `ClipWalletModule` | PR with the module to github.com/Creit-Tech/Stellar-Wallets-Kit (`docs/files/wallets/create-wallet-module.md`) | `docs/listings/stellar.md` |
 | use-wallet (TxnLab) | `clipWallet()` adapter as a published package | Listed under "Third-Party Adapters" in TxnLab's docs (github.com/TxnLab/use-wallet) | `docs/listings/algorand.md` |
 | cardano-connect-with-wallet | `walletRegistry` entry: `key: "clipwallet"`, `displayName: "Clip Wallet"`, `icon` (data URI) or the injected one, `chromeExtensionId` | PR to `wallets.ts` in github.com/cardano-foundation/cardano-connect-with-wallet (core package); the file's header says that is the only file to change | new (entry in this table) |

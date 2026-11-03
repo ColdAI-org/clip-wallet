@@ -6,7 +6,7 @@ Hedera testnet. Pre-release: **test networks only** until the owner completes `M
 
 ## Principles (from the kit)
 
-1. **Non-custodial.** Keys are derived and used only inside the extension's background (`@clip-wallet/vault`). Nothing
+1. **Non-custodial.** Keys are derived and used only inside the extension's background (`@coldai/clip-wallet-vault`). Nothing
    leaves the device; no server can move, freeze or recover funds. Recovery is the phrase or a passkey-wrapped backup.
 2. **Every request is understood before it is approved.** Each dapp request becomes a decoded request (title, lines,
    balance changes, fee, warnings). Undecodable requests are blind signing, off by default.

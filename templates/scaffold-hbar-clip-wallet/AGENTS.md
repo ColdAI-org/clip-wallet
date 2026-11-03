@@ -3,13 +3,13 @@
 This project is a non-custodial wallet on the Clip Wallet kit, for every platform it ships, all described by one
 `clip.config.ts` at the root:
 <!-- platform:extension -->
-- `packages/extension`: the browser extension, on `@clip-wallet/extension-kit` (WXT);
+- `packages/extension`: the browser extension, on `@coldai/clip-wallet-extension-kit` (WXT);
 <!-- /platform:extension -->
 <!-- platform:desktop -->
-- `packages/desktop`: the desktop app for macOS, Windows and Linux, on `@clip-wallet/desktop-kit` (Electron);
+- `packages/desktop`: the desktop app for macOS, Windows and Linux, on `@coldai/clip-wallet-desktop-kit` (Electron);
 <!-- /platform:desktop -->
 <!-- platform:mobile -->
-- `packages/mobile`: the phone app for iOS and Android, on `@clip-wallet/mobile-kit` (Expo);
+- `packages/mobile`: the phone app for iOS and Android, on `@coldai/clip-wallet-mobile-kit` (Expo);
 <!-- /platform:mobile -->
 <!-- platform:nextjs -->
 - `packages/nextjs`: a Scaffold-HBAR dapp that connects to the wallet on Hedera testnet.
@@ -20,7 +20,7 @@ one-line entrypoints. Map: `llms.txt`. Product: `.harness/spec.md`, `.harness/pr
 
 ## Rules that never break
 1. **Never handle key material here.** Recovery phrases, private keys, seeds and signing live only in
-   `@clip-wallet/vault`, inside the kit's background. Don't import `@clip-wallet/vault`, `@scure/bip39`/`bip32`, noble
+   `@coldai/clip-wallet-vault`, inside the kit's background. Don't import `@coldai/clip-wallet-vault`, `@scure/bip39`/`bip32`, noble
    signing APIs, `viem/accounts`, `ethers` wallets, Hedera `PrivateKey` or Solana `Keypair` in this project.
 2. **The identity is this wallet's own.** Never set `rdns` to `org.coldai.*` or the name to "Clip Wallet". Identity lives
    in `wallet.identity.json`; change it with `pnpm wallet:identity`, not by hand-editing the key.
@@ -33,7 +33,7 @@ one-line entrypoints. Map: `llms.txt`. Product: `.harness/spec.md`, `.harness/pr
 5. **Secrets stay out of git and out of logs.** `.env`, `.env.local`, `.keys/` and `*.pem` are gitignored; keep them so.
    Never print them. API keys go in `.env` as `CLIP_*` (wallet) or `NEXT_PUBLIC_*` (dapp; public by definition).
    Signing certificates and store credentials only ever live in CI secrets (`docs/signing.md`).
-6. **Kit packages are pinned.** `@clip-wallet/*` and `create-clip-wallet` use one exact version (`"0.1.0"`, never `^`/`~`).
+6. **Kit packages are pinned.** `@coldai/clip-wallet-*` and `create-clip-wallet` use one exact version (`"0.1.0"`, never `^`/`~`).
 7. **Every dapp request is decoded before approval.** Don't add code that signs or sends outside the approval path.
    Undecodable requests are blind signing, off by default.
 
@@ -96,7 +96,7 @@ folder and its scripts.
 1. `networks` in `clip.config.ts`: `"evm:*"` or `"evm:<chain id>"`, `"hedera"`, `"solana"`, `"bitcoin"`, `"sui"`,
    `"aptos"`, `"cardano"`, `"substrate"`, `"starknet"`, `"ton"`, `"near"`, `"stellar"`, `"tezos"`, `"algorand"`.
 2. Test networks only while `mainnet: false`. An EVM chain the kit doesn't know needs a change in the kit
-   (`@clip-wallet/chains-evm`), not here.
+   (`@coldai/clip-wallet-chains-evm`), not here.
 3. `pnpm wallet:listings` afterwards: the drafts follow the families that are on.
 
 ### Routing and settle-on-Hedera
@@ -131,7 +131,7 @@ on purpose.
 
 ### Clip Plugins
 Plugins run only when the user turns on Advanced mode and Settings → Advanced → Plugins; they are SES-sandboxed,
-installed from npm with integrity checks, and can never sign or see keys. To write one, see the `@clip-wallet/plugins`
+installed from npm with integrity checks, and can never sign or see keys. To write one, see the `@coldai/clip-wallet-plugins`
 README (`clip.plugin.json`: transaction insights, name resolution, notifications, up to 3 https origins). Nothing in
 this project needs to change to allow them.
 
@@ -153,7 +153,7 @@ this project needs to change to allow them.
 EAS). Never add a certificate, keystore or credential to this repository; never sign or submit for the owner.
 
 ### Upgrade the kit
-1. Change the exact version of every `@clip-wallet/*` package in `packages/*/package.json` and of `@clip-wallet/config`
+1. Change the exact version of every `@coldai/clip-wallet-*` package in `packages/*/package.json` and of `@coldai/clip-wallet-config`
    and `create-clip-wallet` in the root `package.json` (all the same version).
 2. `pnpm install && pnpm verify:provenance && pnpm harness && pnpm check-types && pnpm build`.
 3. Read the kit's changelog for anything that needs a config change.

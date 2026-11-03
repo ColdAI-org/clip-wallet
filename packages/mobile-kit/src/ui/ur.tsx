@@ -1,7 +1,7 @@
 /**
  * Keystone's QR codes on a phone: the extension's AnimatedQr / UrScanner (packages/ui/src/hardware/qr.tsx)
  * with React Native parts.
- *   AnimatedUrQr  loops a UR (BC-UR fountain parts from @clip-wallet/hardware's AnimatedUr) through the kit's
+ *   AnimatedUrQr  loops a UR (BC-UR fountain parts from @coldai/clip-wallet-hardware's AnimatedUr) through the kit's
  *                 react-native-svg QR, 5 frames a second; a still code when it fits in one frame.
  *   UrScanner     expo-camera's barcode scanner feeds every QR it reads to UrCollector until the expected UR
  *                 is complete (parts arrive in any order; other codes in view are ignored).
@@ -9,8 +9,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { AnimatedUr, UrCollector, WrongUrType, urFromJson, urToJson, type UrJson } from "@clip-wallet/hardware/qr";
-import { userMessageOf } from "@clip-wallet/ui";
+import { AnimatedUr, UrCollector, WrongUrType, urFromJson, urToJson, type UrJson } from "@coldai/clip-wallet-hardware/qr";
+import { userMessageOf } from "@coldai/clip-wallet-ui";
 import { useWallet } from "./context";
 import { Button, ErrorNote, Qr, T } from "./kit";
 import { useFormat, useMobileT } from "../i18n";

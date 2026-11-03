@@ -1,9 +1,9 @@
-import type { AssetRef } from "@clip-wallet/core";
-import { POLKADOT_ASSET_HUB, WESTEND, WESTEND_ASSET_HUB, Enum, createSubstrateModule, locationAsset } from "@clip-wallet/chains-substrate";
+import type { AssetRef } from "@coldai/clip-wallet-core";
+import { POLKADOT_ASSET_HUB, WESTEND, WESTEND_ASSET_HUB, Enum, createSubstrateModule, locationAsset } from "@coldai/clip-wallet-chains-substrate";
 import { describe, expect, it } from "vitest";
 import { AssetHubSwap } from "../src/swap/assethub.js";
 import { SwapService } from "../src/swap/service.js";
-import { HEDERA_TESTNET } from "@clip-wallet/chains-hedera";
+import { HEDERA_TESTNET } from "@coldai/clip-wallet-chains-hedera";
 import { fakeHost, flush } from "./helpers.js";
 import { ME, WND, callOf, ctxFor, enc, mockRpc, seed, systemAccount } from "./polkadot-fixtures.js";
 

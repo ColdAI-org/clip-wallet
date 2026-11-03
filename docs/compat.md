@@ -1,6 +1,6 @@
 # Compatibility guarantees
 
-Dapps that don't know Clip Wallet, and never use Clip Connect (`@clip-wallet/connect`), must keep working exactly as
+Dapps that don't know Clip Wallet, and never use Clip Connect (`@coldai/clip-wallet-connect`), must keep working exactly as
 before. Every new dapp-facing capability is additive and opt-in.
 
 ## What is guaranteed
@@ -85,15 +85,15 @@ The suite compares both against `e2e/compat/snapshots/compat.json`, which was re
 EIP-5792 and Clip Connect. Passing means "identical before and after".
 
 ```bash
-pnpm --filter @clip-wallet/extension build     # NODE_OPTIONS=--conditions=development is in the script
-pnpm --filter @clip-wallet/extension exec playwright test e2e/compat.spec.ts
+pnpm --filter @coldai/clip-wallet-extension build     # NODE_OPTIONS=--conditions=development is in the script
+pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/compat.spec.ts
 # against another build (e.g. a checkout of main):
-COMPAT_EXTENSION=/path/to/other/.output/chrome-mv3 pnpm --filter @clip-wallet/extension exec playwright test e2e/compat.spec.ts
+COMPAT_EXTENSION=/path/to/other/.output/chrome-mv3 pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/compat.spec.ts
 # re-record, only for a deliberate change, and document it in this file:
-COMPAT_UPDATE=1 pnpm --filter @clip-wallet/extension exec playwright test e2e/compat.spec.ts
+COMPAT_UPDATE=1 pnpm --filter @coldai/clip-wallet-extension exec playwright test e2e/compat.spec.ts
 ```
 
-The suite is part of `pnpm --filter @clip-wallet/extension e2e`. It uses the default (real wiring) build and no
+The suite is part of `pnpm --filter @coldai/clip-wallet-extension e2e`. It uses the default (real wiring) build and no
 funds: a transaction is declined in the approval window. The dapp bundles are built with esbuild in the test
 (`apps/extension/.output-compat-dapps`, gitignored).
 

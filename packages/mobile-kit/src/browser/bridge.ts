@@ -19,8 +19,8 @@
  *
  * Pure TypeScript (no React Native imports) so it runs in tests against the real injected bundle.
  */
-import type { Network } from "@clip-wallet/core";
-import type { RouterPort } from "@clip-wallet/1mask/background";
+import type { Network } from "@coldai/clip-wallet-core";
+import type { RouterPort } from "@coldai/clip-wallet-1mask/background";
 
 export const MAX_BRIDGE_MESSAGE_BYTES = 4 * 1024 * 1024;
 

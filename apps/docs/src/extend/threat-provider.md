@@ -1,6 +1,6 @@
 # Add a scam-check source
 
-Scam detection in `@clip-wallet/security` is a list of `ThreatIntelProvider`s, consulted when a site asks to connect
+Scam detection in `@coldai/clip-wallet-security` is a list of `ThreatIntelProvider`s, consulted when a site asks to connect
 and after every request is decoded. Clip ships the open lists (MetaMask, ScamSniffer, Phantom, PolkadotJS), local
 heuristics (look-alike recipients, zero-value poisoning, new contracts) and an optional Blockaid scanner. You can add
 your own.

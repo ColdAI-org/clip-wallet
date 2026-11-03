@@ -1,4 +1,4 @@
-import type { AssetRef, Network } from "@clip-wallet/core";
+import type { AssetRef, Network } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { NATIVE_ASSET_ADDRESS, auxiliaryFundsFor, settleSourceNetworks } from "../src/index.js";
 

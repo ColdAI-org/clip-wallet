@@ -1,4 +1,4 @@
-import type { AssetRef, ChainContext, Family, Network, NetworkId } from "@clip-wallet/core";
+import type { AssetRef, ChainContext, Family, Network, NetworkId } from "@coldai/clip-wallet-core";
 import type { Step } from "../steps.js";
 import type { Unavailable } from "../views.js";
 

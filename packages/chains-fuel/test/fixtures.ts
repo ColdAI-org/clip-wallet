@@ -1,4 +1,4 @@
-import type { Account } from "@clip-wallet/core";
+import type { Account } from "@coldai/clip-wallet-core";
 
 /**
  * Fixtures for the public BIP-39 test account ("abandon" ×11 + "about"), Fuel path m/44'/1179993420'/i'/0/0.

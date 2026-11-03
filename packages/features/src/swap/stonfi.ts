@@ -1,4 +1,4 @@
-import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@clip-wallet/core";
+import { type ChainContext, ClipError, type DappRequest, type Network, WALLET_ORIGIN, msg, titled } from "@coldai/clip-wallet-core";
 import {
   addressFromCellHex,
   cellFromBase64,
@@ -14,7 +14,7 @@ import {
   stonfiSwapPayload,
   tonConnectNetwork,
   type TonCell,
-} from "@clip-wallet/chains-ton";
+} from "@coldai/clip-wallet-chains-ton";
 import { fetchJson } from "../http.js";
 import type { Step } from "../steps.js";
 import { formatUnits, randomId } from "../util.js";
@@ -31,7 +31,7 @@ import type { SwapProvider, SwapQuote, SwapQuoteRequest } from "./types.js";
  * The API serves mainnet only ("the API only serves mainnet data", docs.ston.fi/developer-section/dex/sdk/v2/swap),
  * so testnet swaps are unavailable in plain words.
  *
- * The wallet builds the messages itself with @ton/core (helpers in @clip-wallet/chains-ton `defi.ts`), following
+ * The wallet builds the messages itself with @ton/core (helpers in @coldai/clip-wallet-chains-ton `defi.ts`), following
  * the official SDK's layout (ston-fi/sdk BaseRouterV2_1 / PtonV2_1):
  *  - GRAM in: one message to the router's pTON v2.1 wallet: pTON ton_transfer(offer, refund = you, swap payload);
  *    value = offer + 0.3 GRAM forward gas + 0.01 GRAM pTON gas.

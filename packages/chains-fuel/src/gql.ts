@@ -1,4 +1,4 @@
-import { ClipError, type ChainContext } from "@clip-wallet/core";
+import { ClipError, type ChainContext } from "@coldai/clip-wallet-core";
 import { specFor } from "./networks.js";
 
 /**

@@ -106,7 +106,7 @@ Google Play) are only needed to ship: [docs/signing.md](docs/signing.md) lists t
 
 ## One config, every platform
 
-`clip.config.ts` (typed by `@clip-wallet/config`) and `wallet.identity.json` next to it are the only places the wallet
+`clip.config.ts` (typed by `@coldai/clip-wallet-config`) and `wallet.identity.json` next to it are the only places the wallet
 is described:
 
 | Setting | Extension | Desktop | Phone |
@@ -156,7 +156,7 @@ alone from a PNG logo (1024×1024 is best); an SVG logo is rasterised once with 
 | Page | What it shows |
 |---|---|
 | `/` | Finds your wallet by its EIP-6963 rdns, connects, signs a sign-in message (verified in the page), sends 0.1 HBAR to yourself with a HashScan link |
-| `/clip-connect` | Clip Connect (`@clip-wallet/connect`): one connect for your wallet or any other, accounts as CAIP-10, what the wallet can do (EIP-5792), balances by asset, and `pay()` that uses auxiliary funds (ERC-7682) when the wallet has them |
+| `/clip-connect` | Clip Connect (`@coldai/clip-wallet-connect`): one connect for your wallet or any other, accounts as CAIP-10, what the wallet can do (EIP-5792), balances by asset, and `pay()` that uses auxiliary funds (ERC-7682) when the wallet has them |
 | `/debug` | Scaffold-HBAR's contract debugger, with Hedera's PRNG (`0x169`) and exchange-rate (`0x168`) system contracts |
 
 Every request opens your wallet's approval window, decoded in plain words. The header's **Connect Wallet** (RainbowKit)
@@ -183,7 +183,7 @@ lists your wallet next to MetaMask and WalletConnect.
 
 `tools/harness/check.mjs` (Node built-ins only) fails with `file:line` and a plain sentence when:
 
-- key material is handled outside `@clip-wallet/vault`, a secret is logged, a recovery phrase is committed, or a `.env`
+- key material is handled outside `@coldai/clip-wallet-vault`, a secret is logged, a recovery phrase is committed, or a `.env`
   or key file is tracked by git;
 - the wallet announces Clip Wallet's identity (`org.coldai.*` or the name "Clip Wallet");
 - a platform stops building through its kit (`clipWallet()`, `clipDesktop()`, `expoConfig()` / `withClipWallet()`), or
@@ -195,8 +195,8 @@ It warns while the template's placeholder identity is still in place.
 
 ## Signed, versioned kit
 
-The wallet itself is `@clip-wallet/extension-kit`, `@clip-wallet/desktop-kit` and `@clip-wallet/mobile-kit` and the
-`@clip-wallet/*` packages they depend on, all released together with one version and published by the kit's CI with
+The wallet itself is `@coldai/clip-wallet-extension-kit`, `@coldai/clip-wallet-desktop-kit` and `@coldai/clip-wallet-mobile-kit` and the
+`@coldai/clip-wallet-*` packages they depend on, all released together with one version and published by the kit's CI with
 **npm provenance** (Sigstore-signed, traceable to the commit and workflow). This project pins that version exactly (the
 harness insists); `pnpm verify:provenance` checks every package's attestation against `github.com/ColdAI-org/clip-wallet`,
 and `npm audit signatures` verifies the signatures in an npm install. Upgrading is a deliberate change: bump the pins in
@@ -217,9 +217,9 @@ a mainnet config while a box is open, and the builds also until `pnpm wallet:mai
 | `clip.config.ts` · `wallet.identity.json` | The wallet: identity, theme, networks, languages, services, mainnet (every platform) |
 | `icon.svg` | The logo (or `icon.png`); every platform's icons are rendered from it |
 | `MAINNET.md` | The owner's mainnet checklist |
-| `packages/extension/` | The browser extension: one-line WXT entrypoints on `@clip-wallet/extension-kit` <!-- only:extension --> |
-| `packages/desktop/` | The desktop app: one-line electron-vite entrypoints on `@clip-wallet/desktop-kit`, icons <!-- only:desktop --> |
-| `packages/mobile/` | The phone app: Expo on `@clip-wallet/mobile-kit`, icons and splash <!-- only:mobile --> |
+| `packages/extension/` | The browser extension: one-line WXT entrypoints on `@coldai/clip-wallet-extension-kit` <!-- only:extension --> |
+| `packages/desktop/` | The desktop app: one-line electron-vite entrypoints on `@coldai/clip-wallet-desktop-kit`, icons <!-- only:desktop --> |
+| `packages/mobile/` | The phone app: Expo on `@coldai/clip-wallet-mobile-kit`, icons and splash <!-- only:mobile --> |
 | `packages/nextjs/` | The Scaffold-HBAR dapp: demo page, /debug, Hedera testnet <!-- only:nextjs --> |
 | `docs/listings/` | Listing-submission drafts for your identity |
 | `docs/signing.md` | Code signing and store accounts (placeholders: what to set, never secrets) |

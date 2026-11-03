@@ -11,17 +11,17 @@ pnpm typecheck && pnpm test && pnpm harness
 | Types | `pnpm typecheck` | every workspace package with strict TypeScript |
 | Unit | `pnpm test` | vitest in each package; services in workerd; the phone app with vitest and jest-expo |
 | Rules | `pnpm harness` | [the rules that never break](../guide/rules.md), manifests and the template sync |
-| Extension end to end | `pnpm --filter @clip-wallet/extension e2e` | Playwright against the real and the fixture builds, including the compat suite: [Extension end-to-end](./extension-e2e.md) |
-| Testnet matrices | `pnpm --filter @clip-wallet/extension matrix`, `… pickers` | real dapp libraries and pickers on public testnets: [Dapp and picker matrices](./matrices.md) |
+| Extension end to end | `pnpm --filter @coldai/clip-wallet-extension e2e` | Playwright against the real and the fixture builds, including the compat suite: [Extension end-to-end](./extension-e2e.md) |
+| Testnet matrices | `pnpm --filter @coldai/clip-wallet-extension matrix`, `… pickers` | real dapp libraries and pickers on public testnets: [Dapp and picker matrices](./matrices.md) |
 | The kit | `pnpm pack-all && pnpm kit:e2e` | a kit-built wallet and the Scaffold-HBAR template, from packed tarballs |
 | Reproducibility | `scripts/repro-check.sh` | two clean container builds produce byte-identical zips: [Reproducible builds](./reproducible-builds.md) |
 
 ## One package at a time
 
 ```sh
-pnpm --filter @clip-wallet/vault test
-pnpm --filter @clip-wallet/chains-solana test
-pnpm --filter @clip-wallet/1mask test
+pnpm --filter @coldai/clip-wallet-vault test
+pnpm --filter @coldai/clip-wallet-chains-solana test
+pnpm --filter @coldai/clip-wallet-1mask test
 ```
 
 ## Rules for tests

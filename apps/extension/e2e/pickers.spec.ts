@@ -12,7 +12,7 @@
  *
  * A screenshot of each open picker with Clip in it: e2e/shots/pickers/<id>.png. Results: shots/pickers/results.json,
  * written up in docs/r1/picker-matrix.md. Needs public testnets and the matrix wallet, so like the matrix it only runs
- * with DAPP_MATRIX=1:  pnpm --filter @clip-wallet/extension pickers [-- -g <id>]
+ * with DAPP_MATRIX=1:  pnpm --filter @coldai/clip-wallet-extension pickers [-- -g <id>]
  *
  * The phrase is never logged or captured: trace/screenshot/video are off; onboarding happens before any screenshot.
  */
@@ -311,7 +311,7 @@ const CASES: PickerCase[] = [
     file: "near",
     query: "variant=clip",
     ecosystem: "NEAR",
-    picker: "NEAR Wallet Selector 10.1.4 modal-ui + @clip-wallet/kit-modules/near",
+    picker: "NEAR Wallet Selector 10.1.4 modal-ui + @coldai/clip-wallet-kit-modules/near",
     title: "NEAR Wallet Selector (with the wallet's module)",
     target: "near",
     open: (p) => p.getByRole("button", { name: "Connect wallet" }).click(),
@@ -338,7 +338,7 @@ const CASES: PickerCase[] = [
     file: "stellar",
     query: "variant=clip",
     ecosystem: "Stellar",
-    picker: "Stellar Wallets Kit 2.7.0 + @clip-wallet/kit-modules/stellar ClipWalletModule",
+    picker: "Stellar Wallets Kit 2.7.0 + @coldai/clip-wallet-kit-modules/stellar ClipWalletModule",
     title: "Stellar Wallets Kit (with the wallet's module)",
     target: "stellar",
     open: (p) => p.getByRole("button", { name: /connect/i }).first().click(),
@@ -365,7 +365,7 @@ const CASES: PickerCase[] = [
     file: "algorand",
     query: "variant=clip",
     ecosystem: "Algorand",
-    picker: "use-wallet-ui-react 1.2.1 WalletButton + @clip-wallet/kit-modules/algorand clipWallet()",
+    picker: "use-wallet-ui-react 1.2.1 WalletButton + @coldai/clip-wallet-kit-modules/algorand clipWallet()",
     title: "use-wallet UI (with the wallet's adapter)",
     target: "algorand",
     open: (p) => p.getByRole("button", { name: /Connect Wallet/i }).first().click(),

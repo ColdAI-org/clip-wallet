@@ -51,7 +51,7 @@
     "wallet:mainnet-check": "create-clip-wallet mainnet-check"
   },
   "devDependencies": {
-    "@clip-wallet/config": "0.1.0",
+    "@coldai/clip-wallet-config": "0.1.0",
     "create-clip-wallet": "0.1.0"
   },
   "engines": {

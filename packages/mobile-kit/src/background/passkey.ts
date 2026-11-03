@@ -12,8 +12,8 @@
  */
 import { Passkey } from "react-native-passkey";
 import { getRandomBytes } from "expo-crypto";
-import { ClipError, withoutTrailing } from "@clip-wallet/core";
-import { b64url, fromB64url, type PrfProvider } from "@clip-wallet/engine";
+import { ClipError, withoutTrailing } from "@coldai/clip-wallet-core";
+import { b64url, fromB64url, type PrfProvider } from "@coldai/clip-wallet-engine";
 
 /** react-native-passkey returns PRF results as base64 or base64url depending on platform. */
 export function decodeB64Any(s: string): Uint8Array {

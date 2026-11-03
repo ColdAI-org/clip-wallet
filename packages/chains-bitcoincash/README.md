@@ -1,4 +1,4 @@
-# @clip-wallet/chains-bitcoincash
+# @coldai/clip-wallet-chains-bitcoincash
 
 Bitcoin Cash `ChainModule` for Clip Wallet. It builds and decodes BCH transactions in plain words and never touches
 keys. `prepare()` returns one 32-byte BCH sighash per input the account signs; `finalize()` checks each signature
@@ -90,7 +90,7 @@ the wallet get a caution. A fee above 20 sat/byte (and 10,000 sats) is a "high f
 
 There's no injected-provider standard for BCH (Paytaca's extension injects its own `window.paytaca`, which another
 wallet mustn't imitate). Dapps reach wallets over WalletConnect v2 with wc2-bch-bcr, where the wallet shows up
-under its own metadata. In `@clip-wallet/1mask` the WalletConnect session layer serves the `bch` namespace:
+under its own metadata. In `@coldai/clip-wallet-1mask` the WalletConnect session layer serves the `bch` namespace:
 proposals for `bch:bitcoincash` / `bch:bchtest` map onto the bip122 networks (`networkIdForWcChain`), session
 accounts are `bch:<CashAddr>` spelled for the chain (as Cashonize builds them), `bch_getAddresses` is answered from
 the session, the signing methods reach this module unchanged, and `addressesChanged` carries the CashAddrs.

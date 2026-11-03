@@ -1,4 +1,4 @@
-import type { Family, NetworkId } from "@clip-wallet/core";
+import type { Family, NetworkId } from "@coldai/clip-wallet-core";
 
 /** "plugin" (Phase 2.5, additive): answered by a Clip Plugin; see `ResolvedName.via`. "clip": a Clip handle. */
 export type NameService = "ens" | "sns" | "hns" | "plugin" | "clip";

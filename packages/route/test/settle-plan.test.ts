@@ -1,6 +1,6 @@
 /** Settle on Hedera in the approval's Details: off without the switch or a deployment; one plain option per shortfall. */
 import { describe, expect, it, vi } from "vitest";
-import type { AssetRef, Network, TokenBalance } from "@clip-wallet/core";
+import type { AssetRef, Network, TokenBalance } from "@coldai/clip-wallet-core";
 import { settleClientFor, settleFundingOption } from "../src/settle-plan.js";
 import type { ConnectorQuote, SettleOnHederaClient } from "../src/phase3.js";
 import type { Shortfall } from "../src/types.js";

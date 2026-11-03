@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { AccountId, Client, ContractExecuteTransaction, ContractId, Hbar, type Transaction, TransactionId } from "@hiero-ledger/sdk";
 import { encodeFunctionData, encodePacked, parseAbi } from "viem";
 import { beforeEach, describe, expect, it } from "vitest";

@@ -1,7 +1,7 @@
 ---
-"@clip-wallet/security": patch
-"@clip-wallet/ui": patch
-"@clip-wallet/mobile-kit": patch
+"@coldai/clip-wallet-security": patch
+"@coldai/clip-wallet-ui": patch
+"@coldai/clip-wallet-mobile-kit": patch
 ---
 
 App permissions now say something for every network family it can't scan. Cardano, Fuel and Bitcoin Cash have

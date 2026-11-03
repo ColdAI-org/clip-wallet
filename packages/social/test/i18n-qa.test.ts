@@ -3,8 +3,8 @@
  * glossary terms match the UI and mobile catalogs, and Arabic isolates interpolated values.
  */
 import { describe, expect, it } from "vitest";
-import { LOCALE_CODES, parseMessage } from "@clip-wallet/i18n";
-import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@clip-wallet/i18n/qa";
+import { LOCALE_CODES, parseMessage } from "@coldai/clip-wallet-i18n";
+import { GLOSSARIES, checkGlossary, lintCatalog, unisolatedArguments } from "@coldai/clip-wallet-i18n/qa";
 import { NOTIFICATION_CATALOGS } from "../src/index.js";
 import en from "../src/notifications/locales/en.js";
 

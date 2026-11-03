@@ -1,4 +1,4 @@
-import type { Account, ChainContext, Network } from "@clip-wallet/core";
+import type { Account, ChainContext, Network } from "@coldai/clip-wallet-core";
 import { hex } from "@scure/base";
 import { segwitAddress, taprootAddress } from "../src/keys.js";
 import { BITCOIN_TESTNET4, networkById } from "../src/networks.js";

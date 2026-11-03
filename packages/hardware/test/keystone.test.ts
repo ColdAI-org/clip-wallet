@@ -14,7 +14,7 @@ import { KeystoneSDK } from "@keystonehq/keystone-sdk";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { hex } from "@scure/base";
 import { SigHash, Transaction } from "@scure/btc-signer";
-import { ClipError } from "@clip-wallet/core";
+import { ClipError } from "@coldai/clip-wallet-core";
 import {
   AnimatedUr,
   HardwareKeyring,

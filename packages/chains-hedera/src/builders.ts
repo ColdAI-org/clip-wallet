@@ -1,4 +1,4 @@
-import { type AssetRef, type ChainContext, ClipError, type DappRequest } from "@clip-wallet/core";
+import { type AssetRef, type ChainContext, ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import { isAccountId, isEvmAddress, longZeroToAccountId, stripChecksum } from "./address.js";
 import { accountIdString, compareAccountIds, compareEntityIds, dateTimestamp, entityIdString, parseAccountId, parseEntityId } from "./ids.js";
 import { Mirror } from "./mirror.js";

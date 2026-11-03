@@ -4,7 +4,7 @@
  *  EVM-02  unrecognised typed data carries a warning; every hashed field is shown or counted.
  *  EVM-03  typed data for another chain is a danger warning, not a caution.
  */
-import type { DappRequest, DecodedRequest } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { createEvmModule } from "../src/module.js";
 import { PERMIT_TYPED, SEPOLIA_STATE, TYPED } from "./fixtures.js";

@@ -1,7 +1,7 @@
 /**
  * Signatures over the fixture digests, made offline (outside this repository) from the BIP-39 test vector
  * "abandon … about": ECDSA with the BIP-84 key m/84'/0'/0'/0/0, Schnorr with the BIP-86 key m/86'/0'/0'/0/0
- * tweaked per BIP-341 with an empty merkle root, i.e. exactly what @clip-wallet/vault's sign() does for the
+ * tweaked per BIP-341 with an empty merkle root, i.e. exactly what @coldai/clip-wallet-vault's sign() does for the
  * payloads prepare() returns (taprootTweak = merkle root). The P2WPKH signature is byte-identical to the one
  * @scure/btc-signer's own signer produced, so our BIP-143 digest equals the library's sighash code path.
  * No key material is in this repository.

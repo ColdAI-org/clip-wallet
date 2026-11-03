@@ -1,9 +1,9 @@
 /**
- * Names answered by Clip Plugins (@clip-wallet/plugins). Put this backend LAST in MultiNameResolver so a plugin
+ * Names answered by Clip Plugins (@coldai/clip-wallet-plugins). Put this backend LAST in MultiNameResolver so a plugin
  * can never answer for a name a built-in service handles (.eth, .sol, .hbar); the plugin manifest also refuses
  * those suffixes. Results carry `via` so Send shows "from <plugin>" next to the address.
  */
-import { FAMILIES, type Family } from "@clip-wallet/core";
+import { FAMILIES, type Family } from "@coldai/clip-wallet-core";
 import type { Backend, ResolvedName } from "./types.js";
 
 /** Structural match for PluginHost.resolveName (through the background ↔ offscreen bridge). */

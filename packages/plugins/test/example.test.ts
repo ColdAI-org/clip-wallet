@@ -1,6 +1,6 @@
 import { ses } from "./ses.js";
 import { describe, expect, it } from "vitest";
-import type { DecodedRequest } from "@clip-wallet/core";
+import type { DecodedRequest } from "@coldai/clip-wallet-core";
 import { PluginHost } from "../src/host.js";
 import { parseManifest } from "../src/manifest.js";
 import { HostBridgeServer, toInsightInput, withPluginInsights } from "../src/service.js";

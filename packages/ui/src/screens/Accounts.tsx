@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Family } from "@clip-wallet/core";
+import type { Family } from "@coldai/clip-wallet-core";
 import { userMessageOf } from "../client";
 import { useAsync, useUi } from "../context";
 import { Button, Card, ErrorNote, Field, Screen, Spinner } from "../components";

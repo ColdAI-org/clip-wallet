@@ -1,4 +1,4 @@
-import type { Account, ChainContext, DappRequest, SignablePayload, Signature } from "@clip-wallet/core";
+import type { Account, ChainContext, DappRequest, SignablePayload, Signature } from "@coldai/clip-wallet-core";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { TEZOS_SHADOWNET } from "../src/index.js";
 import { fromHex, hex } from "../src/encoding.js";

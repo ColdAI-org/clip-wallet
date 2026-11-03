@@ -1,5 +1,5 @@
 /** Esplora / mempool.space REST client over the context's fetch, failing over across Network.rpcUrls. */
-import { ClipError, type Network } from "@clip-wallet/core";
+import { ClipError, type Network } from "@coldai/clip-wallet-core";
 
 export class HttpError extends Error {
   constructor(public readonly status: number, public readonly body: string) {

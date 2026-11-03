@@ -1,4 +1,4 @@
-import type { DappRequest } from "@clip-wallet/core";
+import type { DappRequest } from "@coldai/clip-wallet-core";
 import { getCompiledTransactionMessageDecoder, getTransactionDecoder } from "@solana/kit";
 import { b64ToBytes } from "./util.js";
 

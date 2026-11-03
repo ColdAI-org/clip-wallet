@@ -20,5 +20,5 @@ The relay sees ciphertext, frame sizes and timing. Pairing is protected by the c
 and key confirmation, so a malicious relay can't link two devices without the people noticing.
 
 Deploying it: [Self-host on Cloudflare](./self-hosting.md#link-relay). Point a wallet at it with
-`services.linkRelayUrl`. Tests: `pnpm --filter @clip-wallet/service-link-relay test` (a pairing through the Durable
+`services.linkRelayUrl`. Tests: `pnpm --filter @coldai/clip-wallet-service-link-relay test` (a pairing through the Durable
 Object in workerd).

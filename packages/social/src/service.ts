@@ -3,10 +3,10 @@
  * extension's service worker, the mobile engine, tests). Holds no keys: handle actions end in `enqueue`, the
  * host's normal approval path; contacts are sealed by the vault through `cipher`.
  */
-import type { AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network } from "@clip-wallet/core";
-import { ClipError } from "@clip-wallet/core";
-import type { LocaleCode } from "@clip-wallet/i18n";
-import { ClipHandlesBackend, parseHandle } from "@clip-wallet/names";
+import type { AssetRef, ChainContext, DappRequest, DecodedRequest, Family, Network } from "@coldai/clip-wallet-core";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { LocaleCode } from "@coldai/clip-wallet-i18n";
+import { ClipHandlesBackend, parseHandle } from "@coldai/clip-wallet-names";
 import { ContactBook, initialOf } from "./contacts/book.js";
 import { encryptedContactStore, plainContactStore, type AppDataCipher, type KVLike } from "./contacts/store.js";
 import type { AddressValidators, Contact, ContactLookup } from "./contacts/types.js";
@@ -33,7 +33,7 @@ export interface SocialHost {
   hederaCtx(): Promise<ChainContext>;
   /** decode → approval queue; returns the approval id. */
   enqueue(request: DappRequest, appName: string): Promise<{ id: string }>;
-  /** ClipHandles: the read backend (from @clip-wallet/names) and the deployed contract id for writes. */
+  /** ClipHandles: the read backend (from @coldai/clip-wallet-names) and the deployed contract id for writes. */
   handles?: { backend: ClipHandlesBackend; contract?: HandlesContract };
   notifier: Notifier;
   /** Public-data snapshot for notifications (notifications/source.ts publicSnapshot). */

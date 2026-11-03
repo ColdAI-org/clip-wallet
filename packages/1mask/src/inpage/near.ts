@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { WalletIdentity } from "../shared/config.js";
 import { bytesToBase64, hexToBytes } from "../shared/bytes.js";
 import { rpcError } from "../shared/errors.js";
@@ -10,7 +10,7 @@ import type { InpageTransport } from "./transport.js";
 /**
  * Injected NEAR provider at `window.clipwallet.near`. Its shape follows what NEAR Wallet Selector's
  * injected-wallet modules call (signIn/signOut/getAccounts/signAndSendTransaction(s)/signMessage), so
- * @clip-wallet/kit-modules/near maps 1:1 onto it. Actions travel as JSON (wallet-selector
+ * @coldai/clip-wallet-kit-modules/near maps 1:1 onto it. Actions travel as JSON (wallet-selector
  * `InternalAction` shape; bytes as `argsBase64` / `codeBase64`).
  */
 

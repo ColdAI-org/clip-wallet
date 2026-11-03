@@ -1,4 +1,4 @@
-import type { ChainContext, DappRequest, Network, Signature } from "@clip-wallet/core";
+import type { ChainContext, DappRequest, Network, Signature } from "@coldai/clip-wallet-core";
 import { FUEL_TESTNET } from "../src/index.js";
 import { ACCOUNT0, account } from "./fixtures.js";
 

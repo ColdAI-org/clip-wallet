@@ -1,6 +1,6 @@
-import type { AssetRef, DappRequest, DecodedRequest } from "@clip-wallet/core";
-import type { ApprovalPlan } from "@clip-wallet/ui";
-import type { CallsReceipt, SendCallsParams } from "@clip-wallet/1mask";
+import type { AssetRef, DappRequest, DecodedRequest } from "@coldai/clip-wallet-core";
+import type { ApprovalPlan } from "@coldai/clip-wallet-ui";
+import type { CallsReceipt, SendCallsParams } from "@coldai/clip-wallet-1mask";
 import { describe, expect, it } from "vitest";
 import { CallsBatchRun, CallsBatchStore, batchPlan, mergeBatchDecoded, requiredAssetChanges, splitSendCalls, type BatchRecord } from "../src/calls-batch.js";
 

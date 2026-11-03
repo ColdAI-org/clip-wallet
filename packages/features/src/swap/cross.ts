@@ -1,15 +1,15 @@
-import { type AssetRef, ClipError, type TokenBalance } from "@clip-wallet/core";
-import type { Quote, QuoteRequest } from "@clip-wallet/route";
+import { type AssetRef, ClipError, type TokenBalance } from "@coldai/clip-wallet-core";
+import type { Quote, QuoteRequest } from "@coldai/clip-wallet-route";
 import { formatUnits } from "../util.js";
 import type { SwapQuoteView } from "../views.js";
 
-/** The part of @clip-wallet/route's RouteClient used here. */
+/** The part of @coldai/clip-wallet-route's RouteClient used here. */
 export interface RouteQuoter {
   quote(req: QuoteRequest): Promise<Quote[]>;
 }
 
 /**
- * Cross-network swaps go through CLPRouter (@clip-wallet/route). Quote only in this build: the route client
+ * Cross-network swaps go through CLPRouter (@coldai/clip-wallet-route). Quote only in this build: the route client
  * quotes "how much of X on network A to deliver Y on network B", so the target amount is estimated from
  * prices and the route's `youPay` is shown back. Executing (planPayOnHedera → Router.send) is not wired yet.
  */

@@ -1,4 +1,4 @@
-import { ClipError, type DappRequest } from "@clip-wallet/core";
+import { ClipError, type DappRequest } from "@coldai/clip-wallet-core";
 import {
   ABIMethod,
   type SuggestedParams,

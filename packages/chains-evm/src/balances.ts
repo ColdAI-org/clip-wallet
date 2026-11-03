@@ -5,7 +5,7 @@
  *    otherwise the curated list read through Multicall3 (individual eth_calls if Multicall3 is missing).
  *  - NFTs: Blockscout `/api/v2/addresses/{a}/nft` (ERC-721 + ERC-1155); none without an indexer.
  */
-import type { ChainContext, Nft, TokenBalance } from "@clip-wallet/core";
+import type { ChainContext, Nft, TokenBalance } from "@coldai/clip-wallet-core";
 import { type Hex, decodeFunctionResult, encodeFunctionData, erc20Abi, getAddress, hexToBigInt } from "viem";
 import { chainIdOf, ethCall } from "./chain.js";
 import { getJson, rpc } from "./rpc.js";

@@ -1,6 +1,6 @@
 # Features
 
-`@clip-wallet/features` holds staking, swaps, on-ramps, Secure Trade, prices and Explore, as background services with
+`@coldai/clip-wallet-features` holds staking, swaps, on-ramps, Secure Trade, prices and Explore, as background services with
 no keys. Every action ends in a `DappRequest` on the normal approval path: decode, approve, the vault signs. Screens
 live in `packages/ui/src/features/`.
 

@@ -1,8 +1,8 @@
 /**
- * Sample feature answers for the screen tests, shaped like @clip-wallet/features' views (the real services
+ * Sample feature answers for the screen tests, shaped like @coldai/clip-wallet-features' views (the real services
  * call staking/swap/on-ramp APIs and Hedera). Public, made-up data only.
  */
-import type { OnRampView, StakeAssetView, StakeOptionView, SwapQuoteView, TradeOfferView, TradeReviewView } from "@clip-wallet/ui";
+import type { OnRampView, StakeAssetView, StakeOptionView, SwapQuoteView, TradeOfferView, TradeReviewView } from "@coldai/clip-wallet-ui";
 
 /** Return this from an answer to queue a real (stub) approval in the engine and answer with its id. */
 export const QUEUE = Symbol("queue");

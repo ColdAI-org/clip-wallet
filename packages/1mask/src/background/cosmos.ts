@@ -1,4 +1,4 @@
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 import { rpcError } from "../shared/errors.js";
 import { COSMOS_FAMILIES, COSMOS_INJECTED, type CosmosKeyWire, cosmosChainOf } from "../shared/cosmos.js";
 import { bech32Decode, bech32Encode, bytesOfHex, hexOf } from "../shared/cosmos-bech32.js";

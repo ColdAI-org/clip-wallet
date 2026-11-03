@@ -4,7 +4,7 @@
  * use: dapp tabs run in per-origin sessions where `clip-app:` doesn't exist.
  *
  * No remote content in wallet windows: scripts, styles and fonts only from the bundle; images only from the bundle,
- * data:/blob: (QR codes) and the configured media proxy (NFT images are proxied, @clip-wallet/media-client);
+ * data:/blob: (QR codes) and the configured media proxy (NFT images are proxied, @coldai/clip-wallet-media-client);
  * connect-src only 'self' (the renderers do no network I/O: everything goes through the main process).
  */
 import { protocol } from "electron";

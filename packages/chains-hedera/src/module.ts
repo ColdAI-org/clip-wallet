@@ -14,7 +14,7 @@ import {
   type SignablePayload,
   type TokenBalance,
   type Warning,
-} from "@clip-wallet/core";
+} from "@coldai/clip-wallet-core";
 import { aliasAddress, checksumAlias, isAccountId, isEvmAddress, stripChecksum } from "./address.js";
 import {
   SIGN_TRANSACTION_BYTES,

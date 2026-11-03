@@ -1,6 +1,6 @@
 /** Paying through a bonded Connector: which shortfalls it funds, what it keeps between plan and approve, stages. */
 import { describe, expect, it, vi, type Mock } from "vitest";
-import { ClipError, type AssetRef, type Network, type TokenBalance } from "@clip-wallet/core";
+import { ClipError, type AssetRef, type Network, type TokenBalance } from "@coldai/clip-wallet-core";
 import { SettleFunding, stageOf } from "../src/settle-funding.js";
 import type { ConnectorQuote, SettleOnHederaClient, SettleOrder } from "../src/phase3.js";
 import type { Shortfall } from "../src/types.js";

@@ -1,4 +1,4 @@
-import { connect, type Eip1193Provider } from "@clip-wallet/connect";
+import { connect, type Eip1193Provider } from "@coldai/clip-wallet-connect";
 import { appKit } from "./appkit"; // your createAppKit() instance
 
 // Or reuse any EIP-1193 provider you already have, such as Reown AppKit's.

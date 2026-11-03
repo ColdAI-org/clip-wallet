@@ -1,5 +1,5 @@
-import { type AssetRef, type ChainContext, ClipError, type Network, msg, say } from "@clip-wallet/core";
-import { type GroupTxnSpec, buildGroup, encodeUint64, logicSigAddress, netOf, readAccount, readLocalState } from "@clip-wallet/chains-algorand";
+import { type AssetRef, type ChainContext, ClipError, type Network, msg, say } from "@coldai/clip-wallet-core";
+import { type GroupTxnSpec, buildGroup, encodeUint64, logicSigAddress, netOf, readAccount, readLocalState } from "@coldai/clip-wallet-chains-algorand";
 import type { Step } from "../steps.js";
 import { b64ToBytes, formatUnits } from "../util.js";
 import type { Unavailable } from "../views.js";

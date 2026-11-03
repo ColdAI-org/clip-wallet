@@ -1,4 +1,4 @@
-import type { Network } from "@clip-wallet/core";
+import type { Network } from "@coldai/clip-wallet-core";
 import type { Unavailable } from "../views.js";
 
 /** Where a coin can be delivered, in the providers' own vocabulary. */

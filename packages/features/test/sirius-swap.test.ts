@@ -1,5 +1,5 @@
-import { TEZOS_MAINNET, TEZOS_SHADOWNET, xtzAsset } from "@clip-wallet/chains-tezos";
-import type { AssetRef, DappRequest } from "@clip-wallet/core";
+import { TEZOS_MAINNET, TEZOS_SHADOWNET, xtzAsset } from "@coldai/clip-wallet-chains-tezos";
+import type { AssetRef, DappRequest } from "@coldai/clip-wallet-core";
 import { describe, expect, it } from "vitest";
 import { SiriusSwap, verifySiriusRequest } from "../src/swap/sirius.js";
 import { BASE_MAINNET, mockFetch, type Route } from "./helpers.js";

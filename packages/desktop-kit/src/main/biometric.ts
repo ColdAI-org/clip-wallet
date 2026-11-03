@@ -21,8 +21,8 @@
  */
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { ClipError } from "@clip-wallet/core";
-import type { KV } from "@clip-wallet/engine";
+import { ClipError } from "@coldai/clip-wallet-core";
+import type { KV } from "@coldai/clip-wallet-engine";
 import type { SafeStorageLike } from "./storage";
 import { protectionOf } from "./storage";
 

@@ -3,8 +3,8 @@
  * chains-substrate ships in its test fixtures, mocked JSON-RPC answers encoded with the codecs built from that
  * metadata, and public keys only (chains-substrate/test/signatures.ts). Nothing here signs.
  */
-import type { Account, ChainContext, DappRequest, Network } from "@clip-wallet/core";
-import { WESTEND_ASSET_HUB, clearRuntimeCache, parsePayload, provideRuntime, runtimeFromBytes, type Runtime } from "@clip-wallet/chains-substrate";
+import type { Account, ChainContext, DappRequest, Network } from "@coldai/clip-wallet-core";
+import { WESTEND_ASSET_HUB, clearRuntimeCache, parsePayload, provideRuntime, runtimeFromBytes, type Runtime } from "@coldai/clip-wallet-chains-substrate";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 

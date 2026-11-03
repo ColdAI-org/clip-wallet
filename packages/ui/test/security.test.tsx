@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { APPROVAL_NOTE_CODES } from "@clip-wallet/security";
+import { APPROVAL_NOTE_CODES } from "@coldai/clip-wallet-security";
 import type { CleanupOverviewView, GrantView, SecurityClient, ThreatProviderStatusView } from "../src/security/client";
 import { noteText } from "../src/security/text";
 import { SecurityProvider } from "../src/security/context";

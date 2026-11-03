@@ -1,4 +1,4 @@
-import { withoutTrailing } from "@clip-wallet/core";
+import { withoutTrailing } from "@coldai/clip-wallet-core";
 import { sha384 } from "@noble/hashes/sha2.js";
 import { accountIdString, transactionIdString } from "./ids.js";
 import { GRPC_WEB_NODES, type HederaLedger } from "./networks.js";

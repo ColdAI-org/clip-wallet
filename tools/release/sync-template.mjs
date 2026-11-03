@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Keep the Scaffold-HBAR template (templates/scaffold-hbar-clip-wallet) in step with the kit:
- *   - the kit packages it pins (@clip-wallet/* in every platform package and at the root, create-clip-wallet) are the version
+ *   - the kit packages it pins (@coldai/clip-wallet-* in every platform package and at the root, create-clip-wallet) are the version
  *     the monorepo is about to publish (all published packages share one version, .changeset/config.json "fixed");
  *   - tools/harness/check.mjs is the monorepo's harness, byte for byte.
  * Runs after `changeset version` (pnpm version-packages). `--check` only reports (pnpm harness runs it).
@@ -22,7 +22,7 @@ function pin(file, fields) {
   const pkg = JSON.parse(text);
   for (const field of fields) {
     for (const name of Object.keys(pkg[field] ?? {})) {
-      if (/^(?:@clip-wallet\/|create-clip-wallet$)/.test(name) && pkg[field][name] !== version) {
+      if (/^(?:@coldai\/clip-wallet-|create-clip-wallet$)/.test(name) && pkg[field][name] !== version) {
         problems.push(`${file}: ${name} is ${pkg[field][name]}, the kit is ${version}`);
         pkg[field][name] = version;
       }
@@ -35,7 +35,7 @@ pin("package.json", ["devDependencies"]);
 pin("packages/extension/package.json", ["dependencies", "devDependencies"]);
 pin("packages/desktop/package.json", ["dependencies", "devDependencies"]);
 pin("packages/mobile/package.json", ["dependencies", "devDependencies"]);
-// The demo dapp uses Clip Connect (@clip-wallet/connect) for its Clip Connect page.
+// The demo dapp uses Clip Connect (@coldai/clip-wallet-connect) for its Clip Connect page.
 pin("packages/nextjs/package.json", ["dependencies", "devDependencies"]);
 
 const harness = join(root, "tools", "harness", "check.mjs");

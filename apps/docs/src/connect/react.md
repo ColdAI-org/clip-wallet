@@ -1,6 +1,6 @@
 # React hooks
 
-`@clip-wallet/connect/react` wraps `connect()` in a provider and three hooks. `react` (18 or 19) is an optional peer.
+`@coldai/clip-wallet-connect/react` wraps `connect()` in a provider and three hooks. `react` (18 or 19) is an optional peer.
 
 <<< @/snippets/connect/react.tsx
 

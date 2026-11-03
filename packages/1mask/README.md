@@ -1,16 +1,16 @@
-# @clip-wallet/1mask
+# @coldai/clip-wallet-1mask
 
 1Mask is Clip Wallet's dapp-connector layer. It makes one wallet look native to every dapp by answering each network
 family's own wallet standard (EIP-1193 + EIP-6963, the Wallet Standard, AIP-62, CIP-30, `injectedWeb3`, get-starknet,
 TON Connect, NEAR, SEP-43, ARC-1, Beacon), plus WalletConnect, all announced under the wallet's own identity.
 
-1Mask never touches keys and never imports `@clip-wallet/vault` or chain modules. It turns dapp calls into
-`DappRequest`s (from `@clip-wallet/core`) and sends them to the wallet background. The background decodes them, asks
+1Mask never touches keys and never imports `@coldai/clip-wallet-vault` or chain modules. It turns dapp calls into
+`DappRequest`s (from `@coldai/clip-wallet-core`) and sends them to the wallet background. The background decodes them, asks
 the person, signs and replies.
 
 ```text
 page (MAIN world)          content script (ISOLATED)         extension background
-@clip-wallet/1mask/inpage ─postMessage─► /content ─runtime port─► /background router ─► handle(DappRequest)
+@coldai/clip-wallet-1mask/inpage ─postMessage─► /content ─runtime port─► /background router ─► handle(DappRequest)
                                                                                  ▲
 WalletConnect relay ─────────────────────────────────► /walletconnect ──────────┘ handle(DappRequest, ctx)
 ```
@@ -20,18 +20,18 @@ WalletConnect relay ────────────────────
 ## Install
 
 ```sh
-npm i @clip-wallet/1mask @clip-wallet/core
+npm i @coldai/clip-wallet-1mask @coldai/clip-wallet-core
 ```
 
 ## Example
 
-In a wallet built on `@clip-wallet/extension-kit` this is all wired for you. Hosting 1Mask yourself:
+In a wallet built on `@coldai/clip-wallet-extension-kit` this is all wired for you. Hosting 1Mask yourself:
 
 ```ts
-import { installOneMask } from "@clip-wallet/1mask/inpage"; // page, MAIN world
-import { createContentBridge } from "@clip-wallet/1mask/content"; // content script, ISOLATED world
-import { PORT_NAME, createMemoryPermissionStore, createOneMaskRouter, type AccountLike, type RouterPort } from "@clip-wallet/1mask/background";
-import type { DappRequest, Family, Network } from "@clip-wallet/core";
+import { installOneMask } from "@coldai/clip-wallet-1mask/inpage"; // page, MAIN world
+import { createContentBridge } from "@coldai/clip-wallet-1mask/content"; // content script, ISOLATED world
+import { PORT_NAME, createMemoryPermissionStore, createOneMaskRouter, type AccountLike, type RouterPort } from "@coldai/clip-wallet-1mask/background";
+import type { DappRequest, Family, Network } from "@coldai/clip-wallet-core";
 
 export function inpage(networks: Network[], channel: string) {
   installOneMask({ networks, channel, identity: { name: "Acme Wallet", rdns: "com.acme.wallet" } });
@@ -194,7 +194,7 @@ while, for example while another device signs (link/remote).
 | Method | Behaviour |
 | --- | --- |
 | `wallet_getCapabilities` | Connected sites and own addresses only (4100). Per chain it returns `atomic: { status: "unsupported" }` (EOA accounts) and `auxiliaryFunds: { supported, assets }` where the host can bring money in. Chains the wallet doesn't have are left out. |
-| `wallet_sendCalls` | Validated in `shared/calls.ts`: version, hex chainId, up to 10 calls, unknown non-optional capabilities (5700), unknown chain (5710), too many calls (5740), `atomicRequired: true` (5760), ERC-7682 `requiredAssets` (5772 / 5773). Then one approval on the chain the params name, with method `wallet_sendCalls`. The host decodes every call (see `@clip-wallet/engine/calls-batch`). |
+| `wallet_sendCalls` | Validated in `shared/calls.ts`: version, hex chainId, up to 10 calls, unknown non-optional capabilities (5700), unknown chain (5710), too many calls (5740), `atomicRequired: true` (5760), ERC-7682 `requiredAssets` (5772 / 5773). Then one approval on the chain the params name, with method `wallet_sendCalls`. The host decodes every call (see `@coldai/clip-wallet-engine/calls-batch`). |
 | `wallet_getCallsStatus`, `wallet_showCallsStatus` | Only the origin that sent a batch can see it. Any other id gives 5730. |
 
 Over WalletConnect, the four methods are served on eip155 when the app's proposal asks for them. The approved session
@@ -240,7 +240,7 @@ Each of these would be recorded per origin next to the permission, and never set
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

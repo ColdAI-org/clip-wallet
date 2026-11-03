@@ -1,5 +1,5 @@
 ---
-"@clip-wallet/chains-hedera": patch
+"@coldai/clip-wallet-chains-hedera": patch
 ---
 
 `derivationPath(i)` now reports `m/44'/3030'/0'/0/i`, the path the vault derives Hedera ECDSA keys at (the Hiero

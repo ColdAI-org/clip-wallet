@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/chains-fuel",
+  "name": "@coldai/clip-wallet-chains-fuel",
   "version": "0.1.0",
   "description": "Fuel ChainModule for Clip Wallet: builds and decodes transactions in plain words, dry-runs contract calls; never touches keys",
   "keywords": [
@@ -67,7 +67,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0"
   },

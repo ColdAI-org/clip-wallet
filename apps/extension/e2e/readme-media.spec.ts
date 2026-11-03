@@ -2,7 +2,7 @@
  * README media: screenshots (light and dark) and frame recordings of key flows, on the REAL build with the dapp
  * matrix's testnet wallet (fresh throwaway wallets for onboarding), plus the fixture build for Collectibles.
  *
- *   pnpm --filter @clip-wallet/extension media      (README_MEDIA=1; writes MEDIA_OUT, default .media/)
+ *   pnpm --filter @coldai/clip-wallet-extension media      (README_MEDIA=1; writes MEDIA_OUT, default .media/)
  *   node ../../tools/media/build.mjs                 turns the output into docs/media (WebP stills, GIFs)
  *
  * Privacy: trace, video and failure screenshots are off for the whole file, because the matrix phrase is typed into

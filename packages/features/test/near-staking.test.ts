@@ -1,5 +1,5 @@
-import { ClipError, type DappRequest } from "@clip-wallet/core";
-import { clearTokenCache, createNearModule, decodeTransaction, encodeTransaction, parsePublicKey } from "@clip-wallet/chains-near";
+import { ClipError, type DappRequest } from "@coldai/clip-wallet-core";
+import { clearTokenCache, createNearModule, decodeTransaction, encodeTransaction, parsePublicKey } from "@coldai/clip-wallet-chains-near";
 import { beforeEach, describe, expect, it } from "vitest";
 import { NearStaking, nearBaseApy, poolCandidates, rankPools, uptimeOf, type NearValidatorInfo } from "../src/staking/near.js";
 import { ME_NEAR, NEAR_PK, YOCTO, decodeBasics, mockNearRpc, nearCtx, viewAccount } from "./near-fixtures.js";

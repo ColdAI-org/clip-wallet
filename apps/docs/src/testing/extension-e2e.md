@@ -5,8 +5,8 @@ real chain modules, real 1Mask) and the **fixture** build (`CLIP_MOCKS=1`: mock 
 simulator, with no network).
 
 ```sh
-pnpm --filter @clip-wallet/extension exec playwright install chromium   # once
-pnpm --filter @clip-wallet/extension e2e                                 # builds both, runs the suite
+pnpm --filter @coldai/clip-wallet-extension exec playwright install chromium   # once
+pnpm --filter @coldai/clip-wallet-extension e2e                                 # builds both, runs the suite
 ```
 
 | Spec | What it covers |
@@ -18,7 +18,7 @@ pnpm --filter @clip-wallet/extension e2e                                 # build
 | `settle.spec.ts` | settle on Hedera: the delivered and the late paths |
 | `link.spec.ts` | linked devices on the fixture build |
 | `plugins.spec.ts` | installing and running a Clip Plugin |
-| `store.spec.ts` | the store screenshots (`pnpm --filter @clip-wallet/extension store:shots`) |
+| `store.spec.ts` | the store screenshots (`pnpm --filter @coldai/clip-wallet-extension store:shots`) |
 
 The [dapp and picker matrices](./matrices.md) are left out of the default run: they need public testnets and a funded
 wallet.
@@ -28,7 +28,7 @@ wallet.
 The background is a library, so most of its logic is tested without a browser:
 
 ```sh
-pnpm --filter @clip-wallet/extension-kit test
+pnpm --filter @coldai/clip-wallet-extension-kit test
 ```
 
 vitest aliases the virtual config module to `packages/extension-kit/test/clip.config.ts`. Change the background, run

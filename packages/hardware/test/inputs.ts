@@ -3,7 +3,7 @@
  * public keys (test/fixtures/accounts.json) with public hash functions. The same functions produced
  * the inputs when the APDU sessions in test/fixtures/ledger-*.apdus were recorded (see README "Tests and fixtures").
  */
-import type { DappRequest, DecodedRequest, SignablePayload } from "@clip-wallet/core";
+import type { DappRequest, DecodedRequest, SignablePayload } from "@coldai/clip-wallet-core";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { base58, hex } from "@scure/base";
 import { p2pkh, p2wpkh, SigHash, TEST_NETWORK, Transaction } from "@scure/btc-signer";

@@ -1,4 +1,4 @@
-# @clip-wallet/extension-kit
+# @coldai/clip-wallet-extension-kit
 
 The Clip Wallet browser extension as a library, for [WXT](https://wxt.dev). A wallet project keeps its identity
 (`clip.config.ts`, icon), `wxt.config.ts` and one-line entrypoints; the background (vault, approvals, security
@@ -9,7 +9,7 @@ checks), the pages, 1Mask for all 26 network families and the build wiring come 
 ## Install
 
 ```sh
-npm i @clip-wallet/extension-kit @clip-wallet/config wxt @wxt-dev/module-react react react-dom
+npm i @coldai/clip-wallet-extension-kit @coldai/clip-wallet-config wxt @wxt-dev/module-react react react-dom
 ```
 
 ## Example
@@ -17,8 +17,8 @@ npm i @clip-wallet/extension-kit @clip-wallet/config wxt @wxt-dev/module-react r
 ```ts
 // wxt.config.ts
 import { defineConfig } from "wxt";
-import { defineConfig as defineClipConfig } from "@clip-wallet/config";
-import { clipWallet } from "@clip-wallet/extension-kit/wxt";
+import { defineConfig as defineClipConfig } from "@coldai/clip-wallet-config";
+import { clipWallet } from "@coldai/clip-wallet-extension-kit/wxt";
 
 const clipConfig = defineClipConfig({ name: "Acme Wallet", rdns: "com.acme.wallet", networks: ["evm:*", "hedera", "solana"] });
 
@@ -28,7 +28,7 @@ export default defineConfig(clipWallet({ config: clipConfig }));
 ```ts
 // src/entrypoints/background.ts
 import { defineBackground } from "wxt/utils/define-background";
-import { startBackground } from "@clip-wallet/extension-kit/background";
+import { startBackground } from "@coldai/clip-wallet-extension-kit/background";
 
 export default defineBackground({ type: { firefox: "module" }, main: () => startBackground() });
 ```
@@ -41,7 +41,7 @@ export default defineBackground({ type: { firefox: "module" }, main: () => start
 | popup, tab | `mountWallet("popup" \| "tab")` from `/pages` |
 | approval | `mountApprovalWindow()` from `/pages` |
 | plugin host (offscreen) | `startPluginHost()` from `/plugin-host` |
-| plugin sandbox | `import "@clip-wallet/extension-kit/plugin-sandbox"` |
+| plugin sandbox | `import "@coldai/clip-wallet-extension-kit/plugin-sandbox"` |
 
 `npx create-clip-wallet my-wallet` (or the Scaffold-HBAR template) writes all of this for you.
 
@@ -56,7 +56,7 @@ export default defineBackground({ type: { firefox: "module" }, main: () => start
   disclosed 0.875 % Clip fee to ColdAI LLC) need `CLIP_SODAX_SERVER_URL` and `CLIP_SODAX_FEE_RECEIVER` in a mainnet
   build, and a mainnet build with only one, or with a receiver that isn't reviewed, is refused.
 - **Security floor.** The open phishing lists are always on and refreshed daily; there is no option to switch them
-  off, and `@clip-wallet/security` refuses a mainnet config that tries. Blockaid scanning is added only with a key.
+  off, and `@coldai/clip-wallet-security` refuses a mainnet config that tries. Blockaid scanning is added only with a key.
 - **Mainnet checklist.** A config with mainnet enabled is refused at build time while `mainnetProblems()` lists anything
   or the project's `MAINNET.md` has an open box.
 - **Fixture mode.** `CLIP_MOCKS=1 wxt build` builds with mock chains, route and dapps for screenshots and demos.
@@ -73,7 +73,7 @@ Peer dependencies: `wxt`, `@wxt-dev/module-react`, `react`, `react-dom`.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

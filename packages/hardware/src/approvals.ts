@@ -6,7 +6,7 @@
  * The hash also covers `raw`, so what the device is shown is part of what was approved.
  */
 import { sha256 } from "@noble/hashes/sha2.js";
-import type { SignablePayload } from "@clip-wallet/core";
+import type { SignablePayload } from "@coldai/clip-wallet-core";
 import { concat, toHex, utf8 } from "./bytes.js";
 
 export const MAX_APPROVAL_TTL_MS = 10 * 60 * 1000;

@@ -1,5 +1,5 @@
 /**
- * Formatting helpers. Locale-aware through @clip-wallet/i18n: ClipProvider (and the mobile WalletProvider)
+ * Formatting helpers. Locale-aware through @coldai/clip-wallet-i18n: ClipProvider (and the mobile WalletProvider)
  * set the display locale with setFormatLocale, so existing call sites format for the user's language without
  * threading a locale through every component. Pass `locale` explicitly where it matters (tests, background).
  */
@@ -11,8 +11,8 @@ import {
   formatRelativeTime,
   parseAmountInput,
   type LocaleCode,
-} from "@clip-wallet/i18n";
-import { unverifiedLabel } from "@clip-wallet/core";
+} from "@coldai/clip-wallet-i18n";
+import { unverifiedLabel } from "@coldai/clip-wallet-core";
 
 let current: LocaleCode = "en";
 

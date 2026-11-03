@@ -1,12 +1,12 @@
 /**
  * Stellar Wallets Kit 2 (stock createButton + auth modal), testnet. Stock: defaultModules().
- * ?variant=clip: defaultModules() plus @clip-wallet/kit-modules/stellar's ClipWalletModule, the documented way a wallet
+ * ?variant=clip: defaultModules() plus @coldai/clip-wallet-kit-modules/stellar's ClipWalletModule, the documented way a wallet
  * joins the kit.
  */
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 import { KitEventType, Networks } from "@creit.tech/stellar-wallets-kit/types";
-import { ClipWalletModule } from "@clip-wallet/kit-modules/stellar";
+import { ClipWalletModule } from "@coldai/clip-wallet-kit-modules/stellar";
 import { useEffect, useRef, useState } from "react";
 import { Account, expose, mount } from "./kit";
 import { withClip } from "./variant";

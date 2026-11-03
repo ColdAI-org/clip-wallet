@@ -1,4 +1,4 @@
-# @clip-wallet/features
+# @coldai/clip-wallet-features
 
 HashPack-parity features for Clip Wallet, as background services. The package is pure logic and holds no keys.
 Every action ends in a `DappRequest` on the normal approval path: decode, then approve, then the vault signs.
@@ -23,13 +23,13 @@ place to receive, or the only place a provider works. `networkId` is carried for
 ## Install
 
 ```sh
-npm i @clip-wallet/features
+npm i @coldai/clip-wallet-features
 ```
 
 ## Example
 
 ```ts
-import { isFeaturedOrigin, type StakingProvider, type SwapProvider } from "@clip-wallet/features";
+import { isFeaturedOrigin, type StakingProvider, type SwapProvider } from "@coldai/clip-wallet-features";
 
 // Every provider ends in ordinary approvals: a swap is its exact-amount permission, then the swap itself.
 export function describe(staking: StakingProvider[], swaps: SwapProvider[]) {
@@ -182,7 +182,7 @@ Every flow below ends in a request the family's chain module decodes in plain wo
 required before the plain title replaces "unreadable". Third-party transactions are parsed back with the
 real SDK/codec and refused unless every contract/script/package is on the provider's allow-list, the
 amounts match the quote and the output goes to you. Wallet-built requests carry `WALLET_ORIGIN`
-(`@clip-wallet/core`). Detailed sources live in each chain package's README; the essentials:
+(`@coldai/clip-wallet-core`). Detailed sources live in each chain package's README; the essentials:
 
 **Staking**
 
@@ -231,7 +231,7 @@ Nothing is signed, nothing is sent, and there is no live trading.
   slippage. In that case, get a new price.
 - **Partner keys ship in the bundle.** 0x, Jupiter and MoonPay publishable keys are extractable from an
   extension. A proxy is preferable for 0x.
-- **Cross-network swaps are quote only.** `@clip-wallet/route` quotes the delivery of the target asset. The
+- **Cross-network swaps are quote only.** `@coldai/clip-wallet-route` quotes the delivery of the target asset. The
   amount comes from prices, so it is an estimate, and execution isn't wired yet.
 - **Secure Trade.** A direct offer is valid for 180 s (the Hedera transaction validity), which makes it
   practical only when both people are online. Very long direct links (many node bodies) don't fit a QR
@@ -250,7 +250,7 @@ Nothing is signed, nothing is sent, and there is no live trading.
 ## Versioning and provenance
 
 Published from [ColdAI-org/clip-wallet](https://github.com/ColdAI-org/clip-wallet) by CI with npm provenance: every
-tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@clip-wallet/*`
+tarball is signed and traceable to the commit that built it (`npm audit signatures` checks it). All `@coldai/clip-wallet-*`
 packages share one version; pin it exactly.
 
 ## Licence

@@ -1,13 +1,13 @@
 # Clip Wallet
 
-> Non-custodial multi-chain wallet for the CLPR networks (85 of 87, 26 families), and a kit for building your own on every platform: @clip-wallet/* packages, @clip-wallet/extension-kit, desktop-kit and mobile-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, Apache-2.0.
+> Non-custodial multi-chain wallet for the CLPR networks (85 of 87, 26 families), and a kit for building your own on every platform: @coldai/clip-wallet-* packages, @coldai/clip-wallet-extension-kit, desktop-kit and mobile-kit, create-clip-wallet and a Scaffold-HBAR template. Pre-release: test networks only. pnpm monorepo, TypeScript, Apache-2.0.
 
 Read first: AGENTS.md (rules + recipes), .harness/spec.md (product), .harness/prd.md (user stories), packages/core/src/index.ts (the contract), packages/config/src/index.ts (clip.config.ts schema).
 Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Markdown; every code sample is a typechecked file in apps/docs/src/snippets). Index of the pages agents need most: "## Docs" below.
 
 ## Commands
 - pnpm install && pnpm typecheck && pnpm test && pnpm harness   (all must pass)
-- pnpm --filter @clip-wallet/extension e2e   (extension, Playwright, after extension changes)
+- pnpm --filter @coldai/clip-wallet-extension e2e   (extension, Playwright, after extension changes)
 - pnpm pack-all   (build + pack every publishable package into .packs; publishes nothing)
 - pnpm kit:e2e | pnpm kit:e2e:scaffold-hbar   (a kit-built wallet / the Scaffold-HBAR template, end to end from the tarballs)
 - pnpm changeset   (with every change to a published package); releases happen in CI only
@@ -15,7 +15,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 
 ## Rules (enforced by pnpm harness)
 - Only packages/vault touches phrases, seeds, private keys, signing and Argon2.
-- Only packages/vault, the extension background (packages/extension-kit/src/background, apps/extension background), the phone app's background (packages/mobile-kit/src/background), the desktop main-process host (packages/desktop-kit/src/main/host) and the onboarding screen import @clip-wallet/vault.
+- Only packages/vault, the extension background (packages/extension-kit/src/background, apps/extension background), the phone app's background (packages/mobile-kit/src/background), the desktop main-process host (packages/desktop-kit/src/main/host) and the onboarding screen import @coldai/clip-wallet-vault.
 - Chain modules (packages/chains-*) implement ChainModule and never import or depend on the vault.
 - Never log or commit phrases, keys, secrets, .env values or key files (*.pem, .keys/). Tests use public BIP-39 vectors only.
 - Every dapp request becomes a DecodedRequest before approval; blind signing is off by default.
@@ -57,7 +57,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - create-clip-wallet: npx create-clip-wallet <folder> [--platforms extension,desktop,mobile --scaffold-hbar --id --logo --languages …] (template + parts + identity + every platform's icons from one logo + listing drafts); identity | brand | listings | mainnet-check.
 
 ## Apps, services, template
-- apps/extension: Clip Wallet's own identity on extension-kit; Playwright e2e; store packages (pnpm --filter @clip-wallet/extension package, scripts/repro-check.sh). brand/: the Clip Wallet mark (tools/brand/render.mjs).
+- apps/extension: Clip Wallet's own identity on extension-kit; Playwright e2e; store packages (pnpm --filter @coldai/clip-wallet-extension package, scripts/repro-check.sh). brand/: the Clip Wallet mark (tools/brand/render.mjs).
 - apps/desktop: Clip Wallet's own identity on desktop-kit; Playwright e2e (real app); electron-builder packaging.
 - apps/mobile: Clip Wallet's own identity on mobile-kit (Expo).
 - services/backup, services/media-proxy, services/link-relay: Cloudflare Workers. contracts/handles: ClipHandles (Foundry).
@@ -69,14 +69,14 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - architecture/signing-flow: request → decode → sanitize → approval → single-use signing, with the code for each step. architecture/networks-invisible: asset keys, merged balances, when the network shows.
 - architecture/{vault,engine,extension-kit,onemask,chain-modules,route-settle,features,security,link,plugins,social-names-hardware,services}: one page per part.
 - dapps/: per-ecosystem guides (EIP-1193/6963 with wagmi, RainbowKit, AppKit; Wallet Standard for Solana, Sui, Aptos, Bitcoin; CIP-30; injectWeb3; Starknet; TON Connect; NEAR, Stellar, Algorand kit modules; Tezos Beacon; Hedera; WalletConnect), each linked to the dapp and picker matrix results.
-- connect/: Clip Connect (@clip-wallet/connect): connect(), request(), pay(), canPay(), balances(), React hooks, wagmi connector, Solana adapter, EIP-5792 wallet calls, ERC-7682 auxiliary funds, the compatibility promise.
+- connect/: Clip Connect (@coldai/clip-wallet-connect): connect(), request(), pay(), canPay(), balances(), React hooks, wagmi connector, Solana adapter, EIP-5792 wallet calls, ERC-7682 auxiliary funds, the compatibility promise.
 - kit/: one project for every platform (extension, desktop, phone), create-clip-wallet (options, icons from one logo), the Scaffold-HBAR template, clip.config.ts (platform ids, languages, networks, mainnet opt-in, branding, partner keys, services), building each platform, stores and code signing (kit/signing), working with agents.
 - extend/chain-module (a complete worked ChainModule), extend/networks-and-tokens, extend/plugins (SES sandbox, manifest, permissions, insights API), extend/languages (ICU, glossary, bidi isolates), extend/threat-provider.
 - services/: backup, media-proxy, link-relay: APIs, self-hosting on Cloudflare with wrangler, secret names.
 - security/: threat model, vault cryptography, approval-bound signing, sanitization, scam checks, hardware wallets, disclosure.
 - testing/: unit, harness, extension e2e, dapp and picker matrices, funding a test wallet, reproducible builds.
 - reference/config (clip.config.ts schema), reference/errors (every ClipError code), reference/warnings (every Warning code), reference/dapp-errors (EIP-1193 and EIP-5792 codes), reference/cli, reference/api/<package>[/<subpath>] (TypeDoc for every published export). All generated from the source by apps/docs/scripts/generate.mjs.
-- Build and check the docs: pnpm --filter docs build (generate, VitePress, link and safety check); pnpm --filter docs test (snippets typecheck and run, README code blocks typecheck). Base path: DOCS_BASE (default /clip/docs/).
+- Build and check the docs: pnpm --filter @coldai/clip-wallet-docs build (generate, VitePress, link and safety check); pnpm --filter @coldai/clip-wallet-docs test (snippets typecheck and run, README code blocks typecheck). Base path: DOCS_BASE (default /clip/docs/).
 
 ## Optional
 - .harness/README.md: every harness rule and what to do when one is wrong

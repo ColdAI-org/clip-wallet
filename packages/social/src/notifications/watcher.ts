@@ -10,8 +10,8 @@
  * The first poll only records a baseline, so turning notifications on never floods the user with history.
  * State lives in the host's KV (public data only).
  */
-import { formatAmount, formatFiat, formatMsg, type LocaleCode } from "@clip-wallet/i18n";
-import { isMsg, loadBgMessages, titleMsgOf, type Msg } from "@clip-wallet/core";
+import { formatAmount, formatFiat, formatMsg, type LocaleCode } from "@coldai/clip-wallet-i18n";
+import { isMsg, loadBgMessages, titleMsgOf, type Msg } from "@coldai/clip-wallet-core";
 import type { KVLike } from "../contacts/store.js";
 import { notificationText } from "./messages.js";
 import { DEFAULT_NOTIFICATION_SETTINGS, NOTIFICATION_KINDS, type Notice, type NotificationSettings, type Notifier, type PriceAlert, type Snapshot } from "./types.js";

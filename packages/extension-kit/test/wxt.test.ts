@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ConfigError, MAINNET_ACKNOWLEDGEMENT, defineConfig, type ClipConfigInput } from "@clip-wallet/config";
+import { ConfigError, MAINNET_ACKNOWLEDGEMENT, defineConfig, type ClipConfigInput } from "@coldai/clip-wallet-config";
 import { CONFIG_MODULE, clipWallet, extensionIdFromKey, readClipEnv, securityFor } from "../src/wxt";
 
 const dirs: string[] = [];

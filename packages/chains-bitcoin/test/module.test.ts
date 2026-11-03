@@ -1,4 +1,4 @@
-import type { DappRequest, Signature } from "@clip-wallet/core";
+import type { DappRequest, Signature } from "@coldai/clip-wallet-core";
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { base64, hex } from "@scure/base";
 import { RawWitness, SigHash, Transaction, p2tr, p2wpkh } from "@scure/btc-signer";

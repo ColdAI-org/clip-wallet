@@ -4,8 +4,8 @@ import type { ClipConfig } from "./theme/config";
 import { defaultClipConfig, defaultUiOptions, type UiOptions } from "./theme/config";
 import { tokensFor, type ColorMode } from "./theme/tokens";
 import type { PasskeyPrfFactory } from "./lib/passkey";
-import { dirOf, resolveLocale, type LocaleCode } from "@clip-wallet/i18n";
-import { LocaleProvider } from "@clip-wallet/i18n/react";
+import { dirOf, resolveLocale, type LocaleCode } from "@coldai/clip-wallet-i18n";
+import { LocaleProvider } from "@coldai/clip-wallet-i18n/react";
 import { BgTextProvider } from "./i18n/bg";
 import { setFormatLocale } from "./lib/format";
 

@@ -1,4 +1,4 @@
-import { withoutTrailing } from "@clip-wallet/core";
+import { withoutTrailing } from "@coldai/clip-wallet-core";
 
 export function b64encode(bytes: Uint8Array): string {
   let s = "";

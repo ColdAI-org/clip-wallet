@@ -1,5 +1,5 @@
 {
-  "name": "@clip-wallet/link",
+  "name": "@coldai/clip-wallet-link",
   "version": "0.1.0",
   "description": "Linked devices for Clip Wallet: phone or desktop as signer, end-to-end encrypted settings sync, handoffs and native messaging",
   "keywords": [
@@ -132,7 +132,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clip-wallet/core": "workspace:*",
+    "@coldai/clip-wallet-core": "workspace:*",
     "@noble/ciphers": "2.4.0",
     "@noble/hashes": "2.4.0",
     "zod": "^4.6.5"
