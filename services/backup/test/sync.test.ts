@@ -87,6 +87,7 @@ describe("settings sync endpoints", () => {
     expect((await call(SYNC.changesAfterWipe, { authorization: bad })).status).toBe(401);
   });
 
+  // 2,001 requests through workerd: 6-9 s when every package's tests run at once (the release job), past vitest's 5 s.
   it("rate-limits per IP before any signature work", async () => {
     const app = createApp({ now: () => SYNC.NOW });
     const ip = "198.51.100.250";
@@ -96,5 +97,5 @@ describe("settings sync endpoints", () => {
       last = res.status;
     }
     expect(last).toBe(429);
-  });
+  }, 30_000);
 });
