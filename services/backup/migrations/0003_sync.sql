@@ -1,4 +1,4 @@
--- Settings sync (@coldai/clip-wallet-link). No accounts or emails: a "space" is hex SHA-256 of the device's Ed25519 sync
+-- Settings sync (@clip-wallet/link). No accounts or emails: a "space" is hex SHA-256 of the device's Ed25519 sync
 -- public key (derived from the recovery phrase in the vault). Records are opaque ids + ciphertext only.
 CREATE TABLE sync_spaces (
   space TEXT PRIMARY KEY,
