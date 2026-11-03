@@ -106,7 +106,7 @@
     "algosdk": "^3.8.0",
     "esbuild": "^0.28.2",
     "mermaid": "^12.1.0",
-    "react": "^19.3.0",
+    "react": "^19.3.1",
     "react-dom": "^19.3.0",
     "starknetkit": "3.4.3",
     "typedoc": "^0.28.20",
