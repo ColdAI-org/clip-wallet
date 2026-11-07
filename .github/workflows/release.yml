@@ -7,10 +7,14 @@
 #
 # Kit stream (@coldai/clip-wallet-* and create-clip-wallet on npm; the only way they reach npm). On every push to main,
 # Changesets opens or updates a "Version packages" pull request (pnpm version-packages: versions, changelogs, and the
-# Scaffold-HBAR template pinned to the new version). Publishing happens only from a signed version tag: after that
-# pull request is merged, the same tag runs pnpm release (pack-all: build + manifest and tarball checks, then
-# changeset publish) with npm provenance, so every tarball carries a Sigstore-signed attestation naming this
-# repository, this workflow and the tagged commit. Versions already on npm are skipped.
+# Scaffold-HBAR template pinned to the new version); that job never publishes. Publishing happens only from a signed
+# version tag, after that pull request is merged: the tag runs pnpm release, which is pack-all (build, manifest and
+# tarball checks) and then tools/release/publish.mjs. For each tarball whose version isn't on npm it runs
+# `npm publish <tarball> --provenance --access public`, so every tarball carries a Sigstore-signed SLSA provenance
+# attestation naming this repository, this workflow and the tagged commit; versions already on npm are skipped. It then
+# checks every version's attestation on npm against the dist.integrity npm serves, and fails if one is missing or
+# doesn't match. The npm CLI publishes, with the NPM_TOKEN secret: npm 11.19.0, installed in the job (trusted
+# publishing needs npm 11.5.1 or later).
 #
 # Tags must be annotated and signed (`git tag -s vX.Y.Z -m "Clip Wallet vX.Y.Z"`, SSH or GPG signing key
 # registered on GitHub). verify-tag refuses an unsigned or unverified tag, a version that differs from
@@ -183,7 +187,7 @@ jobs:
 
   # ---- Kit stream, tags: npm publish with provenance ----
   npm:
-    name: npm publish with provenance (changesets)
+    name: npm publish with provenance
     needs: verify-tag
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -209,8 +213,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Typecheck, test, harness
         run: pnpm typecheck && pnpm test && pnpm harness
-      - name: pack-all, then changeset publish (versions already on npm are skipped)
+      - name: npm 11.19.0 (trusted publishing needs npm 11.5.1 or later)
+        run: |
+          npm install --global npm@11.19.0
+          npm --version
+      - name: pack-all, then publish each tarball with provenance (skipping versions already on npm), then check every attestation
         run: pnpm release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
