@@ -39,7 +39,7 @@ const POLL_EVERY_S = 10;
 const RATE_LIMITED = /\bE429\b|\b429 Too Many Requests\b/;
 
 /** Registry paths take a scoped name with its slash encoded: @coldai%2Fclip-wallet-core. */
-const escaped = (name) => name.replace("/", "%2F");
+const escaped = (name) => name.replaceAll("/", "%2F");
 export const versionUrl = ({ name, version }) => `${REGISTRY}/${escaped(name)}/${version}`;
 /** npm's attestations of a version: the dist.attestations.url of its version document (meta) on this registry, else built. */
 export const attestationsUrl = ({ name, version }, meta) => {
