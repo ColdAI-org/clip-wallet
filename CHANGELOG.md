@@ -6,6 +6,16 @@ The release workflow (`.github/workflows/release.yml`) refuses a tag `vX.Y.Z` wi
 
 ## [Unreleased]
 
+### Fixed
+
+- **Published with npm provenance:** every tarball carries a Sigstore-signed SLSA provenance attestation naming this
+  repository, the release workflow and the tagged commit, which `pnpm verify:provenance` checks. 0.2.0 was published
+  without attestations: its release ran `changeset publish`, which calls `pnpm publish` without `--provenance`, and
+  pnpm 12's publish turns provenance on only from that flag (it ignores `NPM_CONFIG_PROVENANCE` and
+  `publishConfig.provenance`). A published npm version can't be changed, so 0.2.0 stays without attestations and
+  `pnpm verify:provenance` fails for it. From 0.2.1, `tools/release/publish.mjs` publishes each tarball with
+  `npm publish --provenance` and fails the release unless every version on npm has a valid attestation.
+
 ## [0.2.0] - 2026-11-03
 
 ### Added

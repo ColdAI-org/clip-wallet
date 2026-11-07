@@ -44,7 +44,7 @@ published to npm as `@coldai/clip-wallet-<name>` (plus `create-clip-wallet`), al
 | `contracts/handles` | `ClipHandles` on Hedera (Foundry). |
 | `brand/` | The Clip Wallet mark; `tools/brand/render.mjs` renders every icon from it. |
 | `tools/harness` | The rules as checks (`pnpm harness`). |
-| `tools/release`, `tools/kit` | Build, manifests and packing; end-to-end checks of the kit from packed tarballs. |
+| `tools/release`, `tools/kit` | Build, manifests, packing and publishing (CI only); end-to-end checks of the kit from packed tarballs. |
 | `docs/` | Design notes, integration notes per stream, the dapp and picker matrix reports, legal drafts. |
 
 ## How the packages depend on each other

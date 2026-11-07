@@ -12,10 +12,17 @@ Releasing happens only in CI (`.github/workflows/release.yml`), never from a lap
    then `tools/release/sync-template.mjs` pins the new version in the Scaffold-HBAR template and
    create-clip-wallet's bundled copy).
 2. After that pull request is merged, a signed version tag (`git tag -s vX.Y.Z`, the same tag that builds the
-   extension's store packages) runs `pnpm release`: `pnpm pack-all` (build, manifest checks, tarball checks) and
-   `changeset publish`, with npm provenance (`publishConfig.provenance` plus the workflow's `id-token: write`), so every
-   tarball is signed by Sigstore and traceable to the commit and workflow that built it. The workflow refuses an
-   unsigned tag and a tree with pending changesets; versions already on npm are skipped.
+   extension's store packages) runs `pnpm release`: `pnpm pack-all` (build, manifest checks, tarball checks), then
+   `tools/release/publish.mjs`. For each tarball whose version isn't on npm it runs
+   `npm publish <tarball> --provenance --access public` (the workflow's `id-token: write` lets npm sign the provenance
+   with Sigstore), so every tarball is traceable to the commit and workflow that built it; versions already on npm are
+   skipped. It then checks every version's SLSA provenance attestation on npm (this repository, a workflow in
+   `.github/workflows/`, the digest of the tarball npm serves) and fails if one is missing or doesn't match. The
+   workflow refuses an unsigned tag and a tree with pending changesets.
 
-Check locally with `pnpm pack-all`: it builds and packs everything into `.packs/` and publishes nothing. The first
-release publishes the current version (0.1.0) as it is; no changeset is needed for that.
+The npm CLI publishes, not `changeset publish`: that calls `pnpm publish`, which turns provenance on only from its own
+`--provenance` flag.
+
+Check locally with `pnpm pack-all`: it builds and packs everything into `.packs/` and publishes nothing. After it,
+`node tools/release/publish.mjs --dry-run` lists what a release would publish and checks the attestations of the
+versions already on npm; it publishes nothing either.

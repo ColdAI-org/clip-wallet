@@ -11,7 +11,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - pnpm pack-all   (build + pack every publishable package into .packs; publishes nothing)
 - pnpm kit:e2e | pnpm kit:e2e:scaffold-hbar   (a kit-built wallet / the Scaffold-HBAR template, end to end from the tarballs)
 - pnpm changeset   (with every change to a published package); releases happen in CI only
-- node --test tools/harness/test/*.test.mjs   (harness unit tests)
+- node --test tools/harness/test/*.test.mjs tools/release/test/*.test.mjs   (unit tests of the harness and the release tools)
 
 ## Rules (enforced by pnpm harness)
 - Only packages/vault touches phrases, seeds, private keys, signing and Argon2.
@@ -62,7 +62,7 @@ Developer docs: https://coldai.org/clip/docs/ (sources: apps/docs/src, plain Mar
 - apps/mobile: Clip Wallet's own identity on mobile-kit (Expo).
 - services/backup, services/media-proxy, services/link-relay: Cloudflare Workers. contracts/handles: ClipHandles (Foundry).
 - templates/scaffold-hbar-clip-wallet: the Scaffold-HBAR template (ColdAI-org/scaffold-hbar-clip-wallet) and what create-clip-wallet copies: clip.config.ts + wallet.identity.json at the root, packages/extension, packages/desktop, packages/mobile, packages/nextjs (dapp, /debug), docs/signing.md, AGENTS.md, .harness, llms.txt, CI and fresh-scaffold workflows. Parts are marked platform:<part> in docs.
-- tools/harness/check.mjs: the rules above as checks (file:line, plain words). tools/release: build, manifests, pack-all, template sync. tools/kit: e2e.
+- tools/harness/check.mjs: the rules above as checks (file:line, plain words). tools/release: build, manifests, pack-all, publish (npm publish with provenance, then an attestation check), template sync. tools/kit: e2e.
 
 ## Docs (https://coldai.org/clip/docs/; Markdown sources in apps/docs/src/<path>.md)
 - guide/quickstart: run the extension, desktop and phone apps locally. guide/rules: the harness rules and who may import the vault.

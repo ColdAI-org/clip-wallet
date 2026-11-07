@@ -42,7 +42,8 @@ create-clip-wallet or the Scaffold-HBAR template, which ships this same file) it
 11. **kit-pinned**: `@coldai/clip-wallet-*` and `create-clip-wallet` dependencies are exact versions.
 
 `pnpm harness` in this repo also runs `tools/release/check-manifests.mjs` (published manifests and declared runtime
-imports) and `tools/release/sync-template.mjs --check` (the template's pins and harness copy).
+imports), `tools/release/sync-template.mjs --check` (the template's pins and harness copy) and the release tools'
+tests (`tools/release/test`: the npm publisher, with the registry and the npm CLI replaced by fakes).
 
 The checks are lexical: comments are ignored, strings are understood, imports are matched with their bindings.
 Tests: `node --test tools/harness/test/*.test.mjs` (fixture trees in `tools/harness/test/fixtures`, which the

@@ -21,7 +21,7 @@ flowchart LR
   M["merge to main"] --> V["CI opens or updates<br/>'Version packages' PR<br/>(pnpm version-packages)"]
   V --> R["merge that PR"]
   R --> T["a maintainer pushes a signed tag<br/>git tag -s vX.Y.Z"]
-  T --> P["CI: pnpm release<br/>pack-all checks, changeset publish<br/>with npm provenance"]
+  T --> P["CI: pnpm release<br/>pack-all checks, npm publish<br/>with provenance, attestation check"]
   T --> S["CI: store packages in the pinned container,<br/>SHA256SUMS, SLSA provenance,<br/>draft GitHub release"]
 ```
 
@@ -32,9 +32,13 @@ flowchart LR
    (`git tag -s vX.Y.Z -m "Clip Wallet vX.Y.Z"`). The workflow refuses an unsigned or unverified tag, a version that
    differs from `apps/extension/package.json`, a missing `## [X.Y.Z]` section in `CHANGELOG.md`, and a tree with pending
    changesets.
-3. **Publish.** The tag runs `pnpm release`: `pnpm pack-all` (build, manifest checks, tarball checks) and
-   `changeset publish`, with npm provenance, so every tarball carries a Sigstore-signed attestation naming the
-   repository, the workflow and the commit. Versions already on npm are skipped.
+3. **Publish.** The tag runs `pnpm release`: `pnpm pack-all` (build, manifest checks, tarball checks), then
+   `tools/release/publish.mjs`. For each tarball whose version isn't on npm it runs
+   `npm publish <tarball> --provenance --access public`, so every tarball carries a Sigstore-signed SLSA provenance
+   attestation naming the repository, the workflow and the commit. Versions already on npm are skipped, and a
+   rate-limited publish (HTTP 429) is retried after 30, 60, 120 and 240 seconds. Last, it checks every version's
+   attestation on npm (this repository, a workflow in `.github/workflows/`, a tarball digest equal to the
+   `dist.integrity` npm serves) and fails the release if one is missing or doesn't match.
 4. **Store packages.** The same tag builds the extension's store zips in the reproducible-build container, writes
    `SHA256SUMS`, attests SLSA provenance and opens a **draft** GitHub release. Nothing is uploaded to any store
    automatically.
@@ -45,6 +49,9 @@ flowchart LR
 pnpm pack-all     # builds and packs everything into .packs/ and checks each tarball; publishes nothing
 pnpm kit:e2e      # a kit-built wallet from those tarballs
 ```
+
+After `pnpm pack-all`, `node tools/release/publish.mjs --dry-run` lists what a release would publish and checks the
+provenance of the versions already on npm. It publishes nothing.
 
 Never run `npm publish` or `pnpm publish` by hand.
 
