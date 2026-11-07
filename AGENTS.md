@@ -62,7 +62,7 @@ brand/                   Clip Wallet's brand sources; tools/brand/render.mjs ren
 contracts/handles        ClipHandles on Hedera (Foundry)
 templates/scaffold-hbar-clip-wallet     the Scaffold-HBAR template (ColdAI-org/scaffold-hbar-clip-wallet); not a workspace
 tools/harness            validators coding agents must pass
-tools/release            build-package, manifests, pack-all, template sync
+tools/release            build-package, manifests, pack-all, publish (npm, with provenance), template sync
 tools/kit                end-to-end checks of the kit from packed tarballs
 ```
 
@@ -156,7 +156,10 @@ Each ends with `pnpm typecheck && pnpm test && pnpm harness`. Product context: `
 ### Release (CI only)
 1. Every change to `packages/*` comes with `pnpm changeset` (all published packages share one version).
 2. CI's "Version packages" PR runs `pnpm version-packages` (`changeset version`, then `tools/release/sync-template.mjs`
-   pins the template to the new version); merging it publishes with provenance (`.github/workflows/release.yml`).
+   pins the template to the new version). After it merges, a signed version tag runs `pnpm release`
+   (`.github/workflows/release.yml`): `pnpm pack-all`, then `tools/release/publish.mjs`, which runs
+   `npm publish <tarball> --provenance --access public` for each version not on npm and then checks every version's
+   provenance attestation on npm. `node tools/release/publish.mjs --dry-run` publishes nothing.
 
 ### Change the Scaffold-HBAR template or create-clip-wallet
 1. The template is `templates/scaffold-hbar-clip-wallet` (laid out as create-scaffold-hbar expects: `template.json`
