@@ -100,12 +100,12 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@wagmi/core": "^3.6.7",
+    "@wagmi/core": "^3.6.9",
     "@wallet-standard/app": "^1.1.1",
     "@walletconnect/ethereum-provider": "2.26.0",
     "algosdk": "^3.8.0",
     "esbuild": "^0.28.2",
-    "mermaid": "^12.1.0",
+    "mermaid": "^12.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "starknetkit": "3.4.3",
@@ -118,7 +118,7 @@
     "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "~4.1.11",
     "wagmi": "2.19.5",
-    "wxt": "^0.21.4",
+    "wxt": "^0.21.5",
     "zod": "^4.1.0"
   }
 }
