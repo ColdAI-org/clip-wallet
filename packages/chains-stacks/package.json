@@ -73,7 +73,7 @@
     "@noble/hashes": "2.4.0"
   },
   "devDependencies": {
-    "@stacks/encryption": "7.6.0",
-    "@stacks/transactions": "7.6.0"
+    "@stacks/encryption": "7.7.0",
+    "@stacks/transactions": "7.7.0"
   }
 }
