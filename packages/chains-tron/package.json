@@ -74,6 +74,6 @@
     "@scure/base": "2.4.0"
   },
   "devDependencies": {
-    "tronweb": "^6.5.1"
+    "tronweb": "^6.5.2"
   }
 }
